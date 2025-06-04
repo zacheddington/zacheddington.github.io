@@ -245,7 +245,7 @@ button[type="submit"]:hover {
 .form-row {
     display: flex;
     gap: 18px;
-    margin-bottom: 18px;
+    margin-bottom: 0;
     flex-wrap: wrap;
 }
 
@@ -266,6 +266,7 @@ button[type="submit"]:hover {
 .form-group {
     display: flex;
     flex-direction: column;
+    margin-bottom: 0;
 }
 
 .form-group label {
@@ -375,9 +376,14 @@ button[type="submit"]:hover {
     .form-row {
         flex-direction: column;
         gap: 8px;
+        margin-bottom: 0;
     }
     .form-group {
         width: 100%;
+        margin-bottom: 8px;
+    }
+    .form-group:last-child {
+        margin-bottom: 0;
     }
     .submit-btn {
         width: 100%;
