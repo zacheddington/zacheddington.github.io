@@ -389,7 +389,7 @@ button[type="submit"]:hover {
     }
     .form-group {
         width: 100%;
-        margin-bottom: 8px;
+        margin-bottom: 4px; /* Reduce spacing between fields on mobile */
     }
     .form-group:last-child {
         margin-bottom: 0;
