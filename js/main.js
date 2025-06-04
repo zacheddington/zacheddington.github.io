@@ -126,7 +126,10 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             // Add authentication logic here
             // For now, just redirect to html/welcome.html
-            window.location.href = "welcome/";
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = "welcome/";
+            }, 450);
         });
     }
 });
