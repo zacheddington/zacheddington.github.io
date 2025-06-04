@@ -124,10 +124,12 @@ label, p, input, button, a {
     border-radius: 0 0 12px 0;
     overflow: visible;
     padding-top: 68px; /* Push menu items below the hamburger button (44px height + 24px top) */
+    display: none;
 }
 
 .side-menu.open {
     transform: translateX(0);
+    display: block;
 }
 
 .side-menu::before {
