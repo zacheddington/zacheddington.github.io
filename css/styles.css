@@ -154,7 +154,7 @@ label, p, input, button, a {
 
 input[type="text"], input[type="password"] {
     padding: 10px;
-    margin-bottom: 18px;
+    margin-bottom: 8px;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
     font-size: 1rem;
@@ -292,8 +292,11 @@ button[type="submit"]:hover {
     flex-direction: column;
     align-items: center;
 }
+#loginForm input[type="text"], #loginForm input[type="password"] {
+    margin-bottom: 8px;
+}
 #loginForm button[type="submit"] {
-    margin-top: 12px;
+    margin-top: 8px;
     align-self: center;
 }
 
