@@ -283,3 +283,72 @@ button[type="submit"]:hover {
 .submit-btn:hover {
     background: #003b49;
 }
+
+/* Responsive Styles */
+@media (max-width: 900px) {
+    .options {
+        flex-direction: column;
+        gap: 20px;
+        align-items: stretch;
+    }
+    .option-card {
+        min-width: unset;
+        width: 100%;
+        padding: 24px 16px;
+    }
+    .welcome-container {
+        margin-top: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 0 4vw;
+    }
+    .welcome-container {
+        margin-top: 24px;
+    }
+    h1 {
+        font-size: 1.5rem;
+    }
+    .option-card {
+        padding: 16px 8px;
+        font-size: 1rem;
+    }
+    .hamburger-btn {
+        left: 12px;
+        top: 12px;
+        width: 36px;
+        height: 36px;
+    }
+    .hamburger-btn span {
+        width: 18px;
+        height: 2px;
+    }
+    .side-menu {
+        width: 70vw;
+        min-width: 180px;
+        font-size: 1rem;
+    }
+    .form-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .form-group {
+        width: 100%;
+    }
+    .submit-btn {
+        width: 100%;
+        font-size: 1.1rem;
+        padding: 12px 0;
+    }
+}
+
+@media (max-width: 400px) {
+    h1, h2 {
+        font-size: 1.1rem;
+    }
+    .option-card {
+        font-size: 0.95rem;
+    }
+}
