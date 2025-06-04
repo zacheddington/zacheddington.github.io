@@ -347,7 +347,7 @@ button[type="submit"]:hover {
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     body {
         padding: 0 4vw;
     }
@@ -384,7 +384,7 @@ button[type="submit"]:hover {
     }
     .form-row {
         flex-direction: column;
-        gap: 8px;
+        gap: 4px;
         margin-bottom: 0;
     }
     .form-group {
