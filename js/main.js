@@ -125,8 +125,8 @@ document.addEventListener('DOMContentLoaded', function() {
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             // Add authentication logic here
-            // For now, just redirect to welcome.html
-            window.location.href = "welcome.html";
+            // For now, just redirect to html/welcome.html
+            window.location.href = "html/welcome.html";
         });
     }
 });
