@@ -1,3 +1,8 @@
+/* Global box-sizing for maintainability */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
     background: #e0f7fa;
     font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
@@ -5,9 +10,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
     margin: 0;
-    opacity: 0;
     animation: fadeInBody 0.7s ease;
     animation-fill-mode: forwards;
 }
@@ -15,6 +18,11 @@ body {
 @keyframes fadeInBody {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+@keyframes fadeOutBody {
+    from { opacity: 1; }
+    to { opacity: 0; }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -115,21 +123,18 @@ label, p, input, button, a {
     left: 0;
     height: 100vh;
     width: 260px;
-    min-height: 0;
     background: #003b49;
     box-shadow: 2px 0 8px rgba(0,0,0,0.08);
     transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    transition: transform 0.4s cubic-bezier(.4,0,.2,1);
     z-index: 1099;
     border-radius: 0 0 12px 0;
     overflow: visible;
     padding-top: 68px; /* Push menu items below the hamburger button (44px height + 24px top) */
-    display: none;
 }
 
 .side-menu.open {
     transform: translateX(0);
-    display: block;
 }
 
 .side-menu::before {
@@ -204,11 +209,6 @@ button[type="submit"]:hover {
 
 .fade-out {
     animation: fadeOutBody 0.5s forwards;
-}
-
-@keyframes fadeOutBody {
-    from { opacity: 1; }
-    to { opacity: 0; }
 }
 
 .option-link {
@@ -340,6 +340,11 @@ button[type="submit"]:hover {
         min-width: 180px;
         max-width: 320px;
     }
+    .side-menu::before {
+        width: 70vw;
+        min-width: 180px;
+        max-width: 320px;
+    }
 }
 
 @media (max-width: 600px) {
@@ -372,6 +377,10 @@ button[type="submit"]:hover {
         width: 70vw;
         min-width: 180px;
         font-size: 1rem;
+    }
+    .side-menu::before {
+        width: 70vw;
+        min-width: 180px;
     }
     .form-row {
         flex-direction: column;
