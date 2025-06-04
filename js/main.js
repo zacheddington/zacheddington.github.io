@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     e.preventDefault();
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
-                        window.location.href = "/index.html";
+                        window.location.href = "/";
                     }, 450);
                 };
             }
@@ -119,14 +119,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Login form handler for index.html
+    // Login form handler for 
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             // Add authentication logic here
             // For now, just redirect to html/welcome.html
-            window.location.href = "welcome/index.html";
+            window.location.href = "welcome/";
         });
     }
 });
