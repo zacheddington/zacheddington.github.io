@@ -47,7 +47,10 @@ label, p, input, button, a {
     box-shadow: 0 2px 12px rgba(0,59,73,0.10);
     padding: 32px 40px;
     text-align: center;
-    min-width: 220px;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+    margin: 0 auto;
     transition: box-shadow 0.2s;
     border: 1px solid #e0e0e0;
 }
@@ -302,9 +305,9 @@ button[type="submit"]:hover {
         align-items: stretch;
     }
     .option-card {
-        min-width: unset;
+        max-width: 90vw;
         width: 100%;
-        padding: 24px 16px;
+        padding: 24px 8vw;
     }
     .welcome-container {
         margin-top: 40px;
@@ -327,7 +330,9 @@ button[type="submit"]:hover {
         font-size: 1.5rem;
     }
     .option-card {
-        padding: 16px 8px;
+        max-width: 98vw;
+        width: 100%;
+        padding: 12px 2vw;
         font-size: 1rem;
     }
     .hamburger-btn {
