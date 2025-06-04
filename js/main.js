@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Load the menu
-    fetch('menu.html')
+    fetch('../html/menu.html')
         .then(response => response.text())
         .then(html => {
             document.getElementById('hamburger-menu').innerHTML = html;
 
             // Remove current page link from menu
-            const path = window.location.pathname.split('/').pop();
+            const path = window.location.pathname.split("/").filter(Boolean);
             let pageKey = '';
             if (path.includes('welcome')) pageKey = 'welcome';
             else if (path.includes('enter_eeg')) pageKey = 'enter_eeg';
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     e.preventDefault();
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
-                        window.location.href = "index.html";
+                        window.location.href = "/index.html";
                     }, 450);
                 };
             }
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             // Add authentication logic here
             // For now, just redirect to html/welcome.html
-            window.location.href = "html/welcome.html";
+            window.location.href = "welcome/index.html";
         });
     }
 });
