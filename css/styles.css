@@ -1,0 +1,285 @@
+body {
+    background: #e0f7fa;
+    font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    opacity: 0;
+    animation: fadeInBody 0.7s ease;
+    animation-fill-mode: forwards;
+}
+
+@keyframes fadeInBody {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #003b49;
+}
+
+label, p, input, button, a {
+    font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+    font-weight: 500;
+}
+
+.welcome-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 80px;
+}
+
+.options {
+    display: flex;
+    gap: 32px;
+    margin-top: 40px;
+}
+
+.option-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,59,73,0.10);
+    padding: 32px 40px;
+    text-align: center;
+    min-width: 220px;
+    transition: box-shadow 0.2s;
+    border: 1px solid #e0e0e0;
+}
+
+.option-card:hover {
+    box-shadow: 0 6px 24px rgba(0,59,73,0.16);
+    border-color: #009688;
+}
+
+.hamburger-btn {
+    position: absolute;
+    top: 24px;
+    left: 32px;
+    width: 44px;
+    height: 44px;
+    background: #009688; /* teal */
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 1001;
+    transition: background 0.2s;
+}
+
+.hamburger-btn.open {
+    background: #003b49; /* dark green */
+    border: 2px solid #009688;
+}
+
+.hamburger-btn:hover {
+    background: #003b49; /* dark green */
+}
+
+.hamburger-btn.open:hover {
+    background: #009688; /* teal */
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 24px;
+    height: 3px;
+    margin: 3px 0;
+    background: #fff;
+    border-radius: 2px;
+    transition: 0.3s;
+}
+
+.hamburger-btn.open span {
+    background: #009688; /* teal by default when open */
+}
+
+.hamburger-btn.open:hover span {
+    background: #003b49; /* dark green when open and hovered */
+}
+
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: -220px;
+    width: 200px;
+    height: 100%;
+    background: #003b49;
+    box-shadow: 2px 0 12px rgba(0,59,73,0.10);
+    padding-top: 90px; /* Increased from 60px */
+    transition: left 0.3s;
+    z-index: 1000;
+}
+
+.side-menu.open {
+    left: 0;
+}
+
+.side-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.side-menu li {
+    margin: 10px 0;
+    text-align: left;
+}
+
+.side-menu a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.1rem;
+    padding: 6px 24px;
+    display: block;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.side-menu a:hover {
+    background: #009688;
+    color: #fff;
+}
+
+input[type="text"], input[type="password"] {
+    padding: 10px;
+    margin-bottom: 18px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border 0.2s;
+    background: #fff;
+}
+
+input[type="text"]:focus, input[type="password"]:focus {
+    border-color: #009688;
+    outline: none;
+}
+
+button[type="submit"] {
+    background: #009688;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button[type="submit"]:hover {
+    background: #003b49;
+}
+
+.fade-out {
+    animation: fadeOutBody 0.5s forwards;
+}
+
+@keyframes fadeOutBody {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.option-link {
+    display: inline-block;
+    margin-top: 18px;
+    background: #009688;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 18px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+    text-align: center;
+}
+.option-link:hover {
+    background: #003b49;
+}
+
+.eeg-form {
+    background: #fff;
+    padding: 32px 28px;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(44, 62, 80, 0.12);
+    display: flex;
+    flex-direction: column;
+    min-width: 320px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.form-row {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.patient-number-group {
+    min-width: 140px;
+    flex: 0 0 140px;
+}
+
+.name-group {
+    min-width: 120px;
+    flex: 1 1 120px;
+}
+
+.address-group {
+    width: 100%;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 6px;
+    color: #003b49;
+    font-weight: 600;
+}
+
+.eeg-form input[type="text"] {
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border 0.2s;
+    background: #f5f7fa;
+}
+
+.eeg-form input[type="text"]:focus {
+    border-color: #009688;
+    outline: none;
+}
+
+.submit-btn {
+    background: #009688;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.submit-btn:hover {
+    background: #003b49;
+}
