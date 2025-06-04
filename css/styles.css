@@ -384,15 +384,15 @@ button[type="submit"]:hover {
     }
     .form-row {
         flex-direction: column;
-        gap: 4px;
+        gap: 4px !important;
         margin-bottom: 0;
     }
     .form-group {
         width: 100%;
-        margin-bottom: 4px; /* Reduce spacing between fields on mobile */
+        margin-bottom: 4px !important;
     }
     .form-group:last-child {
-        margin-bottom: 0;
+        margin-bottom: 0 !important;
     }
     .submit-btn {
         width: 100%;
