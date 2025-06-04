@@ -61,7 +61,7 @@ label, p, input, button, a {
 }
 
 .hamburger-btn {
-    position: relative;
+    position: absolute;
     z-index: 1100;
     top: 24px;
     left: 32px;
