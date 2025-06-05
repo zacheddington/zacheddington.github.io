@@ -143,3 +143,38 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+async function loadMenu() {
+    try {
+        const response = await fetch('../html/menu.html');
+        const html = await response.text();
+        document.getElementById('hamburger-menu').innerHTML = html;
+
+        // Setup hamburger button click handler
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sideMenu = document.getElementById('sideMenu');
+        
+        hamburgerBtn?.addEventListener('click', () => {
+            hamburgerBtn.classList.toggle('active');
+            sideMenu.classList.toggle('active');
+        });
+
+        // Check if user is admin and show/hide admin link
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const adminLink = document.querySelector('a[data-page="admin"]')?.parentElement;
+        if (adminLink) {
+            adminLink.style.display = userData.is_admin ? 'block' : 'none';
+        }
+
+        // Add click handler for logout
+        const logoutLink = document.getElementById('logoutLink');
+        logoutLink?.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '../';
+        });
+
+    } catch (err) {
+        console.error('Error loading menu:', err);
+    }
+}
