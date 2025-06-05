@@ -64,41 +64,46 @@ app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Get user with admin status from user_role
+        // Updated query to properly check admin status
         const userQuery = `
-            SELECT u.user_key, u.username, u.password_hash, 
-                   n.first_name, n.last_name,
-                   COALESCE(r.role_name = 'admin', false) as is_admin
+            SELECT 
+                u.user_key, 
+                u.username, 
+                u.password_hash,
+                n.first_name, 
+                n.last_name,
+                CASE 
+                    WHEN EXISTS (
+                        SELECT 1 
+                        FROM tbl_user_role ur 
+                        JOIN tbl_role r ON ur.role_key = r.role_key 
+                        WHERE ur.user_key = u.user_key AND r.role_name = 'admin'
+                    ) THEN true 
+                    ELSE false 
+                END as isAdmin
             FROM tbl_user u
             LEFT JOIN tbl_name_data n ON u.name_key = n.name_key
-            LEFT JOIN tbl_user_role ur ON u.user_key = ur.user_key
-            LEFT JOIN tbl_role r ON ur.role_key = r.role_key
             WHERE u.username = $1`;
 
         const result = await pool.query(userQuery, [username]);
         const user = result.rows[0];
 
-        if (!user) {
+        if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        const validPassword = await bcrypt.compare(password, user.password_hash);
-        if (!validPassword) {
-            return res.status(401).json({ error: 'Invalid username or password' });
-        }
-
-        // Create token
+        // Create token with admin status
         const token = jwt.sign(
             { 
                 user_key: user.user_key,
                 username: user.username,
-                is_admin: user.is_admin
+                isAdmin: user.isadmin  // PostgreSQL returns lowercase column names
             },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
 
-        // Send response with full user data
+        // Send response with consistent property names
         res.json({
             token,
             user: {
@@ -106,7 +111,7 @@ app.post('/api/login', async (req, res) => {
                 username: user.username,
                 firstName: user.first_name,
                 lastName: user.last_name,
-                isAdmin: user.is_admin  // Changed from is_admin to isAdmin
+                isAdmin: user.isadmin  // PostgreSQL returns lowercase column names
             }
         });
 

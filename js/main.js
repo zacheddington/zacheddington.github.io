@@ -91,17 +91,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Update the login handler to store admin status correctly
                 if (response.ok && data.token) {
-                    console.log('Login response:', data);
+                    console.log('Raw login response:', data); // Debug log
                     
                     const userData = {
                         username: data.user.username,
                         firstName: data.user.firstName,
                         lastName: data.user.lastName,
-                        isAdmin: data.user.isAdmin,  // Match the server response
+                        isAdmin: data.user.isAdmin,
                         user_key: data.user.user_key
                     };
                     
-                    console.log('Storing user data:', userData); // Debug log
+                    console.log('Processed user data:', userData); // Debug log
                     
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(userData));
