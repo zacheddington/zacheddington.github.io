@@ -5,39 +5,38 @@ const { Pool } = require('pg');
 
 const app = express();
 
-// Parse database URL from environment variable
-const dbUrl = new URL(process.env.DATABASE_URL);
-
-// Configure pool with explicit parameters
 const pool = new Pool({
-    user: dbUrl.username,
-    password: decodeURIComponent(dbUrl.password),
-    host: dbUrl.hostname,
-    port: dbUrl.port,
-    database: dbUrl.pathname.split('/')[1],
+    connectionString: process.env.DATABASE_URL,
     ssl: {
-        rejectUnauthorized: false,
-        sslmode: 'require'
+        rejectUnauthorized: false
     }
 });
 
-// Enhanced connection logging
+// Add detailed connection logging
 pool.on('error', (err) => {
-    console.error('Database connection error:', {
+    console.error('Database error:', {
         message: err.message,
         code: err.code,
-        detail: err.detail
+        detail: err.detail,
+        stack: err.stack
     });
 });
 
-// Log configuration (safely)
-console.log('Database Configuration:', {
-    host: dbUrl.hostname,
-    port: dbUrl.port,
-    database: dbUrl.pathname.split('/')[1],
-    user: dbUrl.username,
-    ssl: true
-});
+// Test database connection on startup
+const testConnection = async () => {
+    try {
+        const client = await pool.connect();
+        console.log('Successfully connected to database');
+        client.release();
+    } catch (err) {
+        console.error('Error connecting to database:', {
+            message: err.message,
+            code: err.code
+        });
+    }
+};
+
+testConnection();
 
 app.use(cors());
 app.use(bodyParser.json());
