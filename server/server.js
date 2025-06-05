@@ -79,7 +79,7 @@ app.post('/api/login', async (req, res) => {
                         WHERE ur.user_key = u.user_key AND r.role_name = 'admin'
                     ) THEN true 
                     ELSE false 
-                END as "isAdmin"
+                END as isadmin
             FROM tbl_user u
             LEFT JOIN tbl_name_data n ON u.name_key = n.name_key
             WHERE u.username = $1`;
@@ -111,7 +111,13 @@ app.post('/api/login', async (req, res) => {
         // Send ALL properties to the client for debugging
         res.json({
             token,
-            user
+            user: {
+                user_key: user.user_key,
+                username: user.username,
+                firstName: user.first_name,
+                lastName: user.last_name,
+                isAdmin: user.isadmin // <-- use .isadmin (all lowercase)
+            }
         });
 
     } catch (err) {
