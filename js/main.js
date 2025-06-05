@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="modal-content ${type}">
                     <h2>${type === 'success' ? '✓ Success!' : '⚠ Error'}</h2>
                     <p>${message}</p>
-                    <button class="modal-btn" onclick="closeModal()">${type === 'success' ? 'Return to Welcome' : 'Close'}</button>
+                    ${type === 'success' ? '' : '<button class="modal-btn" onclick="closeModal()">Close</button>'}
                 </div>
             </div>
         `;
