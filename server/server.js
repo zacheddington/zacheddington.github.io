@@ -39,50 +39,52 @@ const authenticateToken = (req, res, next) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        
-        const userResult = await pool.query(
-            `SELECT u.*, n.first_name, n.last_name 
-             FROM tbl_user u 
-             LEFT JOIN tbl_name_data n ON u.name_key = n.name_key 
-             WHERE u.username = $1`,
-            [username]
-        );
 
-        if (userResult.rows.length === 0) {
+        // Get user with admin status
+        const userQuery = `
+            SELECT u.user_key, u.username, u.password_hash, u.email, 
+                   u.date_created, u.date_when, n.first_name, n.last_name,
+                   CASE WHEN u.username = 'admin' THEN true ELSE false END as is_admin
+            FROM tbl_user u
+            LEFT JOIN tbl_name_data n ON u.name_key = n.name_key
+            WHERE u.username = $1`;
+
+        const result = await pool.query(userQuery, [username]);
+        const user = result.rows[0];
+
+        if (!user) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        const user = userResult.rows[0];
         const validPassword = await bcrypt.compare(password, user.password_hash);
-
         if (!validPassword) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
+        // Create token
         const token = jwt.sign(
             { 
-                id: user.user_key,
+                user_key: user.user_key,
                 username: user.username,
-                nameKey: user.name_key
+                is_admin: user.is_admin 
             },
             process.env.JWT_SECRET,
-            { expiresIn: '8h' }
+            { expiresIn: '24h' }
         );
 
-        // Update last login time TODO: when the login session table is implemented, this should be moved there.
-        await pool.query(
-            'UPDATE tbl_user SET date_when = CURRENT_TIMESTAMP WHERE user_key = $1',
-            [user.user_key]
-        );
-
+        // Send response with user data and admin flag
         res.json({
             token,
             user: {
                 username: user.username,
-                firstName: user.first_name,
-                lastName: user.last_name
+                email: user.email,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                is_admin: user.is_admin,
+                date_created: user.date_created
             }
         });
+
     } catch (err) {
         console.error('Login error:', err);
         res.status(500).json({ error: 'Internal server error' });

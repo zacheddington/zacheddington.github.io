@@ -550,6 +550,15 @@ button[type="submit"]:hover {
     color: white;
 }
 
+/* Admin menu item visibility */
+.admin-only {
+    display: none;
+}
+
+.is-admin .admin-only {
+    display: block;
+}
+
 /* Responsive Styles */
 @media (max-width: 900px) {
     .options {

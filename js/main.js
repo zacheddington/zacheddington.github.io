@@ -29,8 +29,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (response.ok && data.token) {
                     console.log('Login successful');
+                    
+                    // Store token and user data including admin status
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('user', JSON.stringify({
+                        ...data.user,
+                        is_admin: data.user.is_admin || false // ensure the flag exists
+                    }));
+                    
+                    // Add admin class to body if user is admin
+                    if (data.user.is_admin) {
+                        document.body.classList.add('is-admin');
+                    }
                     
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
@@ -60,12 +70,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const html = await response.text();
             document.getElementById('hamburger-menu').innerHTML = html;
 
-            // After menu is loaded, update visibility based on user role
+            // Check if user is admin and show/hide admin link
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             const adminLink = document.querySelector('a[data-page="admin"]')?.parentElement;
             
             if (adminLink) {
-                adminLink.style.display = user.isAdmin ? 'block' : 'none';
+                adminLink.style.display = user.is_admin ? 'block' : 'none';
             }
 
             // Setup menu event listeners
@@ -504,6 +514,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (document.getElementById('hamburger-menu')) {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.is_admin) {
+            document.body.classList.add('is-admin');
+        }
         loadMenu();
     }
 });
