@@ -117,12 +117,8 @@ label, p, input, button, a {
     padding: 15px;
     background: none;
     border: none;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 50px;
-    height: 50px;
+    min-width: 50px;  /* Add minimum width */
+    min-height: 50px; /* Add minimum height */
 }
 
 .hamburger-btn span {
@@ -145,6 +141,16 @@ label, p, input, button, a {
 
 .hamburger-btn.active span:nth-child(3) {
     transform: rotate(-45deg) translate(5px, -5px);
+}
+
+@media screen and (max-width: 768px) {
+    .hamburger-btn {
+        top: 10px;
+        left: 10px;
+        padding: 10px;
+        min-width: 40px;  /* Smaller but still visible on mobile */
+        min-height: 40px;
+    }
 }
 
 /* Add overlay when menu is open */

@@ -97,8 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         username: data.user.username,
                         firstName: data.user.firstName,
                         lastName: data.user.lastName,
-                        isAdmin: data.user.is_admin,
-                        user_key: data.user.user_key  // Add user_key to storage
+                        isAdmin: data.user.isAdmin,  // Match the server response
+                        user_key: data.user.user_key
                     };
                     
                     console.log('Storing user data:', userData); // Debug log

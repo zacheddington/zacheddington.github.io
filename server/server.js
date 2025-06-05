@@ -104,9 +104,9 @@ app.post('/api/login', async (req, res) => {
             user: {
                 user_key: user.user_key,
                 username: user.username,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                is_admin: user.is_admin
+                firstName: user.first_name,
+                lastName: user.last_name,
+                isAdmin: user.is_admin  // Changed from is_admin to isAdmin
             }
         });
 
