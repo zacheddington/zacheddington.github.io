@@ -72,7 +72,7 @@ app.post('/api/login', async (req, res) => {
             { expiresIn: '8h' }
         );
 
-        // Update last login time
+        // Update last login time TODO: when the login session table is implemented, this should be moved there.
         await pool.query(
             'UPDATE tbl_user SET date_when = CURRENT_TIMESTAMP WHERE user_key = $1',
             [user.user_key]

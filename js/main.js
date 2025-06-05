@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
 
+                console.log('Attempting login...'); // Debug log
+
                 const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: {
@@ -25,25 +27,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 const data = await response.json();
+                console.log('Server response:', response.status); // Debug log
 
                 if (response.ok) {
-                    // Store token and user info
+                    console.log('Login successful'); // Debug log
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
 
-                    // Redirect to welcome page with fade
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
                         window.location.href = "welcome/";
                     }, FADE_DURATION);
                 } else {
-                    showModal('error', data.error || 'Login failed');
+                    console.error('Login failed:', data.error); // Debug log
+                    showModal('error', data.error || 'Login failed. Please check your credentials.');
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Login';
                 }
             } catch (err) {
-                console.error('Login error:', err);
-                showModal('error', 'Unable to connect to server');
+                console.error('Login error:', err); // Debug log
+                showModal('error', 'Unable to connect to server. Please try again later.');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Login';
             }
