@@ -64,11 +64,14 @@ app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Updated query to properly join with role tables
+        // Modified query to properly evaluate admin status
         const userQuery = `
             SELECT u.user_key, u.username, u.password_hash, u.email, 
                    u.date_created, u.date_when, n.first_name, n.last_name,
-                   COALESCE(r.role_name = 'admin', false) as is_admin
+                   CASE 
+                       WHEN r.role_name = 'admin' THEN true 
+                       ELSE false 
+                   END as is_admin
             FROM tbl_user u
             LEFT JOIN tbl_name_data n ON u.name_key = n.name_key
             LEFT JOIN tbl_user_role ur ON u.user_key = ur.user_key
@@ -99,6 +102,14 @@ app.post('/api/login', async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
+
+        // Log the user data before sending response
+        console.log('User data:', {
+            username: user.username,
+            is_admin: user.is_admin,
+            first_name: user.first_name,
+            last_name: user.last_name
+        });
 
         // Send response with user data including admin status
         res.json({
