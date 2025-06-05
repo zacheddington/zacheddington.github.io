@@ -80,13 +80,14 @@ app.post('/api/login', async (req, res) => {
                         WHERE ur.user_key = u.user_key AND r.role_name = 'admin'
                     ) THEN true 
                     ELSE false 
-                END as isAdmin
+                END as "isAdmin"  // Add quotes to preserve case
             FROM tbl_user u
             LEFT JOIN tbl_name_data n ON u.name_key = n.name_key
             WHERE u.username = $1`;
 
         const result = await pool.query(userQuery, [username]);
         const user = result.rows[0];
+        console.log('Database result:', user); // Add this debug log
 
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             return res.status(401).json({ error: 'Invalid username or password' });
@@ -111,7 +112,7 @@ app.post('/api/login', async (req, res) => {
                 username: user.username,
                 firstName: user.first_name,
                 lastName: user.last_name,
-                isAdmin: user.isadmin  // PostgreSQL returns lowercase column names
+                isAdmin: user["isAdmin"]  // Use bracket notation to preserve case
             }
         });
 
