@@ -1,4 +1,12 @@
 {
+  "name": "integrisneuro",
+  "version": "1.0.0",
+  "engines": {
+    "node": "18.x"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
