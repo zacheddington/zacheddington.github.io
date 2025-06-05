@@ -1,7 +1,17 @@
+console.log('main.js loaded on', window.location.pathname);
+let myElement = document.getElementById("loginForm");
+
+if (myElement) {
+  // Element with the ID "myElement" exists in the DOM
+  console.log("loginForm exists!");
+} else {
+  // Element with the ID "myElement" does not exist in the DOM
+  console.log("loginForm does not exist.");
+}
 document.addEventListener('DOMContentLoaded', function() {
     const API_URL = 'https://integrisneuro-eec31e4aaab1.herokuapp.com'; // or your local server
     const FADE_DURATION = 450;
-
+    
     // Unified modal management
     const modalManager = {
         isShowingModal: false,
@@ -142,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
 });
 
 async function loadMenu() {
