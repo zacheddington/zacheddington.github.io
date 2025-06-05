@@ -5,8 +5,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle login form
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
+        // Add flag to track modal state
+        let isShowingModal = false;
+
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            // Prevent multiple modals
+            if (isShowingModal) {
+                return;
+            }
 
             const submitBtn = loginForm.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
@@ -49,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.location.href = "welcome/";
                     }, FADE_DURATION);
                 } else {
+                    isShowingModal = true;
                     const message = response.status === 401 
                         ? 'Invalid username or password'
                         : data.error || 'Login failed';
@@ -56,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showModal('error', message);
                 }
             } catch (err) {
+                isShowingModal = true;
                 console.error('Login error:', err);
                 showModal('error', 'Connection error. Please try again.');
             } finally {
@@ -63,6 +73,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.textContent = 'Login';
             }
         });
+
+        // Update closeModal function to reset modal state
+        const originalCloseModal = window.closeModal;
+        window.closeModal = () => {
+            originalCloseModal();
+            isShowingModal = false;
+        };
     }
 
     // Load and setup the menu
