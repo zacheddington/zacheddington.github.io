@@ -91,26 +91,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Update the login handler to store admin status correctly
                 if (response.ok && data.token) {
-                    console.log('Server response:', data); // Log full server response
-                    
-                    const userData = {
-                        username: data.user.username,
-                        firstName: data.user.firstName,
-                        lastName: data.user.lastName,
-                        isAdmin: data.user.isAdmin,
-                        user_key: data.user.user_key
-                    };
-                    
-                    console.log('User data being stored:', userData);
-                    console.log('Admin status:', data.user.isAdmin);
-                    
+                    // Log all properties received from the server
+                    console.log('User object received from server:', data.user);
+
+                    // Store all properties for debugging
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(userData));
-                    
-                    if (userData.isAdmin) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                    // Use the correct admin property for menu logic
+                    if (data.user.isAdmin) {
                         document.body.classList.add('is-admin');
                     }
-                    
+
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
                         window.location.href = "welcome/";
@@ -179,11 +171,11 @@ async function loadMenu() {
 
             // Check if user is admin and show/hide admin link
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
-            console.log('User data from storage:', userData); // Debug log
-            
+            console.log('User data from storage:', userData);
+
             const adminLink = sideMenu.querySelector('a[data-page="admin"]')?.parentElement;
             if (adminLink) {
-                console.log('Admin link found, isAdmin:', userData.isAdmin); // Updated property name
+                console.log('Admin link found, isAdmin:', userData.isAdmin);
                 adminLink.style.display = userData.isAdmin ? 'block' : 'none';
             }
         }

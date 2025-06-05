@@ -64,7 +64,6 @@ app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Updated query to properly check admin status
         const userQuery = `
             SELECT 
                 u.user_key, 
@@ -80,7 +79,7 @@ app.post('/api/login', async (req, res) => {
                         WHERE ur.user_key = u.user_key AND r.role_name = 'admin'
                     ) THEN true 
                     ELSE false 
-                END as "isAdmin"  // Add quotes to preserve case
+                END as "isAdmin"
             FROM tbl_user u
             LEFT JOIN tbl_name_data n ON u.name_key = n.name_key
             WHERE u.username = $1`;
@@ -88,52 +87,32 @@ app.post('/api/login', async (req, res) => {
         const result = await pool.query(userQuery, [username]);
         const user = result.rows[0];
 
-        // Add detailed logging for each property
-        console.log('Full database result:', result);
-        console.log('User row:', user);
-        console.log('Individual fields:');
-        console.log('user_key:', user.user_key);
-        console.log('username:', user.username);
-        console.log('password_hash:', user.password_hash);
-        console.log('first_name:', user.first_name);
-        console.log('last_name:', user.last_name);
-        console.log('isAdmin (bracket notation):', user['isAdmin']);
-        console.log('isAdmin (dot notation):', user.isAdmin);
-        console.log('isadmin (lowercase):', user.isadmin);
+        // Log every property returned by the query
+        console.log('--- User properties from DB ---');
+        for (const key in user) {
+            console.log(`${key}:`, user[key]);
+        }
+        console.log('-------------------------------');
 
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        // Create token with admin status
         const token = jwt.sign(
             { 
                 user_key: user.user_key,
                 username: user.username,
-                isAdmin: user['isAdmin'] // Changed to use bracket notation
+                isAdmin: user.isAdmin
             },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
 
-        // Log the token payload
-        console.log('Token payload:', jwt.decode(token));
-
-        // Log the response data
-        const responseData = {
+        // Send ALL properties to the client for debugging
+        res.json({
             token,
-            user: {
-                user_key: user.user_key,
-                username: user.username,
-                firstName: user.first_name,
-                lastName: user.last_name,
-                isAdmin: user['isAdmin']
-            }
-        };
-        console.log('Response data:', responseData);
-
-        // Send response with consistent property names
-        res.json(responseData);
+            user
+        });
 
     } catch (err) {
         console.error('Login error:', err);
