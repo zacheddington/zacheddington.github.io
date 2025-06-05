@@ -8,7 +8,8 @@ const app = express();
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
+        sslmode: 'require'
     }
 });
 
@@ -17,26 +18,36 @@ pool.on('error', (err) => {
     console.error('Database error:', {
         message: err.message,
         code: err.code,
-        detail: err.detail,
-        stack: err.stack
+        detail: err.detail
     });
 });
 
 // Test database connection on startup
 const testConnection = async () => {
     try {
+        console.log('Attempting database connection...');
         const client = await pool.connect();
-        console.log('Successfully connected to database');
+        const result = await client.query('SELECT NOW()');
+        console.log('Database connected successfully at:', result.rows[0].now);
         client.release();
+        return true;
     } catch (err) {
-        console.error('Error connecting to database:', {
+        console.error('Database connection error:', {
             message: err.message,
-            code: err.code
+            code: err.code,
+            host: new URL(process.env.DATABASE_URL).hostname
         });
+        return false;
     }
 };
 
-testConnection();
+// Ensure database is connected before starting server
+testConnection().then(connected => {
+    if (!connected) {
+        console.error('Failed to connect to database. Exiting.');
+        process.exit(1);
+    }
+});
 
 app.use(cors());
 app.use(bodyParser.json());
