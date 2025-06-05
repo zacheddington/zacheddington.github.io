@@ -7,12 +7,12 @@ const app = express();
 
 // PostgreSQL connection config using environment variables for Heroku compatibility
 const pool = new Pool({
-    user: process.env.PGUSER || 'postgres',
-    host: process.env.PGHOST || 'localhost',
-    database: process.env.PGDATABASE || 'IntegrisNeuro',
-    password: process.env.PGPASSWORD || 'Ilovemywifeandbabies!',
-    port: process.env.PGPORT ? parseInt(process.env.PGPORT) : 5432,
-    ssl: process.env.PGSSLMODE === 'require' || process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    user: process.env.DB_USER || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    database: process.env.DB_NAME || 'IntegrisNeuro',
+    password: process.env.DB_PASSWORD || 'Ilovemywifeandbabies!',
+    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432,
+    ssl: process.env.DB_SSLMODE === 'require' || process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 app.use(cors());
