@@ -4,15 +4,15 @@ const cors = require('cors');
 const { Pool } = require('pg');
 
 const app = express();
-const port = 3001;
 
-// PostgreSQL connection config
+// PostgreSQL connection config using environment variables for Heroku compatibility
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'IntegrisNeuro',
-    password: 'Ilovemywifeandbabies!',
-    port: 5432,
+    user: process.env.PGUSER || 'postgres',
+    host: process.env.PGHOST || 'localhost',
+    database: process.env.PGDATABASE || 'IntegrisNeuro',
+    password: process.env.PGPASSWORD || 'Ilovemywifeandbabies!',
+    port: process.env.PGPORT ? parseInt(process.env.PGPORT) : 5432,
+    ssl: process.env.PGSSLMODE === 'require' || process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 app.use(cors());
@@ -46,6 +46,9 @@ app.post('/api/eeg', async (req, res) => {
     }
 });
 console.log('API endpoint /api/eeg is set up');
+
+// Use the port assigned by Heroku or default to 3001
+const port = process.env.PORT || 3001;
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
