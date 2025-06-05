@@ -555,7 +555,7 @@ button[type="submit"]:hover {
     display: none;
 }
 
-.is-admin .admin-only {
+body.is-admin .admin-only {
     display: block;
 }
 

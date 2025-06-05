@@ -28,13 +28,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
                 
                 if (response.ok && data.token) {
-                    console.log('Login successful');
+                    console.log('Login response:', data); // Add this debug log
                     
                     // Store token and user data including admin status
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify({
-                        ...data.user,
-                        is_admin: data.user.is_admin || false // ensure the flag exists
+                        username: data.user.username,
+                        firstName: data.user.first_name,
+                        lastName: data.user.last_name,
+                        is_admin: data.user.is_admin // Make sure we use the same property name as server
                     }));
                     
                     // Add admin class to body if user is admin
@@ -70,12 +72,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const html = await response.text();
             document.getElementById('hamburger-menu').innerHTML = html;
 
-            // Check if user is admin and show/hide admin link
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            const adminLink = document.querySelector('a[data-page="admin"]')?.parentElement;
+            // After menu is loaded, update visibility based on user role
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            console.log('User data from storage:', userData); // Add this debug log
             
+            const adminLink = document.querySelector('a[data-page="admin"]')?.parentElement;
             if (adminLink) {
-                adminLink.style.display = user.is_admin ? 'block' : 'none';
+                console.log('Admin link found, is_admin:', userData.is_admin); // Add this debug log
+                adminLink.style.display = userData.is_admin ? 'block' : 'none';
             }
 
             // Setup menu event listeners
