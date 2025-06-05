@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
 
-                console.log('Attempting login...'); // Debug log
+                console.log('Attempting login with username:', username);
 
                 const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
@@ -26,11 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({ username, password })
                 });
 
+                console.log('Response status:', response.status);
                 const data = await response.json();
-                console.log('Server response:', response.status); // Debug log
+                console.log('Response data:', data);
 
                 if (response.ok) {
-                    console.log('Login successful'); // Debug log
+                    console.log('Login successful, token received:', data.token ? 'Yes' : 'No');
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
 
@@ -39,7 +40,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.location.href = "welcome/";
                     }, FADE_DURATION);
                 } else {
-                    console.error('Login failed:', data.error); // Debug log
+                    console.error('Login failed:', {
+                        status: response.status,
+                        error: data.error,
+                        details: data
+                    });
                     showModal('error', data.error || 'Login failed. Please check your credentials.');
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Login';
