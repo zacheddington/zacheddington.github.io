@@ -5,14 +5,23 @@ const { Pool } = require('pg');
 
 const app = express();
 
-// PostgreSQL connection config using environment variables for Heroku compatibility
+// Use DATABASE_URL from Heroku if available, otherwise use local config
 const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'IntegrisNeuro',
-    password: process.env.DB_PASSWORD,  // Remove default password for security
-    port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 5432,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
+});
+
+// Add connection logging
+pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
+});
+
+// Add configuration logging
+console.log('Database Configuration:', {
+    connectionString: process.env.DATABASE_URL ? '[REDACTED]' : 'not set',
+    ssl: true
 });
 
 app.use(cors());
