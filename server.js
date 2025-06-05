@@ -27,15 +27,30 @@ const testConnection = async () => {
     try {
         console.log('Attempting database connection...');
         const client = await pool.connect();
+        
+        // Test if we can connect
         const result = await client.query('SELECT NOW()');
-        console.log('Database connected successfully at:', result.rows[0].now);
+        console.log('Connected to database at:', result.rows[0].now);
+        
+        // Verify database name
+        const dbResult = await client.query('SELECT current_database()');
+        console.log('Connected to database:', dbResult.rows[0].current_database);
+        
+        // List all tables
+        const tableResult = await client.query(`
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public'
+        `);
+        console.log('Available tables:', tableResult.rows.map(row => row.table_name));
+        
         client.release();
         return true;
     } catch (err) {
         console.error('Database connection error:', {
             message: err.message,
             code: err.code,
-            host: new URL(process.env.DATABASE_URL).hostname
+            database: new URL(process.env.DATABASE_URL).pathname.slice(1)
         });
         return false;
     }
