@@ -154,10 +154,14 @@ async function loadMenu() {
         const hamburgerBtn = document.getElementById('hamburgerBtn');
         const sideMenu = document.getElementById('sideMenu');
         
-        hamburgerBtn?.addEventListener('click', () => {
-            hamburgerBtn.classList.toggle('active');
-            sideMenu.classList.toggle('active');
-        });
+        if (hamburgerBtn && sideMenu) {
+            hamburgerBtn.addEventListener('click', () => {
+                console.log('Hamburger clicked'); // Debug log
+                document.body.classList.toggle('menu-open');
+                hamburgerBtn.classList.toggle('active');
+                sideMenu.classList.toggle('active');
+            });
+        }
 
         // Check if user is admin and show/hide admin link
         const userData = JSON.parse(localStorage.getItem('user') || '{}');

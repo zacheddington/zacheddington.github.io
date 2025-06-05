@@ -68,112 +68,77 @@ label, p, input, button, a {
     border-color: #009688;
 }
 
+/* Hamburger Menu Styles */
+.side-menu {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 300px;
+    height: 100%;
+    background: #fff;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease;
+    z-index: 1000;
+}
+
+.side-menu.active {
+    right: 0;
+}
+
 .hamburger-btn {
-    position: absolute;
-    z-index: 1100;
-    top: 24px;
-    left: 32px;
-    width: 44px;
-    height: 44px;
-    background: #009688; /* teal */
-    border: none;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1001;
     cursor: pointer;
-    transition: background 0.2s;
-}
-
-.hamburger-btn.open {
-    background: #003b49; /* dark green */
-    border: 2px solid #009688;
-}
-
-.hamburger-btn:hover {
-    background: #003b49; /* dark green */
-}
-
-.hamburger-btn.open:hover {
-    background: #009688; /* teal */
+    padding: 15px;
+    background: none;
+    border: none;
 }
 
 .hamburger-btn span {
     display: block;
-    width: 24px;
+    width: 25px;
     height: 3px;
-    margin: 3px 0;
-    background: #fff;
-    border-radius: 2px;
-    transition: 0.3s;
+    margin: 5px 0;
+    background: #333;
+    transition: all 0.3s ease;
 }
 
-.hamburger-btn.open span {
-    background: #009688; /* teal by default when open */
+.hamburger-btn.active span:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
 }
 
-.hamburger-btn.open:hover span {
-    background: #003b49; /* dark green when open and hovered */
+.hamburger-btn.active span:nth-child(2) {
+    opacity: 0;
 }
 
-.side-menu {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 260px;
-    background: #003b49;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.08);
-    transform: translateX(-100%);
-    transition: transform 0.4s cubic-bezier(.4,0,.2,1);
-    z-index: 1099;
-    border-radius: 0 0 12px 0;
-    overflow: visible;
-    padding-top: 68px; /* Push menu items below the hamburger button (44px height + 24px top) */
+.hamburger-btn.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
 }
 
-.side-menu.open {
-    transform: translateX(0);
-}
-
-.side-menu::before {
+/* Add overlay when menu is open */
+body::after {
     content: '';
     position: fixed;
     top: 0;
     left: 0;
-    width: 260px;
-    height: 100vh;
-    background: #003b49;
-    z-index: -1;
-    border-radius: 0 0 12px 0;
-    display: block;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 999;
 }
 
-.side-menu ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+body.menu-open::after {
+    opacity: 1;
+    visibility: visible;
 }
 
-.side-menu li {
-    margin: 10px 0;
-    text-align: left;
-}
-
-.side-menu a {
-    color: #fff;
-    text-decoration: none;
-    font-size: 1.1rem;
-    padding: 6px 24px;
-    display: block;
-    border-radius: 4px;
-    transition: background 0.2s, color 0.2s;
-}
-
-.side-menu a:hover {
-    background: #009688;
-    color: #fff;
+.fade-transition {
+    transition: opacity 0.45s ease;
 }
 
 input[type="text"], input[type="password"] {
