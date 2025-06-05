@@ -142,10 +142,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.target.value = newValue;
                 tooltip.classList.add('show');
                 
-                // Position tooltip near the input
-                const inputRect = e.target.getBoundingClientRect();
-                tooltip.style.top = `${inputRect.bottom + 5}px`;
-                tooltip.style.left = `${inputRect.left}px`;
+                // Remove any inline positioning
+                tooltip.style.removeProperty('top');
+                tooltip.style.removeProperty('left');
 
                 // Clear existing timeout
                 clearTimeout(tooltipTimeout);
