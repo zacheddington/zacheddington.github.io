@@ -173,30 +173,29 @@ document.addEventListener('DOMContentLoaded', function() {
             input?.addEventListener('input', (e) => {
                 if (e.target.value.length > 50) {
                     e.target.value = e.target.value.slice(0, 50);
-                    // Only show modal if we haven't shown one for this field yet
-                    if (!input.dataset.showingModal) {
+                    // Show modal if one isn't currently showing
+                    if (input.dataset.showingModal !== 'true') {
                         input.dataset.showingModal = 'true';
-                        showModal('error', `${e.target.placeholder} must be 50 characters or less`);
-                        // Reset the flag after modal is closed
-                        setTimeout(() => {
-                            input.dataset.showingModal = 'false';
-                        }, 500);
+                        showModal('error', `${e.target.placeholder || e.target.name} must be 50 characters or less`);
                     }
+                } else {
+                    // Reset the flag when value is under limit
+                    input.dataset.showingModal = 'false';
                 }
             });
         });
 
-        // Validate address length (100 chars)
+        // Validate address length (100 chars) with similar logic
         address?.addEventListener('input', (e) => {
             if (e.target.value.length > 100) {
                 e.target.value = e.target.value.slice(0, 100);
-                if (!address.dataset.showingModal) {
+                if (address.dataset.showingModal !== 'true') {
                     address.dataset.showingModal = 'true';
                     showModal('error', 'Address must be 100 characters or less');
-                    setTimeout(() => {
-                        address.dataset.showingModal = 'false';
-                    }, 500);
                 }
+            } else {
+                // Reset the flag when value is under limit
+                address.dataset.showingModal = 'false';
             }
         });
 
