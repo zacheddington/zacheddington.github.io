@@ -161,11 +161,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Handle max length without multiple modals
-            if (newValue.length > 20 && patientNumber.dataset.showingModal !== 'true') {
+            if (newValue.length > 20) {
                 e.target.value = newValue.slice(0, 20);
-                patientNumber.dataset.showingModal = 'true';
-                showModal('error', 'Patient Number must be 20 characters or less');
-            } else if (newValue.length <= 20) {
+                if (patientNumber.dataset.showingModal !== 'true') {
+                    patientNumber.dataset.showingModal = 'true';
+                    showModal('error', 'Patient Number must be 20 characters or less');
+                }
+            } else {
                 patientNumber.dataset.showingModal = 'false';
             }
         });
@@ -181,7 +183,13 @@ document.addEventListener('DOMContentLoaded', function() {
             input?.addEventListener('input', (e) => {
                 if (e.target.value.length > 50) {
                     e.target.value = e.target.value.slice(0, 50);
-                    showModal('error', `${e.target.placeholder || e.target.name} must be 50 characters or less`);
+                    if (input.dataset.showingModal !== 'true') {
+                        input.dataset.showingModal = 'true';
+                        const labelText = document.querySelector(`label[for="${input.id}"]`)?.textContent || input.placeholder;
+                        showModal('error', `${labelText} must be 50 characters or less`);
+                    }
+                } else {
+                    input.dataset.showingModal = 'false';
                 }
             });
         });
@@ -190,7 +198,13 @@ document.addEventListener('DOMContentLoaded', function() {
         address?.addEventListener('input', (e) => {
             if (e.target.value.length > 100) {
                 e.target.value = e.target.value.slice(0, 100);
-                showModal('error', 'Address must be 100 characters or less');
+                if (address.dataset.showingModal !== 'true') {
+                    address.dataset.showingModal = 'true';
+                    const labelText = document.querySelector('label[for="address"]')?.textContent || 'Address';
+                    showModal('error', `${labelText} must be 100 characters or less`);
+                }
+            } else {
+                address.dataset.showingModal = 'false';
             }
         });
 
