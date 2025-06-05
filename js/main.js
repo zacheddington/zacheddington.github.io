@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Load and setup menu
+    // Load and setup the menu
     async function loadMenu() {
         try {
             const response = await fetch('../html/menu.html');
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Setup menu event listeners
             setupMenuHandlers();
         } catch (err) {
-            console.error('Error loading menu:', err);
+            console.error('Error loading menu:', err)
         }
     }
 
