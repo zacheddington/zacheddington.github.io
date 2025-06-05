@@ -1,7 +1,55 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const FADE_DURATION = 450;
     const API_URL = 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-    
+    const FADE_DURATION = 450;
+
+    // Handle login form
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+
+            try {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                const response = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store token and user info
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                    // Redirect to welcome page with fade
+                    document.body.classList.add('fade-out');
+                    setTimeout(() => {
+                        window.location.href = "welcome/";
+                    }, FADE_DURATION);
+                } else {
+                    showModal('error', data.error || 'Login failed');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Login';
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                showModal('error', 'Unable to connect to server');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login';
+            }
+        });
+    }
+
     // Load and setup menu
     fetch('../html/menu.html')
         .then(response => response.text())
@@ -285,46 +333,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     submitButton.disabled = false;
                     submitButton.style.opacity = '1';
                 }
-            }
-        });
-    }
-
-    // Login form handler for 
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                const response = await fetch(`${API_URL}/api/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Store token and user info
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-
-                    // Redirect with fade
-                    document.body.classList.add('fade-out');
-                    setTimeout(() => {
-                        window.location.href = "welcome/";
-                    }, FADE_DURATION);
-                } else {
-                    showModal('error', data.error || 'Login failed');
-                }
-            } catch (err) {
-                console.error('Login error:', err);
-                showModal('error', 'Unable to connect to server');
             }
         });
     }
