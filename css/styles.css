@@ -374,29 +374,13 @@ button[type="submit"]:hover {
     padding: 0.5rem 1rem;
     border: none;
     border-radius: 4px;
-    background: #2196F3;
+    background: #f44336;
     color: white;
     cursor: pointer;
     transition: background 0.3s ease;
 }
 
 .modal-btn:hover {
-    background: #1976D2;
-}
-
-.modal-content.success .modal-btn {
-    background: #4CAF50;
-}
-
-.modal-content.success .modal-btn:hover {
-    background: #388E3C;
-}
-
-.modal-content.error .modal-btn {
-    background: #f44336;
-}
-
-.modal-content.error .modal-btn:hover {
     background: #d32f2f;
 }
 

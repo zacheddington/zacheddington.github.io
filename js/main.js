@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const FADE_DURATION = 450;
     const API_URL = 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     
-    // Load the menu
+    // Load and setup menu
     fetch('../html/menu.html')
         .then(response => response.text())
         .then(html => {
@@ -10,11 +10,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Remove current page link from menu
             const path = window.location.pathname.split("/").filter(Boolean);
-            let pageKey = '';
-            if (path.includes('welcome')) pageKey = 'welcome';
-            else if (path.includes('enter_eeg')) pageKey = 'enter_eeg';
-            else if (path.includes('view_eeg')) pageKey = 'view_eeg';
-            else if (path.includes('profile')) pageKey = 'profile';
+            const pageKey = path.includes('welcome') ? 'welcome' 
+                        : path.includes('enter_eeg') ? 'enter_eeg'
+                        : path.includes('view_eeg') ? 'view_eeg'
+                        : path.includes('profile') ? 'profile' 
+                        : '';
 
             document.querySelectorAll('.side-menu a[data-page]').forEach(link => {
                 if (link.getAttribute('data-page') === pageKey) {
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Hamburger menu logic
+            // Setup hamburger menu functionality
             const hamburgerBtn = document.getElementById('hamburgerBtn');
             const sideMenu = document.getElementById('sideMenu');
             const logoutLink = document.getElementById('logoutLink');
@@ -30,62 +30,57 @@ document.addEventListener('DOMContentLoaded', function() {
             if (hamburgerBtn && sideMenu) {
                 hamburgerBtn.onclick = function() {
                     sideMenu.classList.toggle('open');
-                    hamburgerBtn.classList.toggle('open'); // Toggle the open class for color flip
+                    hamburgerBtn.classList.toggle('open');
                 };
+
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (sideMenu.classList.contains('open') && 
+                        !sideMenu.contains(event.target) && 
+                        !hamburgerBtn.contains(event.target)) {
+                        sideMenu.classList.remove('open');
+                        hamburgerBtn.classList.remove('open');
+                    }
+                });
             }
 
+            // Setup menu navigation
             document.querySelectorAll('.side-menu a').forEach(link => {
                 link.addEventListener('click', function(e) {
                     const href = link.getAttribute('href');
                     if (href && href !== '#') {
                         e.preventDefault();
                         sideMenu.classList.remove('open');
-                        hamburgerBtn.classList.remove('open'); // Remove open class when closing
-                        document.body.classList.add('fade-out');
-                        setTimeout(() => {
-                            window.location.href = href;
-                        }, FADE_DURATION);
+                        hamburgerBtn.classList.remove('open');
+                        handleNavigation(href);
                     }
                 });
             });
 
+            // Setup logout functionality
             if (logoutLink) {
                 logoutLink.onclick = function(e) {
                     e.preventDefault();
-                    document.body.classList.add('fade-out');
-                    setTimeout(() => {
-                        window.location.href = "/";
-                    }, FADE_DURATION);
+                    handleNavigation("/");
                 };
             }
-
-            // Close side menu when clicking outside
-            document.addEventListener('click', function(event) {
-                const sideMenu = document.getElementById('sideMenu');
-                const hamburgerBtn = document.getElementById('hamburgerBtn');
-                if (
-                    sideMenu &&
-                    hamburgerBtn &&
-                    sideMenu.classList.contains('open') &&
-                    !sideMenu.contains(event.target) &&
-                    !hamburgerBtn.contains(event.target)
-                ) {
-                    sideMenu.classList.remove('open');
-                    hamburgerBtn.classList.remove('open');
-                }
-            });
         });
 
-    // Fade-out for Go links
+    // Navigation helper function
+    const handleNavigation = (href) => {
+        document.body.classList.add('fade-out');
+        setTimeout(() => {
+            window.location.href = href;
+        }, FADE_DURATION);
+    };
+
+    // Setup general navigation links
     document.querySelectorAll('.fade-nav').forEach(link => {
         link.addEventListener('click', function(e) {
             const href = link.getAttribute('href');
             if (href && href !== '#') {
                 e.preventDefault();
-                document.body.classList.add('fade-out');
-                setTimeout(() => {
-                    window.location.href = href;
-                }, FADE_DURATION);
+                handleNavigation(href);
             }
         });
     });
