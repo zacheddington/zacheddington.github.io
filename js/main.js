@@ -292,14 +292,66 @@ document.addEventListener('DOMContentLoaded', function() {
     // Login form handler for 
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            // Add authentication logic here
-            // For now, just redirect to html/welcome.html
-            document.body.classList.add('fade-out');
-            setTimeout(() => {
-                window.location.href = "welcome/";
-            }, FADE_DURATION);
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store token and user info
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                    // Redirect with fade
+                    document.body.classList.add('fade-out');
+                    setTimeout(() => {
+                        window.location.href = "welcome/";
+                    }, FADE_DURATION);
+                } else {
+                    showModal('error', data.error || 'Login failed');
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                showModal('error', 'Unable to connect to server');
+            }
         });
     }
+
+    // Update your API calls to include token
+    const makeAuthenticatedRequest = async (url, options = {}) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+            return;
+        }
+
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+            return;
+        }
+
+        return response;
+    };
 });
