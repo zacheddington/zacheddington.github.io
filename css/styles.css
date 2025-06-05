@@ -309,6 +309,16 @@ button[type="submit"]:hover {
     background: #003b49;
 }
 
+.eeg-form button[type="submit"]:disabled {
+    cursor: not-allowed;
+    background-color: #cccccc;
+}
+
+.eeg-form input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
 #loginForm {
     display: flex;
     flex-direction: column;

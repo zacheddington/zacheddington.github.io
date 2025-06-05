@@ -117,6 +117,15 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     if (eegForm) {
+        // Add a submitting flag to track form state
+        let isSubmitting = false;
+
+        // Update submit button styles when disabled
+        const submitButton = eegForm.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.style.transition = 'opacity 0.3s ease';
+        }
+
         // Add input validation listeners
         const patientNumber = document.getElementById('patientNumber');
         const firstName = document.getElementById('firstName');
@@ -201,7 +210,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
         eegForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            // Prevent multiple submissions
+            if (isSubmitting) {
+                console.log('Form submission already in progress');
+                return;
+            }
+
             try {
+                isSubmitting = true;
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.style.opacity = '0.5';
+                }
+
                 const who = 'PlaceholderUser'; // Replace with actual logged-in user logic
                 
                 // Enhanced validation
@@ -241,12 +263,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (response.ok) {
                     showModal('success', 'Patient information saved successfully!');
+                    // Disable all form inputs
+                    Array.from(eegForm.elements).forEach(input => {
+                        input.disabled = true;
+                    });
                 } else {
                     showModal('error', `Server Error: ${responseData.error || 'Unknown error occurred'}`);
+                    // Re-enable submission on error
+                    isSubmitting = false;
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.style.opacity = '1';
+                    }
                 }
             } catch (err) {
                 console.error('Submission error:', err);
                 showModal('error', 'Network Error: Unable to connect to the server');
+                // Re-enable submission on error
+                isSubmitting = false;
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.style.opacity = '1';
+                }
             }
         });
     }
