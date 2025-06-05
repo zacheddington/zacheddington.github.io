@@ -54,68 +54,85 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Load and setup menu
-    fetch('../html/menu.html')
-        .then(response => response.text())
-        .then(html => {
+    async function loadMenu() {
+        try {
+            const response = await fetch('../html/menu.html');
+            const html = await response.text();
             document.getElementById('hamburger-menu').innerHTML = html;
 
-            // Remove current page link from menu
-            const path = window.location.pathname.split("/").filter(Boolean);
-            const pageKey = path.includes('welcome') ? 'welcome' 
-                        : path.includes('enter_eeg') ? 'enter_eeg'
-                        : path.includes('view_eeg') ? 'view_eeg'
-                        : path.includes('profile') ? 'profile' 
-                        : '';
-
-            document.querySelectorAll('.side-menu a[data-page]').forEach(link => {
-                if (link.getAttribute('data-page') === pageKey) {
-                    link.parentElement.style.display = 'none';
-                }
-            });
-
-            // Setup hamburger menu functionality
-            const hamburgerBtn = document.getElementById('hamburgerBtn');
-            const sideMenu = document.getElementById('sideMenu');
-            const logoutLink = document.getElementById('logoutLink');
-
-            if (hamburgerBtn && sideMenu) {
-                hamburgerBtn.onclick = function() {
-                    sideMenu.classList.toggle('open');
-                    hamburgerBtn.classList.toggle('open');
-                };
-
-                // Close menu when clicking outside
-                document.addEventListener('click', function(event) {
-                    if (sideMenu.classList.contains('open') && 
-                        !sideMenu.contains(event.target) && 
-                        !hamburgerBtn.contains(event.target)) {
-                        sideMenu.classList.remove('open');
-                        hamburgerBtn.classList.remove('open');
-                    }
-                });
+            // After menu is loaded, update visibility based on user role
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const adminLink = document.querySelector('a[data-page="admin"]')?.parentElement;
+            
+            if (adminLink) {
+                adminLink.style.display = user.isAdmin ? 'block' : 'none';
             }
 
-            // Setup menu navigation
-            document.querySelectorAll('.side-menu a').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const href = link.getAttribute('href');
-                    if (href && href !== '#') {
-                        e.preventDefault();
-                        sideMenu.classList.remove('open');
-                        hamburgerBtn.classList.remove('open');
-                        handleNavigation(href);
-                    }
-                });
-            });
+            // Setup menu event listeners
+            setupMenuHandlers();
+        } catch (err) {
+            console.error('Error loading menu:', err);
+        }
+    }
 
-            // Setup logout functionality
-            if (logoutLink) {
-                logoutLink.onclick = function(e) {
-                    e.preventDefault();
-                    handleNavigation("/");
-                };
+    function setupMenuHandlers() {
+        // Remove current page link from menu
+        const path = window.location.pathname.split("/").filter(Boolean);
+        const pageKey = path.includes('welcome') ? 'welcome' 
+                    : path.includes('enter_eeg') ? 'enter_eeg'
+                    : path.includes('view_eeg') ? 'view_eeg'
+                    : path.includes('profile') ? 'profile' 
+                    : '';
+
+        document.querySelectorAll('.side-menu a[data-page]').forEach(link => {
+            if (link.getAttribute('data-page') === pageKey) {
+                link.parentElement.style.display = 'none';
             }
         });
+
+        // Setup hamburger menu functionality
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sideMenu = document.getElementById('sideMenu');
+        const logoutLink = document.getElementById('logoutLink');
+
+        if (hamburgerBtn && sideMenu) {
+            hamburgerBtn.onclick = function() {
+                sideMenu.classList.toggle('open');
+                hamburgerBtn.classList.toggle('open');
+            };
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (sideMenu.classList.contains('open') && 
+                    !sideMenu.contains(event.target) && 
+                    !hamburgerBtn.contains(event.target)) {
+                    sideMenu.classList.remove('open');
+                    hamburgerBtn.classList.remove('open');
+                }
+            });
+        }
+
+        // Setup menu navigation
+        document.querySelectorAll('.side-menu a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = link.getAttribute('href');
+                if (href && href !== '#') {
+                    e.preventDefault();
+                    sideMenu.classList.remove('open');
+                    hamburgerBtn.classList.remove('open');
+                    handleNavigation(href);
+                }
+            });
+        });
+
+        // Setup logout functionality
+        if (logoutLink) {
+            logoutLink.onclick = function(e) {
+                e.preventDefault();
+                handleNavigation("/");
+            };
+        }
+    }
 
     // Navigation helper function
     const handleNavigation = (href) => {
@@ -365,4 +382,128 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return response;
     };
+
+    // Check if current page is admin and user is admin
+    if (window.location.pathname.includes('/admin/')) {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.isAdmin) {
+            window.location.href = '../welcome/';
+            return;
+        }
+        initializeAdminPage();
+    }
+
+    function initializeAdminPage() {
+        // Tab switching
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs?.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                const contentId = `${tab.dataset.tab}-tab`;
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(contentId).classList.add('active');
+            });
+        });
+
+        // Create user form handling
+        const createUserForm = document.getElementById('createUserForm');
+        createUserForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const password = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showModal('error', 'Passwords do not match');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/api/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        username: document.getElementById('newUsername').value,
+                        password: password,
+                        firstName: document.getElementById('firstName').value,
+                        lastName: document.getElementById('lastName').value,
+                        email: document.getElementById('email').value
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showModal('success', 'User created successfully');
+                    createUserForm.reset();
+                    loadUsers(); // Refresh user list
+                } else {
+                    showModal('error', data.error || 'Failed to create user');
+                }
+            } catch (err) {
+                console.error('Error creating user:', err);
+                showModal('error', 'Connection error. Please try again.');
+            }
+        });
+
+        // Load users initially
+        loadUsers();
+    }
+
+    async function loadUsers() {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_URL}/api/users`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                const users = await response.json();
+                const usersList = document.querySelector('.users-list');
+                
+                usersList.innerHTML = users.map(user => `
+                    <div class="user-card" data-user-id="${user.user_key}">
+                        <div class="user-info">
+                            <h3>${user.username}</h3>
+                            <p>${user.first_name} ${user.last_name}</p>
+                            <p>${user.email}</p>
+                        </div>
+                        <div class="user-actions">
+                            <button class="edit-btn">Edit</button>
+                            <button class="reset-btn">Reset Password</button>
+                            <button class="delete-btn">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+
+                setupUserActions();
+            }
+        } catch (err) {
+            console.error('Error loading users:', err);
+        }
+    }
+
+    function setupUserActions() {
+        document.querySelectorAll('.user-card').forEach(card => {
+            const userId = card.dataset.userId;
+            
+            card.querySelector('.edit-btn')?.addEventListener('click', () => handleEditUser(userId));
+            card.querySelector('.reset-btn')?.addEventListener('click', () => handleResetPassword(userId));
+            card.querySelector('.delete-btn')?.addEventListener('click', () => handleDeleteUser(userId));
+        });
+    }
+
+    if (document.getElementById('hamburger-menu')) {
+        loadMenu();
+    }
 });
