@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (modal) {
             modal.remove();
             // Reset all input modal states
-            [firstName, middleName, lastName, address].forEach(input => {
+            [patientNumber, firstName, middleName, lastName, address].forEach(input => {
                 if (input) input.dataset.showingModal = 'false';
             });
         }
@@ -154,24 +154,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (originalValue !== newValue) {
                 e.target.value = newValue;
                 tooltip.classList.add('show');
-                
-                // Remove any inline positioning
-                tooltip.style.removeProperty('top');
-                tooltip.style.removeProperty('left');
-
-                // Clear existing timeout
                 clearTimeout(tooltipTimeout);
-                
-                // Hide tooltip after 2 seconds
                 tooltipTimeout = setTimeout(() => {
                     tooltip.classList.remove('show');
                 }, 2000);
             }
 
-            // Handle max length
-            if (newValue.length > 20) {
+            // Handle max length without multiple modals
+            if (newValue.length > 20 && patientNumber.dataset.showingModal !== 'true') {
                 e.target.value = newValue.slice(0, 20);
+                patientNumber.dataset.showingModal = 'true';
                 showModal('error', 'Patient Number must be 20 characters or less');
+            } else if (newValue.length <= 20) {
+                patientNumber.dataset.showingModal = 'false';
             }
         });
 
