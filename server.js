@@ -48,6 +48,18 @@ app.post('/api/eeg', async (req, res) => {
     }
 });
 
+app.get('/api/test-db', async (req, res) => {
+    try {
+        const client = await pool.connect();
+        const result = await client.query('SELECT NOW()');
+        client.release();
+        res.json({ success: true, timestamp: result.rows[0].now });
+    } catch (err) {
+        console.error('Database connection error:', err);
+        res.status(500).json({ error: 'Database connection failed', details: err.message });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
