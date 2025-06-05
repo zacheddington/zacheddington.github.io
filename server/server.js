@@ -35,18 +35,44 @@ const authenticateToken = (req, res, next) => {
     }
 };
 
+// Admin middleware
+const requireAdmin = async (req, res, next) => {
+    try {
+        const userQuery = `
+            SELECT COALESCE(r.role_name = 'admin', false) as is_admin
+            FROM tbl_user u
+            LEFT JOIN tbl_user_role ur ON u.user_key = ur.user_key
+            LEFT JOIN tbl_role r ON ur.role_key = r.role_key
+            WHERE u.user_key = $1`;
+
+        const result = await pool.query(userQuery, [req.user.user_key]);
+        const isAdmin = result.rows[0]?.is_admin;
+
+        if (!isAdmin) {
+            return res.status(403).json({ error: 'Access denied. Admin rights required.' });
+        }
+
+        next();
+    } catch (err) {
+        console.error('Admin check error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 // Login endpoint
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Get user with admin status
+        // Updated query to properly join with role tables
         const userQuery = `
             SELECT u.user_key, u.username, u.password_hash, u.email, 
                    u.date_created, u.date_when, n.first_name, n.last_name,
-                   CASE WHEN u.username = 'admin' THEN true ELSE false END as is_admin
+                   COALESCE(r.role_name = 'admin', false) as is_admin
             FROM tbl_user u
             LEFT JOIN tbl_name_data n ON u.name_key = n.name_key
+            LEFT JOIN tbl_user_role ur ON u.user_key = ur.user_key
+            LEFT JOIN tbl_role r ON ur.role_key = r.role_key
             WHERE u.username = $1`;
 
         const result = await pool.query(userQuery, [username]);
@@ -61,18 +87,20 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        // Create token
+        // Create token with admin status
         const token = jwt.sign(
             { 
                 user_key: user.user_key,
                 username: user.username,
-                is_admin: user.is_admin 
+                is_admin: user.is_admin,
+                first_name: user.first_name,
+                last_name: user.last_name
             },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
 
-        // Send response with user data and admin flag
+        // Send response with user data including admin status
         res.json({
             token,
             user: {
@@ -115,6 +143,12 @@ app.post('/api/eeg', authenticateToken, async (req, res) => {
     } finally {
         client.release();
     }
+});
+
+// Example protected admin route
+app.post('/api/users', authenticateToken, requireAdmin, async (req, res) => {
+    // Only admins can access this route
+    res.json({ message: 'Welcome, admin!' });
 });
 
 // Use Heroku's dynamic port or fallback to 3000
