@@ -89,30 +89,93 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle EEG form submission if present
     const eegForm = document.querySelector('.eeg-form');
+    const showModal = (type, message) => {
+        const modalHtml = `
+            <div class="modal" id="feedbackModal">
+                <div class="modal-content ${type}">
+                    <h2>${type === 'success' ? '✓ Success!' : '⚠ Error'}</h2>
+                    <p>${message}</p>
+                    <button class="modal-btn" onclick="closeModal()">${type === 'success' ? 'Return to Welcome' : 'Close'}</button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        if (type === 'success') {
+            setTimeout(() => {
+                document.body.classList.add('fade-out');
+                setTimeout(() => {
+                    window.location.href = "../welcome/";
+                }, 450);
+            }, 2000);
+        }
+    };
+
+    window.closeModal = () => {
+        const modal = document.getElementById('feedbackModal');
+        if (modal) modal.remove();
+    };
+
     if (eegForm) {
+        // Add input validation listeners
+        const patientNumber = document.getElementById('patientNumber');
+        const firstName = document.getElementById('firstName');
+        const middleName = document.getElementById('middleName');
+        const lastName = document.getElementById('lastName');
+        const address = document.getElementById('address');
+
+        // Validate patient number (numbers only)
+        patientNumber?.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+
+        // Validate name lengths (50 chars)
+        [firstName, middleName, lastName].forEach(input => {
+            input?.addEventListener('input', (e) => {
+                if (e.target.value.length > 50) {
+                    e.target.value = e.target.value.slice(0, 50);
+                    showModal('error', `${e.target.placeholder} must be 50 characters or less`);
+                }
+            });
+        });
+
+        // Validate address length (100 chars)
+        address?.addEventListener('input', (e) => {
+            if (e.target.value.length > 100) {
+                e.target.value = e.target.value.slice(0, 100);
+                showModal('error', 'Address must be 100 characters or less');
+            }
+        });
+
         eegForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             try {
                 const who = 'PlaceholderUser'; // Replace with actual logged-in user logic
                 
-                // Validate required fields
-                if (!document.getElementById('firstName').value || !document.getElementById('lastName').value) {
-                    alert('Please fill in all required fields.');
+                // Enhanced validation
+                const validationErrors = [];
+                
+                if (!patientNumber?.value) validationErrors.push('Patient Number is required');
+                if (!firstName?.value) validationErrors.push('First Name is required');
+                if (!lastName?.value) validationErrors.push('Last Name is required');
+                
+                if (validationErrors.length > 0) {
+                    showModal('error', validationErrors.join('<br>'));
                     return;
                 }
 
-                // Prepare the data
                 const data = {
-                    firstName: document.getElementById('firstName').value,
-                    middleName: document.getElementById('middleName').value,
-                    lastName: document.getElementById('lastName').value,
+                    patientNumber: patientNumber.value,
+                    firstName: firstName.value,
+                    middleName: middleName?.value || '',
+                    lastName: lastName.value,
+                    address: address?.value || '',
                     who: who,
                     datewhen: new Date().toISOString()
                 };
 
                 console.log('Submitting data:', data);
 
-                // Send the request
                 const response = await fetch('https://integrisneuro-eec31e4aaab1.herokuapp.com/api/eeg', {
                     method: 'POST',
                     headers: { 
@@ -122,20 +185,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify(data)
                 });
 
-                console.log('Response status:', response.status);
-                
                 const responseData = await response.json();
-                console.log('Response data:', responseData);
 
                 if (response.ok) {
-                    alert('Data submitted successfully!');
-                    e.target.reset();
+                    showModal('success', 'Patient information saved successfully!');
                 } else {
-                    alert(`Error: ${responseData.error || 'There was an error submitting the data.'}`);
+                    showModal('error', `Server Error: ${responseData.error || 'Unknown error occurred'}`);
                 }
             } catch (err) {
                 console.error('Submission error:', err);
-                alert('There was an error submitting the data. Check the console for details.');
+                showModal('error', 'Network Error: Unable to connect to the server');
             }
         });
     }
