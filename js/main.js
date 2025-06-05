@@ -13,22 +13,44 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.textContent = 'Logging in...';
 
             try {
-                const username = document.getElementById('username').value;
+                const username = document.getElementById('username').value.trim(); // Add trim()
                 const password = document.getElementById('password').value;
 
                 console.log('Attempting login with username:', username);
 
+                const loginData = {
+                    username: username,
+                    password: password
+                };
+
+                console.log('Sending login request with data:', {
+                    url: `${API_URL}/api/login`,
+                    username: loginData.username,
+                    passwordLength: loginData.password.length
+                });
+
                 const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify(loginData)
                 });
 
-                console.log('Response status:', response.status);
+                console.log('Response headers:', {
+                    contentType: response.headers.get('content-type'),
+                    status: response.status,
+                    statusText: response.statusText
+                });
+
                 const data = await response.json();
-                console.log('Response data:', data);
+                console.log('Response data:', {
+                    success: response.ok,
+                    status: response.status,
+                    error: data.error || null,
+                    hasToken: !!data.token
+                });
 
                 if (response.ok) {
                     console.log('Login successful, token received:', data.token ? 'Yes' : 'No');
@@ -45,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         error: data.error,
                         details: data
                     });
-                    showModal('error', data.error || 'Login failed. Please check your credentials.');
+                    showModal('error', 'Invalid username or password. Please try again.');
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Login';
                 }
