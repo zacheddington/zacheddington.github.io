@@ -87,7 +87,19 @@ app.post('/api/login', async (req, res) => {
 
         const result = await pool.query(userQuery, [username]);
         const user = result.rows[0];
-        console.log('Database result:', user); // Add this debug log
+
+        // Add detailed logging for each property
+        console.log('Full database result:', result);
+        console.log('User row:', user);
+        console.log('Individual fields:');
+        console.log('user_key:', user.user_key);
+        console.log('username:', user.username);
+        console.log('password_hash:', user.password_hash);
+        console.log('first_name:', user.first_name);
+        console.log('last_name:', user.last_name);
+        console.log('isAdmin (bracket notation):', user['isAdmin']);
+        console.log('isAdmin (dot notation):', user.isAdmin);
+        console.log('isadmin (lowercase):', user.isadmin);
 
         if (!user || !(await bcrypt.compare(password, user.password_hash))) {
             return res.status(401).json({ error: 'Invalid username or password' });
@@ -98,23 +110,30 @@ app.post('/api/login', async (req, res) => {
             { 
                 user_key: user.user_key,
                 username: user.username,
-                isAdmin: user.isadmin  // PostgreSQL returns lowercase column names
+                isAdmin: user['isAdmin'] // Changed to use bracket notation
             },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
 
-        // Send response with consistent property names
-        res.json({
+        // Log the token payload
+        console.log('Token payload:', jwt.decode(token));
+
+        // Log the response data
+        const responseData = {
             token,
             user: {
                 user_key: user.user_key,
                 username: user.username,
                 firstName: user.first_name,
                 lastName: user.last_name,
-                isAdmin: user["isAdmin"]  // Use bracket notation to preserve case
+                isAdmin: user['isAdmin']
             }
-        });
+        };
+        console.log('Response data:', responseData);
+
+        // Send response with consistent property names
+        res.json(responseData);
 
     } catch (err) {
         console.error('Login error:', err);
