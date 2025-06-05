@@ -5,8 +5,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle login form
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        // Add flag to track modal state
         let isShowingModal = false;
+
+        // Update closeModal function for login form
+        const originalCloseModal = window.closeModal;
+        window.closeModal = function() {
+            if (originalCloseModal) originalCloseModal();
+            const modal = document.getElementById('feedbackModal');
+            if (modal) {
+                modal.remove();
+                isShowingModal = false; // Reset modal state
+            }
+        };
 
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -73,13 +83,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.textContent = 'Login';
             }
         });
-
-        // Update closeModal function to reset modal state
-        const originalCloseModal = window.closeModal;
-        window.closeModal = () => {
-            originalCloseModal();
-            isShowingModal = false;
-        };
     }
 
     // Load and setup the menu
