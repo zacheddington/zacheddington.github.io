@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             this.isShowingModal = true;
             const modalHtml = `
-                <div class="modal" id="feedbackModal">
+                <div class="modal" id="feedbackModal" tabindex="-1">
                     <div class="modal-content ${type}">
                         <h2>${type === 'success' ? '✓ Success!' : '⚠ Error'}</h2>
                         <p>${message}</p>
@@ -20,6 +20,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
             document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Add keyboard event listener for error modals
+            if (type !== 'success') {
+                const modal = document.getElementById('feedbackModal');
+                modal.focus();
+                modal.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === 'Escape') {
+                        closeModal();
+                    }
+                });
+            }
             
             if (type === 'success') {
                 setTimeout(() => {
