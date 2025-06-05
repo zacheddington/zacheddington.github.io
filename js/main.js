@@ -95,10 +95,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     const userData = {
                         username: data.user.username,
-                        firstName: data.user.first_name,
-                        lastName: data.user.last_name,
-                        isAdmin: data.user.is_admin // Match the property name with server response
+                        firstName: data.user.firstName,
+                        lastName: data.user.lastName,
+                        isAdmin: data.user.is_admin,
+                        user_key: data.user.user_key  // Add user_key to storage
                     };
+                    
+                    console.log('Storing user data:', userData); // Debug log
                     
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(userData));
