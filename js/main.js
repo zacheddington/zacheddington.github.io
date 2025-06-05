@@ -13,43 +13,26 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.textContent = 'Logging in...';
 
             try {
-                const username = document.getElementById('username').value.trim(); // Add trim()
+                const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value;
 
-                console.log('Attempting login with username:', username);
-
-                const loginData = {
-                    username: username,
-                    password: password
-                };
-
-                console.log('Sending login request with data:', {
-                    url: `${API_URL}/api/login`,
-                    username: loginData.username,
-                    passwordLength: loginData.password.length
-                });
-
+                console.log('Attempting login...');
+                
                 const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify(loginData)
-                });
-
-                console.log('Response headers:', {
-                    contentType: response.headers.get('content-type'),
-                    status: response.status,
-                    statusText: response.statusText
+                    body: JSON.stringify({ username, password })
                 });
 
                 const data = await response.json();
-                console.log('Response data:', {
-                    success: response.ok,
+                
+                console.log('Auth attempt result:', {
                     status: response.status,
-                    error: data.error || null,
-                    hasToken: !!data.token
+                    headers: Object.fromEntries(response.headers.entries()),
+                    data: data
                 });
 
                 if (response.ok) {
