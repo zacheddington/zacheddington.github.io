@@ -92,29 +92,50 @@ document.addEventListener('DOMContentLoaded', function() {
     if (eegForm) {
         eegForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const who = 'PlaceholderUser'; // Replace with actual logged-in user logic
-            if (!document.getElementById('firstName').value || !document.getElementById('lastName').value) {
-                alert('Please fill in all required fields.');
-                return;
-            }
-            const data = {
-                firstName: document.getElementById('firstName').value,
-                middleName: document.getElementById('middleName').value,
-                lastName: document.getElementById('lastName').value,
-                who: who, // Use the placeholder or actual logged-in user
-                //who: document.getElementById('who').value,
-                datewhen: new Date().toISOString()
-            };
-            const response = await fetch('https://integrisneuro-eec31e4aaab1.herokuapp.com/api/eeg', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            if (response.ok) {
-                alert('Data submitted successfully!');
-                e.target.reset();
-            } else {
-                alert('There was an error submitting the data.');
+            try {
+                const who = 'PlaceholderUser'; // Replace with actual logged-in user logic
+                
+                // Validate required fields
+                if (!document.getElementById('firstName').value || !document.getElementById('lastName').value) {
+                    alert('Please fill in all required fields.');
+                    return;
+                }
+
+                // Prepare the data
+                const data = {
+                    firstName: document.getElementById('firstName').value,
+                    middleName: document.getElementById('middleName').value,
+                    lastName: document.getElementById('lastName').value,
+                    who: who,
+                    datewhen: new Date().toISOString()
+                };
+
+                console.log('Submitting data:', data);
+
+                // Send the request
+                const response = await fetch('https://integrisneuro-eec31e4aaab1.herokuapp.com/api/eeg', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                console.log('Response status:', response.status);
+                
+                const responseData = await response.json();
+                console.log('Response data:', responseData);
+
+                if (response.ok) {
+                    alert('Data submitted successfully!');
+                    e.target.reset();
+                } else {
+                    alert(`Error: ${responseData.error || 'There was an error submitting the data.'}`);
+                }
+            } catch (err) {
+                console.error('Submission error:', err);
+                alert('There was an error submitting the data. Check the console for details.');
             }
         });
     }
