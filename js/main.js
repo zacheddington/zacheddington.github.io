@@ -171,13 +171,16 @@ async function loadMenu() {
                     item.parentElement.style.display = 'none';
                 }
             });
-        }
 
-        // Check if user is admin and show/hide admin link
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
-        const adminLink = document.querySelector('a[data-page="admin"]')?.parentElement;
-        if (adminLink) {
-            adminLink.style.display = userData.is_admin ? 'block' : 'none';
+            // Check if user is admin and show/hide admin link
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            console.log('User data:', userData); // Debug log
+            
+            const adminLink = sideMenu.querySelector('a[data-page="admin"]')?.parentElement;
+            if (adminLink) {
+                console.log('Admin link found, is_admin:', userData.is_admin); // Debug log
+                adminLink.style.display = userData.is_admin ? 'block' : 'none';
+            }
         }
 
         // Add click handler for logout
