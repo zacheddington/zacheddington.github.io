@@ -16,8 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value;
 
-                console.log('Attempting login...');
-                
                 const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: {
@@ -29,34 +27,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const data = await response.json();
                 
-                console.log('Auth attempt result:', {
-                    status: response.status,
-                    headers: Object.fromEntries(response.headers.entries()),
-                    data: data
-                });
-
-                if (response.ok) {
-                    console.log('Login successful, token received:', data.token ? 'Yes' : 'No');
+                if (response.ok && data.token) {
+                    console.log('Login successful');
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-
+                    
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
                         window.location.href = "welcome/";
                     }, FADE_DURATION);
                 } else {
-                    console.error('Login failed:', {
-                        status: response.status,
-                        error: data.error,
-                        details: data
-                    });
-                    showModal('error', 'Invalid username or password. Please try again.');
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Login';
+                    const message = response.status === 401 
+                        ? 'Invalid username or password'
+                        : data.error || 'Login failed';
+                    
+                    showModal('error', message);
                 }
             } catch (err) {
-                console.error('Login error:', err); // Debug log
-                showModal('error', 'Unable to connect to server. Please try again later.');
+                console.error('Login error:', err);
+                showModal('error', 'Connection error. Please try again.');
+            } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Login';
             }
