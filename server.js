@@ -5,22 +5,37 @@ const { Pool } = require('pg');
 
 const app = express();
 
-// Use DATABASE_URL from Heroku if available, otherwise use local config
+// Parse database URL from environment variable
+const dbUrl = new URL(process.env.DATABASE_URL);
+
+// Configure pool with explicit parameters
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    user: dbUrl.username,
+    password: decodeURIComponent(dbUrl.password),
+    host: dbUrl.hostname,
+    port: dbUrl.port,
+    database: dbUrl.pathname.split('/')[1],
     ssl: {
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
+        sslmode: 'require'
     }
 });
 
-// Add connection logging
+// Enhanced connection logging
 pool.on('error', (err) => {
-    console.error('Unexpected error on idle client', err);
+    console.error('Database connection error:', {
+        message: err.message,
+        code: err.code,
+        detail: err.detail
+    });
 });
 
-// Add configuration logging
+// Log configuration (safely)
 console.log('Database Configuration:', {
-    connectionString: process.env.DATABASE_URL ? '[REDACTED]' : 'not set',
+    host: dbUrl.hostname,
+    port: dbUrl.port,
+    database: dbUrl.pathname.split('/')[1],
+    user: dbUrl.username,
     ssl: true
 });
 
