@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 //who: document.getElementById('who').value,
                 datewhen: new Date().toISOString()
             };
-            const response = await fetch('http://localhost:3001/api/eeg', {
+            const response = await fetch('https://integrisneuro-eec31e4aaab1.herokuapp.com/api/eeg', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
