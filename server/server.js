@@ -39,16 +39,16 @@ const authenticateToken = (req, res, next) => {
 const requireAdmin = async (req, res, next) => {
     try {
         const userQuery = `
-            SELECT COALESCE(r.role_name = 'admin', false) as isAdmin
+            SELECT COALESCE(r.role_name = 'admin', false) as isadmin
             FROM tbl_user u
             LEFT JOIN tbl_user_role ur ON u.user_key = ur.user_key
             LEFT JOIN tbl_role r ON ur.role_key = r.role_key
             WHERE u.user_key = $1`;
 
         const result = await pool.query(userQuery, [req.user.user_key]);
-        const isAdmin = result.rows[0]?.isAdmin;
+        const isadmin = result.rows[0]?.isadmin;
 
-        if (!isAdmin) {
+        if (!isadmin) {
             return res.status(403).json({ error: 'Access denied. Admin rights required.' });
         }
 
@@ -102,7 +102,7 @@ app.post('/api/login', async (req, res) => {
             { 
                 user_key: user.user_key,
                 username: user.username,
-                isAdmin: user.isAdmin
+                isadmin: user.isadmin
             },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
@@ -116,7 +116,7 @@ app.post('/api/login', async (req, res) => {
                 username: user.username,
                 firstName: user.first_name,
                 lastName: user.last_name,
-                isAdmin: user.isadmin // <-- use .isadmin (all lowercase)
+                isadmin: user.isadmin // <-- Make sure this is included!
             }
         });
 

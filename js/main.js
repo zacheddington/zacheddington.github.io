@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const API_URL = 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    const API_URL = 'https://integrisneuro-eec31e4aaab1.herokuapp.com'; // or your local server
     const FADE_DURATION = 450;
 
     // Unified modal management
@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (loginForm) {
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            console.log('Login form submitted!'); // <-- Add this
 
             if (modalManager.isShowingModal) return;
 
@@ -99,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     localStorage.setItem('user', JSON.stringify(data.user));
 
                     // Use the correct admin property for menu logic
-                    if (data.user.isAdmin) {
+                    if (data.user.isadmin) {
                         document.body.classList.add('is-admin');
                     }
 
@@ -122,6 +123,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.textContent = 'Login';
             }
         });
+    } else {
+        console.log('loginForm not found!');
     }
 
     // Menu and navigation functionality
@@ -175,8 +178,8 @@ async function loadMenu() {
 
             const adminLink = sideMenu.querySelector('a[data-page="admin"]')?.parentElement;
             if (adminLink) {
-                console.log('Admin link found, isAdmin:', userData.isAdmin);
-                adminLink.style.display = userData.isAdmin ? 'block' : 'none';
+                console.log('Admin link found, isadmin:', userData.isadmin);
+                adminLink.style.display = userData.isadmin ? 'block' : 'none';
             }
         }
 
