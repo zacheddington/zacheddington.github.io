@@ -390,6 +390,30 @@ button[type="submit"]:hover {
     background: #d32f2f;
 }
 
+/* Tooltip Styles */
+.tooltip {
+    position: absolute;
+    background-color: #f44336;
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    max-width: 200px;
+}
+
+.tooltip.show {
+    opacity: 1;
+}
+
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
 /* Responsive Styles */
 @media (max-width: 900px) {
     .options {

@@ -124,17 +124,65 @@ document.addEventListener('DOMContentLoaded', function() {
         const lastName = document.getElementById('lastName');
         const address = document.getElementById('address');
 
-        // Validate patient number (numbers only)
+        // Create tooltip element
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        tooltip.textContent = 'Only numbers and hyphens are allowed';
+        patientNumber.parentElement.appendChild(tooltip);
+
+        let tooltipTimeout;
+
+        // Validate patient number (numbers and hyphens only, max 20 chars)
         patientNumber?.addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            const originalValue = e.target.value;
+            const newValue = originalValue.replace(/[^0-9-]/g, '');
+            
+            // If characters were removed, show tooltip
+            if (originalValue !== newValue) {
+                e.target.value = newValue;
+                tooltip.classList.add('show');
+                
+                // Position tooltip near the input
+                const inputRect = e.target.getBoundingClientRect();
+                tooltip.style.top = `${inputRect.bottom + 5}px`;
+                tooltip.style.left = `${inputRect.left}px`;
+
+                // Clear existing timeout
+                clearTimeout(tooltipTimeout);
+                
+                // Hide tooltip after 2 seconds
+                tooltipTimeout = setTimeout(() => {
+                    tooltip.classList.remove('show');
+                }, 2000);
+            }
+
+            // Handle max length
+            if (newValue.length > 20) {
+                e.target.value = newValue.slice(0, 20);
+                showModal('error', 'Patient Number must be 20 characters or less');
+            }
         });
 
-        // Validate name lengths (50 chars)
+        // Clean up tooltip when leaving the input
+        patientNumber?.addEventListener('blur', () => {
+            tooltip.classList.remove('show');
+            clearTimeout(tooltipTimeout);
+        });
+
+        // Validate name lengths (50 chars) without multiple modals
         [firstName, middleName, lastName].forEach(input => {
             input?.addEventListener('input', (e) => {
                 if (e.target.value.length > 50) {
                     e.target.value = e.target.value.slice(0, 50);
-                    showModal('error', `${e.target.placeholder} must be 50 characters or less`);
+                    // Only show modal if we haven't shown one for this field yet
+                    if (!input.dataset.showingModal) {
+                        input.dataset.showingModal = 'true';
+                        showModal('error', `${e.target.placeholder} must be 50 characters or less`);
+                        // Reset the flag after modal is closed
+                        setTimeout(() => {
+                            input.dataset.showingModal = 'false';
+                        }, 500);
+                    }
                 }
             });
         });
@@ -143,7 +191,13 @@ document.addEventListener('DOMContentLoaded', function() {
         address?.addEventListener('input', (e) => {
             if (e.target.value.length > 100) {
                 e.target.value = e.target.value.slice(0, 100);
-                showModal('error', 'Address must be 100 characters or less');
+                if (!address.dataset.showingModal) {
+                    address.dataset.showingModal = 'true';
+                    showModal('error', 'Address must be 100 characters or less');
+                    setTimeout(() => {
+                        address.dataset.showingModal = 'false';
+                    }, 500);
+                }
             }
         });
 
