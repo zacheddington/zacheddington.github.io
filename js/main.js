@@ -111,7 +111,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.closeModal = () => {
         const modal = document.getElementById('feedbackModal');
-        if (modal) modal.remove();
+        if (modal) {
+            modal.remove();
+            // Reset all input modal states
+            [firstName, middleName, lastName, address].forEach(input => {
+                if (input) input.dataset.showingModal = 'false';
+            });
+        }
     };
 
     if (eegForm) {
@@ -180,29 +186,16 @@ document.addEventListener('DOMContentLoaded', function() {
             input?.addEventListener('input', (e) => {
                 if (e.target.value.length > 50) {
                     e.target.value = e.target.value.slice(0, 50);
-                    // Show modal if one isn't currently showing
-                    if (input.dataset.showingModal !== 'true') {
-                        input.dataset.showingModal = 'true';
-                        showModal('error', `${e.target.placeholder || e.target.name} must be 50 characters or less`);
-                    }
-                } else {
-                    // Reset the flag when value is under limit
-                    input.dataset.showingModal = 'false';
+                    showModal('error', `${e.target.placeholder || e.target.name} must be 50 characters or less`);
                 }
             });
         });
 
-        // Validate address length (100 chars) with similar logic
+        // Do the same for address
         address?.addEventListener('input', (e) => {
             if (e.target.value.length > 100) {
                 e.target.value = e.target.value.slice(0, 100);
-                if (address.dataset.showingModal !== 'true') {
-                    address.dataset.showingModal = 'true';
-                    showModal('error', 'Address must be 100 characters or less');
-                }
-            } else {
-                // Reset the flag when value is under limit
-                address.dataset.showingModal = 'false';
+                showModal('error', 'Address must be 100 characters or less');
             }
         });
 
