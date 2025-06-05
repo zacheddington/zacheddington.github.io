@@ -156,10 +156,20 @@ async function loadMenu() {
         
         if (hamburgerBtn && sideMenu) {
             hamburgerBtn.addEventListener('click', () => {
-                console.log('Hamburger clicked'); // Debug log
                 document.body.classList.toggle('menu-open');
                 hamburgerBtn.classList.toggle('active');
                 sideMenu.classList.toggle('active');
+            });
+
+            // Hide current page in menu
+            const currentPath = window.location.pathname;
+            const currentPage = currentPath.split('/').filter(Boolean).pop() || 'welcome';
+            
+            const menuItems = sideMenu.querySelectorAll('a[data-page]');
+            menuItems.forEach(item => {
+                if (item.getAttribute('data-page') === currentPage) {
+                    item.parentElement.style.display = 'none';
+                }
             });
         }
 
