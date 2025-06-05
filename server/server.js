@@ -9,6 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Database configuration
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -16,7 +17,7 @@ const pool = new Pool({
     }
 });
 
-// Middleware to authenticate JWT
+// Authentication middleware
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -39,7 +40,6 @@ app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         
-        // Query user data including name information
         const userResult = await pool.query(
             `SELECT u.*, n.first_name, n.last_name 
              FROM tbl_user u 
@@ -59,13 +59,10 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        // Create token
         const token = jwt.sign(
             { 
                 id: user.user_key,
                 username: user.username,
-                firstName: user.first_name,
-                lastName: user.last_name,
                 nameKey: user.name_key
             },
             process.env.JWT_SECRET,
@@ -92,7 +89,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Protected endpoint example
+// Protected EEG endpoint
 app.post('/api/eeg', authenticateToken, async (req, res) => {
     const { firstName, middleName, lastName, who, datewhen } = req.body;
     const client = await pool.connect();
@@ -118,6 +115,7 @@ app.post('/api/eeg', authenticateToken, async (req, res) => {
     }
 });
 
+// Use Heroku's dynamic port or fallback to 3000
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
