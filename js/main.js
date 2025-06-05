@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
+    const FADE_DURATION = 450;
+    const API_URL = 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    
     // Load the menu
     fetch('../html/menu.html')
         .then(response => response.text())
@@ -41,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         document.body.classList.add('fade-out');
                         setTimeout(() => {
                             window.location.href = href;
-                        }, 450);
+                        }, FADE_DURATION);
                     }
                 });
             });
@@ -52,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
                         window.location.href = "/";
-                    }, 450);
+                    }, FADE_DURATION);
                 };
             }
 
@@ -82,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.classList.add('fade-out');
                 setTimeout(() => {
                     window.location.href = href;
-                }, 450);
+                }, FADE_DURATION);
             }
         });
     });
@@ -106,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.classList.add('fade-out');
                 setTimeout(() => {
                     window.location.href = "../welcome/";
-                }, 450);
+                }, FADE_DURATION);
             }, 2000);
         }
     };
@@ -299,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.add('fade-out');
             setTimeout(() => {
                 window.location.href = "welcome/";
-            }, 450);
+            }, FADE_DURATION);
         });
     }
 });
