@@ -143,16 +143,7 @@ app.post('/api/logout', authenticateToken, async (req, res) => {
     }
 });
 
-// Debug endpoint to check all roles in the database (remove in production)
-app.get('/api/debug/roles', async (req, res) => {
-    try {
-        const rolesResult = await pool.query('SELECT role_key, role_name FROM tbl_role ORDER BY role_key');
-        res.json({ roles: rolesResult.rows });
-    } catch (err) {
-        console.error('Debug roles error:', err);
-        res.status(500).json({ error: 'Error fetching roles' });
-    }
-});
+// Debug endpoint removed for production security
 
 // Protected endpoint example
 app.post('/api/eeg', authenticateToken, async (req, res) => {

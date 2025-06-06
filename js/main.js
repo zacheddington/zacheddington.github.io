@@ -1,3 +1,42 @@
+// Utility functions for admin detection and menu management
+function isUserAdmin(userData) {
+    if (!userData) return false;
+    
+    // Use server-determined admin status with fallback for old data
+    let isAdminUser = userData.isAdmin === true;
+    
+    // Fallback: If role data is missing and username is admin, assume admin
+    if (userData.isAdmin === undefined && userData.username === 'admin') {
+        isAdminUser = true;
+        console.log('Using fallback admin detection for username: admin');
+    }
+    
+    return isAdminUser;
+}
+
+function updateAdminUI(isAdmin) {
+    if (isAdmin) {
+        document.body.classList.add('is-admin');
+        console.log('Added is-admin class to body');
+    } else {
+        document.body.classList.remove('is-admin');
+    }
+}
+
+function updateAdminMenuItem(isAdmin) {
+    const adminLink = document.querySelector('a[data-page="admin"]')?.parentElement;
+    if (adminLink) {
+        if (isAdmin) {
+            adminLink.style.display = 'block';
+            adminLink.classList.remove('admin-only');
+            console.log('Showing admin menu item');
+        } else {
+            adminLink.style.display = 'none';
+            console.log('Hiding admin menu item');
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const API_URL = 'https://integrisneuro-eec31e4aaab1.herokuapp.com'; // or your local server
     const FADE_DURATION = 450;
@@ -63,28 +102,21 @@ document.addEventListener('DOMContentLoaded', function() {
     window.closeModal = modalManager.closeModal.bind(modalManager);    // Handle login form
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-        console.log('Login form found, adding event listener');
         loginForm.addEventListener('submit', async function(e) {
-            console.log('Login form submit event fired');
             e.preventDefault();
-            console.log('Default form submission prevented');
 
             if (modalManager.isShowingModal) {
-                console.log('Modal is showing, preventing login');
                 return;
             }
 
             const submitBtn = loginForm.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Logging in...';
-            console.log('Submit button disabled and text changed');
 
             try {
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value;
-                console.log('Retrieved credentials, username:', username);
 
-                console.log('About to make fetch request to:', `${API_URL}/api/login`);
                 const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: {
@@ -94,42 +126,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({ username, password })
                 });
 
-                console.log('Fetch response received, status:', response.status);
-                const data = await response.json();
-                console.log('Response data parsed:', data);// Update the login handler to store admin status correctly
-                if (response.ok && data.token) {
-                    // Log all properties received from the server
-                    console.log('User object received from server:', data.user);
-                    console.log('All server user properties:', Object.keys(data.user));
-                    console.log('Admin status received:', data.user.isAdmin, typeof data.user.isAdmin);
-                    console.log('Roles received:', data.user.roles);
-
+                const data = await response.json();                if (response.ok && data.token) {
                     // Store authentication data
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    console.log('Token and user data stored successfully');
 
                     // Initialize session management (browser-lifetime storage)
                     if (window.SessionManager) {
                         window.SessionManager.initSession();
-                        console.log('Session initialized');
-                    } else {
-                        console.log('SessionManager not available (auth.js not loaded)');
                     }
 
-                    // Use role-based admin status from server response
-                    const isAdminUser = data.user.isAdmin === true;
-                    console.log('Calculated isAdminUser:', isAdminUser);
-                    
-                    if (isAdminUser) {
-                        document.body.classList.add('is-admin');
-                        console.log('Added is-admin class to body during login');
-                    }
+                    // Use utility function to check admin status and update UI
+                    const isAdmin = isUserAdmin(data.user);
+                    updateAdminUI(isAdmin);
 
-                    console.log('About to redirect to welcome page');
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
-                        console.log('Redirecting now...');
                         window.location.href = "welcome/";
                     }, FADE_DURATION);
                 } else {
@@ -145,29 +157,17 @@ document.addEventListener('DOMContentLoaded', function() {
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Login';
-            }
-        });
-    } else {
-        console.log('loginForm not found!');
+            }        });
     }    // Set admin class on body if user is admin (for all pages)
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    console.log('Page load - User data:', userData);
-    console.log('Page load - All user properties:', Object.keys(userData));
-    console.log('Page load - Admin status:', userData.isAdmin, typeof userData.isAdmin);
-    console.log('Page load - Role keys:', userData.roleKeys);
-    console.log('Page load - Roles:', userData.roles);
     
-    // Use server-determined admin status with fallback for old data
-    let isAdminUser = userData.isAdmin === true;
-      // Fallback: If role data is missing and username is admin, assume admin
-    // This handles users who logged in before role-based auth was implemented
+    // Use utility function to check admin status and update UI
+    const isAdmin = isUserAdmin(userData);
+    updateAdminUI(isAdmin);
+    
+    // Show legacy auth notice if needed
     if (userData.isAdmin === undefined && userData.username === 'admin') {
-        isAdminUser = true;
-        console.log('Using fallback admin detection for username: admin');
-        
-        // Show a subtle notification that they should refresh their login
         if (!sessionStorage.getItem('legacy-auth-notice-shown')) {
-            console.log('Showing legacy auth notice');
             setTimeout(() => {
                 const notice = document.createElement('div');
                 notice.style.cssText = `
@@ -200,14 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 2000);
             sessionStorage.setItem('legacy-auth-notice-shown', 'true');
         }
-    }
-    
-    console.log('Is admin user check result:', isAdminUser);
-    
-    if (isAdminUser) {
-        document.body.classList.add('is-admin');
-        console.log('Added is-admin class to body on page load');
-    }    // Menu and navigation functionality
+    }// Menu and navigation functionality
     if (document.getElementById('hamburger-menu')) {
         loadMenu();
     }
@@ -309,47 +302,16 @@ async function loadMenu() {
                 }
             });            // Check if user is admin and show/hide admin link
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
-            console.log('Menu - User data from storage:', userData);
-            console.log('Menu - All user properties:', Object.keys(userData));
-            console.log('Menu - Admin status:', userData.isAdmin, typeof userData.isAdmin);
-            console.log('Menu - Role keys:', userData.roleKeys);
-            console.log('Menu - Roles:', userData.roles);
-
-            // Use server-determined admin status with fallback for old data
-            let isAdminUser = userData.isAdmin === true;
-            
-            // Fallback: If role data is missing and username is admin, assume admin
-            // This handles users who logged in before role-based auth was implemented
-            if (userData.isAdmin === undefined && userData.username === 'admin') {
-                isAdminUser = true;
-                console.log('Menu - Using fallback admin detection for username: admin');
-            }
-            
-            console.log('Menu - Is admin user result:', isAdminUser);
-
-            const adminLink = sideMenu.querySelector('a[data-page="admin"]')?.parentElement;
-            if (adminLink) {
-                console.log('Admin link found in menu');
-                // Show admin link if user is admin
-                if (isAdminUser) {
-                    adminLink.style.display = 'block';
-                    adminLink.classList.remove('admin-only'); // Remove class that hides it
-                    console.log('Showing admin link');
-                } else {
-                    adminLink.style.display = 'none';
-                    console.log('Hiding admin link');
-                }
-            } else {
-                console.log('Admin link not found in menu');
-            }
+            const isAdmin = isUserAdmin(userData);
+            updateAdminMenuItem(isAdmin);
         }        // Add click handler for logout with confirmation
         const logoutLink = document.getElementById('logoutLink');
         logoutLink?.addEventListener('click', async (e) => {
             e.preventDefault();
             
-            // Show confirmation modal
-            const confirmLogout = confirm('Are you sure you want to logout?');
-            if (!confirmLogout) {
+            // Use enhanced logout modal instead of confirm()
+            const shouldLogout = await showLogoutModal();
+            if (!shouldLogout) {
                 return;
             }
 
