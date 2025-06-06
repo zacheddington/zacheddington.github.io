@@ -148,8 +148,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     localStorage.setItem('user', JSON.stringify(data.user));
 
                     // Initialize session management (browser-lifetime storage)
+                    // CRITICAL: Ensure this happens immediately and synchronously
                     if (window.SessionManager) {
                         window.SessionManager.initSession();
+                        console.log('Session initialized before navigation');
+                    } else {
+                        // Fallback: manual session initialization
+                        const loginTime = Date.now();
+                        sessionStorage.setItem('loginTime', loginTime.toString());
+                        sessionStorage.setItem('lastActivity', loginTime.toString());
+                        console.log('Fallback session initialization completed');
                     }
 
                     // Use utility function to check admin status and update UI

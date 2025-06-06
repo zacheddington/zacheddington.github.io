@@ -27,16 +27,23 @@ const SessionManager = {
     // Update last activity timestamp
     updateActivity: () => {
         sessionStorage.setItem('lastActivity', Date.now().toString());
-    },
-
-    // Check if session is valid
+    },    // Check if session is valid
     isSessionValid: () => {
         const loginTime = parseInt(sessionStorage.getItem('loginTime') || '0');
         const lastActivity = parseInt(sessionStorage.getItem('lastActivity') || '0');
         const now = Date.now();
 
+        console.log('Session validation check:', {
+            loginTime: loginTime,
+            lastActivity: lastActivity,
+            now: now,
+            hasLoginTime: !!loginTime,
+            hasLastActivity: !!lastActivity
+        });
+
         // If no session data, session is invalid
         if (!loginTime || !lastActivity) {
+            console.log('Session invalid: Missing session data');
             return false;
         }
 
@@ -52,6 +59,7 @@ const SessionManager = {
             return false;
         }
 
+        console.log('Session validation passed');
         return true;
     },
 
@@ -124,7 +132,19 @@ const checkAuth = () => {
         console.log('No token found, redirecting to login');
         window.location.href = '/';
         return;
-    }    // Check if session is valid (this handles browser close scenario)
+    }
+
+    // CRITICAL FIX: Check if session data exists, if not, initialize it
+    // This handles the case where a user just logged in and was redirected
+    const loginTime = sessionStorage.getItem('loginTime');
+    const lastActivity = sessionStorage.getItem('lastActivity');
+    
+    if (!loginTime || !lastActivity) {
+        console.log('No session data found, initializing session for existing token');
+        SessionManager.initSession();
+    }
+
+    // Check if session is valid (this handles browser close scenario)
     if (!SessionManager.isSessionValid()) {
         console.log('Session invalid or expired, logging out');
         performLogout('Invalid session');
