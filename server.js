@@ -12,11 +12,14 @@ app.use(express.json());
 // Serve static files from the current directory
 app.use(express.static('.'));
 
+// Detect if running locally or in production
+const isProduction = process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('herokuapp');
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
+    ssl: isProduction ? {
         rejectUnauthorized: false
-    }
+    } : false
 });
 
 // Middleware to authenticate JWT
@@ -38,7 +41,46 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Login endpoint
-app.post('/api/login', async (req, res) => {    try {
+app.post('/api/login', async (req, res) => {
+    // Check if we're in local development mode without proper database
+    const isLocalTest = process.env.NODE_ENV === 'development' && 
+                       process.env.DATABASE_URL?.includes('localhost');
+    
+    if (isLocalTest) {
+        // Simple test credentials for local development
+        const { username, password } = req.body;
+        
+        if (username === 'admin' && password === 'admin') {
+            const token = jwt.sign(
+                { 
+                    id: 1,
+                    username: 'admin',
+                    firstName: 'Test',
+                    lastName: 'Admin'
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: '8h' }
+            );
+            
+            return res.json({
+                token,
+                user: {
+                    username: 'admin',
+                    firstName: 'Test',
+                    lastName: 'Admin',
+                    roles: ['admin'],
+                    roleKeys: [1],
+                    isAdmin: true,
+                    authVersion: '2.0'
+                }
+            });
+        } else {
+            return res.status(401).json({ error: 'Invalid username or password (use admin/admin for local testing)' });
+        }
+    }
+    
+    // Production database logic
+    try {
         const { username, password } = req.body;
 
         // Query user data including name information and roles

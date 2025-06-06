@@ -38,8 +38,12 @@ function updateAdminMenuItem(isAdmin) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const API_URL = 'https://integrisneuro-eec31e4aaab1.herokuapp.com'; // or your local server
+    // Detect if running locally or in production
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     const FADE_DURATION = 450;
+    
+    console.log(`Running in ${isLocal ? 'LOCAL' : 'PRODUCTION'} mode, API_URL: ${API_URL}`);
     
     // Check if current page is login page
     const currentPath = window.location.pathname;

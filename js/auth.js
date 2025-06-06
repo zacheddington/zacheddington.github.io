@@ -67,11 +67,14 @@ const SessionManager = {
 const performLogout = async (reason = 'User initiated') => {
     console.log(`Logout triggered: ${reason}`);
     
-    try {
-        // Call server logout endpoint if token exists
+    try {        // Call server logout endpoint if token exists
         const token = localStorage.getItem('token');
         if (token) {
-            await fetch('https://integrisneuro-eec31e4aaab1.herokuapp.com/api/logout', {
+            // Detect if running locally or in production
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+            
+            await fetch(`${API_URL}/api/logout`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
