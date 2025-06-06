@@ -387,13 +387,12 @@ function addSessionStatusIndicator() {
     const updateStatus = () => {
         if (!window.SessionManager) return;
 
-        const loginTime = parseInt(sessionStorage.getItem('loginTime') || '0');
-        const lastActivity = parseInt(sessionStorage.getItem('lastActivity') || '0');
+        const sessionData = window.SessionManager.getSessionData();
         const now = Date.now();
 
-        if (loginTime && lastActivity) {
-            const sessionAge = Math.floor((now - loginTime) / 1000 / 60); // minutes
-            const inactiveTime = Math.floor((now - lastActivity) / 1000 / 60); // minutes
+        if (sessionData && sessionData.loginTime && sessionData.lastActivity) {
+            const sessionAge = Math.floor((now - sessionData.loginTime) / 1000 / 60); // minutes
+            const inactiveTime = Math.floor((now - sessionData.lastActivity) / 1000 / 60); // minutes
             const remainingSession = Math.floor((8 * 60) - sessionAge); // minutes until session expires
             const remainingActivity = Math.floor(30 - inactiveTime); // minutes until inactivity timeout
 
@@ -411,8 +410,18 @@ function addSessionStatusIndicator() {
                 isWarning = true;
             }
 
+            // Add tab ID indicator for debugging (can be removed later)
+            const currentTabId = sessionStorage.getItem('currentTabId');
+            if (currentTabId) {
+                const shortTabId = currentTabId.substring(currentTabId.length - 4);
+                statusText += ` (${shortTabId})`;
+            }
+
             indicator.textContent = statusText;
             indicator.className = isWarning ? 'session-status warning' : 'session-status';
+        } else {
+            indicator.textContent = '⚠ Session invalid';
+            indicator.className = 'session-status warning';
         }
     };
 

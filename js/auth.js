@@ -14,38 +14,138 @@ const isPublicPage = () => {
     return publicPaths.includes(normalizedPath) || normalizedPath === '';
 };
 
-// Enhanced session management
+// Enhanced session management with tab-specific tracking
 const SessionManager = {
-    // Store login timestamp using sessionStorage (clears when browser closes)
+    tabId: null,
+    heartbeatInterval: null,
+    
+    // Generate unique tab ID and initialize session
     initSession: () => {
+        // Generate unique tab identifier
+        SessionManager.tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const loginTime = Date.now();
-        sessionStorage.setItem('loginTime', loginTime.toString());
-        sessionStorage.setItem('lastActivity', loginTime.toString());
-        console.log('Session initialized with browser-lifetime storage');
+        
+        // Store session data in localStorage with tab-specific key
+        const sessionData = {
+            loginTime: loginTime,
+            lastActivity: loginTime,
+            tabId: SessionManager.tabId,
+            lastHeartbeat: loginTime
+        };
+        
+        localStorage.setItem('activeSession', JSON.stringify(sessionData));
+        
+        // Store tab ID in sessionStorage (this will be unique per tab/window)
+        sessionStorage.setItem('currentTabId', SessionManager.tabId);
+        
+        console.log('Session initialized with tab-specific tracking:', SessionManager.tabId);
+        
+        // Set up tab close detection and heartbeat
+        SessionManager.setupTabCloseDetection();
+        SessionManager.startHeartbeat();
     },
 
-    // Update last activity timestamp
+    // Start heartbeat to keep session alive
+    startHeartbeat: () => {
+        SessionManager.heartbeatInterval = setInterval(() => {
+            const sessionData = SessionManager.getSessionData();
+            if (sessionData && sessionData.tabId === SessionManager.tabId) {
+                sessionData.lastHeartbeat = Date.now();
+                localStorage.setItem('activeSession', JSON.stringify(sessionData));
+            }
+        }, 30000); // Heartbeat every 30 seconds
+    },
+
+    // Stop heartbeat
+    stopHeartbeat: () => {
+        if (SessionManager.heartbeatInterval) {
+            clearInterval(SessionManager.heartbeatInterval);
+            SessionManager.heartbeatInterval = null;
+        }
+    },
+
+    // Update last activity timestamp for current tab
     updateActivity: () => {
-        sessionStorage.setItem('lastActivity', Date.now().toString());
-    },    // Check if session is valid
-    isSessionValid: () => {
-        const loginTime = parseInt(sessionStorage.getItem('loginTime') || '0');
-        const lastActivity = parseInt(sessionStorage.getItem('lastActivity') || '0');
-        const now = Date.now();
+        const sessionData = SessionManager.getSessionData();
+        if (sessionData && sessionData.tabId === SessionManager.tabId) {
+            sessionData.lastActivity = Date.now();
+            sessionData.lastHeartbeat = Date.now();
+            localStorage.setItem('activeSession', JSON.stringify(sessionData));
+        }
+    },
 
-        console.log('Session validation check:', {
-            loginTime: loginTime,
-            lastActivity: lastActivity,
-            now: now,
-            hasLoginTime: !!loginTime,
-            hasLastActivity: !!lastActivity
+    // Get current session data
+    getSessionData: () => {
+        try {
+            const data = localStorage.getItem('activeSession');
+            return data ? JSON.parse(data) : null;
+        } catch (e) {
+            console.error('Error parsing session data:', e);
+            return null;
+        }
+    },    // Setup tab close detection
+    setupTabCloseDetection: () => {
+        // Clear session when tab/window is actually closed (not just switched)
+        window.addEventListener('beforeunload', (event) => {
+            // Only clear if the user is navigating away from the domain or closing the tab
+            // Don't clear on internal navigation within the app
+            const isInternalNavigation = event.target.activeElement && 
+                event.target.activeElement.tagName === 'A' && 
+                event.target.activeElement.hostname === window.location.hostname;
+            
+            if (!isInternalNavigation) {
+                // Mark this tab as closed - use a timestamp approach
+                const closeTime = Date.now();
+                sessionStorage.setItem('tabCloseTime', closeTime.toString());
+                
+                // Set a delayed clear to distinguish between tab close and refresh
+                setTimeout(() => {
+                    const currentCloseTime = sessionStorage.getItem('tabCloseTime');
+                    if (currentCloseTime === closeTime.toString()) {
+                        // Tab was actually closed, not just refreshed
+                        SessionManager.clearSession();
+                    }
+                }, 100);
+            }
         });
-
-        // If no session data, session is invalid
-        if (!loginTime || !lastActivity) {
-            console.log('Session invalid: Missing session data');
+        
+        // Handle page refresh vs tab close detection
+        window.addEventListener('load', () => {
+            // Clear any pending close time since the page loaded successfully
+            sessionStorage.removeItem('tabCloseTime');
+        });
+    },    // Check if session is valid for current tab
+    isSessionValid: () => {
+        // Get stored tab ID for this tab/window
+        const currentTabId = sessionStorage.getItem('currentTabId');
+        SessionManager.tabId = currentTabId;
+        
+        if (!currentTabId) {
+            console.log('Session invalid: No tab ID found');
             return false;
         }
+        
+        const sessionData = SessionManager.getSessionData();
+        
+        console.log('Session validation check:', {
+            currentTabId: currentTabId,
+            sessionData: sessionData,
+            hasSessionData: !!sessionData
+        });
+
+        if (!sessionData) {
+            console.log('Session invalid: No session data found');
+            return false;
+        }
+        
+        // Check if this tab's session matches the active session
+        if (sessionData.tabId !== currentTabId) {
+            console.log('Session invalid: Tab ID mismatch');
+            return false;
+        }
+        
+        const now = Date.now();
+        const { loginTime, lastActivity, lastHeartbeat } = sessionData;
 
         // Check if total session time exceeded
         if (now - loginTime > SESSION_TIMEOUT) {
@@ -59,15 +159,22 @@ const SessionManager = {
             return false;
         }
 
+        // Check if heartbeat is too old (indicates tab might be closed)
+        if (lastHeartbeat && now - lastHeartbeat > 120000) { // 2 minutes without heartbeat
+            console.log('Session expired: Heartbeat timeout - tab may be closed');
+            return false;
+        }
+
         console.log('Session validation passed');
         return true;
     },
 
     // Clear all session data
     clearSession: () => {
-        localStorage.clear();
+        SessionManager.stopHeartbeat();
+        localStorage.removeItem('activeSession');
         sessionStorage.clear();
-        console.log('All session data cleared');
+        console.log('Session data cleared');
     }
 };
 
@@ -134,27 +241,34 @@ const checkAuth = () => {
         return;
     }
 
-    // CRITICAL FIX: Check if session data exists, if not, initialize it
-    // This handles the case where a user just logged in and was redirected
-    const loginTime = sessionStorage.getItem('loginTime');
-    const lastActivity = sessionStorage.getItem('lastActivity');
+    // Check if this is a new tab/window - if no tab ID exists, this is a fresh tab
+    const currentTabId = sessionStorage.getItem('currentTabId');
     
-    if (!loginTime || !lastActivity) {
-        console.log('No session data found, initializing session for existing token');
-        SessionManager.initSession();
+    if (!currentTabId) {
+        console.log('New tab detected - no tab ID found, redirecting to login');
+        // Don't clear session data - just redirect this tab to login
+        // The original logged-in tab should still work
+        window.location.href = '/';
+        return;
     }
 
-    // Check if session is valid (this handles browser close scenario)
+    // Check if session is valid for this specific tab
     if (!SessionManager.isSessionValid()) {
         console.log('Session invalid or expired, logging out');
         performLogout('Invalid session');
         return;
     }
 
+    // Restore the tab ID and start heartbeat if not already running
+    SessionManager.tabId = currentTabId;
+    if (!SessionManager.heartbeatInterval) {
+        SessionManager.startHeartbeat();
+    }
+
     // Start monitoring for this session
     startActivityMonitoring();
     
-    console.log('Authentication check passed');
+    console.log('Authentication check passed for tab:', currentTabId);
 };
 
 // Make logout function globally available
