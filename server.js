@@ -9,6 +9,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from the current directory
+app.use(express.static('.'));
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {

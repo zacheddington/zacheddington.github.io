@@ -41,9 +41,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const API_URL = 'https://integrisneuro-eec31e4aaab1.herokuapp.com'; // or your local server
     const FADE_DURATION = 450;
     
-    // Clear authentication data if on login page to ensure clean state
+    // Check if current page is login page
     const currentPath = window.location.pathname;
     const isLoginPage = currentPath === '/' || currentPath === '/index.html' || currentPath.endsWith('/');
+    
+    // Clear authentication data if on login page to ensure clean state
     if (isLoginPage && document.getElementById('loginForm')) {
         console.log('On login page - clearing any stale authentication data');
         localStorage.removeItem('token');
