@@ -60,25 +60,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Make modal functions globally available
     window.showModal = modalManager.showModal.bind(modalManager);
-    window.closeModal = modalManager.closeModal.bind(modalManager);
-
-    // Handle login form
+    window.closeModal = modalManager.closeModal.bind(modalManager);    // Handle login form
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
+        console.log('Login form found, adding event listener');
         loginForm.addEventListener('submit', async function(e) {
+            console.log('Login form submit event fired');
             e.preventDefault();
-            console.log('Login form submitted!'); // <-- Add this
+            console.log('Default form submission prevented');
 
-            if (modalManager.isShowingModal) return;
+            if (modalManager.isShowingModal) {
+                console.log('Modal is showing, preventing login');
+                return;
+            }
 
             const submitBtn = loginForm.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Logging in...';
+            console.log('Submit button disabled and text changed');
 
             try {
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value;
+                console.log('Retrieved credentials, username:', username);
 
+                console.log('About to make fetch request to:', `${API_URL}/api/login`);
                 const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: {
@@ -88,7 +94,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({ username, password })
                 });
 
-                const data = await response.json();                // Update the login handler to store admin status correctly
+                console.log('Fetch response received, status:', response.status);
+                const data = await response.json();
+                console.log('Response data parsed:', data);// Update the login handler to store admin status correctly
                 if (response.ok && data.token) {
                     // Log all properties received from the server
                     console.log('User object received from server:', data.user);
@@ -208,17 +216,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Only call isPublicPage if it's defined (auth.js is loaded)
     if (typeof isPublicPage === 'function' && !isPublicPage() && localStorage.getItem('token')) {
         addSessionStatusIndicator();
-    }
-      // Setup general navigation links
+    }      // Setup general navigation links - but only if handleNavigation exists
     document.querySelectorAll('.fade-nav').forEach(link => {
         link.addEventListener('click', function(e) {
             const href = link.getAttribute('href');
             if (href && href !== '#') {
                 e.preventDefault();
-                handleNavigation(href);
+                // Simple fade navigation without custom function
+                document.body.classList.add('fade-out');
+                setTimeout(() => {
+                    window.location.href = href;
+                }, FADE_DURATION);
             }
         });
-    });    // Patient number validation - only allow numbers and hyphens
+    });// Patient number validation - only allow numbers and hyphens
     const patientNumberInput = document.getElementById('patientNumber');
     if (patientNumberInput) {
         // Create tooltip element
