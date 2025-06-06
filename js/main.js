@@ -93,15 +93,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Log all properties received from the server
                     console.log('User object received from server:', data.user);
                     console.log('All server user properties:', Object.keys(data.user));
-                    console.log('Admin status received:', data.user.isadmin, typeof data.user.isadmin);
+                    console.log('Admin status received:', data.user.isAdmin, typeof data.user.isAdmin);
+                    console.log('Roles received:', data.user.roles);
 
                     // Store all properties for debugging
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
 
-                    // Use multiple checks for admin status
-                    const isAdminUser = data.user.isadmin === true || 
-                                       data.user.isadmin === 'true';
+                    // Use role-based admin status from server response
+                    const isAdminUser = data.user.isAdmin === true;
                     
                     if (isAdminUser) {
                         document.body.classList.add('is-admin');
@@ -133,11 +133,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     console.log('Page load - User data:', userData);
     console.log('Page load - All user properties:', Object.keys(userData));
-    console.log('Page load - Admin status:', userData.isadmin, typeof userData.isadmin);
+    console.log('Page load - Admin status:', userData.isAdmin, typeof userData.isAdmin);
+    console.log('Page load - Role keys:', userData.roleKeys);
+    console.log('Page load - Roles:', userData.roles);
     
-    // Check if username is admin as fallback
-    const isAdminUser = userData.isadmin === true || 
-                       userData.isadmin === 'true';
+    // Use server-determined admin status
+    const isAdminUser = userData.isAdmin === true;
     
     console.log('Is admin user check result:', isAdminUser);
     
@@ -241,11 +242,12 @@ async function loadMenu() {
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
             console.log('Menu - User data from storage:', userData);
             console.log('Menu - All user properties:', Object.keys(userData));
-            console.log('Menu - Is admin check:', userData.isadmin, typeof userData.isadmin);
+            console.log('Menu - Admin status:', userData.isAdmin, typeof userData.isAdmin);
+            console.log('Menu - Role keys:', userData.roleKeys);
+            console.log('Menu - Roles:', userData.roles);
 
-            // Check for admin status with multiple methods
-            const isAdminUser = userData.isadmin === true || 
-                               userData.isadmin === 'true';
+            // Use server-determined admin status
+            const isAdminUser = userData.isAdmin === true;
             
             console.log('Menu - Is admin user result:', isAdminUser);
 
