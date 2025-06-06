@@ -99,22 +99,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Store authentication data
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
+                    console.log('Token and user data stored successfully');
 
                     // Initialize session management (browser-lifetime storage)
                     if (window.SessionManager) {
                         window.SessionManager.initSession();
+                        console.log('Session initialized');
+                    } else {
+                        console.log('SessionManager not available (auth.js not loaded)');
                     }
 
                     // Use role-based admin status from server response
                     const isAdminUser = data.user.isAdmin === true;
+                    console.log('Calculated isAdminUser:', isAdminUser);
                     
                     if (isAdminUser) {
                         document.body.classList.add('is-admin');
                         console.log('Added is-admin class to body during login');
                     }
 
+                    console.log('About to redirect to welcome page');
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
+                        console.log('Redirecting now...');
                         window.location.href = "welcome/";
                     }, FADE_DURATION);
                 } else {
@@ -198,7 +205,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Add session status indicator for authenticated pages
-    if (!isPublicPage() && localStorage.getItem('token')) {
+    // Only call isPublicPage if it's defined (auth.js is loaded)
+    if (typeof isPublicPage === 'function' && !isPublicPage() && localStorage.getItem('token')) {
         addSessionStatusIndicator();
     }
       // Setup general navigation links
