@@ -145,19 +145,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();                if (response.ok && data.token) {
                     // Store authentication data
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-
-                    // Initialize session management (browser-lifetime storage)
+                    localStorage.setItem('user', JSON.stringify(data.user));                    // Initialize session management (browser-lifetime storage)
                     // CRITICAL: Ensure this happens immediately and synchronously
                     if (window.SessionManager) {
                         window.SessionManager.initSession();
                         console.log('Session initialized before navigation');
                     } else {
-                        // Fallback: manual session initialization
+                        // Fallback: manual session initialization with tab ID
                         const loginTime = Date.now();
+                        const tabId = 'tab_' + loginTime + '_' + Math.random().toString(36).substr(2, 9);
+                        
+                        sessionStorage.setItem('currentTabId', tabId);
                         sessionStorage.setItem('loginTime', loginTime.toString());
                         sessionStorage.setItem('lastActivity', loginTime.toString());
-                        console.log('Fallback session initialization completed');
+                        
+                        // Store session data in localStorage as well
+                        const sessionData = {
+                            loginTime: loginTime,
+                            lastActivity: loginTime,
+                            tabId: tabId,
+                            lastHeartbeat: loginTime
+                        };
+                        localStorage.setItem('activeSession', JSON.stringify(sessionData));
+                        
+                        console.log('Fallback session initialization completed with tab ID:', tabId);
                     }
 
                     // Use utility function to check admin status and update UI
