@@ -123,6 +123,26 @@ app.post('/api/login', async (req, res) => {    try {
     }
 });
 
+// Server-side logout endpoint for token invalidation
+app.post('/api/logout', authenticateToken, async (req, res) => {
+    try {
+        // In a production environment, you would typically:
+        // 1. Add the token to a blacklist stored in Redis or database
+        // 2. Log the logout event for security auditing
+        // For now, we'll just confirm the logout
+        
+        console.log(`User ${req.user.username} logged out at ${new Date().toISOString()}`);
+        
+        res.json({ 
+            message: 'Successfully logged out',
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        console.error('Logout error:', err);
+        res.status(500).json({ error: 'Logout failed' });
+    }
+});
+
 // Debug endpoint to check all roles in the database (remove in production)
 app.get('/api/debug/roles', async (req, res) => {
     try {

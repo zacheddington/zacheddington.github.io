@@ -96,9 +96,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('Admin status received:', data.user.isAdmin, typeof data.user.isAdmin);
                     console.log('Roles received:', data.user.roles);
 
-                    // Store all properties for debugging
+                    // Store authentication data
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
+
+                    // Initialize session management (browser-lifetime storage)
+                    if (window.SessionManager) {
+                        window.SessionManager.initSession();
+                    }
 
                     // Use role-based admin status from server response
                     const isAdminUser = data.user.isAdmin === true;
@@ -187,11 +192,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (isAdminUser) {
         document.body.classList.add('is-admin');
         console.log('Added is-admin class to body on page load');
-    }
-
-    // Menu and navigation functionality
+    }    // Menu and navigation functionality
     if (document.getElementById('hamburger-menu')) {
         loadMenu();
+    }
+
+    // Add session status indicator for authenticated pages
+    if (!isPublicPage() && localStorage.getItem('token')) {
+        addSessionStatusIndicator();
     }
       // Setup general navigation links
     document.querySelectorAll('.fade-nav').forEach(link => {
@@ -315,17 +323,135 @@ async function loadMenu() {
             } else {
                 console.log('Admin link not found in menu');
             }
-        }
-
-        // Add click handler for logout
+        }        // Add click handler for logout with confirmation
         const logoutLink = document.getElementById('logoutLink');
-        logoutLink?.addEventListener('click', (e) => {
+        logoutLink?.addEventListener('click', async (e) => {
             e.preventDefault();
-            localStorage.clear();
-            window.location.href = '../';
+            
+            // Show confirmation modal
+            const confirmLogout = confirm('Are you sure you want to logout?');
+            if (!confirmLogout) {
+                return;
+            }
+
+            // Show logging out indicator
+            logoutLink.textContent = 'Logging out...';
+            logoutLink.style.pointerEvents = 'none';
+
+            try {
+                // Use the enhanced logout function from auth.js
+                if (window.performLogout) {
+                    await window.performLogout('User clicked logout');
+                } else {
+                    // Fallback logout if auth.js not loaded
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = '../';
+                }
+            } catch (err) {
+                console.error('Logout error:', err);
+                // Force logout even if server call fails
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = '../';
+            }
         });
 
-    } catch (err) {
-        console.error('Error loading menu:', err);
+    } catch (err) {        console.error('Error loading menu:', err);
     }
+}
+
+// Check if current page is public (helper function)
+function isPublicPage() {
+    const fullPath = window.location.pathname;
+    const normalizedPath = fullPath.endsWith('/') ? fullPath.slice(0, -1) : fullPath;
+    const publicPaths = ['/index.html', '/', ''];
+    return publicPaths.includes(normalizedPath) || normalizedPath === '';
+}
+
+// Add session status indicator
+function addSessionStatusIndicator() {
+    const indicator = document.createElement('div');
+    indicator.className = 'session-status';
+    indicator.id = 'sessionStatus';
+    document.body.appendChild(indicator);
+
+    // Update session status every 30 seconds
+    const updateStatus = () => {
+        if (!window.SessionManager) return;
+
+        const loginTime = parseInt(sessionStorage.getItem('loginTime') || '0');
+        const lastActivity = parseInt(sessionStorage.getItem('lastActivity') || '0');
+        const now = Date.now();
+
+        if (loginTime && lastActivity) {
+            const sessionAge = Math.floor((now - loginTime) / 1000 / 60); // minutes
+            const inactiveTime = Math.floor((now - lastActivity) / 1000 / 60); // minutes
+            const remainingSession = Math.floor((8 * 60) - sessionAge); // minutes until session expires
+            const remainingActivity = Math.floor(30 - inactiveTime); // minutes until inactivity timeout
+
+            let statusText = `Session: ${sessionAge}m`;
+            let isWarning = false;
+
+            // Show warning if session is expiring soon (less than 30 minutes)
+            if (remainingSession < 30) {
+                statusText = `⚠ Session expires in ${remainingSession}m`;
+                isWarning = true;
+            }
+            // Show warning if inactive for more than 25 minutes
+            else if (remainingActivity < 5) {
+                statusText = `⚠ Inactive timeout in ${remainingActivity}m`;
+                isWarning = true;
+            }
+
+            indicator.textContent = statusText;
+            indicator.className = isWarning ? 'session-status warning' : 'session-status';
+        }
+    };
+
+    updateStatus();
+    setInterval(updateStatus, 30000); // Update every 30 seconds
+}
+
+// Enhanced logout modal
+function showLogoutModal() {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'logout-modal';
+        modal.innerHTML = `
+            <div class="logout-modal-content">
+                <h3>Confirm Logout</h3>
+                <p>Are you sure you want to logout? You will need to login again to access the application.</p>
+                <div class="logout-modal-buttons">
+                    <button class="logout-modal-btn cancel">Cancel</button>
+                    <button class="logout-modal-btn confirm">Logout</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const confirmBtn = modal.querySelector('.confirm');
+        const cancelBtn = modal.querySelector('.cancel');
+
+        confirmBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(true);
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            modal.remove();
+            resolve(false);
+        });
+
+        // ESC key to cancel
+        const handleKeydown = (e) => {
+            if (e.key === 'Escape') {
+                modal.remove();
+                document.removeEventListener('keydown', handleKeydown);
+                resolve(false);
+            }
+        };
+        document.addEventListener('keydown', handleKeydown);
+    });
 }
