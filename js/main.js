@@ -137,8 +137,50 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Page load - Role keys:', userData.roleKeys);
     console.log('Page load - Roles:', userData.roles);
     
-    // Use server-determined admin status
-    const isAdminUser = userData.isAdmin === true;
+    // Use server-determined admin status with fallback for old data
+    let isAdminUser = userData.isAdmin === true;
+      // Fallback: If role data is missing and username is admin, assume admin
+    // This handles users who logged in before role-based auth was implemented
+    if (userData.isAdmin === undefined && userData.username === 'admin') {
+        isAdminUser = true;
+        console.log('Using fallback admin detection for username: admin');
+        
+        // Show a subtle notification that they should refresh their login
+        if (!sessionStorage.getItem('legacy-auth-notice-shown')) {
+            console.log('Showing legacy auth notice');
+            setTimeout(() => {
+                const notice = document.createElement('div');
+                notice.style.cssText = `
+                    position: fixed; 
+                    top: 10px; 
+                    right: 10px; 
+                    background: #2196F3; 
+                    color: white; 
+                    padding: 10px 15px; 
+                    border-radius: 4px; 
+                    font-size: 0.9rem;
+                    z-index: 10000;
+                    cursor: pointer;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                `;
+                notice.textContent = 'Enhanced authentication available - click to refresh login';
+                notice.onclick = () => {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = '/';
+                };
+                document.body.appendChild(notice);
+                
+                // Auto-hide after 8 seconds
+                setTimeout(() => {
+                    if (notice.parentNode) {
+                        notice.remove();
+                    }
+                }, 8000);
+            }, 2000);
+            sessionStorage.setItem('legacy-auth-notice-shown', 'true');
+        }
+    }
     
     console.log('Is admin user check result:', isAdminUser);
     
@@ -246,8 +288,15 @@ async function loadMenu() {
             console.log('Menu - Role keys:', userData.roleKeys);
             console.log('Menu - Roles:', userData.roles);
 
-            // Use server-determined admin status
-            const isAdminUser = userData.isAdmin === true;
+            // Use server-determined admin status with fallback for old data
+            let isAdminUser = userData.isAdmin === true;
+            
+            // Fallback: If role data is missing and username is admin, assume admin
+            // This handles users who logged in before role-based auth was implemented
+            if (userData.isAdmin === undefined && userData.username === 'admin') {
+                isAdminUser = true;
+                console.log('Menu - Using fallback admin detection for username: admin');
+            }
             
             console.log('Menu - Is admin user result:', isAdminUser);
 

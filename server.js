@@ -104,9 +104,7 @@ app.post('/api/login', async (req, res) => {    try {
         await pool.query(
             'UPDATE tbl_user SET date_when = CURRENT_TIMESTAMP WHERE user_key = $1',
             [user.user_key]
-        );
-
-        res.json({
+        );        res.json({
             token,
             user: {
                 username: user.username,
@@ -114,7 +112,9 @@ app.post('/api/login', async (req, res) => {    try {
                 lastName: user.last_name,
                 roles: roles,
                 roleKeys: roleKeys,
-                isAdmin: isAdmin
+                isAdmin: isAdmin,
+                // Add timestamp to help track when role data was added
+                authVersion: '2.0'
             }
         });
     } catch (err) {

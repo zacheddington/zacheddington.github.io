@@ -1,10 +1,10 @@
 {
   "name": "integrisneuro",
   "version": "1.0.0",
-  "private": true,
-  "engines": {
+  "private": true,  "engines": {
     "node": "18.x"
-  },  "main": "server.js",
+  },
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
