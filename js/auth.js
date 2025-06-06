@@ -123,17 +123,9 @@ const checkAuth = () => {
         return;
     }    // Check if session is valid (this handles browser close scenario)
     if (!SessionManager.isSessionValid()) {
-        // If user has a valid token but no session data, initialize session
-        // This handles the case where user logged in from login page without auth.js
-        const token = localStorage.getItem('token');
-        if (token) {
-            console.log('Valid token found but no session data, initializing session');
-            SessionManager.initSession();
-        } else {
-            console.log('Session invalid, logging out');
-            performLogout('Invalid session');
-            return;
-        }
+        console.log('Session invalid or expired, logging out');
+        performLogout('Invalid session');
+        return;
     }
 
     // Start monitoring for this session
