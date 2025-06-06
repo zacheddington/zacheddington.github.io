@@ -361,14 +361,6 @@ async function loadMenu() {
     }
 }
 
-// Check if current page is public (helper function)
-function isPublicPage() {
-    const fullPath = window.location.pathname;
-    const normalizedPath = fullPath.endsWith('/') ? fullPath.slice(0, -1) : fullPath;
-    const publicPaths = ['/index.html', '/', ''];
-    return publicPaths.includes(normalizedPath) || normalizedPath === '';
-}
-
 // Add session status indicator
 function addSessionStatusIndicator() {
     const indicator = document.createElement('div');
