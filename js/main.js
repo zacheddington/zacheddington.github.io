@@ -140,11 +140,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 handleNavigation(href);
             }
         });
-    });
-
-    // Patient number validation - only allow numbers and hyphens
+    });    // Patient number validation - only allow numbers and hyphens
     const patientNumberInput = document.getElementById('patientNumber');
     if (patientNumberInput) {
+        // Create tooltip element
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        tooltip.textContent = 'Only numbers and hyphens are allowed';
+        
+        // Get the input wrapper and append tooltip
+        const inputWrapper = patientNumberInput.closest('.input-wrapper');
+        if (inputWrapper) {
+            inputWrapper.appendChild(tooltip);
+        }
+
+        let tooltipTimeout;
+
+        const showTooltip = () => {
+            tooltip.classList.add('show');
+            clearTimeout(tooltipTimeout);
+            tooltipTimeout = setTimeout(() => {
+                tooltip.classList.remove('show');
+            }, 2000);
+        };
+
         patientNumberInput.addEventListener('input', function(e) {
             // Remove any characters that are not numbers or hyphens
             const value = e.target.value;
@@ -152,18 +171,26 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (value !== filteredValue) {
                 e.target.value = filteredValue;
+                showTooltip();
             }
         });
 
-        // Also prevent invalid characters from being typed
+        // Also prevent invalid characters from being typed and show tooltip
         patientNumberInput.addEventListener('keypress', function(e) {
             const char = String.fromCharCode(e.which);
             if (!/[0-9\-]/.test(char)) {
                 e.preventDefault();
+                showTooltip();
             }
         });
+
+        // Hide tooltip when input is focused and user starts typing valid characters
+        patientNumberInput.addEventListener('focus', function() {
+            tooltip.classList.remove('show');
+        });
     }
-    });
+    
+});
 
 async function loadMenu() {
     try {
