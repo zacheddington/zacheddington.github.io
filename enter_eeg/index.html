@@ -14,11 +14,10 @@
     <div class="welcome-container">
         <h1>Enter EEG Information</h1>
         <form class="eeg-form">
-            <div class="form-row">
-                <div class="form-group patient-number-group">
+            <div class="form-row">                <div class="form-group patient-number-group">
                     <label for="patientNumber">Patient Number</label>
                     <div class="input-wrapper">
-                        <input type="text" id="patientNumber" placeholder="Patient Number" required>
+                        <input type="text" id="patientNumber" placeholder="Patient Number" pattern="[0-9\-]+" title="Only numbers and hyphens are allowed" required>
                     </div>
                 </div>
             </div>

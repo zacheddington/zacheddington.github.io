@@ -131,8 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('hamburger-menu')) {
         loadMenu();
     }
-    
-    // Setup general navigation links
+      // Setup general navigation links
     document.querySelectorAll('.fade-nav').forEach(link => {
         link.addEventListener('click', function(e) {
             const href = link.getAttribute('href');
@@ -142,8 +141,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
-});
+
+    // Patient number validation - only allow numbers and hyphens
+    const patientNumberInput = document.getElementById('patientNumber');
+    if (patientNumberInput) {
+        patientNumberInput.addEventListener('input', function(e) {
+            // Remove any characters that are not numbers or hyphens
+            const value = e.target.value;
+            const filteredValue = value.replace(/[^0-9\-]/g, '');
+            
+            if (value !== filteredValue) {
+                e.target.value = filteredValue;
+            }
+        });
+
+        // Also prevent invalid characters from being typed
+        patientNumberInput.addEventListener('keypress', function(e) {
+            const char = String.fromCharCode(e.which);
+            if (!/[0-9\-]/.test(char)) {
+                e.preventDefault();
+            }
+        });
+    }
+    });
 
 async function loadMenu() {
     try {
