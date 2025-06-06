@@ -88,21 +88,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({ username, password })
                 });
 
-                const data = await response.json();
-                  // Update the login handler to store admin status correctly
+                const data = await response.json();                // Update the login handler to store admin status correctly
                 if (response.ok && data.token) {
                     // Log all properties received from the server
                     console.log('User object received from server:', data.user);
+                    console.log('All server user properties:', Object.keys(data.user));
                     console.log('Admin status received:', data.user.isadmin, typeof data.user.isadmin);
 
                     // Store all properties for debugging
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
 
-                    // Use the correct admin property for menu logic
-                    if (data.user.isadmin === true || data.user.isadmin === 'true') {
+                    // Use multiple checks for admin status
+                    const isAdminUser = data.user.isadmin === true || 
+                                       data.user.isadmin === 'true';
+                    
+                    if (isAdminUser) {
                         document.body.classList.add('is-admin');
-                        console.log('Added is-admin class to body');
+                        console.log('Added is-admin class to body during login');
                     }
 
                     document.body.classList.add('fade-out');
@@ -129,9 +132,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }    // Set admin class on body if user is admin (for all pages)
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     console.log('Page load - User data:', userData);
+    console.log('Page load - All user properties:', Object.keys(userData));
     console.log('Page load - Admin status:', userData.isadmin, typeof userData.isadmin);
     
-    if (userData.isadmin === true || userData.isadmin === 'true') {
+    // Check if username is admin as fallback
+    const isAdminUser = userData.isadmin === true || 
+                       userData.isadmin === 'true';
+    
+    console.log('Is admin user check result:', isAdminUser);
+    
+    if (isAdminUser) {
         document.body.classList.add('is-admin');
         console.log('Added is-admin class to body on page load');
     }
@@ -229,18 +239,27 @@ async function loadMenu() {
                 }
             });            // Check if user is admin and show/hide admin link
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
-            console.log('User data from storage:', userData);
-            console.log('Is admin check:', userData.isadmin, typeof userData.isadmin);
+            console.log('Menu - User data from storage:', userData);
+            console.log('Menu - All user properties:', Object.keys(userData));
+            console.log('Menu - Is admin check:', userData.isadmin, typeof userData.isadmin);
+
+            // Check for admin status with multiple methods
+            const isAdminUser = userData.isadmin === true || 
+                               userData.isadmin === 'true';
+            
+            console.log('Menu - Is admin user result:', isAdminUser);
 
             const adminLink = sideMenu.querySelector('a[data-page="admin"]')?.parentElement;
             if (adminLink) {
-                console.log('Admin link found, isadmin:', userData.isadmin);
+                console.log('Admin link found in menu');
                 // Show admin link if user is admin
-                if (userData.isadmin === true || userData.isadmin === 'true') {
+                if (isAdminUser) {
                     adminLink.style.display = 'block';
                     adminLink.classList.remove('admin-only'); // Remove class that hides it
+                    console.log('Showing admin link');
                 } else {
                     adminLink.style.display = 'none';
+                    console.log('Hiding admin link');
                 }
             } else {
                 console.log('Admin link not found in menu');
