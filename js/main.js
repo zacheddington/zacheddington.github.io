@@ -41,6 +41,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const API_URL = 'https://integrisneuro-eec31e4aaab1.herokuapp.com'; // or your local server
     const FADE_DURATION = 450;
     
+    // Clear authentication data if on login page to ensure clean state
+    const currentPath = window.location.pathname;
+    const isLoginPage = currentPath === '/' || currentPath === '/index.html' || currentPath.endsWith('/');
+    if (isLoginPage && document.getElementById('loginForm')) {
+        console.log('On login page - clearing any stale authentication data');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.clear();
+    }
+    
     // Unified modal management
     const modalManager = {
         isShowingModal: false,
@@ -157,18 +167,18 @@ document.addEventListener('DOMContentLoaded', function() {
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Login';
-            }        });
-    }    // Set admin class on body if user is admin (for all pages)
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    // Use utility function to check admin status and update UI
-    const isAdmin = isUserAdmin(userData);
-    updateAdminUI(isAdmin);
-    
-    // Show legacy auth notice if needed
-    if (userData.isAdmin === undefined && userData.username === 'admin') {
-        if (!sessionStorage.getItem('legacy-auth-notice-shown')) {
-            setTimeout(() => {
+            }        });    }    // Set admin class on body if user is admin (for protected pages only)
+    if (!isLoginPage || !document.getElementById('loginForm')) {
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        // Use utility function to check admin status and update UI
+        const isAdmin = isUserAdmin(userData);
+        updateAdminUI(isAdmin);
+        
+        // Show legacy auth notice if needed
+        if (userData.isAdmin === undefined && userData.username === 'admin') {
+            if (!sessionStorage.getItem('legacy-auth-notice-shown')) {
+                setTimeout(() => {
                 const notice = document.createElement('div');
                 notice.style.cssText = `
                     position: fixed; 
@@ -197,10 +207,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         notice.remove();
                     }
                 }, 8000);
-            }, 2000);
-            sessionStorage.setItem('legacy-auth-notice-shown', 'true');
+            }, 2000);            sessionStorage.setItem('legacy-auth-notice-shown', 'true');
         }
-    }// Menu and navigation functionality
+    }
+}
+
+// Menu and navigation functionality
     if (document.getElementById('hamburger-menu')) {
         loadMenu();
     }
