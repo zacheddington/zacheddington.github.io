@@ -169,47 +169,55 @@ document.addEventListener('DOMContentLoaded', function() {
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Login';
-            }        });    }    // Set admin class on body if user is admin (for protected pages only)
+            }        });    }    // Set admin class on body if user is admin (for authenticated pages only)
     if (!isLoginPage && !document.getElementById('loginForm')) {
+        const token = localStorage.getItem('token');
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         
-        // Use utility function to check admin status and update UI
-        const isAdmin = isUserAdmin(userData);
-        updateAdminUI(isAdmin);
-        
-        // Show legacy auth notice if needed
-        if (userData.isAdmin === undefined && userData.username === 'admin') {
-            if (!sessionStorage.getItem('legacy-auth-notice-shown')) {
-                setTimeout(() => {
-                const notice = document.createElement('div');
-                notice.style.cssText = `
-                    position: fixed; 
-                    top: 10px; 
-                    right: 10px; 
-                    background: #2196F3; 
-                    color: white; 
-                    padding: 10px 15px; 
-                    border-radius: 4px; 
-                    font-size: 0.9rem;
-                    z-index: 10000;
-                    cursor: pointer;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-                `;
-                notice.textContent = 'Enhanced authentication available - click to refresh login';
-                notice.onclick = () => {
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    window.location.href = '/';
-                };
-                document.body.appendChild(notice);
-                
-                // Auto-hide after 8 seconds
-                setTimeout(() => {
-                    if (notice.parentNode) {
-                        notice.remove();
-                    }
-                }, 8000);
-            }, 2000);            sessionStorage.setItem('legacy-auth-notice-shown', 'true');
+        // Only update admin UI if we have a valid token and user data
+        if (token && userData && Object.keys(userData).length > 0) {
+            console.log('Valid authentication found, updating admin UI');
+            // Use utility function to check admin status and update UI
+            const isAdmin = isUserAdmin(userData);
+            updateAdminUI(isAdmin);
+            
+            // Show legacy auth notice if needed
+            if (userData.isAdmin === undefined && userData.username === 'admin') {
+                if (!sessionStorage.getItem('legacy-auth-notice-shown')) {
+                    setTimeout(() => {
+                    const notice = document.createElement('div');
+                    notice.style.cssText = `
+                        position: fixed; 
+                        top: 10px; 
+                        right: 10px; 
+                        background: #2196F3; 
+                        color: white; 
+                        padding: 10px 15px; 
+                        border-radius: 4px; 
+                        font-size: 0.9rem;
+                        z-index: 10000;
+                        cursor: pointer;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                    `;
+                    notice.textContent = 'Enhanced authentication available - click to refresh login';
+                    notice.onclick = () => {
+                        localStorage.clear();
+                        sessionStorage.clear();
+                        window.location.href = '/';
+                    };
+                    document.body.appendChild(notice);
+                    
+                    // Auto-hide after 8 seconds
+                    setTimeout(() => {
+                        if (notice.parentNode) {
+                            notice.remove();
+                        }
+                    }, 8000);
+                }, 2000);
+                sessionStorage.setItem('legacy-auth-notice-shown', 'true');
+            }
+        } else {
+            console.log('No valid authentication data found, skipping admin UI updates');
         }
     }
 }
