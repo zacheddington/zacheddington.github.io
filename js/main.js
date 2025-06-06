@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Login';
             }        });    }    // Set admin class on body if user is admin (for protected pages only)
-    if (!isLoginPage || !document.getElementById('loginForm')) {
+    if (!isLoginPage && !document.getElementById('loginForm')) {
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         
         // Use utility function to check admin status and update UI
