@@ -89,19 +89,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 const data = await response.json();
-                
-                // Update the login handler to store admin status correctly
+                  // Update the login handler to store admin status correctly
                 if (response.ok && data.token) {
                     // Log all properties received from the server
                     console.log('User object received from server:', data.user);
+                    console.log('Admin status received:', data.user.isadmin, typeof data.user.isadmin);
 
                     // Store all properties for debugging
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
 
                     // Use the correct admin property for menu logic
-                    if (data.user.isadmin) {
+                    if (data.user.isadmin === true || data.user.isadmin === 'true') {
                         document.body.classList.add('is-admin');
+                        console.log('Added is-admin class to body');
                     }
 
                     document.body.classList.add('fade-out');
@@ -125,6 +126,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     } else {
         console.log('loginForm not found!');
+    }    // Set admin class on body if user is admin (for all pages)
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    console.log('Page load - User data:', userData);
+    console.log('Page load - Admin status:', userData.isadmin, typeof userData.isadmin);
+    
+    if (userData.isadmin === true || userData.isadmin === 'true') {
+        document.body.classList.add('is-admin');
+        console.log('Added is-admin class to body on page load');
     }
 
     // Menu and navigation functionality
@@ -218,16 +227,23 @@ async function loadMenu() {
                 if (item.getAttribute('data-page') === currentPage) {
                     item.parentElement.style.display = 'none';
                 }
-            });
-
-            // Check if user is admin and show/hide admin link
+            });            // Check if user is admin and show/hide admin link
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
             console.log('User data from storage:', userData);
+            console.log('Is admin check:', userData.isadmin, typeof userData.isadmin);
 
             const adminLink = sideMenu.querySelector('a[data-page="admin"]')?.parentElement;
             if (adminLink) {
                 console.log('Admin link found, isadmin:', userData.isadmin);
-                adminLink.style.display = userData.isadmin ? 'block' : 'none';
+                // Show admin link if user is admin
+                if (userData.isadmin === true || userData.isadmin === 'true') {
+                    adminLink.style.display = 'block';
+                    adminLink.classList.remove('admin-only'); // Remove class that hides it
+                } else {
+                    adminLink.style.display = 'none';
+                }
+            } else {
+                console.log('Admin link not found in menu');
             }
         }
 
