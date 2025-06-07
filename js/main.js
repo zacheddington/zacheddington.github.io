@@ -1659,21 +1659,22 @@ function setupTableSorting() {
         { index: 2, key: 'email', label: 'Email' },
         { index: 3, key: 'role', label: 'Role' },
         { index: 4, key: 'created', label: 'Created' }
-    ];
-    
-    sortableColumns.forEach(column => {
+    ];    sortableColumns.forEach(column => {
         const header = headers[column.index];
-        if (header) {            // Make header clickable and add styling
+        if (header) {
+            // Make header clickable and add styling
             header.style.cursor = 'pointer';
             header.style.userSelect = 'none';
-            header.classList.add('sortable-header');
+            header.classList.add('sortable-column');
             header.setAttribute('title', `Click to sort by ${column.label}`);
             
-            // Add sort indicator container
+            // Add sort indicator container with sortable wrapper
             const originalText = header.textContent;
             header.innerHTML = `
-                <span class="header-text">${originalText}</span>
-                <span class="sort-indicator" data-column="${column.key}"></span>
+                <div class="sortable-header">
+                    <span class="header-text">${originalText}</span>
+                    <span class="sort-indicator" data-column="${column.key}"></span>
+                </div>
             `;
             
             // Add click event listener

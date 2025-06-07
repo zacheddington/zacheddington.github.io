@@ -1127,6 +1127,20 @@ button[type="submit"]:disabled,
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
+    table-layout: auto;
+    display: table;
+}
+
+.users-table thead {
+    display: table-header-group;
+}
+
+.users-table tbody {
+    display: table-row-group;
+}
+
+.users-table tr {
+    display: table-row;
 }
 
 .users-table th {
@@ -1138,12 +1152,14 @@ button[type="submit"]:disabled,
     border-bottom: 2px solid #004d40;
     vertical-align: middle;
     height: 3rem;
+    display: table-cell;
 }
 
 .users-table td {
     padding: 1rem;
     border-bottom: 1px solid #e0f7fa;
     vertical-align: middle;
+    display: table-cell;
 }
 
 .users-table tbody tr:hover {
@@ -1326,19 +1342,43 @@ button[type="submit"]:disabled,
     position: relative;
     transition: background-color 0.2s ease, transform 0.1s ease;
     user-select: none;
-    display: flex;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
 }
 
-.sortable-header:hover {
-    background: linear-gradient(135deg, #00acc1 0%, #00838f 100%) !important;
-    transform: translateY(-1px);
+/* Table Sorting Styles */
+.sortable-header {
+    position: relative;
+    transition: transform 0.1s ease;
+    user-select: none;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
-.sortable-header:active {
+.users-table th.sortable-column {
+    transition: background-color 0.2s ease;
+}
+
+.users-table th.sortable-column:hover {
+    background: linear-gradient(135deg, #00acc1 0%, #00838f 100%) !important;
+}
+
+.users-table th.sortable-column:active .sortable-header {
     transform: translateY(0);
+}
+
+.sortable-header:hover {
+    transform: translateY(-1px);
 }
 
 .sortable-header .header-text {
@@ -1377,13 +1417,4 @@ button[type="submit"]:disabled,
 .filter-actions .secondary-btn {
     font-size: 0.85rem;
     padding: 0.5rem 1rem;
-}
-
-/* User Filter Enhancements */
-.user-filter {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: #f8fdff;
-    border-radius: 8px;
-    border: 1px solid #b2dfdb;
 }
