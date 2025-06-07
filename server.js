@@ -204,6 +204,43 @@ app.get('/api/health', authenticateToken, async (req, res) => {
     }
 });
 
+// Public health check endpoint for basic connectivity testing (no auth required)
+app.get('/api/health/public', async (req, res) => {
+    // Check if we're in local development mode without proper database
+    const isLocalTest = process.env.NODE_ENV === 'development' && 
+                       process.env.DATABASE_URL?.includes('localhost');
+    
+    if (isLocalTest) {
+        // For local testing, just return success
+        return res.json({ 
+            status: 'healthy',
+            database: 'local_test_mode',
+            timestamp: new Date().toISOString()
+        });
+    }
+    
+    try {
+        // Simple database connectivity test
+        const client = await pool.connect();
+        await client.query('SELECT 1');
+        client.release();
+        
+        res.json({ 
+            status: 'healthy',
+            database: 'connected',
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        console.error('Public health check failed:', err);
+        res.status(503).json({ 
+            status: 'unhealthy',
+            database: 'disconnected',
+            error: 'Database connection failed',
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // Debug endpoint removed for production security
 
 // Protected endpoint example

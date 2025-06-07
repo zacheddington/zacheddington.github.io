@@ -531,16 +531,13 @@ async function checkConnectivity() {
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
         
-        // Simple connectivity test with short timeout
+        // Simple connectivity test with short timeout using public endpoint
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
         
-        const response = await fetch(`${API_URL}/api/health`, {
+        const response = await fetch(`${API_URL}/api/health/public`, {
             method: 'GET',
-            signal: controller.signal,
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            signal: controller.signal
         });
         
         clearTimeout(timeoutId);
