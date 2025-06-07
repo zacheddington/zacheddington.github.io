@@ -125,16 +125,18 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
 
             try {
                 const username = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value;
-
-                const response = await fetch(`${API_URL}/api/login`, {
+                const password = document.getElementById('password').value;                const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({ username, password })
-                });                if (response.ok && data.token) {
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
                     // Store authentication data
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));
