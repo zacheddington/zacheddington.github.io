@@ -135,7 +135,7 @@ const SessionManager = {
                 SessionManager.attemptTabTakeover();            } else {
                 // Master tab is alive, this tab should be closed
                 console.log('Multiple tabs detected - closing secondary tab');
-                SessionManager.showTabAccessModal(false); // false = multiple tabs detected
+                SessionManager.showTabAccessModal();
                 return;
             }
         }
@@ -174,8 +174,8 @@ const SessionManager = {
                 SessionManager.showTabTakeoverMessage();
             }
         }, TAB_TAKEOVER_DELAY);
-    },    // Show unified modal for tab access restrictions (NEW VERSION - loads from HTML file)
-    showTabAccessModal: async (isNewTab = false) => {
+    },    // Show unified modal for tab access restrictions (loads from HTML file)
+    showTabAccessModal: async () => {
         // Prevent duplicate modals - if one already exists, don't create another
         if (document.querySelector('.tab-modal-overlay')) {
             console.log('Tab access modal already exists, skipping creation');
@@ -192,26 +192,6 @@ const SessionManager = {
             overlay.className = 'tab-modal-overlay';
             overlay.innerHTML = modalHtml;
             
-            // Customize content based on whether it's a new tab or multiple tabs detected
-            const title = overlay.querySelector('.modal-title');
-            const message = overlay.querySelector('.modal-message');
-            const instruction = overlay.querySelector('.modal-instruction');
-            const loginBtn = overlay.querySelector('#loginNewTabBtn');
-            
-            if (isNewTab) {
-                title.textContent = '🚫 Access Restricted';
-                title.className = 'modal-title restricted';
-                message.textContent = 'You already have the application open in another tab. For data security and to prevent conflicts, only one tab can be active at a time.';
-                instruction.textContent = 'Please manually close this tab (Ctrl+W) and return to your existing tab.';
-                loginBtn.style.display = 'inline-block';
-            } else {
-                title.textContent = '⚠️ Multiple Tabs Detected';
-                title.className = 'modal-title warning';
-                message.textContent = 'For data security and to prevent database conflicts, only one tab can access the application at a time.';
-                instruction.textContent = 'Please manually close this tab (Ctrl+W) and continue using your original tab.';
-                loginBtn.style.display = 'none';
-            }
-            
             document.body.appendChild(overlay);
 
             // Handle "Go to Login" button
@@ -220,14 +200,6 @@ const SessionManager = {
                 window.location.href = '/';
             });
 
-            // Handle login button for new tabs
-            if (isNewTab) {
-                loginBtn.addEventListener('click', () => {
-                    sessionStorage.clear();
-                    window.location.href = '/';
-                });
-            }
-
             // Disable page interaction except for modal
             document.body.style.pointerEvents = 'none';
             overlay.style.pointerEvents = 'auto';
@@ -235,10 +207,7 @@ const SessionManager = {
         } catch (error) {
             console.error('Error loading tab access modal:', error);
             // Fallback to simple alert if HTML loading fails
-            alert(isNewTab 
-                ? 'Access restricted: You already have the application open in another tab. Please close this tab and return to your existing tab.'
-                : 'Multiple tabs detected: Please close this tab and continue using your original tab.'
-            );
+            alert('Multiple tabs detected: Please close this tab and continue using your original tab.');
         }
     },
 
@@ -461,11 +430,10 @@ const checkAuth = () => {
             // Check if there's an active session with a master tab
             if (sessionData && sessionData.masterTabId) {
                 const now = Date.now();
-                const masterTabHeartbeat = sessionData.masterTabHeartbeat || 0;
-                  // If master tab is alive, deny access to this new tab
+                const masterTabHeartbeat = sessionData.masterTabHeartbeat || 0;                // If master tab is alive, deny access to this new tab
                 if (now - masterTabHeartbeat <= MASTER_TAB_TIMEOUT) {
                     console.log('Active master tab detected - denying access to new tab');
-                    SessionManager.showTabAccessModal(true); // true = new tab denied
+                    SessionManager.showTabAccessModal();
                     return;
                 } else {
                     console.log('Master tab appears inactive - allowing new tab access');
