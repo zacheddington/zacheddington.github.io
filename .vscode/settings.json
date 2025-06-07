@@ -1,0 +1,20 @@
+{
+    "sqltools.connections": [
+        {
+            "name": "IntegrisNeuro RDS",
+            "driver": "PostgreSQL",
+            "previewLimit": 50,
+            "server": "integris-neuro.crmygomu4p1f.us-west-2.rds.amazonaws.com",
+            "port": 5432,
+            "database": "integris-neuro",
+            "username": "postgres",
+            "askForPassword": true,
+            "connectionTimeout": 60,
+            "pgOptions": {
+                "ssl": {
+                    "rejectUnauthorized": false
+                }
+            }
+        }
+    ]
+}
