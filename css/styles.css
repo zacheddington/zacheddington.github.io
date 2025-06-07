@@ -17,6 +17,7 @@ body {
     animation: fadeInBody 0.7s ease;
     animation-fill-mode: forwards;
     box-sizing: border-box;
+    padding-top: 60px; /* Add top padding to account for fixed header */
 }
 
 @keyframes fadeInBody {
@@ -44,7 +45,7 @@ label, p, input, button, a {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 80px;
+    margin-top: 20px; /* Reduced since we have fixed header */
 }
 
 .options {
@@ -70,6 +71,33 @@ label, p, input, button, a {
 .option-card:hover {
     box-shadow: 0 6px 24px rgba(0,59,73,0.16);
     border-color: #009688;
+}
+
+/* ============================================================================
+   APP HEADER BAR
+   ============================================================================ */
+
+.app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 999;
+    border-bottom: 1px solid #e0f7fa;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #003b49;
+    margin-left: 60px; /* Space for hamburger menu */
+    font-weight: 600;
 }
 
 /* ============================================================================
@@ -188,9 +216,8 @@ label, p, input, button, a {
         --container-padding: 3rem;
         --grid-gap: 1.5rem;
     }
-    
-    .welcome-container {
-        margin-top: 100px;
+      .welcome-container {
+        margin-top: 40px; /* Reduced since we have fixed header */
     }
     
     .options {
@@ -592,7 +619,8 @@ label, p, input, button, a {
     }
     
     .choice-btn p {
-        line-height: 1.3;
+        font-size: 0.75rem;
+        line-height: 1.25;
     }
     
     .eeg-form {
@@ -611,7 +639,8 @@ label, p, input, button, a {
     .admin-section {
         padding: 1.5rem;
     }
-      .profile-section {
+    
+    .profile-section {
         padding: 1.5rem;
     }
     
@@ -628,7 +657,6 @@ label, p, input, button, a {
     .users-table th,
     .users-table td {
         padding: 0.5rem 0.3rem;
-        font-size: 0.75rem;
     }
     
     .modal-content,
@@ -747,11 +775,6 @@ label, p, input, button, a {
         margin: 0 auto;
     }
     
-    .eeg-form h1 {
-        font-size: 1.3rem;
-        margin-bottom: 1rem;
-    }
-    
     .admin-container,
     .profile-container {
         max-width: 380px;
@@ -762,37 +785,91 @@ label, p, input, button, a {
     .admin-container h1,
     .profile-container h1 {
         font-size: 1.4rem;
+        margin-bottom: 1rem;
     }
     
     .admin-section,
     .profile-section {
-        padding: 1.25rem;
+        padding: 1rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    }
+    
+    .form-section {
+        padding: 1rem;
     }
     
     .form-section h3 {
-        font-size: 1rem;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
     }
     
     .admin-form input,
     .admin-form select,
     .profile-form input {
-        padding: 10px;
-        font-size: 0.9rem;
+        padding: 8px;
+        font-size: 0.85rem;
     }
     
     .admin-form label,
     .profile-form label {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .field-note {
+        font-size: 0.7rem;
+    }
+    
+    .user-filter {
+        padding: 0.75rem;
+    }
+    
+    .users-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
     
     .users-table {
-        min-width: 550px;
+        min-width: 500px;
     }
     
     .users-table th,
     .users-table td {
-        padding: 0.5rem 0.3rem;
-        font-size: 0.75rem;
+        padding: 0.4rem 0.2rem;
+        font-size: 0.7rem;
+    }
+    
+    .users-table th {
+        height: 2rem;
+    }
+    
+    .user-actions {
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+    
+    .btn-icon {
+        padding: 0.3rem;
+        width: 24px;
+        height: 24px;
+    }
+    
+    .role-select {
+        min-width: 80px;
+        font-size: 0.65rem;
+        padding: 0.3rem;
     }
     
     .modal-content,
@@ -807,20 +884,6 @@ label, p, input, button, a {
         max-width: 340px;
         padding: 1.5rem;
     }
-    
-    .form-actions {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    
-    .logout-modal-buttons {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    
-    .logout-modal-btn {
-        width: 100%;
-    }
 }
 
 /* MOBILE PORTRAIT (320px - 479px) */
@@ -925,11 +988,6 @@ label, p, input, button, a {
         margin: 0 auto;
     }
     
-    .eeg-form h1 {
-        font-size: 1.3rem;
-        margin-bottom: 1rem;
-    }
-    
     .admin-container,
     .profile-container {
         max-width: 380px;
@@ -1031,261 +1089,14 @@ label, p, input, button, a {
     .modal-content,
     .logout-modal-content {
         width: 95%;
-        max-width: 280px;
-        padding: 1rem;
+        max-width: 320px;
+        padding: 1.25rem;
     }
     
     .modal-overlay .modal-content {
         width: 95%;
-        max-width: 300px;
-        padding: 1.25rem;
-    }
-    
-    .form-actions {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .logout-modal-buttons {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .logout-modal-btn {
-        width: 100%;
-    }
-}
-
-/* MOBILE PORTRAIT (320px - 479px) */
-@media screen and (max-width: 479px) {
-    :root {
-        --container-padding: 0.75rem;
-        --hamburger-size: 40px;
-    }
-    
-    .show-mobile { display: block; }
-    .hide-mobile { display: none; }
-    
-    body {
-        font-size: 0.9rem;
-    }
-    
-    .hamburger-btn {
-        top: 12px;
-        left: 12px;
-        min-width: var(--hamburger-size);
-        min-height: var(--hamburger-size);
-        padding: 8px;
-    }
-    
-    .hamburger-btn span {
-        width: 20px;
-        height: 2.5px;
-    }
-    
-    .side-menu {
-        width: 240px;
-        padding: 60px 10px 10px;
-    }
-    
-    .side-menu ul li {
-        margin-bottom: 12px;
-    }
-    
-    .side-menu ul li a {
-        font-size: 0.95rem;
-    }
-    
-    .welcome-container {
-        margin-top: 130px;
-        padding: 0.5rem;
-    }
-    
-    .welcome-container h1 {
-        font-size: 1.6rem;
-        margin-bottom: 1rem;
-    }
-    
-    .options {
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        margin-top: 20px;
-    }
-    
-    .option-card {
-        max-width: 300px;
-        width: 100%;
-        padding: 16px 20px;
-    }
-    
-    .option-card h2 {
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .option-link {
-        font-size: 0.9rem;
-    }
-    
-    .choice-buttons {
-        flex-direction: column;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    
-    .choice-btn {
-        min-width: 200px;
-        width: 100%;
-        max-width: 280px;
-        padding: 1rem;
-        min-height: 100px;
-    }
-    
-    .choice-btn h3 {
-        font-size: 0.95rem;
-        margin-bottom: 0.3rem;
-    }
-    
-    .choice-btn p {
-        font-size: 0.75rem;
-        line-height: 1.25;
-    }
-    
-    .eeg-form {
-        padding: 12px 8px;
-        max-width: 350px;
-        margin: 0 auto;
-    }
-    
-    .eeg-form h1 {
-        font-size: 1.3rem;
-        margin-bottom: 1rem;
-    }
-    
-    .admin-container,
-    .profile-container {
-        max-width: 380px;
-        padding: 0.5rem;
-        margin-top: 130px;
-    }
-    
-    .admin-container h1,
-    .profile-container h1 {
-        font-size: 1.4rem;
-        margin-bottom: 1rem;
-    }
-    
-    .admin-section,
-    .profile-section {
-        padding: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .section-header h2 {
-        font-size: 1.2rem;
-    }
-    
-    }
-    
-    .form-section {
-        padding: 1rem;
-    }
-    
-    .form-section h3 {
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-    }
-    
-    .admin-form input,
-    .admin-form select,
-    .profile-form input {
-        padding: 8px;
-        font-size: 0.85rem;
-    }
-    
-    .admin-form label,
-    .profile-form label {
-        font-size: 0.85rem;
-        margin-bottom: 0.25rem;
-    }
-    
-    .field-note {
-        font-size: 0.7rem;
-    }
-    
-    .user-filter {
-        padding: 0.75rem;
-    }
-    
-    .users-table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    .users-table {
-        min-width: 500px;
-    }
-    
-    .users-table th,
-    .users-table td {
-        padding: 0.4rem 0.2rem;
-        font-size: 0.7rem;
-    }
-    
-    .users-table th {
-        height: 2rem;
-    }
-    
-    .user-actions {
-        flex-direction: column;
-        gap: 0.2rem;
-    }
-    
-    .btn-icon {
-        padding: 0.3rem;
-        width: 24px;
-        height: 24px;
-    }
-    
-    .role-select {
-        min-width: 80px;
-        font-size: 0.65rem;
-        padding: 0.3rem;
-    }
-    
-    .modal-content,
-    .logout-modal-content {
-        width: 95%;
-        max-width: 280px;
-        padding: 1rem;
-    }
-    
-    .modal-overlay .modal-content {
-        width: 95%;
-        max-width: 300px;
-        padding: 1.25rem;
-    }
-    
-    .form-actions {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .logout-modal-buttons {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .logout-modal-btn {
-        width: 100%;
+        max-width: 340px;
+        padding: 1.5rem;
     }
 }
 
@@ -1482,9 +1293,9 @@ iframe {
 }
 
 .hamburger-btn {
-    position: fixed;
-    top: 20px;
-    left: 20px; /* Changed from right to left */
+    position: relative;
+    top: 0;
+    left: 0;
     z-index: 1001;
     cursor: pointer;
     padding: 15px;
@@ -1894,7 +1705,7 @@ button[type="submit"]:disabled,
     width: 100%;
     margin: 2rem auto;
     padding: 2rem;
-    margin-top: 80px;
+    margin-top: 20px; /* Reduced since we have fixed header */
     box-sizing: border-box;
 }
 
@@ -1904,7 +1715,7 @@ button[type="submit"]:disabled,
     width: 100%;
     margin: 2rem auto;
     padding: 2rem;
-    margin-top: 80px;
+    margin-top: 20px; /* Reduced since we have fixed header */
     box-sizing: border-box;
 }
 
