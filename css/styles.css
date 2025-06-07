@@ -1146,13 +1146,19 @@ button[type="submit"]:disabled,
 .users-table th {
     background: linear-gradient(135deg, #009688 0%, #00796b 100%);
     color: white;
-    padding: 0.75rem;
+    padding: 0.5rem;
     text-align: center;
     font-weight: 600;
     border-bottom: 2px solid #004d40;
     vertical-align: middle;
-    height: 3rem;
+    height: 2.5rem;
     display: table-cell;
+}
+
+.users-table th:not(.sortable-column) {
+    text-align: center;
+    display: table-cell;
+    vertical-align: middle;
 }
 
 .users-table td {
@@ -1340,20 +1346,6 @@ button[type="submit"]:disabled,
 /* Table Sorting Styles */
 .sortable-header {
     position: relative;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    user-select: none;
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-/* Table Sorting Styles */
-.sortable-header {
-    position: relative;
     transition: transform 0.1s ease;
     user-select: none;
     cursor: pointer;
@@ -1362,7 +1354,7 @@ button[type="submit"]:disabled,
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.25rem;
 }
 
 .users-table th.sortable-column {
@@ -1383,15 +1375,16 @@ button[type="submit"]:disabled,
 
 .sortable-header .header-text {
     display: inline-block;
+    text-align: center;
 }
 
 .sort-indicator {
     display: inline-block;
-    margin-left: 0.5rem;
     font-weight: 700;
     font-size: 0.8rem;
     min-width: 12px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .sort-indicator.sort-asc {
@@ -1412,9 +1405,4 @@ button[type="submit"]:disabled,
     display: flex;
     gap: 1rem;
     align-items: center;
-}
-
-.filter-actions .secondary-btn {
-    font-size: 0.85rem;
-    padding: 0.5rem 1rem;
 }
