@@ -11,8 +11,12 @@ body {
     align-items: center;
     justify-content: center;
     margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden; /* Prevent horizontal scroll */
     animation: fadeInBody 0.7s ease;
     animation-fill-mode: forwards;
+    box-sizing: border-box;
 }
 
 @keyframes fadeInBody {
@@ -48,6 +52,1396 @@ label, p, input, button, a {
     gap: 32px;
     margin-top: 40px;
 }
+
+.option-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,59,73,0.10);
+    padding: 32px 40px;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+    margin: 0 auto;
+    transition: box-shadow 0.2s;
+    border: 1px solid #e0e0e0;
+}
+
+.option-card:hover {
+    box-shadow: 0 6px 24px rgba(0,59,73,0.16);
+    border-color: #009688;
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN SYSTEM
+   ============================================================================ */
+
+/* Base responsive utilities and variables */
+:root {
+    --container-max-width: 1200px;
+    --container-padding: 2rem;
+    --grid-gap: 1rem;
+    --header-height: 60px;
+    --hamburger-size: 50px;
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
+}
+
+/* Container system for consistent layout */
+.container {
+    width: 100%;
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+    box-sizing: border-box;
+}
+
+/* Responsive grid system */
+.grid {
+    display: grid;
+    gap: var(--grid-gap);
+}
+
+.grid-1 { grid-template-columns: 1fr; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Responsive flexbox utilities */
+.flex {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.flex-center {
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    justify-content: space-between;
+}
+
+.flex-start {
+    justify-content: flex-start;
+}
+
+.flex-end {
+    justify-content: flex-end;
+}
+
+/* Responsive spacing utilities */
+.gap-xs { gap: 0.25rem; }
+.gap-sm { gap: 0.5rem; }
+.gap-md { gap: 1rem; }
+.gap-lg { gap: 1.5rem; }
+.gap-xl { gap: 2rem; }
+
+.m-0 { margin: 0; }
+.mt-sm { margin-top: 0.5rem; }
+.mt-md { margin-top: 1rem; }
+.mt-lg { margin-top: 1.5rem; }
+.mt-xl { margin-top: 2rem; }
+
+.p-0 { padding: 0; }
+.p-sm { padding: 0.5rem; }
+.p-md { padding: 1rem; }
+.p-lg { padding: 1.5rem; }
+.p-xl { padding: 2rem; }
+
+/* Text utilities */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-base { font-size: 1rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+
+/* Responsive visibility utilities */
+.show-mobile { display: none; }
+.show-tablet { display: none; }
+.show-desktop { display: block; }
+
+.hide-mobile { display: block; }
+.hide-tablet { display: block; }
+.hide-desktop { display: none; }
+
+/* ============================================================================
+   BREAKPOINT-SPECIFIC STYLES
+   ============================================================================ */
+
+/* ULTRAWIDE MONITORS (1400px and up) */
+@media screen and (min-width: 1400px) {
+    :root {
+        --container-max-width: 1400px;
+        --container-padding: 3rem;
+        --grid-gap: 1.5rem;
+    }
+    
+    .welcome-container {
+        margin-top: 100px;
+    }
+    
+    .options {
+        gap: 48px;
+        margin-top: 60px;
+    }
+    
+    .option-card {
+        max-width: 450px;
+        padding: 40px 48px;
+    }
+    
+    .choice-buttons {
+        gap: 3rem;
+    }
+    
+    .choice-btn {
+        min-width: 320px;
+        width: 320px;
+        padding: 2.5rem;
+    }
+    
+    .eeg-form {
+        padding: 40px 36px;
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 1200px;
+        padding: 3rem;
+    }
+    
+    .users-table th,
+    .users-table td {
+        padding: 1.25rem;
+    }
+}
+
+/* LARGE DESKTOP (1200px - 1399px) */
+@media screen and (min-width: 1200px) and (max-width: 1399px) {
+    :root {
+        --container-max-width: 1200px;
+        --container-padding: 2.5rem;
+    }
+    
+    .welcome-container {
+        margin-top: 90px;
+    }
+    
+    .options {
+        gap: 40px;
+        margin-top: 50px;
+    }
+    
+    .option-card {
+        max-width: 420px;
+        padding: 36px 42px;
+    }
+    
+    .choice-buttons {
+        gap: 2.5rem;
+    }
+    
+    .choice-btn {
+        min-width: 300px;
+        width: 300px;
+    }
+}
+
+/* STANDARD DESKTOP (992px - 1199px) */
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+    :root {
+        --container-max-width: 960px;
+        --container-padding: 2rem;
+    }
+    
+    .welcome-container {
+        margin-top: 80px;
+    }
+    
+    .options {
+        gap: 32px;
+        margin-top: 40px;
+    }
+    
+    .option-card {
+        max-width: 380px;
+        padding: 32px 36px;
+    }
+    
+    .choice-buttons {
+        gap: 2rem;
+    }
+    
+    .choice-btn {
+        min-width: 280px;
+        width: 280px;
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 900px;
+    }
+}
+
+/* TABLET LANDSCAPE (768px - 991px) */
+@media screen and (min-width: 768px) and (max-width: 991px) {
+    :root {
+        --container-padding: 1.5rem;
+        --grid-gap: 1rem;
+    }
+    
+    .show-tablet { display: block; }
+    .hide-tablet { display: none; }
+    
+    .welcome-container {
+        margin-top: 100px;
+        padding: 1.5rem;
+    }
+    
+    .options {
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+        margin-top: 32px;
+    }
+    
+    .option-card {
+        max-width: 450px;
+        width: 100%;
+        padding: 28px 32px;
+    }
+    
+    .choice-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .choice-btn {
+        min-width: 300px;
+        width: 100%;
+        max-width: 400px;
+    }
+    
+    .eeg-form {
+        padding: 24px 20px;
+        max-width: 600px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .name-group,
+    .patient-number-group {
+        min-width: auto;
+        flex: none;
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 700px;
+        padding: 1.5rem;
+        margin-top: 100px;
+    }
+    
+    .admin-form .form-row {
+        flex-direction: column;
+    }
+    
+    .admin-form .form-group {
+        min-width: auto;
+    }
+    
+    .profile-form .form-row {
+        flex-direction: column;
+    }
+    
+    .profile-form .form-group {
+        min-width: auto;
+    }
+    
+    .users-table-container {
+        overflow-x: auto;
+    }
+    
+    .users-table {
+        min-width: 700px;
+    }
+    
+    .users-table th,
+    .users-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .user-actions {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .role-select {
+        min-width: 100px;
+        font-size: 0.75rem;
+    }
+    
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* TABLET PORTRAIT (576px - 767px) */
+@media screen and (min-width: 576px) and (max-width: 767px) {
+    :root {
+        --container-padding: 1rem;
+        --hamburger-size: 45px;
+    }
+    
+    .hamburger-btn {
+        min-width: var(--hamburger-size);
+        min-height: var(--hamburger-size);
+        padding: 12px;
+    }
+    
+    .side-menu {
+        width: 280px;
+        padding: 70px 15px 15px;
+    }
+    
+    .welcome-container {
+        margin-top: 110px;
+        padding: 1rem;
+    }
+    
+    .options {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        margin-top: 28px;
+    }
+    
+    .option-card {
+        max-width: 400px;
+        width: 100%;
+        padding: 24px 28px;
+    }
+    
+    .option-card h2 {
+        font-size: 1.3rem;
+    }
+    
+    .choice-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.25rem;
+    }
+    
+    .choice-btn {
+        min-width: 250px;
+        width: 100%;
+        max-width: 350px;
+        padding: 1.5rem;
+        min-height: 120px;
+    }
+    
+    .choice-btn h3 {
+        font-size: 1.1rem;
+    }
+    
+    .choice-btn p {
+        font-size: 0.85rem;
+    }
+    
+    .eeg-form {
+        padding: 20px 16px;
+        max-width: 500px;
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 550px;
+        padding: 1rem;
+        margin-top: 110px;
+    }
+    
+    .admin-section {
+        padding: 1.5rem;
+    }
+    
+    .profile-section {
+        padding: 1.5rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .back-btn {
+        align-self: flex-start;
+    }
+    
+    .users-table {
+        min-width: 600px;
+    }
+    
+    .users-table th,
+    .users-table td {
+        padding: 0.6rem 0.4rem;
+        font-size: 0.8rem;
+    }
+    
+    .modal-content,
+    .logout-modal-content {
+        width: 90%;
+        max-width: 350px;
+        padding: 1.5rem;
+    }
+    
+    .modal-overlay .modal-content {
+        width: 90%;
+        max-width: 380px;
+    }
+}
+
+/* MOBILE LANDSCAPE (480px - 575px) */
+@media screen and (min-width: 480px) and (max-width: 575px) {
+    :root {
+        --hamburger-size: 42px;
+    }
+    
+    .show-mobile { display: block; }
+    .hide-mobile { display: none; }
+    
+    .hamburger-btn {
+        top: 15px;
+        left: 15px;
+        min-width: var(--hamburger-size);
+        min-height: var(--hamburger-size);
+        padding: 10px;
+    }
+    
+    .hamburger-btn span {
+        width: 22px;
+    }
+    
+    .side-menu {
+        width: 260px;
+        padding: 65px 12px 12px;
+    }
+    
+    .side-menu ul li a {
+        font-size: 1rem;
+    }
+    
+    .welcome-container {
+        margin-top: 120px;
+        padding: 0.75rem;
+    }
+    
+    .welcome-container h1 {
+        font-size: 1.8rem;
+    }
+    
+    .options {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        margin-top: 24px;
+    }
+    
+    .option-card {
+        max-width: 350px;
+        width: 100%;
+        padding: 20px 24px;
+    }
+    
+    .option-card h2 {
+        font-size: 1.2rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .choice-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .choice-btn {
+        min-width: 220px;
+        width: 100%;
+        max-width: 300px;
+        padding: 1.25rem;
+        min-height: 110px;
+    }
+    
+    .choice-btn h3 {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
+    }
+    
+    .choice-btn p {
+        font-size: 0.8rem;
+        line-height: 1.3;
+    }
+    
+    .eeg-form {
+        padding: 16px 12px;
+        max-width: 420px;
+        margin: 0 auto;
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 450px;
+        padding: 0.75rem;
+        margin-top: 120px;
+    }
+    
+    .admin-section {
+        padding: 1.5rem;
+    }
+    
+    .profile-section {
+        padding: 1.5rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .back-btn {
+        align-self: flex-start;
+    }
+    
+    .users-table {
+        min-width: 550px;
+    }
+    
+    .users-table th,
+    .users-table td {
+        padding: 0.5rem 0.3rem;
+        font-size: 0.75rem;
+    }
+    
+    .modal-content,
+    .logout-modal-content {
+        width: 95%;
+        max-width: 320px;
+        padding: 1.25rem;
+    }
+    
+    .modal-overlay .modal-content {
+        width: 95%;
+        max-width: 340px;
+        padding: 1.5rem;
+    }
+}
+
+/* MOBILE PORTRAIT (320px - 479px) */
+@media screen and (max-width: 479px) {
+    :root {
+        --container-padding: 0.75rem;
+        --hamburger-size: 40px;
+    }
+    
+    .show-mobile { display: block; }
+    .hide-mobile { display: none; }
+    
+    body {
+        font-size: 0.9rem;
+    }
+    
+    .hamburger-btn {
+        top: 12px;
+        left: 12px;
+        min-width: var(--hamburger-size);
+        min-height: var(--hamburger-size);
+        padding: 8px;
+    }
+    
+    .hamburger-btn span {
+        width: 20px;
+        height: 2.5px;
+    }
+    
+    .side-menu {
+        width: 240px;
+        padding: 60px 10px 10px;
+    }
+    
+    .side-menu ul li {
+        margin-bottom: 12px;
+    }
+    
+    .side-menu ul li a {
+        font-size: 0.95rem;
+    }
+    
+    .welcome-container {
+        margin-top: 130px;
+        padding: 0.5rem;
+    }
+    
+    .welcome-container h1 {
+        font-size: 1.6rem;
+        margin-bottom: 1rem;
+    }
+    
+    .options {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        margin-top: 20px;
+    }
+    
+    .option-card {
+        max-width: 300px;
+        width: 100%;
+        padding: 16px 20px;
+    }
+    
+    .option-card h2 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .option-link {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .choice-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .choice-btn {
+        min-width: 200px;
+        width: 100%;
+        max-width: 280px;
+        padding: 1rem;
+        min-height: 100px;
+    }
+    
+    .choice-btn h3 {
+        font-size: 0.95rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .choice-btn p {
+        font-size: 0.75rem;
+        line-height: 1.25;
+    }
+    
+    .eeg-form {
+        padding: 12px 8px;
+        max-width: 350px;
+        margin: 0 auto;
+    }
+    
+    .eeg-form h1 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 380px;
+        padding: 0.5rem;
+        margin-top: 130px;
+    }
+    
+    .admin-container h1,
+    .profile-container h1 {
+        font-size: 1.4rem;
+    }
+    
+    .admin-section,
+    .profile-section {
+        padding: 1.25rem;
+    }
+    
+    .form-section h3 {
+        font-size: 1rem;
+    }
+    
+    .admin-form input,
+    .admin-form select,
+    .profile-form input {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+    
+    .admin-form label,
+    .profile-form label {
+        font-size: 0.9rem;
+    }
+    
+    .users-table {
+        min-width: 550px;
+    }
+    
+    .users-table th,
+    .users-table td {
+        padding: 0.5rem 0.3rem;
+        font-size: 0.75rem;
+    }
+    
+    .modal-content,
+    .logout-modal-content {
+        width: 95%;
+        max-width: 320px;
+        padding: 1.25rem;
+    }
+    
+    .modal-overlay .modal-content {
+        width: 95%;
+        max-width: 340px;
+        padding: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .logout-modal-buttons {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .logout-modal-btn {
+        width: 100%;
+    }
+}
+
+/* MOBILE PORTRAIT (320px - 479px) */
+@media screen and (max-width: 479px) {
+    :root {
+        --container-padding: 0.75rem;
+        --hamburger-size: 40px;
+    }
+    
+    .show-mobile { display: block; }
+    .hide-mobile { display: none; }
+    
+    body {
+        font-size: 0.9rem;
+    }
+    
+    .hamburger-btn {
+        top: 12px;
+        left: 12px;
+        min-width: var(--hamburger-size);
+        min-height: var(--hamburger-size);
+        padding: 8px;
+    }
+    
+    .hamburger-btn span {
+        width: 20px;
+        height: 2.5px;
+    }
+    
+    .side-menu {
+        width: 240px;
+        padding: 60px 10px 10px;
+    }
+    
+    .side-menu ul li {
+        margin-bottom: 12px;
+    }
+    
+    .side-menu ul li a {
+        font-size: 0.95rem;
+    }
+    
+    .welcome-container {
+        margin-top: 130px;
+        padding: 0.5rem;
+    }
+    
+    .welcome-container h1 {
+        font-size: 1.6rem;
+        margin-bottom: 1rem;
+    }
+    
+    .options {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        margin-top: 20px;
+    }
+    
+    .option-card {
+        max-width: 300px;
+        width: 100%;
+        padding: 16px 20px;
+    }
+    
+    .option-card h2 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .option-link {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .choice-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .choice-btn {
+        min-width: 200px;
+        width: 100%;
+        max-width: 280px;
+        padding: 1rem;
+        min-height: 100px;
+    }
+    
+    .choice-btn h3 {
+        font-size: 0.95rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .choice-btn p {
+        font-size: 0.75rem;
+        line-height: 1.25;
+    }
+    
+    .eeg-form {
+        padding: 12px 8px;
+        max-width: 350px;
+        margin: 0 auto;
+    }
+    
+    .eeg-form h1 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 380px;
+        padding: 0.5rem;
+        margin-top: 130px;
+    }
+    
+    .admin-container h1,
+    .profile-container h1 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .admin-section,
+    .profile-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    .back-btn {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+    }
+    
+    .form-section {
+        padding: 1rem;
+    }
+    
+    .form-section h3 {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .admin-form input,
+    .admin-form select,
+    .profile-form input {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+    
+    .admin-form label,
+    .profile-form label {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .field-note {
+        font-size: 0.7rem;
+    }
+    
+    .user-filter {
+        padding: 0.75rem;
+    }
+    
+    .users-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .users-table {
+        min-width: 500px;
+    }
+    
+    .users-table th,
+    .users-table td {
+        padding: 0.4rem 0.2rem;
+        font-size: 0.7rem;
+    }
+    
+    .users-table th {
+        height: 2rem;
+    }
+    
+    .user-actions {
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+    
+    .btn-icon {
+        padding: 0.3rem;
+        width: 24px;
+        height: 24px;
+    }
+    
+    .role-select {
+        min-width: 80px;
+        font-size: 0.65rem;
+        padding: 0.3rem;
+    }
+    
+    .modal-content,
+    .logout-modal-content {
+        width: 95%;
+        max-width: 280px;
+        padding: 1rem;
+    }
+    
+    .modal-overlay .modal-content {
+        width: 95%;
+        max-width: 300px;
+        padding: 1.25rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .logout-modal-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .logout-modal-btn {
+        width: 100%;
+    }
+}
+
+/* MOBILE PORTRAIT (320px - 479px) */
+@media screen and (max-width: 479px) {
+    :root {
+        --container-padding: 0.75rem;
+        --hamburger-size: 40px;
+    }
+    
+    .show-mobile { display: block; }
+    .hide-mobile { display: none; }
+    
+    body {
+        font-size: 0.9rem;
+    }
+    
+    .hamburger-btn {
+        top: 12px;
+        left: 12px;
+        min-width: var(--hamburger-size);
+        min-height: var(--hamburger-size);
+        padding: 8px;
+    }
+    
+    .hamburger-btn span {
+        width: 20px;
+        height: 2.5px;
+    }
+    
+    .side-menu {
+        width: 240px;
+        padding: 60px 10px 10px;
+    }
+    
+    .side-menu ul li {
+        margin-bottom: 12px;
+    }
+    
+    .side-menu ul li a {
+        font-size: 0.95rem;
+    }
+    
+    .welcome-container {
+        margin-top: 130px;
+        padding: 0.5rem;
+    }
+    
+    .welcome-container h1 {
+        font-size: 1.6rem;
+        margin-bottom: 1rem;
+    }
+    
+    .options {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        margin-top: 20px;
+    }
+    
+    .option-card {
+        max-width: 300px;
+        width: 100%;
+        padding: 16px 20px;
+    }
+    
+    .option-card h2 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .option-link {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .choice-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .choice-btn {
+        min-width: 200px;
+        width: 100%;
+        max-width: 280px;
+        padding: 1rem;
+        min-height: 100px;
+    }
+    
+    .choice-btn h3 {
+        font-size: 0.95rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .choice-btn p {
+        font-size: 0.75rem;
+        line-height: 1.25;
+    }
+    
+    .eeg-form {
+        padding: 12px 8px;
+        max-width: 350px;
+        margin: 0 auto;
+    }
+    
+    .eeg-form h1 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 380px;
+        padding: 0.5rem;
+        margin-top: 130px;
+    }
+    
+    .admin-container h1,
+    .profile-container h1 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .admin-section,
+    .profile-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    .back-btn {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+    }
+    
+    .form-section {
+        padding: 1rem;
+    }
+    
+    .form-section h3 {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .admin-form input,
+    .admin-form select,
+    .profile-form input {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+    
+    .admin-form label,
+    .profile-form label {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .field-note {
+        font-size: 0.7rem;
+    }
+    
+    .user-filter {
+        padding: 0.75rem;
+    }
+    
+    .users-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .users-table {
+        min-width: 500px;
+    }
+    
+    .users-table th,
+    .users-table td {
+        padding: 0.4rem 0.2rem;
+        font-size: 0.7rem;
+    }
+    
+    .users-table th {
+        height: 2rem;
+    }
+    
+    .user-actions {
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+    
+    .btn-icon {
+        padding: 0.3rem;
+        width: 24px;
+        height: 24px;
+    }
+    
+    .role-select {
+        min-width: 80px;
+        font-size: 0.65rem;
+        padding: 0.3rem;
+    }
+    
+    .modal-content,
+    .logout-modal-content {
+        width: 95%;
+        max-width: 280px;
+        padding: 1rem;
+    }
+    
+    .modal-overlay .modal-content {
+        width: 95%;
+        max-width: 300px;
+        padding: 1.25rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .logout-modal-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .logout-modal-btn {
+        width: 100%;
+    }
+}
+
+/* ENHANCED RESPONSIVE UTILITIES */
+
+/* Enhanced responsive form utilities */
+.form-responsive {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-row-responsive {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    width: 100%;
+}
+
+.form-group-responsive {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* Responsive input sizing */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+select,
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 16px; /* Prevents zoom on iOS */
+}
+
+/* Responsive button sizing */
+button,
+.btn {
+    min-height: 44px; /* Touch-friendly size */
+    min-width: 44px;
+    box-sizing: border-box;
+}
+
+/* Responsive table improvements */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+    min-width: 600px;
+}
+
+/* Responsive image/content scaling */
+img,
+video,
+iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Responsive text sizing utilities */
+@media screen and (max-width: 480px) {
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+    h4 { font-size: 1.125rem; }
+    h5 { font-size: 1rem; }
+    h6 { font-size: 0.875rem; }
+}
+
+/* Enhanced touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+    .hamburger-btn,
+    .sortable-header,
+    .btn-icon,
+    button,
+    .option-link,
+    .choice-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Larger tap targets for small buttons */
+    .btn-icon {
+        padding: 0.75rem;
+    }
+    
+    /* Better spacing for mobile interactions */
+    .user-actions {
+        gap: 0.75rem;
+    }
+}
+
+/* Fix for very narrow screens */
+@media screen and (max-width: 320px) {
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .form-group {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .choice-btn {
+        min-width: 200px;
+        width: 100%;
+    }
+    
+    .option-card {
+        min-width: 250px;
+        width: 100%;
+    }
+}
+
+/* Landscape orientation adjustments for mobile */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .welcome-container,
+    .admin-container,
+    .profile-container {
+        margin-top: 60px;
+    }
+    
+    .hamburger-btn {
+        top: 10px;
+    }
+    
+    .side-menu {
+        padding-top: 50px;
+    }
+}
+
+/* ...existing code... */
 
 .option-card {
     background: #fff;
@@ -143,15 +1537,7 @@ label, p, input, button, a {
     transform: rotate(-45deg) translate(5px, -5px);
 }
 
-@media screen and (max-width: 768px) {
-    .hamburger-btn {
-        top: 10px;
-        left: 10px;
-        padding: 10px;
-        min-width: 40px;  /* Smaller but still visible on mobile */
-        min-height: 40px;
-    }
-}
+/* Legacy media query removed - now handled by comprehensive responsive system above */
 
 /* Add overlay when menu is open */
 body::after {
@@ -253,7 +1639,9 @@ button[type="submit"]:disabled,
     flex-direction: column;
     min-width: 320px;
     max-width: 700px;
+    width: 100%;
     margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .form-row {
@@ -261,6 +1649,7 @@ button[type="submit"]:disabled,
     gap: 18px;
     margin-bottom: 0;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 .patient-number-group {
@@ -365,8 +1754,10 @@ button[type="submit"]:disabled,
     border-radius: 8px;
     max-width: 90%;
     width: 400px;
+    min-width: 280px;
     text-align: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
 .modal-content.success {
@@ -522,17 +1913,21 @@ button[type="submit"]:disabled,
 /* Admin Styles */
 .admin-container {
     max-width: 1000px;
+    width: 100%;
     margin: 2rem auto;
     padding: 2rem;
     margin-top: 80px;
+    box-sizing: border-box;
 }
 
 /* Profile Styles */
 .profile-container {
     max-width: 1000px;
+    width: 100%;
     margin: 2rem auto;
     padding: 2rem;
     margin-top: 80px;
+    box-sizing: border-box;
 }
 
 .profile-section {
@@ -776,25 +2171,7 @@ button[type="submit"]:disabled,
     background-color: #fff8f8;
 }
 
-/* Responsive adjustments for narrow viewports */
-@media screen and (max-width: 768px) {
-    .admin-container,
-    .profile-container,
-    .welcome-container {
-        margin-top: 100px; /* Increased margin for mobile */
-        padding: 1rem;
-    }
-}
-
-/* Additional responsive adjustments for very narrow viewports (dev tools open, heavy zoom) */
-@media screen and (max-width: 600px) {
-    .admin-container,
-    .profile-container,
-    .welcome-container {
-        margin-top: 120px; /* Even more margin for very narrow screens */
-        padding: 1rem;
-    }
-}
+/* Legacy responsive adjustments removed - now handled by comprehensive responsive system above */
 
 .admin-choice {
     text-align: center;
@@ -1121,6 +2498,33 @@ button[type="submit"]:disabled,
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow: hidden;
+    width: 100%;
+    position: relative;
+}
+
+/* Add horizontal scroll indicator for mobile */
+.users-table-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 100%;
+    background: linear-gradient(to left, rgba(255,255,255,0.8), transparent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+@media screen and (max-width: 768px) {
+    .users-table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .users-table-container::after {
+        opacity: 1;
+    }
 }
 
 .users-table {
@@ -1129,6 +2533,7 @@ button[type="submit"]:disabled,
     font-size: 0.9rem;
     table-layout: auto;
     display: table;
+    min-width: 700px; /* Ensure minimum width for readability */
 }
 
 .users-table thead {
@@ -1317,31 +2722,7 @@ button[type="submit"]:disabled,
     font-size: 0.85rem;
 }
 
-/* Responsive design for user table */
-@media (max-width: 768px) {
-    .users-table-container {
-        overflow-x: auto;
-    }
-    
-    .users-table {
-        min-width: 600px;
-    }
-    
-    .users-table th,
-    .users-table td {
-        padding: 0.75rem 0.5rem;
-    }
-    
-    .user-actions {
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-    
-    .role-select {
-        min-width: 100px;
-        font-size: 0.75rem;
-    }
-}
+/* Legacy table responsive styles removed - now handled by comprehensive responsive system above */
 
 /* Table Sorting Styles */
 .sortable-header {
