@@ -229,11 +229,15 @@ const startActivityMonitoring = () => {
 
 // Check authentication
 const checkAuth = () => {
+    console.log('checkAuth() called for page:', window.location.pathname);
+    
     if (isPublicPage()) {
+        console.log('Public page detected, skipping auth check');
         return; // Public page, no auth required
     }
 
     const token = localStorage.getItem('token');
+    console.log('Token found:', !!token);
     
     if (!token) {
         console.log('No token found, redirecting to login');
@@ -243,6 +247,11 @@ const checkAuth = () => {
 
     // Check if this is a new tab/window - if no tab ID exists, this is a fresh tab
     const currentTabId = sessionStorage.getItem('currentTabId');
+    console.log('Current tab ID from sessionStorage:', currentTabId);
+    
+    // Also check localStorage for session data
+    const sessionData = SessionManager.getSessionData();
+    console.log('Session data from localStorage:', sessionData);
     
     if (!currentTabId) {
         console.log('New tab detected - no tab ID found, redirecting to login');

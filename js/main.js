@@ -44,17 +44,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const FADE_DURATION = 450;
     
     console.log(`Running in ${isLocal ? 'LOCAL' : 'PRODUCTION'} mode, API_URL: ${API_URL}`);
-    
-    // Check if current page is login page
+      // Check if current page is login page
     const currentPath = window.location.pathname;
     const isLoginPage = currentPath === '/' || currentPath === '/index.html' || currentPath.endsWith('/');
     
     // Clear authentication data if on login page to ensure clean state
+    // BUT only if we don't have a valid session that was just created
     if (isLoginPage && document.getElementById('loginForm')) {
-        console.log('On login page - clearing any stale authentication data');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        sessionStorage.clear();
+        const hasValidSession = sessionStorage.getItem('currentTabId') && localStorage.getItem('token');
+        
+        if (!hasValidSession) {
+            console.log('On login page - clearing any stale authentication data');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            sessionStorage.clear();
+        } else {
+            console.log('On login page but have valid session - not clearing data');
+        }
     }
     
     // Unified modal management
@@ -150,6 +156,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (window.SessionManager) {
                         window.SessionManager.initSession();
                         console.log('Session initialized before navigation');
+                        
+                        // Verify session was created
+                        const tabId = window.SessionManager.tabId;
+                        const storedTabId = sessionStorage.getItem('currentTabId');
+                        console.log('SessionManager tabId:', tabId);
+                        console.log('SessionStorage tabId:', storedTabId);
+                        
                     } else {
                         // Fallback: manual session initialization with tab ID
                         const loginTime = Date.now();
@@ -169,14 +182,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         localStorage.setItem('activeSession', JSON.stringify(sessionData));
                         
                         console.log('Fallback session initialization completed with tab ID:', tabId);
-                    }
-
-                    // Use utility function to check admin status and update UI
+                    }                    // Use utility function to check admin status and update UI
                     const isAdmin = isUserAdmin(data.user);
                     updateAdminUI(isAdmin);
 
+                    // Add a small delay to ensure sessionStorage is persisted before navigation
+                    console.log('About to navigate to welcome page...');
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
+                        // Double-check that session data is still there before navigation
+                        const finalTabId = sessionStorage.getItem('currentTabId');
+                        console.log('Final tab ID before navigation:', finalTabId);
+                        
                         window.location.href = "welcome/";
                     }, FADE_DURATION);
                 } else {
