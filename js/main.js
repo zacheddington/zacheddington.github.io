@@ -80,14 +80,17 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     }
                 });
             }
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    document.body.classList.add('fade-out');
+              if (type === 'success') {
+                // Only redirect to welcome page if we're not on the admin page
+                const isAdminPage = window.location.pathname.includes('/admin/');
+                if (!isAdminPage) {
                     setTimeout(() => {
-                        window.location.href = "../welcome/";
-                    }, FADE_DURATION);
-                }, 2000);
+                        document.body.classList.add('fade-out');
+                        setTimeout(() => {
+                            window.location.href = "../welcome/";
+                        }, FADE_DURATION);
+                    }, 2000);
+                }
             }
         },
         
