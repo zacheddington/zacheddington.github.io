@@ -457,10 +457,16 @@ button[type="submit"]:disabled,
     border-radius: 12px;
     padding: 2rem;
     min-width: 280px;
+    width: 280px; /* Set exact width for consistent sizing */
+    height: auto;
+    min-height: 140px; /* Set minimum height for consistent sizing */
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: left;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .choice-btn:hover {
@@ -477,14 +483,21 @@ button[type="submit"]:disabled,
     background: #f0fdfc;
 }
 
+.choice-btn.secondary {
+    border-color: #e0f7fa; /* Ensure consistent border color */
+}
+
 .choice-btn.secondary:hover {
     background: #f8f9fa;
+    border-color: #009688; /* Match hover state */
 }
 
 .choice-btn h3 {
     margin: 0 0 0.5rem 0;
     color: #003b49;
     font-size: 1.25rem;
+    line-height: 1.3;
+    min-height: 1.6rem; /* Ensure consistent height */
 }
 
 .choice-btn p {
@@ -492,6 +505,7 @@ button[type="submit"]:disabled,
     color: #666;
     font-size: 0.9rem;
     line-height: 1.4;
+    flex-grow: 1; /* Allow paragraph to fill remaining space */
 }
 
 .admin-section {
