@@ -853,6 +853,282 @@ app.post('/api/check-username', authenticateToken, async (req, res) => {
     }
 });
 
+// Get all users endpoint for admin management
+app.get('/api/users', authenticateToken, async (req, res) => {
+    try {
+        // Check if user is admin
+        const isAdmin = req.user.roleKeys?.includes(1) || 
+                       req.user.roles?.some(role => {
+                           const roleLower = role.toLowerCase();
+                           return roleLower.includes('admin') || 
+                                  roleLower.includes('administrator') ||
+                                  roleLower === 'admin';
+                       });
+        
+        if (!isAdmin) {
+            return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+        }
+        
+        // Check if we're in local test mode
+        const isLocalTest = process.env.NODE_ENV === 'development' && 
+                           process.env.DATABASE_URL?.includes('localhost');
+        
+        if (isLocalTest) {
+            // Return test users for local development
+            return res.json([
+                {
+                    user_key: 1,
+                    username: 'admin',
+                    first_name: 'Test',
+                    middle_name: 'Local',
+                    last_name: 'Admin',
+                    email: 'admin@test.com',
+                    date_created: '2024-01-01T00:00:00.000Z',
+                    roles: ['Administrator'],
+                    role_keys: [1]
+                },
+                {
+                    user_key: 2,
+                    username: 'testuser',
+                    first_name: 'Test',
+                    middle_name: null,
+                    last_name: 'User',
+                    email: 'user@test.com',
+                    date_created: '2024-01-02T00:00:00.000Z',
+                    roles: ['User'],
+                    role_keys: [2]
+                }
+            ]);
+        }
+        
+        // Production database logic
+        const usersResult = await pool.query(`
+            SELECT 
+                u.user_key,
+                u.username,
+                u.email,
+                u.date_created,
+                n.first_name,
+                n.middle_name,
+                n.last_name,
+                array_agg(r.role_name ORDER BY r.role_name) as roles,
+                array_agg(r.role_key ORDER BY r.role_name) as role_keys
+            FROM tbl_user u
+            LEFT JOIN tbl_name_data n ON u.name_key = n.name_key
+            LEFT JOIN tbl_user_role ur ON u.user_key = ur.user_key
+            LEFT JOIN tbl_role r ON ur.role_key = r.role_key
+            GROUP BY u.user_key, u.username, u.email, u.date_created, n.first_name, n.middle_name, n.last_name
+            ORDER BY u.username
+        `);
+        
+        res.json(usersResult.rows);
+        
+    } catch (err) {
+        console.error('Get users error:', err);
+        res.status(500).json({ 
+            error: 'Failed to fetch users',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+});
+
+// Update user role endpoint
+app.put('/api/users/:userId/role', authenticateToken, async (req, res) => {
+    try {
+        // Check if user is admin
+        const isAdmin = req.user.roleKeys?.includes(1) || 
+                       req.user.roles?.some(role => {
+                           const roleLower = role.toLowerCase();
+                           return roleLower.includes('admin') || 
+                                  roleLower.includes('administrator') ||
+                                  roleLower === 'admin';
+                       });
+        
+        if (!isAdmin) {
+            return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+        }
+        
+        const userId = req.params.userId;
+        const { roleKey } = req.body;
+        
+        if (!roleKey) {
+            return res.status(400).json({ error: 'Role key is required' });
+        }
+        
+        // Check if we're in local test mode
+        const isLocalTest = process.env.NODE_ENV === 'development' && 
+                           process.env.DATABASE_URL?.includes('localhost');
+        
+        if (isLocalTest) {
+            // For local testing, just return success
+            return res.json({ 
+                message: 'User role updated successfully',
+                userId: userId,
+                roleKey: roleKey
+            });
+        }
+        
+        // Prevent admin from removing their own admin role
+        if (parseInt(userId) === req.user.id && parseInt(roleKey) !== 1) {
+            return res.status(400).json({ error: 'Cannot remove admin privileges from your own account' });
+        }
+        
+        // Production database logic
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            
+            // Verify user exists
+            const userCheck = await client.query(
+                'SELECT user_key FROM tbl_user WHERE user_key = $1',
+                [userId]
+            );
+            
+            if (userCheck.rows.length === 0) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            
+            // Verify role exists
+            const roleCheck = await client.query(
+                'SELECT role_key FROM tbl_role WHERE role_key = $1',
+                [roleKey]
+            );
+            
+            if (roleCheck.rows.length === 0) {
+                return res.status(400).json({ error: 'Invalid role selected' });
+            }
+            
+            // Remove existing role assignments for this user
+            await client.query(
+                'DELETE FROM tbl_user_role WHERE user_key = $1',
+                [userId]
+            );
+            
+            // Add new role assignment
+            await client.query(
+                'INSERT INTO tbl_user_role (user_key, role_key, date_created, date_when) VALUES ($1, $2, NOW(), NOW())',
+                [userId, roleKey]
+            );
+            
+            await client.query('COMMIT');
+            
+            res.json({ 
+                message: 'User role updated successfully',
+                userId: userId,
+                roleKey: roleKey
+            });
+            
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+        
+    } catch (err) {
+        console.error('Update user role error:', err);
+        res.status(500).json({ 
+            error: 'Failed to update user role',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+});
+
+// Delete user endpoint
+app.delete('/api/users/:userId', authenticateToken, async (req, res) => {
+    try {
+        // Check if user is admin
+        const isAdmin = req.user.roleKeys?.includes(1) || 
+                       req.user.roles?.some(role => {
+                           const roleLower = role.toLowerCase();
+                           return roleLower.includes('admin') || 
+                                  roleLower.includes('administrator') ||
+                                  roleLower === 'admin';
+                       });
+        
+        if (!isAdmin) {
+            return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+        }
+        
+        const userId = req.params.userId;
+        
+        // Prevent admin from deleting their own account
+        if (parseInt(userId) === req.user.id) {
+            return res.status(400).json({ error: 'Cannot delete your own account' });
+        }
+        
+        // Check if we're in local test mode
+        const isLocalTest = process.env.NODE_ENV === 'development' && 
+                           process.env.DATABASE_URL?.includes('localhost');
+        
+        if (isLocalTest) {
+            // For local testing, just return success
+            return res.json({ 
+                message: 'User deleted successfully',
+                userId: userId
+            });
+        }
+        
+        // Production database logic
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            
+            // Verify user exists and get their name_key
+            const userCheck = await client.query(
+                'SELECT user_key, name_key FROM tbl_user WHERE user_key = $1',
+                [userId]
+            );
+            
+            if (userCheck.rows.length === 0) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            
+            const nameKey = userCheck.rows[0].name_key;
+            
+            // Delete user role assignments
+            await client.query(
+                'DELETE FROM tbl_user_role WHERE user_key = $1',
+                [userId]
+            );
+            
+            // Delete user account
+            await client.query(
+                'DELETE FROM tbl_user WHERE user_key = $1',
+                [userId]
+            );
+            
+            // Delete associated name data if it exists
+            if (nameKey) {
+                await client.query(
+                    'DELETE FROM tbl_name_data WHERE name_key = $1',
+                    [nameKey]
+                );
+            }
+            
+            await client.query('COMMIT');
+            
+            res.json({ 
+                message: 'User deleted successfully',
+                userId: userId
+            });
+            
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+        
+    } catch (err) {
+        console.error('Delete user error:', err);
+        res.status(500).json({ 
+            error: 'Failed to delete user',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

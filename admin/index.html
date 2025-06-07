@@ -98,16 +98,40 @@
                     <button type="button" class="secondary-btn" id="cancelCreateUser">Cancel</button>
                 </div>
             </form>
-        </div>
-
-        <!-- Manage Users Section -->        <div class="admin-section hidden" id="manageUsersSection">
+        </div>        <!-- Manage Users Section -->        <div class="admin-section hidden" id="manageUsersSection">
             <div class="section-header">
                 <button class="back-btn" id="backFromManage">← Back</button>
                 <h2>Manage Existing Users</h2>
             </div>
-            <div class="users-list">
-                <!-- Users will be loaded here dynamically -->
-                <p>User management functionality will be implemented next.</p>
+            
+            <!-- User Filter -->
+            <div class="user-filter">
+                <div class="form-group">
+                    <label for="userFilter">Search Users</label>
+                    <input type="text" id="userFilter" placeholder="Search by username, name, or email..." autocomplete="off">
+                    <small class="field-note">Filter users to quickly find specific accounts</small>
+                </div>
+            </div>
+            
+            <!-- Users Table -->
+            <div class="users-table-container">
+                <table class="users-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Users will be loaded here dynamically -->
+                    </tbody>
+                </table>
+                <div id="usersLoading" class="loading-message">Loading users...</div>
+                <div id="noUsersFound" class="no-results hidden">No users found matching your search.</div>
             </div>
         </div>
     </div>
