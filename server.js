@@ -50,13 +50,14 @@ app.post('/api/login', async (req, res) => {
         // Simple test credentials for local development
         const { username, password } = req.body;
         
-        if (username === 'admin' && password === 'admin') {
-            const token = jwt.sign(
+        if (username === 'admin' && password === 'admin') {            const token = jwt.sign(
                 { 
                     id: 1,
                     username: 'admin',
                     firstName: 'Test',
-                    lastName: 'Admin'
+                    middleName: 'Local',
+                    lastName: 'Admin',
+                    email: 'admin@test.com'
                 },
                 process.env.JWT_SECRET,
                 { expiresIn: '8h' }
@@ -67,7 +68,9 @@ app.post('/api/login', async (req, res) => {
                 user: {
                     username: 'admin',
                     firstName: 'Test',
+                    middleName: 'Local',
                     lastName: 'Admin',
+                    email: 'admin@test.com',
                     roles: ['admin'],
                     roleKeys: [1],
                     isAdmin: true,
@@ -81,11 +84,9 @@ app.post('/api/login', async (req, res) => {
     
     // Production database logic
     try {
-        const { username, password } = req.body;
-
-        // Query user data including name information and roles
+        const { username, password } = req.body;        // Query user data including name information and roles
         const userResult = await pool.query(
-            `SELECT u.*, n.first_name, n.last_name 
+            `SELECT u.*, n.first_name, n.middle_name, n.last_name 
              FROM tbl_user u 
              LEFT JOIN tbl_name_data n ON u.name_key = n.name_key 
              WHERE u.username = $1`,
@@ -128,15 +129,15 @@ app.post('/api/login', async (req, res) => {
                                   roleLower === 'admin';
                        });
 
-        console.log('Admin status determined:', isAdmin);
-
-        // Create token
+        console.log('Admin status determined:', isAdmin);        // Create token
         const token = jwt.sign(
             { 
                 id: user.user_key,
                 username: user.username,
                 firstName: user.first_name,
+                middleName: user.middle_name,
                 lastName: user.last_name,
+                email: user.email,
                 nameKey: user.name_key,
                 roles: roles,
                 roleKeys: roleKeys
@@ -154,7 +155,9 @@ app.post('/api/login', async (req, res) => {
             user: {
                 username: user.username,
                 firstName: user.first_name,
+                middleName: user.middle_name,
                 lastName: user.last_name,
+                email: user.email,
                 roles: roles,
                 roleKeys: roleKeys,
                 isAdmin: isAdmin,
