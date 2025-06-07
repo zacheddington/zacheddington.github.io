@@ -85,10 +85,21 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid username or password (use admin/admin for local testing)' });
         }
     }
-    
-    // Production database logic
+      // Production database logic
     try {
-        const { username, password } = req.body;        // Query user data including name information and roles
+        const { username, password } = req.body;
+          // Debug: List all users to see what's in the database
+        const allUsersResult = await pool.query('SELECT username, user_key, name_key FROM tbl_user LIMIT 5');
+        console.log('Available users in database:', allUsersResult.rows);
+        
+        // Debug: Check table structure
+        const tableInfoResult = await pool.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'tbl_user' AND table_schema = 'public'");
+        console.log('tbl_user columns:', tableInfoResult.rows);
+        
+        const nameTableInfoResult = await pool.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'tbl_name_data' AND table_schema = 'public'");
+        console.log('tbl_name_data columns:', nameTableInfoResult.rows);
+        
+        // Query user data including name information and roles
         const sqlQuery = `SELECT u.*, n.first_name, n.middle_name, n.last_name 
              FROM tbl_user u 
              LEFT JOIN tbl_name_data n ON u.name_key = n.name_key 
