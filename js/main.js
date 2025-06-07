@@ -162,13 +162,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         const storedTabId = sessionStorage.getItem('currentTabId');
                         console.log('SessionManager tabId:', tabId);
                         console.log('SessionStorage tabId:', storedTabId);
-                        
-                    } else {
+                          } else {
                         // Fallback: manual session initialization with tab ID
                         const loginTime = Date.now();
                         const tabId = 'tab_' + loginTime + '_' + Math.random().toString(36).substr(2, 9);
                         
+                        // Store in both sessionStorage and localStorage for resilience
                         sessionStorage.setItem('currentTabId', tabId);
+                        localStorage.setItem('lastTabId', tabId);
+                        localStorage.setItem('loginTimestamp', loginTime.toString());
                         sessionStorage.setItem('loginTime', loginTime.toString());
                         sessionStorage.setItem('lastActivity', loginTime.toString());
                         
@@ -177,12 +179,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             loginTime: loginTime,
                             lastActivity: loginTime,
                             tabId: tabId,
-                            lastHeartbeat: loginTime
+                            lastHeartbeat: loginTime,
+                            isRecentLogin: true
                         };
                         localStorage.setItem('activeSession', JSON.stringify(sessionData));
                         
                         console.log('Fallback session initialization completed with tab ID:', tabId);
-                    }                    // Use utility function to check admin status and update UI
+                    }// Use utility function to check admin status and update UI
                     const isAdmin = isUserAdmin(data.user);
                     updateAdminUI(isAdmin);
 

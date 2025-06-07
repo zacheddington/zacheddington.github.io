@@ -18,8 +18,7 @@ const isPublicPage = () => {
 const SessionManager = {
     tabId: null,
     heartbeatInterval: null,
-    
-    // Generate unique tab ID and initialize session
+      // Generate unique tab ID and initialize session
     initSession: () => {
         // Generate unique tab identifier
         SessionManager.tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -30,13 +29,16 @@ const SessionManager = {
             loginTime: loginTime,
             lastActivity: loginTime,
             tabId: SessionManager.tabId,
-            lastHeartbeat: loginTime
+            lastHeartbeat: loginTime,
+            isRecentLogin: true // Flag for recent login grace period
         };
         
         localStorage.setItem('activeSession', JSON.stringify(sessionData));
         
-        // Store tab ID in sessionStorage (this will be unique per tab/window)
+        // Store tab ID in BOTH sessionStorage and localStorage for resilience
         sessionStorage.setItem('currentTabId', SessionManager.tabId);
+        localStorage.setItem('lastTabId', SessionManager.tabId);
+        localStorage.setItem('loginTimestamp', loginTime.toString());
         
         console.log('Session initialized with tab-specific tracking:', SessionManager.tabId);
         
@@ -243,9 +245,7 @@ const checkAuth = () => {
         console.log('No token found, redirecting to login');
         window.location.href = '/';
         return;
-    }
-
-    // Check if this is a new tab/window - if no tab ID exists, this is a fresh tab
+    }    // Check if this is a new tab/window - if no tab ID exists, this is a fresh tab
     const currentTabId = sessionStorage.getItem('currentTabId');
     console.log('Current tab ID from sessionStorage:', currentTabId);
     
@@ -253,12 +253,31 @@ const checkAuth = () => {
     const sessionData = SessionManager.getSessionData();
     console.log('Session data from localStorage:', sessionData);
     
+    // Grace period for recent logins - if login was within last 30 seconds and we have session data,
+    // allow access even without sessionStorage tab ID (handles immediate post-login navigation)
+    const now = Date.now();
+    const loginTimestamp = parseInt(localStorage.getItem('loginTimestamp') || '0');
+    const isRecentLogin = (now - loginTimestamp) < 30000; // 30 seconds grace period
+    
+    console.log('Login timestamp:', loginTimestamp, 'Recent login:', isRecentLogin);
+    
     if (!currentTabId) {
-        console.log('New tab detected - no tab ID found, redirecting to login');
-        // Don't clear session data - just redirect this tab to login
-        // The original logged-in tab should still work
-        window.location.href = '/';
-        return;
+        if (isRecentLogin && sessionData && sessionData.tabId) {
+            console.log('No sessionStorage tab ID but recent login detected - allowing access and restoring session');
+            // Restore the session for this tab
+            sessionStorage.setItem('currentTabId', sessionData.tabId);
+            SessionManager.tabId = sessionData.tabId;
+            
+            // Clear the recent login flag to prevent abuse
+            sessionData.isRecentLogin = false;
+            localStorage.setItem('activeSession', JSON.stringify(sessionData));
+        } else {
+            console.log('New tab detected - no tab ID found, redirecting to login');
+            // Don't clear session data - just redirect this tab to login
+            // The original logged-in tab should still work
+            window.location.href = '/';
+            return;
+        }
     }
 
     // Check if session is valid for this specific tab
