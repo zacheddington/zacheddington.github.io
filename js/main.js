@@ -52,8 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('=== PAGE DETECTION ===');
     console.log('currentPath:', currentPath);
     console.log('isLoginPage:', isLoginPage);
-    console.log('=== END PAGE DETECTION ===');
-      // Clear authentication data if on login page to ensure clean state
+    console.log('=== END PAGE DETECTION ===');    // Clear authentication data if on login page to ensure clean state
     // BUT only if we don't have a valid session that was just created
     if (isLoginPage && document.getElementById('loginForm')) {
         const hasValidSession = sessionStorage.getItem('currentTabId') && localStorage.getItem('token');
@@ -63,6 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('hasValidSession:', hasValidSession);
         console.log('sessionStorage.currentTabId:', sessionStorage.getItem('currentTabId'));
         console.log('localStorage.token:', localStorage.getItem('token'));
+        console.log('localStorage.user:', localStorage.getItem('user'));
         console.log('=== END LOGIN PAGE CHECK ===');
         
         if (!hasValidSession) {
@@ -161,9 +161,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 const data = await response.json();                if (response.ok && data.token) {
+                    // Debug logging for login data
+                    console.log('=== LOGIN DATA DEBUG ===');
+                    console.log('Login response data:', data);
+                    console.log('User data received:', data.user);
+                    console.log('=== END LOGIN DEBUG ===');
+                    
                     // Store authentication data
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));                    // Initialize session management (browser-lifetime storage)
+                    localStorage.setItem('user', JSON.stringify(data.user));// Initialize session management (browser-lifetime storage)
                     // CRITICAL: Ensure this happens immediately and synchronously
                     if (window.SessionManager) {
                         window.SessionManager.initSession();
