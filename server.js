@@ -46,6 +46,10 @@ app.post('/api/login', async (req, res) => {
     const isLocalTest = process.env.NODE_ENV === 'development' && 
                        process.env.DATABASE_URL?.includes('localhost');
     
+    console.log('Login attempt - NODE_ENV:', process.env.NODE_ENV);
+    console.log('Login attempt - DATABASE_URL contains localhost:', process.env.DATABASE_URL?.includes('localhost'));
+    console.log('Login attempt - isLocalTest:', isLocalTest);
+    
     if (isLocalTest) {
         // Simple test credentials for local development
         const { username, password } = req.body;
