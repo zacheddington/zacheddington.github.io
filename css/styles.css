@@ -1148,13 +1148,13 @@ iframe {
 
 /* Legacy media query removed - now handled by comprehensive responsive system above */
 
-/* Add overlay when menu is open */
+/* Add overlay when menu is open - covers only the main content area */
 body::after {
     content: '';
     position: fixed;
     top: 0;
-    left: 0;
-    width: 100%;
+    left: 300px; /* Start after the sidebar width */
+    width: calc(100% - 300px); /* Cover remaining width */
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     opacity: 0;

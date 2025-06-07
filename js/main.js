@@ -368,9 +368,7 @@ async function loadMenu() {
                 document.body.classList.toggle('menu-open');
                 hamburgerBtn.classList.toggle('active');
                 sideMenu.classList.toggle('active');
-            });
-
-            // Close menu when clicking outside of it
+            });            // Close menu when clicking outside of it
             document.addEventListener('click', (e) => {
                 const isMenuOpen = sideMenu.classList.contains('active');
                 const isClickInsideMenu = sideMenu.contains(e.target);
