@@ -2337,13 +2337,13 @@ button[type="submit"]:disabled,
 }
 
 .sort-indicator.sort-asc {
-    color: #e8f5e8;
-    text-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
+    color: #009688;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
 .sort-indicator.sort-desc {
-    color: #e8f5e8;
-    text-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
+    color: #009688;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
 /* Enhance user actions for better visibility */
