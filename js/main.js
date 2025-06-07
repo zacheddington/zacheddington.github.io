@@ -572,19 +572,32 @@ function initializeProfilePage() {
     // Load user data into form
     loadUserProfile();
     
+    // Set initial profile editing state
+    setProfileEditingState(false);
+    
     // Handle profile form submission
     const profileForm = document.getElementById('profileForm');
     if (profileForm) {
         profileForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            await updateUserProfile();
+
+            const updateBtn = document.getElementById('updateProfileBtn');
+            const isEditing = updateBtn.textContent === 'Save Profile';
+
+            if (isEditing) {
+                // User clicked "Save Profile" - submit the update
+                await updateUserProfile();
+            } else {
+                // User clicked "Update Profile" - enable editing mode
+                enableProfileEditing();
+            }
         });
         
         // Handle cancel button
         const cancelBtn = document.getElementById('cancelProfileBtn');
         if (cancelBtn) {
             cancelBtn.addEventListener('click', function() {
-                loadUserProfile(); // Reset form to original values
+                cancelProfileEditing();
             });
         }
     }
@@ -690,8 +703,7 @@ async function loadUserProfile() {
         } else {
             roleField.value = 'User';
         }
-        
-        // Display account information
+          // Display account information
         document.getElementById('usernameDisplay').textContent = userData.username || '-';
         
         // Format last login if available
@@ -700,6 +712,9 @@ async function loadUserProfile() {
             const loginDate = new Date(parseInt(loginTimestamp));
             document.getElementById('lastLoginDisplay').textContent = loginDate.toLocaleString();
         }
+        
+        // Set initial disabled state for profile fields
+        setProfileEditingState(false);
         
     } catch (error) {
         console.error('Error loading user profile:', error);
@@ -714,7 +729,7 @@ async function updateUserProfile() {
     
     try {
         updateBtn.disabled = true;
-        updateBtn.textContent = 'Updating...';
+        updateBtn.textContent = 'Saving...';
         
         // Pre-flight connectivity check
         const connectivity = await checkConnectivity();
@@ -766,8 +781,7 @@ async function updateUserProfile() {
             body: JSON.stringify(formData)
         });
         
-        const result = await response.json();
-          if (response.ok) {
+        const result = await response.json();        if (response.ok) {
             // Update local storage with new user data
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
             userData.firstName = formData.firstName;
@@ -775,6 +789,10 @@ async function updateUserProfile() {
             userData.lastName = formData.lastName;
             userData.email = formData.email;
             localStorage.setItem('user', JSON.stringify(userData));
+            
+            // Return to disabled state after successful update
+            setProfileEditingState(false);
+            delete window.originalProfileData;
             
             // Show success modal with additional details
             const successMessage = `Profile updated successfully! Your information has been saved to the database.${result.nameKey ? ` (Record ID: ${result.nameKey})` : ''}`;
@@ -790,13 +808,15 @@ async function updateUserProfile() {
         
         // Show appropriate feedback based on error type
         if (errorInfo.modal) {
-            window.modalManager.showModal('error', errorInfo.message);
-        } else {
+            window.modalManager.showModal('error', errorInfo.message);        } else {
             showProfileError(errorInfo.message);
         }
     } finally {
         updateBtn.disabled = false;
-        updateBtn.textContent = originalText;
+        // Only restore button text if we haven't switched to disabled state (successful update)
+        if (updateBtn.textContent === 'Saving...') {
+            updateBtn.textContent = originalText;
+        }
     }
 }
 
@@ -986,4 +1006,56 @@ function clearPasswordErrors() {
             errorMsg.remove();
         }
     });
+}
+
+// Profile editing state management functions
+function setProfileEditingState(isEditing) {
+    const profileFields = ['firstName', 'middleName', 'lastName', 'email'];
+    const updateBtn = document.getElementById('updateProfileBtn');
+    const cancelBtn = document.getElementById('cancelProfileBtn');
+    
+    profileFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.disabled = !isEditing;
+        }
+    });
+    
+    if (updateBtn) {
+        updateBtn.textContent = isEditing ? 'Save Profile' : 'Update Profile';
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.style.display = isEditing ? 'inline-block' : 'none';
+    }
+}
+
+function enableProfileEditing() {
+    // Store original values for potential cancellation
+    const originalData = {
+        firstName: document.getElementById('firstName').value,
+        middleName: document.getElementById('middleName').value,
+        lastName: document.getElementById('lastName').value,
+        email: document.getElementById('email').value
+    };
+    
+    // Store in a data attribute or global variable for access during cancel
+    window.originalProfileData = originalData;
+    
+    setProfileEditingState(true);
+}
+
+function cancelProfileEditing() {
+    // Restore original values
+    if (window.originalProfileData) {
+        document.getElementById('firstName').value = window.originalProfileData.firstName;
+        document.getElementById('middleName').value = window.originalProfileData.middleName;
+        document.getElementById('lastName').value = window.originalProfileData.lastName;
+        document.getElementById('email').value = window.originalProfileData.email;
+    }
+    
+    setProfileEditingState(false);
+    
+    // Clear stored original data
+    delete window.originalProfileData;
 }
