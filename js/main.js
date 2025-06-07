@@ -1221,697 +1221,359 @@ async function loadRoles() {
         });
         
         if (response.ok) {
-            currentRoles = await response.json();
+            const roles = await response.json();
+            const roleSelect = document.getElementById('userRole');
+            if (roleSelect) {
+                // Clear existing options except the placeholder
+                roleSelect.innerHTML = '<option value="">Select a role...</option>';
+                
+                // Add role options
+                roles.forEach(role => {
+                    const option = document.createElement('option');
+                    option.value = role.role_key;
+                    option.textContent = role.role_name;
+                    roleSelect.appendChild(option);
+                });
+            }
         } else {
-            console.error('Failed to load roles for user management');
+            console.error('Failed to load roles');
         }
     } catch (error) {
-        console.error('Error loading roles for user management:', error);
+        console.error('Error loading roles:', error);
     }
 }
 
-function displayUsers(users) {
-    const usersTableBody = document.getElementById('usersTableBody');
-    const noUsersFound = document.getElementById('noUsersFound');
+function setupCreateUserForm() {
+    const createUserForm = document.getElementById('createUserForm');
+    if (!createUserForm) return;
     
-    if (!usersTableBody) return;
+    // Get form elements
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const newUsername = document.getElementById('newUsername');
     
-    if (users.length === 0) {
-        usersTableBody.innerHTML = '';
-        if (noUsersFound) noUsersFound.classList.remove('hidden');
-        return;
+    // Add password strength indicator for create user form
+    if (newPassword) {
+        addPasswordStrengthIndicator(newPassword);
     }
     
-    if (noUsersFound) noUsersFound.classList.add('hidden');
-    
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    usersTableBody.innerHTML = users.map(user => {
-        const fullName = [user.first_name, user.middle_name, user.last_name]
-            .filter(name => name && name.trim())
-            .join(' ');
+    // Real-time password confirmation validation
+    if (newPassword && confirmPassword) {
+        confirmPassword.addEventListener('input', function() {
+            validateCreateUserPasswordMatch();
+        });
         
-        const primaryRole = user.roles && user.roles.length > 0 ? user.roles[0] : 'User';
-        const primaryRoleKey = user.role_keys && user.role_keys.length > 0 ? user.role_keys[0] : 2;
-        
-        const createdDate = new Date(user.date_created).toLocaleDateString();
-        
-        const isCurrentUser = currentUser.username === user.username;
-        const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, '');
-        
-        return `
-            <tr data-user-id="${user.user_key}">
-                <td>
-                    <strong>${user.username}</strong>
-                    ${isCurrentUser ? '<span style="color: #009688; font-size: 0.8rem;">(You)</span>' : ''}
-                </td>
-                <td>
-                    <div class="user-name">
-                        <span class="user-full-name">${fullName || 'N/A'}</span>
-                    </div>
-                </td>
-                <td>${user.email || 'N/A'}</td>
-                <td>
-                    <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}">
-                        ${primaryRole}
-                    </span>
-                </td>
-                <td>
-                    <span class="user-created">${createdDate}</span>
-                </td>
-                <td>
-                    <div class="user-actions">
-                        <button class="btn-icon btn-edit" onclick="editUserRole(${user.user_key})" title="Edit Role" ${isCurrentUser ? 'disabled' : ''}>
-                            ✏️
-                        </button>
-                        <button class="btn-icon btn-delete" onclick="deleteUser(${user.user_key}, '${user.username}')" title="Delete User" ${isCurrentUser ? 'disabled' : ''}>
-                            🗑️
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-function filterUsers() {
-    const filterValue = document.getElementById('userFilter').value.toLowerCase();
-    
-    if (!filterValue.trim()) {
-        displayUsers(allUsers);
-        return;
+        newPassword.addEventListener('input', function() {
+            validateCreateUserPasswordMatch();
+            updatePasswordStrength(newPassword.value, newPassword.id);
+        });
     }
     
-    const filteredUsers = allUsers.filter(user => {
-        const fullName = [user.first_name, user.middle_name, user.last_name]
-            .filter(name => name && name.trim())
-            .join(' ').toLowerCase();
-        
-        return user.username.toLowerCase().includes(filterValue) ||
-               fullName.includes(filterValue) ||
-               (user.email && user.email.toLowerCase().includes(filterValue)) ||
-               (user.roles && user.roles.some(role => role.toLowerCase().includes(filterValue)));
+    // Username availability checking (debounced)
+    if (newUsername) {
+        let usernameTimeout;
+        newUsername.addEventListener('input', function() {
+            clearTimeout(usernameTimeout);
+            usernameTimeout = setTimeout(() => {
+                checkUsernameAvailability(newUsername.value.trim());
+            }, 500);
+        });
+    }
+    
+    // Character limit validation for create user form fields
+    setupCreateUserFieldValidation();
+    
+    // Handle form submission
+    createUserForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await createUser();
     });
-    
-    displayUsers(filteredUsers);
 }
 
-function editUserRole(userId) {
-    const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-    if (!row) return;
+function validateCreateUserPasswordMatch() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPasswordElement = document.getElementById('confirmPassword');
+    const confirmPassword = confirmPasswordElement.value;
+    const confirmGroup = confirmPasswordElement.closest('.form-group');
     
-    const roleCell = row.querySelector('td:nth-child(4)');
-    const actionsCell = row.querySelector('td:nth-child(6)');
+    // Remove existing error/success classes and messages
+    confirmGroup.classList.remove('error', 'success');
+    confirmPasswordElement.classList.remove('password-match', 'password-mismatch');
+    const existingMessage = confirmGroup.querySelector('.error-message, .success-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
     
-    const currentRoleSpan = roleCell.querySelector('.user-role');
-    const currentRoleKey = currentRoleSpan.dataset.roleKey;
-    
-    // Create role select dropdown
-    const roleSelect = document.createElement('select');
-    roleSelect.className = 'role-select';
-    roleSelect.innerHTML = currentRoles.map(role => 
-        `<option value="${role.role_key}" ${role.role_key == currentRoleKey ? 'selected' : ''}>
-            ${role.role_name}
-        </option>`
-    ).join('');
-    
-    // Replace role display with select
-    roleCell.innerHTML = '';
-    roleCell.appendChild(roleSelect);
-    
-    // Update actions to show save/cancel
-    actionsCell.innerHTML = `
-        <div class="user-actions">
-            <button class="btn-icon btn-save" onclick="saveUserRole(${userId})" title="Save Changes">
-                ✓
-            </button>
-            <button class="btn-icon btn-cancel" onclick="cancelEditUserRole(${userId})" title="Cancel">
-                ✕
-            </button>
-        </div>
-    `;
-    
-    roleSelect.focus();
-}
-
-function cancelEditUserRole(userId) {
-    // Reload the users to reset the UI
-    const user = allUsers.find(u => u.user_key == userId);
-    if (user) {
-        const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-        if (row) {
-            const primaryRole = user.roles && user.roles.length > 0 ? user.roles[0] : 'User';
-            const primaryRoleKey = user.role_keys && user.role_keys.length > 0 ? user.role_keys[0] : 2;
-            const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, '');
-            
-            const roleCell = row.querySelector('td:nth-child(4)');
-            const actionsCell = row.querySelector('td:nth-child(6)');
-            
-            roleCell.innerHTML = `
-                <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}">
-                    ${primaryRole}
-                </span>
-            `;
-            
-            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-            const isCurrentUser = currentUser.username === user.username;
-            
-            actionsCell.innerHTML = `
-                <div class="user-actions">
-                    <button class="btn-icon btn-edit" onclick="editUserRole(${userId})" title="Edit Role" ${isCurrentUser ? 'disabled' : ''}>
-                        ✏️
-                    </button>
-                    <button class="btn-icon btn-delete" onclick="deleteUser(${userId}, '${user.username}')" title="Delete User" ${isCurrentUser ? 'disabled' : ''}>
-                        🗑️
-                    </button>
-                </div>
-            `;
+    if (confirmPassword && newPassword) {
+        if (newPassword === confirmPassword) {
+            confirmGroup.classList.add('success');
+            confirmPasswordElement.classList.add('password-match');
+            const successMsg = document.createElement('div');
+            successMsg.className = 'success-message';
+            successMsg.textContent = 'Passwords match';
+            confirmGroup.appendChild(successMsg);
+        } else {
+            confirmGroup.classList.add('error');
+            confirmPasswordElement.classList.add('password-mismatch');
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message';
+            errorMsg.textContent = 'Passwords do not match';
+            confirmGroup.appendChild(errorMsg);
         }
     }
 }
 
-async function saveUserRole(userId) {
+async function checkUsernameAvailability(username) {
+    if (!username || username.length < 3) {
+        clearUsernameValidation();
+        return;
+    }
+    
     try {
-        const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-        if (!row) return;
-        
-        const roleSelect = row.querySelector('.role-select');
-        const newRoleKey = roleSelect.value;
-        
-        if (!newRoleKey) {
-            window.modalManager.showModal('error', 'Please select a role.');
-            return;
-        }
-        
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
         const token = localStorage.getItem('token');
         
-        const response = await fetch(`${API_URL}/api/users/${userId}/role`, {
-            method: 'PUT',
+        const response = await fetch(`${API_URL}/api/check-username`, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ roleKey: newRoleKey })
+            body: JSON.stringify({ username })
         });
         
         const result = await response.json();
+        const usernameInput = document.getElementById('newUsername');
+        const usernameGroup = usernameInput.closest('.form-group');
+        
+        // Clear existing validation states
+        usernameGroup.classList.remove('error', 'success');
+        const existingMessage = usernameGroup.querySelector('.error-message, .success-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
         
         if (response.ok) {
-            // Update the user in allUsers array
-            const userIndex = allUsers.findIndex(u => u.user_key == userId);
-            if (userIndex !== -1) {
-                const selectedRole = currentRoles.find(r => r.role_key == newRoleKey);
-                if (selectedRole) {
-                    allUsers[userIndex].roles = [selectedRole.role_name];
-                    allUsers[userIndex].role_keys = [selectedRole.role_key];
+            if (result.available) {
+                usernameGroup.classList.add('success');
+                const successMsg = document.createElement('div');
+                successMsg.className = 'success-message';
+                successMsg.textContent = 'Username is available';
+                usernameGroup.appendChild(successMsg);
+            } else {
+                usernameGroup.classList.add('error');
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'error-message';
+                errorMsg.textContent = 'Username is already taken';
+                usernameGroup.appendChild(errorMsg);
+            }
+        }
+    } catch (error) {
+        console.error('Error checking username availability:', error);
+    }
+}
+
+function clearUsernameValidation() {
+    const usernameInput = document.getElementById('newUsername');
+    if (usernameInput) {
+        const usernameGroup = usernameInput.closest('.form-group');
+        usernameGroup.classList.remove('error', 'success');
+        const existingMessage = usernameGroup.querySelector('.error-message, .success-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+    }
+}
+
+function setupCreateUserFieldValidation() {
+    const createUserFields = [
+        { id: 'firstName', maxLength: 50, label: 'First name' },
+        { id: 'middleName', maxLength: 50, label: 'Middle name' },
+        { id: 'lastName', maxLength: 50, label: 'Last name' },
+        { id: 'email', maxLength: 50, label: 'Email' },
+        { id: 'newUsername', maxLength: 50, label: 'Username' }
+    ];
+    
+    createUserFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (input) {
+            // Character count prevention
+            input.addEventListener('input', function(e) {
+                if (e.target.value.length > field.maxLength) {
+                    e.target.value = e.target.value.substring(0, field.maxLength);
+                    showCharacterLimitModal(field.label, field.maxLength);
                 }
-            }
+            });
             
-            // Refresh the display
-            displayUsers(allUsers);
-            
-            window.modalManager.showModal('success', `User role updated successfully to ${currentRoles.find(r => r.role_key == newRoleKey)?.role_name || 'Unknown'}.`);
-        } else {
-            throw new Error(result.error || 'Failed to update user role');
+            // Paste prevention for overlength content
+            input.addEventListener('paste', function(e) {
+                setTimeout(() => {
+                    if (e.target.value.length > field.maxLength) {
+                        e.target.value = e.target.value.substring(0, field.maxLength);
+                        showCharacterLimitModal(field.label, field.maxLength);
+                    }
+                }, 0);
+            });
         }
-        
-    } catch (error) {
-        console.error('Error updating user role:', error);
-        cancelEditUserRole(userId);
-        
-        const errorMessage = error.message.includes('admin privileges') 
-            ? 'You cannot remove admin privileges from your own account.' 
-            : error.message || 'Failed to update user role. Please try again.';
-            
-        window.modalManager.showModal('error', errorMessage);
-    }
-}
-
-async function deleteUser(userId, username) {
-    try {
-        // Show confirmation modal
-        const confirmDelete = await showDeleteUserModal(username);
-        if (!confirmDelete) return;
-        
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${API_URL}/api/users/${userId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            // Remove user from allUsers array
-            allUsers = allUsers.filter(u => u.user_key != userId);
-            
-            // Refresh the display
-            displayUsers(allUsers);
-            
-            window.modalManager.showModal('success', `User "${username}" has been successfully deleted from the system.`);
-        } else {
-            throw new Error(result.error || 'Failed to delete user');
-        }
-        
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        
-        const errorMessage = error.message.includes('your own account') 
-            ? 'You cannot delete your own account.' 
-            : error.message || 'Failed to delete user. Please try again.';
-            
-        window.modalManager.showModal('error', errorMessage);
-    }
-}
-
-function showDeleteUserModal(username) {
-    return new Promise((resolve) => {
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>⚠️ Delete User Account</h3>
-                </div>
-                <div class="modal-body">
-                    <p><strong>Are you sure you want to delete the user "${username}"?</strong></p>
-                    <p style="color: #dc3545; margin-top: 1rem;">This action cannot be undone. The user account and all associated data will be permanently removed from the system.</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="modal-btn secondary" id="cancelDeleteUser">Cancel</button>
-                    <button class="modal-btn danger" id="confirmDeleteUser">Delete User</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        document.getElementById('cancelDeleteUser').addEventListener('click', () => {
-            document.body.removeChild(modal);
-            resolve(false);
-        });
-        
-        document.getElementById('confirmDeleteUser').addEventListener('click', () => {
-            document.body.removeChild(modal);
-            resolve(true);
-        });
-        
-        // Close on background click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                document.body.removeChild(modal);
-                resolve(false);
-            }
-        });
     });
 }
 
-function setupUserFilter() {
-    const userFilter = document.getElementById('userFilter');
-    if (userFilter) {
-        userFilter.addEventListener('input', filterUsers);
-    }
-}
-
-// User Management Functions
-let allUsers = [];
-let currentRoles = [];
-
-async function loadUsers() {
+async function createUser() {
+    const submitBtn = document.getElementById('createUserSubmitBtn');
+    const originalText = submitBtn.textContent;
+    let response = null;
+    
     try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating User...';
+        
+        // Pre-flight connectivity check
+        const connectivity = await checkConnectivity();
+        if (!connectivity.connected) {
+            throw new Error(`Connection failed: ${connectivity.error}`);
+        }
+        
+        // Get form data
+        const formData = {
+            firstName: document.getElementById('firstName').value.trim(),
+            middleName: document.getElementById('middleName').value.trim(),
+            lastName: document.getElementById('lastName').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            username: document.getElementById('newUsername').value.trim(),
+            password: document.getElementById('newPassword').value,
+            roleKey: document.getElementById('userRole').value
+        };
+        
+        // Validate required fields
+        if (!formData.firstName || !formData.lastName || !formData.email || !formData.username || !formData.password || !formData.roleKey) {
+            throw new Error('All fields except middle name are required.');
+        }
+        
+        // Validate password confirmation
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        if (formData.password !== confirmPassword) {
+            throw new Error('Passwords do not match.');
+        }
+        
+        // Validate character limits
+        if (formData.firstName.length > 50) {
+            throw new Error('First name must be 50 characters or less.');
+        }
+        if (formData.middleName && formData.middleName.length > 50) {
+            throw new Error('Middle name must be 50 characters or less.');
+        }
+        if (formData.lastName.length > 50) {
+            throw new Error('Last name must be 50 characters or less.');
+        }
+        if (formData.email.length > 50) {
+            throw new Error('Email must be 50 characters or less.');
+        }
+        if (formData.username.length > 50) {
+            throw new Error('Username must be 50 characters or less.');
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            throw new Error('Please enter a valid email address.');
+        }
+        
+        // Validate password strength using healthcare standards
+        const passwordValidation = validatePasswordStrength(formData.password);
+        if (!passwordValidation.isValid) {
+            const errorMessages = passwordValidation.failed.join('\n• ');
+            throw new Error(`Password does not meet security requirements:\n• ${errorMessages}`);
+        }
+        
+        const token = localStorage.getItem('token');
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
         
-        const usersLoading = document.getElementById('usersLoading');
-        const usersTableBody = document.getElementById('usersTableBody');
-        
-        if (usersLoading) usersLoading.style.display = 'block';
-        if (usersTableBody) usersTableBody.innerHTML = '';
-        
-        const response = await fetch(`${API_URL}/api/users`, {
+        response = await fetch(`${API_URL}/api/create-user`, {
+            method: 'POST',
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
-            }
+            },
+            body: JSON.stringify(formData)
         });
         
+        const result = await response.json();
+        
         if (response.ok) {
-            allUsers = await response.json();
-            await loadRolesForUserManagement();
-            displayUsers(allUsers);
-        } else {
-            console.error('Failed to load users');
-            if (usersTableBody) {
-                usersTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #dc3545;">Failed to load users. Please refresh the page.</td></tr>';
+            // Clear the form
+            document.getElementById('createUserForm').reset();
+            clearCreateUserErrors();
+            
+            // Show success modal with user details
+            const successMessage = `User "${formData.username}" has been successfully created!\n\nName: ${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}\nEmail: ${formData.email}\nRole: ${document.getElementById('userRole').selectedOptions[0]?.textContent || 'Unknown'}`;
+            window.modalManager.showModal('success', successMessage);
+            
+            // Refresh users list if we're on manage users section
+            if (typeof loadUsers === 'function' && !document.getElementById('manageUsersSection').classList.contains('hidden')) {
+                setTimeout(() => {
+                    loadUsers();
+                }, 1000);
             }
+        } else {
+            throw new Error(result.error || 'Failed to create user');
         }
+        
     } catch (error) {
-        console.error('Error loading users:', error);
-        const usersTableBody = document.getElementById('usersTableBody');
-        if (usersTableBody) {
-            usersTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #dc3545;">Error loading users. Please check your connection.</td></tr>';
+        console.error('Create user error:', error);
+        
+        // Use enhanced error categorization
+        const errorInfo = categorizeError(error, response);
+        
+        // Show appropriate feedback based on error type
+        if (errorInfo.modal) {
+            window.modalManager.showModal('error', errorInfo.message);
+        } else {
+            showCreateUserError(errorInfo.message);
         }
     } finally {
-        const usersLoading = document.getElementById('usersLoading');
-        if (usersLoading) usersLoading.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
     }
 }
 
-async function loadRolesForUserManagement() {
-    try {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${API_URL}/api/roles`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.ok) {
-            currentRoles = await response.json();
-        } else {
-            console.error('Failed to load roles for user management');
+function showCreateUserError(message) {
+    const createUserSection = document.getElementById('createUserSection');
+    showSectionMessage(createUserSection, message, 'error');
+}
+
+function clearCreateUserErrors() {
+    const createUserSection = document.getElementById('createUserSection');
+    
+    // Clear section-level error messages
+    const errorMessage = createUserSection.querySelector('.section-message.error-message');
+    if (errorMessage) {
+        errorMessage.remove();
+    }
+    
+    // Clear field-level errors
+    const errorGroups = createUserSection.querySelectorAll('.form-group.error');
+    errorGroups.forEach(group => {
+        group.classList.remove('error');
+        const errorMsg = group.querySelector('.error-message');
+        if (errorMsg) {
+            errorMsg.remove();
         }
-    } catch (error) {
-        console.error('Error loading roles for user management:', error);
-    }
-}
-
-function displayUsers(users) {
-    const usersTableBody = document.getElementById('usersTableBody');
-    const noUsersFound = document.getElementById('noUsersFound');
-    
-    if (!usersTableBody) return;
-    
-    if (users.length === 0) {
-        usersTableBody.innerHTML = '';
-        if (noUsersFound) noUsersFound.classList.remove('hidden');
-        return;
-    }
-    
-    if (noUsersFound) noUsersFound.classList.add('hidden');
-    
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    usersTableBody.innerHTML = users.map(user => {
-        const fullName = [user.first_name, user.middle_name, user.last_name]
-            .filter(name => name && name.trim())
-            .join(' ');
-        
-        const primaryRole = user.roles && user.roles.length > 0 ? user.roles[0] : 'User';
-        const primaryRoleKey = user.role_keys && user.role_keys.length > 0 ? user.role_keys[0] : 2;
-        
-        const createdDate = new Date(user.date_created).toLocaleDateString();
-        
-        const isCurrentUser = currentUser.username === user.username;
-        const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, '');
-        
-        return `
-            <tr data-user-id="${user.user_key}">
-                <td>
-                    <strong>${user.username}</strong>
-                    ${isCurrentUser ? '<span style="color: #009688; font-size: 0.8rem;">(You)</span>' : ''}
-                </td>
-                <td>
-                    <div class="user-name">
-                        <span class="user-full-name">${fullName || 'N/A'}</span>
-                    </div>
-                </td>
-                <td>${user.email || 'N/A'}</td>
-                <td>
-                    <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}">
-                        ${primaryRole}
-                    </span>
-                </td>
-                <td>
-                    <span class="user-created">${createdDate}</span>
-                </td>
-                <td>
-                    <div class="user-actions">
-                        <button class="btn-icon btn-edit" onclick="editUserRole(${user.user_key})" title="Edit Role" ${isCurrentUser ? 'disabled' : ''}>
-                            ✏️
-                        </button>
-                        <button class="btn-icon btn-delete" onclick="deleteUser(${user.user_key}, '${user.username}')" title="Delete User" ${isCurrentUser ? 'disabled' : ''}>
-                            🗑️
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-function filterUsers() {
-    const filterValue = document.getElementById('userFilter').value.toLowerCase();
-    
-    if (!filterValue.trim()) {
-        displayUsers(allUsers);
-        return;
-    }
-    
-    const filteredUsers = allUsers.filter(user => {
-        const fullName = [user.first_name, user.middle_name, user.last_name]
-            .filter(name => name && name.trim())
-            .join(' ').toLowerCase();
-        
-        return user.username.toLowerCase().includes(filterValue) ||
-               fullName.includes(filterValue) ||
-               (user.email && user.email.toLowerCase().includes(filterValue)) ||
-               (user.roles && user.roles.some(role => role.toLowerCase().includes(filterValue)));
     });
     
-    displayUsers(filteredUsers);
-}
-
-function editUserRole(userId) {
-    const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-    if (!row) return;
-    
-    const roleCell = row.querySelector('td:nth-child(4)');
-    const actionsCell = row.querySelector('td:nth-child(6)');
-    
-    const currentRoleSpan = roleCell.querySelector('.user-role');
-    const currentRoleKey = currentRoleSpan.dataset.roleKey;
-    
-    // Create role select dropdown
-    const roleSelect = document.createElement('select');
-    roleSelect.className = 'role-select';
-    roleSelect.innerHTML = currentRoles.map(role => 
-        `<option value="${role.role_key}" ${role.role_key == currentRoleKey ? 'selected' : ''}>
-            ${role.role_name}
-        </option>`
-    ).join('');
-    
-    // Replace role display with select
-    roleCell.innerHTML = '';
-    roleCell.appendChild(roleSelect);
-    
-    // Update actions to show save/cancel
-    actionsCell.innerHTML = `
-        <div class="user-actions">
-            <button class="btn-icon btn-save" onclick="saveUserRole(${userId})" title="Save Changes">
-                ✓
-            </button>
-            <button class="btn-icon btn-cancel" onclick="cancelEditUserRole(${userId})" title="Cancel">
-                ✕
-            </button>
-        </div>
-    `;
-    
-    roleSelect.focus();
-}
-
-function cancelEditUserRole(userId) {
-    // Reload the users to reset the UI
-    const user = allUsers.find(u => u.user_key == userId);
-    if (user) {
-        const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-        if (row) {
-            const primaryRole = user.roles && user.roles.length > 0 ? user.roles[0] : 'User';
-            const primaryRoleKey = user.role_keys && user.role_keys.length > 0 ? user.role_keys[0] : 2;
-            const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, '');
-            
-            const roleCell = row.querySelector('td:nth-child(4)');
-            const actionsCell = row.querySelector('td:nth-child(6)');
-            
-            roleCell.innerHTML = `
-                <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}">
-                    ${primaryRole}
-                </span>
-            `;
-            
-            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-            const isCurrentUser = currentUser.username === user.username;
-            
-            actionsCell.innerHTML = `
-                <div class="user-actions">
-                    <button class="btn-icon btn-edit" onclick="editUserRole(${userId})" title="Edit Role" ${isCurrentUser ? 'disabled' : ''}>
-                        ✏️
-                    </button>
-                    <button class="btn-icon btn-delete" onclick="deleteUser(${userId}, '${user.username}')" title="Delete User" ${isCurrentUser ? 'disabled' : ''}>
-                        🗑️
-                    </button>
-                </div>
-            `;
+    // Clear success states
+    const successGroups = createUserSection.querySelectorAll('.form-group.success');
+    successGroups.forEach(group => {
+        group.classList.remove('success');
+        const successMsg = group.querySelector('.success-message');
+        if (successMsg) {
+            successMsg.remove();
         }
-    }
-}
-
-async function saveUserRole(userId) {
-    try {
-        const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-        if (!row) return;
-        
-        const roleSelect = row.querySelector('.role-select');
-        const newRoleKey = roleSelect.value;
-        
-        if (!newRoleKey) {
-            window.modalManager.showModal('error', 'Please select a role.');
-            return;
-        }
-        
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${API_URL}/api/users/${userId}/role`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ roleKey: newRoleKey })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            // Update the user in allUsers array
-            const userIndex = allUsers.findIndex(u => u.user_key == userId);
-            if (userIndex !== -1) {
-                const selectedRole = currentRoles.find(r => r.role_key == newRoleKey);
-                if (selectedRole) {
-                    allUsers[userIndex].roles = [selectedRole.role_name];
-                    allUsers[userIndex].role_keys = [selectedRole.role_key];
-                }
-            }
-            
-            // Refresh the display
-            displayUsers(allUsers);
-            
-            window.modalManager.showModal('success', `User role updated successfully to ${currentRoles.find(r => r.role_key == newRoleKey)?.role_name || 'Unknown'}.`);
-        } else {
-            throw new Error(result.error || 'Failed to update user role');
-        }
-        
-    } catch (error) {
-        console.error('Error updating user role:', error);
-        cancelEditUserRole(userId);
-        
-        const errorMessage = error.message.includes('admin privileges') 
-            ? 'You cannot remove admin privileges from your own account.' 
-            : error.message || 'Failed to update user role. Please try again.';
-            
-        window.modalManager.showModal('error', errorMessage);
-    }
-}
-
-async function deleteUser(userId, username) {
-    try {
-        // Show confirmation modal
-        const confirmDelete = await showDeleteUserModal(username);
-        if (!confirmDelete) return;
-        
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${API_URL}/api/users/${userId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            // Remove user from allUsers array
-            allUsers = allUsers.filter(u => u.user_key != userId);
-            
-            // Refresh the display
-            displayUsers(allUsers);
-            
-            window.modalManager.showModal('success', `User "${username}" has been successfully deleted from the system.`);
-        } else {
-            throw new Error(result.error || 'Failed to delete user');
-        }
-        
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        
-        const errorMessage = error.message.includes('your own account') 
-            ? 'You cannot delete your own account.' 
-            : error.message || 'Failed to delete user. Please try again.';
-            
-        window.modalManager.showModal('error', errorMessage);
-    }
-}
-
-function showDeleteUserModal(username) {
-    return new Promise((resolve) => {
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>⚠️ Delete User Account</h3>
-                </div>
-                <div class="modal-body">
-                    <p><strong>Are you sure you want to delete the user "${username}"?</strong></p>
-                    <p style="color: #dc3545; margin-top: 1rem;">This action cannot be undone. The user account and all associated data will be permanently removed from the system.</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="modal-btn secondary" id="cancelDeleteUser">Cancel</button>
-                    <button class="modal-btn danger" id="confirmDeleteUser">Delete User</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        document.getElementById('cancelDeleteUser').addEventListener('click', () => {
-            document.body.removeChild(modal);
-            resolve(false);
-        });
-        
-        document.getElementById('confirmDeleteUser').addEventListener('click', () => {
-            document.body.removeChild(modal);
-            resolve(true);
-        });
-        
-        // Close on background click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                document.body.removeChild(modal);
-                resolve(false);
-            }
-        });
     });
-}
-
-function setupUserFilter() {
-    const userFilter = document.getElementById('userFilter');
-    if (userFilter) {
-        userFilter.addEventListener('input', filterUsers);
-    }
+      // Clear password matching classes
+    const passwordInputs = createUserSection.querySelectorAll('input[type="password"]');
+    passwordInputs.forEach(input => {
+        input.classList.remove('password-match', 'password-mismatch');
+    });
 }
