@@ -404,7 +404,7 @@ const checkAuth = () => {
         console.log('No token found, redirecting to login');
         window.location.href = '/';
         return;
-    }// Check if this is a new tab/window - if no tab ID exists, this is a fresh tab
+    }    // Check if this is a new tab/window - if no tab ID exists, this is a fresh tab
     const currentTabId = sessionStorage.getItem('currentTabId');
     console.log('Current tab ID from sessionStorage:', currentTabId);
     
@@ -412,23 +412,27 @@ const checkAuth = () => {
     const sessionData = SessionManager.getSessionData();
     console.log('Session data from localStorage:', sessionData);
     
-    // Grace period for recent logins - if login was within last 30 seconds and we have session data,
+    // Extended grace period for recent logins - if login was within last 60 seconds and we have session data,
     // allow access even without sessionStorage tab ID (handles immediate post-login navigation)
     const now = Date.now();
     const loginTimestamp = parseInt(localStorage.getItem('loginTimestamp') || '0');
-    const isRecentLogin = (now - loginTimestamp) < 30000; // 30 seconds grace period
+    const isRecentLogin = (now - loginTimestamp) < 60000; // Extended to 60 seconds grace period
     
     console.log('Login timestamp:', loginTimestamp, 'Recent login:', isRecentLogin);
-      if (!currentTabId) {
+    
+    if (!currentTabId) {
         if (isRecentLogin && sessionData && sessionData.tabId) {
             console.log('No sessionStorage tab ID but recent login detected - allowing access and restoring session');
             // Restore the session for this tab
             sessionStorage.setItem('currentTabId', sessionData.tabId);
             SessionManager.tabId = sessionData.tabId;
             
-            // Clear the recent login flag to prevent abuse
-            sessionData.isRecentLogin = false;
-            localStorage.setItem('activeSession', JSON.stringify(sessionData));
+            // Don't clear the recent login flag immediately - keep it for a bit longer
+            // This helps with multiple page loads during login flow
+            if ((now - loginTimestamp) > 45000) { // Only clear after 45 seconds
+                sessionData.isRecentLogin = false;
+                localStorage.setItem('activeSession', JSON.stringify(sessionData));
+            }
         } else {
             console.log('New tab detected - checking for existing session');
             

@@ -139,13 +139,13 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                 if (response.ok && data.token) {
                     // Store authentication data
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-
-                    // Initialize session management - streamlined approach
+                    localStorage.setItem('user', JSON.stringify(data.user));                    // Initialize session management - streamlined approach
                     try {
                         if (window.SessionManager) {
                             // Use SessionManager if available
                             window.SessionManager.initSession();
+                            // Give a moment for session to initialize
+                            await new Promise(resolve => setTimeout(resolve, 100));
                         } else {
                             // Simplified fallback: single session initialization
                             const loginTime = Date.now();
@@ -162,13 +162,11 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     
                     // Use utility function to check admin status and update UI
                     const isAdmin = isUserAdmin(data.user);
-                    updateAdminUI(isAdmin);
-
-                    // Add a small delay to ensure all data is persisted before navigation
+                    updateAdminUI(isAdmin);                    // Add a delay to ensure all data is persisted and session is initialized before navigation
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
                         window.location.href = "welcome/";
-                    }, FADE_DURATION);
+                    }, FADE_DURATION + 100); // Extra 100ms for session initialization
                 } else {const message = response.status === 401 
                         ? 'Invalid username or password'
                         : data.error || 'Login failed';
