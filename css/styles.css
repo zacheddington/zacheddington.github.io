@@ -727,92 +727,200 @@ body.is-admin .admin-only {
     }
 }
 
-/* Responsive Styles */
-@media (max-width: 900px) {
-    .options {
-        flex-direction: column;
-        gap: 20px;
-        align-items: stretch;
-    }
-    .option-card {
-        max-width: 90vw;
-        width: 100%;
-        padding: 24px 8vw;
-    }
-    .welcome-container {
-        margin-top: 40px;
-    }
-    .side-menu {
-        width: 70vw;
-        min-width: 180px;
-        max-width: 320px;
-    }
-    .side-menu::before {
-        width: 70vw;
-        min-width: 180px;
-        max-width: 320px;
-    }
+/* Profile Page Styles */
+.profile-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    margin-top: 80px;
 }
 
+.profile-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    padding: 2rem;
+}
+
+.profile-section h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #003b49;
+    border-bottom: 2px solid #e0f7fa;
+    padding-bottom: 0.5rem;
+}
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.profile-form .form-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.profile-form .form-group {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-form label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #003b49;
+}
+
+.profile-form input {
+    padding: 0.75rem;
+    border: 2px solid #b2dfdb;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border 0.2s;
+    background: #f7fafc;
+}
+
+.profile-form input:focus {
+    border-color: #009688;
+    background: #fff;
+    outline: none;
+}
+
+.profile-form input[readonly] {
+    background-color: #f5f5f5;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.field-note {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 0.25rem;
+    font-style: italic;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    justify-content: flex-start;
+}
+
+.secondary-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.secondary-btn:hover {
+    background: #5a6268;
+}
+
+.secondary-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background-color: #cccccc;
+}
+
+/* Account Information Section */
+.info-only {
+    background: #f8f9fa;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 4px;
+    border-left: 4px solid #009688;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #003b49;
+}
+
+.info-value {
+    color: #666;
+    font-family: monospace;
+}
+
+/* Profile form responsive design */
 @media (max-width: 768px) {
-    body {
-        padding: 0 4vw;
+    .profile-container {
+        margin: 1rem;
+        padding: 1rem;
+        margin-top: 60px;
     }
-    .welcome-container {
-        margin-top: 64px; /* Increased from 24px for more space below hamburger */
+    
+    .profile-section {
+        padding: 1.5rem;
     }
-    h1 {
-        font-size: 1.5rem;
-    }
-    .option-card {
-        max-width: 98vw;
-        width: 100%;
-        padding: 12px 2vw;
-        font-size: 1rem;
-    }
-    .hamburger-btn {
-        left: 12px;
-        top: 12px;
-        width: 36px;
-        height: 36px;
-    }
-    .hamburger-btn span {
-        width: 18px;
-        height: 2px;
-    }
-    .side-menu {
-        width: 70vw;
-        min-width: 180px;
-        font-size: 1rem;
-    }
-    .side-menu::before {
-        width: 70vw;
-        min-width: 180px;
-    }
-    .form-row {
+    
+    .profile-form .form-row {
         flex-direction: column;
-        gap: 0 !important; /* Remove gap between rows */
-        margin-bottom: 0;
+        gap: 0.5rem;
     }
-    .form-group {
+    
+    .profile-form .form-group {
+        min-width: 100%;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-actions button {
         width: 100%;
-        margin-bottom: 4px !important; /* Consistent tight spacing for all fields */
     }
-    .form-group:last-child {
-        margin-bottom: 0 !important;
-    }
-    .submit-btn {
-        width: 100%;
-        font-size: 1.1rem;
-        padding: 12px 0;
+    
+    .info-grid {
+        grid-template-columns: 1fr;
     }
 }
 
-@media (max-width: 400px) {
-    h1, h2 {
-        font-size: 1.1rem;
-    }
-    .option-card {
-        font-size: 0.95rem;
-    }
+/* Success and error states for profile forms */
+.profile-form .form-group.success input {
+    border-color: #28a745;
+    background-color: #f8fff9;
+}
+
+.profile-form .form-group.error input {
+    border-color: #dc3545;
+    background-color: #fff8f8;
+}
+
+.profile-form .error-message {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.profile-form .success-message {
+    color: #28a745;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
 }

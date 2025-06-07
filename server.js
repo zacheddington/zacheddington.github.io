@@ -212,7 +212,172 @@ app.post('/api/eeg', authenticateToken, async (req, res) => {
         console.error('Database error:', err);
         res.status(500).json({ error: 'Database error', details: err.message });
     } finally {
-        client.release();
+        client.release();    }
+});
+
+// Profile management endpoints
+app.put('/api/profile', authenticateToken, async (req, res) => {
+    try {
+        const { firstName, middleName, lastName, email } = req.body;
+        const userId = req.user.id;
+        
+        // Validate required fields
+        if (!firstName || !lastName || !email) {
+            return res.status(400).json({ error: 'First name, last name, and email are required' });
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Please enter a valid email address' });
+        }
+        
+        // Check if we're in local test mode
+        const isLocalTest = process.env.NODE_ENV === 'development' && 
+                           process.env.DATABASE_URL?.includes('localhost');
+        
+        if (isLocalTest) {
+            // For local testing, just return success
+            return res.json({ 
+                message: 'Profile updated successfully',
+                user: {
+                    firstName,
+                    middleName,
+                    lastName,
+                    email
+                }
+            });
+        }
+        
+        // Production database logic
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            
+            // Update user table
+            await client.query(
+                'UPDATE tbl_user SET email = $1 WHERE user_key = $2',
+                [email, userId]
+            );
+            
+            // Update name data if user has a name record
+            const nameResult = await client.query(
+                'SELECT name_key FROM tbl_user WHERE user_key = $1',
+                [userId]
+            );
+            
+            if (nameResult.rows.length > 0 && nameResult.rows[0].name_key) {
+                await client.query(
+                    'UPDATE tbl_name_data SET first_name = $1, middle_name = $2, last_name = $3 WHERE name_key = $4',
+                    [firstName, middleName || null, lastName, nameResult.rows[0].name_key]
+                );
+            } else {
+                // Create new name record if none exists
+                const newNameResult = await client.query(
+                    'INSERT INTO tbl_name_data (first_name, middle_name, last_name) VALUES ($1, $2, $3) RETURNING name_key',
+                    [firstName, middleName || null, lastName]
+                );
+                
+                // Update user record with new name_key
+                await client.query(
+                    'UPDATE tbl_user SET name_key = $1 WHERE user_key = $2',
+                    [newNameResult.rows[0].name_key, userId]
+                );
+            }
+            
+            await client.query('COMMIT');
+            
+            res.json({ 
+                message: 'Profile updated successfully',
+                user: {
+                    firstName,
+                    middleName,
+                    lastName,
+                    email
+                }
+            });
+            
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+        
+    } catch (err) {
+        console.error('Profile update error:', err);
+        res.status(500).json({ error: 'Failed to update profile' });
+    }
+});
+
+app.put('/api/change-password', authenticateToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const userId = req.user.id;
+        
+        // Validate required fields
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ error: 'Current password and new password are required' });
+        }
+        
+        // Validate new password length
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+        }
+        
+        // Check if we're in local test mode
+        const isLocalTest = process.env.NODE_ENV === 'development' && 
+                           process.env.DATABASE_URL?.includes('localhost');
+        
+        if (isLocalTest) {
+            // For local testing, just return success if current password is 'admin'
+            if (currentPassword === 'admin') {
+                return res.json({ message: 'Password changed successfully' });
+            } else {
+                return res.status(400).json({ error: 'Current password is incorrect' });
+            }
+        }
+        
+        // Production database logic
+        const client = await pool.connect();
+        try {
+            // Get current user data
+            const userResult = await client.query(
+                'SELECT password_hash FROM tbl_user WHERE user_key = $1',
+                [userId]
+            );
+            
+            if (userResult.rows.length === 0) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            
+            const user = userResult.rows[0];
+            
+            // Verify current password
+            const validPassword = await bcrypt.compare(currentPassword, user.password_hash);
+            if (!validPassword) {
+                return res.status(400).json({ error: 'Current password is incorrect' });
+            }
+            
+            // Hash new password
+            const saltRounds = 10;
+            const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+            
+            // Update password in database
+            await client.query(
+                'UPDATE tbl_user SET password_hash = $1 WHERE user_key = $2',
+                [newPasswordHash, userId]
+            );
+            
+            res.json({ message: 'Password changed successfully' });
+            
+        } finally {
+            client.release();
+        }
+        
+    } catch (err) {
+        console.error('Password change error:', err);
+        res.status(500).json({ error: 'Failed to change password' });
     }
 });
 

@@ -43,7 +43,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     const FADE_DURATION = 450;
     
-    console.log(`Running in ${isLocal ? 'LOCAL' : 'PRODUCTION'} mode, API_URL: ${API_URL}`);    // Check if current page is login page
+    console.log(`Running in ${isLocal ? 'LOCAL' : 'PRODUCTION'} mode, API_URL: ${API_URL}`);
+    
+    // Check if current page is login page
     const currentPath = window.location.pathname;
     const isLoginPage = currentPath === '/' || currentPath === '/index.html' || currentPath === '';
     
@@ -193,9 +195,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             isRecentLogin: true
                         };
                         localStorage.setItem('activeSession', JSON.stringify(sessionData));
-                        
-                        console.log('Fallback session initialization completed with tab ID:', tabId);
-                    }// Use utility function to check admin status and update UI
+                          console.log('Fallback session initialization completed with tab ID:', tabId);
+                    }
+                    
+                    // Use utility function to check admin status and update UI
                     const isAdmin = isUserAdmin(data.user);
                     updateAdminUI(isAdmin);
 
@@ -218,11 +221,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (err) {
                 console.error('Login error:', err);
-                modalManager.showModal('error', 'Connection error. Please try again.');
-            } finally {
+                modalManager.showModal('error', 'Connection error. Please try again.');            } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Login';
-            }        });    }    // Set admin class on body if user is admin (for authenticated pages only)
+            }
+        });
+    }
+    
+    // Set admin class on body if user is admin (for authenticated pages only)
     if (!isLoginPage && !document.getElementById('loginForm')) {
         const token = localStorage.getItem('token');
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -273,7 +279,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('No valid authentication data found, skipping admin UI updates');
         }
     }
-}
 
 // Menu and navigation functionality
     if (document.getElementById('hamburger-menu')) {
@@ -295,9 +300,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => {
                     window.location.href = href;
                 }, FADE_DURATION);
-            }
-        });
-    });// Patient number validation - only allow numbers and hyphens
+            }        });
+    });
+    
+    // Patient number validation - only allow numbers and hyphens
     const patientNumberInput = document.getElementById('patientNumber');
     if (patientNumberInput) {
         // Create tooltip element
@@ -334,8 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Also prevent invalid characters from being typed and show tooltip
         patientNumberInput.addEventListener('keypress', function(e) {
-            const char = String.fromCharCode(e.which);
-            if (!/[0-9\-]/.test(char)) {
+            const char = String.fromCharCode(e.which);            if (!/[0-9\-]/.test(char)) {
                 e.preventDefault();
                 showTooltip();
             }
@@ -347,6 +352,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Initialize profile page if we're on it
+    if (window.location.pathname.includes('/profile/')) {
+        initializeProfilePage();
+    }
 });
 
 async function loadMenu() {
@@ -373,9 +382,10 @@ async function loadMenu() {
             const menuItems = sideMenu.querySelectorAll('a[data-page]');
             menuItems.forEach(item => {
                 if (item.getAttribute('data-page') === currentPage) {
-                    item.parentElement.style.display = 'none';
-                }
-            });            // Check if user is admin and show/hide admin link
+                    item.parentElement.style.display = 'none';                }
+            });
+            
+            // Check if user is admin and show/hide admin link
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
             const isAdmin = isUserAdmin(userData);
             updateAdminMenuItem(isAdmin);
@@ -510,5 +520,322 @@ function showLogoutModal() {
             }
         };
         document.addEventListener('keydown', handleKeydown);
+    });
+}
+
+// Profile Page Functionality
+function initializeProfilePage() {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    
+    // Load user data into form
+    loadUserProfile();
+    
+    // Handle profile form submission
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await updateUserProfile();
+        });
+        
+        // Handle cancel button
+        const cancelBtn = document.getElementById('cancelProfileBtn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                loadUserProfile(); // Reset form to original values
+            });
+        }
+    }
+    
+    // Handle password form submission
+    const passwordForm = document.getElementById('passwordForm');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await updateUserPassword();
+        });
+        
+        // Handle cancel button
+        const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+        if (cancelPasswordBtn) {
+            cancelPasswordBtn.addEventListener('click', function() {
+                passwordForm.reset();
+                clearPasswordErrors();
+            });
+        }
+        
+        // Real-time password confirmation validation
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        if (newPassword && confirmPassword) {
+            confirmPassword.addEventListener('input', function() {
+                validatePasswordMatch();
+            });
+            
+            newPassword.addEventListener('input', function() {
+                validatePasswordMatch();
+            });
+        }
+    }
+}
+
+async function loadUserProfile() {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        // Populate form fields
+        document.getElementById('firstName').value = userData.firstName || '';
+        document.getElementById('middleName').value = userData.middleName || '';
+        document.getElementById('lastName').value = userData.lastName || '';
+        document.getElementById('email').value = userData.email || '';
+        
+        // Display role (read-only)
+        const roleField = document.getElementById('role');
+        if (userData.roles && userData.roles.length > 0) {
+            roleField.value = userData.roles.join(', ');
+        } else {
+            roleField.value = 'User';
+        }
+        
+        // Display account information
+        document.getElementById('usernameDisplay').textContent = userData.username || '-';
+        
+        // Format last login if available
+        const loginTimestamp = localStorage.getItem('loginTimestamp');
+        if (loginTimestamp) {
+            const loginDate = new Date(parseInt(loginTimestamp));
+            document.getElementById('lastLoginDisplay').textContent = loginDate.toLocaleString();
+        }
+        
+    } catch (error) {
+        console.error('Error loading user profile:', error);
+        showModal('error', 'Failed to load profile information.');
+    }
+}
+
+async function updateUserProfile() {
+    const updateBtn = document.getElementById('updateProfileBtn');
+    const originalText = updateBtn.textContent;
+    
+    try {
+        updateBtn.disabled = true;
+        updateBtn.textContent = 'Updating...';
+        
+        const formData = {
+            firstName: document.getElementById('firstName').value.trim(),
+            middleName: document.getElementById('middleName').value.trim(),
+            lastName: document.getElementById('lastName').value.trim(),
+            email: document.getElementById('email').value.trim()
+        };
+        
+        // Validate required fields
+        if (!formData.firstName || !formData.lastName || !formData.email) {
+            throw new Error('First name, last name, and email are required.');
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            throw new Error('Please enter a valid email address.');
+        }
+        
+        const token = localStorage.getItem('token');
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        
+        const response = await fetch(`${API_URL}/api/profile`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Update local storage with new user data
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            userData.firstName = formData.firstName;
+            userData.middleName = formData.middleName;
+            userData.lastName = formData.lastName;
+            userData.email = formData.email;
+            localStorage.setItem('user', JSON.stringify(userData));
+            
+            showProfileSuccess('Profile updated successfully!');
+        } else {
+            throw new Error(result.error || 'Failed to update profile');
+        }
+        
+    } catch (error) {
+        console.error('Profile update error:', error);
+        showProfileError(error.message);
+    } finally {
+        updateBtn.disabled = false;
+        updateBtn.textContent = originalText;
+    }
+}
+
+async function updateUserPassword() {
+    const updateBtn = document.getElementById('updatePasswordBtn');
+    const originalText = updateBtn.textContent;
+    
+    try {
+        updateBtn.disabled = true;
+        updateBtn.textContent = 'Updating...';
+        
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        // Validate passwords
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            throw new Error('All password fields are required.');
+        }
+        
+        if (newPassword !== confirmPassword) {
+            throw new Error('New passwords do not match.');
+        }
+        
+        if (newPassword.length < 6) {
+            throw new Error('New password must be at least 6 characters long.');
+        }
+        
+        const token = localStorage.getItem('token');
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        
+        const response = await fetch(`${API_URL}/api/change-password`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                currentPassword,
+                newPassword
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Clear the form
+            document.getElementById('passwordForm').reset();
+            showPasswordSuccess('Password changed successfully!');
+        } else {
+            throw new Error(result.error || 'Failed to change password');
+        }
+        
+    } catch (error) {
+        console.error('Password change error:', error);
+        showPasswordError(error.message);
+    } finally {
+        updateBtn.disabled = false;
+        updateBtn.textContent = originalText;
+    }
+}
+
+function validatePasswordMatch() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const confirmGroup = confirmPassword.closest('.form-group');
+    
+    // Remove existing error/success classes and messages
+    confirmGroup.classList.remove('error', 'success');
+    const existingMessage = confirmGroup.querySelector('.error-message, .success-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    if (confirmPassword && newPassword) {
+        if (newPassword === confirmPassword) {
+            confirmGroup.classList.add('success');
+            const successMsg = document.createElement('div');
+            successMsg.className = 'success-message';
+            successMsg.textContent = 'Passwords match';
+            confirmGroup.appendChild(successMsg);
+        } else {
+            confirmGroup.classList.add('error');
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message';
+            errorMsg.textContent = 'Passwords do not match';
+            confirmGroup.appendChild(errorMsg);
+        }
+    }
+}
+
+function showProfileSuccess(message) {
+    const profileSection = document.querySelector('.profile-section:first-child');
+    showSectionMessage(profileSection, message, 'success');
+}
+
+function showProfileError(message) {
+    const profileSection = document.querySelector('.profile-section:first-child');
+    showSectionMessage(profileSection, message, 'error');
+}
+
+function showPasswordSuccess(message) {
+    const passwordSection = document.querySelector('.profile-section:nth-child(2)');
+    showSectionMessage(passwordSection, message, 'success');
+}
+
+function showPasswordError(message) {
+    const passwordSection = document.querySelector('.profile-section:nth-child(2)');
+    showSectionMessage(passwordSection, message, 'error');
+}
+
+function showSectionMessage(section, message, type) {
+    // Remove existing messages
+    const existingMessage = section.querySelector('.section-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Create new message
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `section-message ${type}`;
+    messageDiv.style.cssText = `
+        padding: 0.75rem 1rem;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+        font-weight: 500;
+        ${type === 'success' 
+            ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' 
+            : 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;'
+        }
+    `;
+    messageDiv.textContent = message;
+    
+    // Insert after the h2
+    const h2 = section.querySelector('h2');
+    h2.parentNode.insertBefore(messageDiv, h2.nextSibling);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.remove();
+        }
+    }, 5000);
+}
+
+function clearPasswordErrors() {
+    const passwordSection = document.querySelector('.profile-section:nth-child(2)');
+    const errorMessage = passwordSection.querySelector('.section-message.error');
+    if (errorMessage) {
+        errorMessage.remove();
+    }
+    
+    // Clear field-level errors
+    const errorGroups = passwordSection.querySelectorAll('.form-group.error');
+    errorGroups.forEach(group => {
+        group.classList.remove('error');
+        const errorMsg = group.querySelector('.error-message');
+        if (errorMsg) {
+            errorMsg.remove();
+        }
     });
 }
