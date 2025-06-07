@@ -78,10 +78,7 @@ const SessionManager = {
     getSessionData: () => {
         try {
             const data = localStorage.getItem('activeSession');
-            console.log('getSessionData() - raw data from localStorage:', data);
-            const parsed = data ? JSON.parse(data) : null;
-            console.log('getSessionData() - parsed data:', parsed);
-            return parsed;
+            return data ? JSON.parse(data) : null;
         } catch (e) {
             console.error('Error parsing session data:', e);
             return null;
@@ -232,32 +229,17 @@ const startActivityMonitoring = () => {
 
 // Check authentication
 const checkAuth = () => {
-    console.log('checkAuth() called for page:', window.location.pathname);
-    
-    // Debug all storage before anything else
-    console.log('=== STORAGE DEBUG ===');
-    console.log('localStorage.token:', localStorage.getItem('token'));
-    console.log('localStorage.activeSession:', localStorage.getItem('activeSession'));
-    console.log('localStorage.lastTabId:', localStorage.getItem('lastTabId'));
-    console.log('localStorage.loginTimestamp:', localStorage.getItem('loginTimestamp'));
-    console.log('sessionStorage.currentTabId:', sessionStorage.getItem('currentTabId'));
-    console.log('sessionStorage keys:', Object.keys(sessionStorage));
-    console.log('localStorage keys:', Object.keys(localStorage));
-    console.log('=== END STORAGE DEBUG ===');
-    
     if (isPublicPage()) {
-        console.log('Public page detected, skipping auth check');
         return; // Public page, no auth required
     }
 
     const token = localStorage.getItem('token');
-    console.log('Token found:', !!token);
     
     if (!token) {
         console.log('No token found, redirecting to login');
         window.location.href = '/';
         return;
-    }    // Check if this is a new tab/window - if no tab ID exists, this is a fresh tab
+    }// Check if this is a new tab/window - if no tab ID exists, this is a fresh tab
     const currentTabId = sessionStorage.getItem('currentTabId');
     console.log('Current tab ID from sessionStorage:', currentTabId);
     

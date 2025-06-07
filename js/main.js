@@ -43,10 +43,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     const FADE_DURATION = 450;
     
-    console.log(`Running in ${isLocal ? 'LOCAL' : 'PRODUCTION'} mode, API_URL: ${API_URL}`);
-      // Check if current page is login page
+    console.log(`Running in ${isLocal ? 'LOCAL' : 'PRODUCTION'} mode, API_URL: ${API_URL}`);    // Check if current page is login page
     const currentPath = window.location.pathname;
-    const isLoginPage = currentPath === '/' || currentPath === '/index.html' || currentPath.endsWith('/');
+    const isLoginPage = currentPath === '/' || currentPath === '/index.html' || currentPath === '';
+    
+    console.log('=== PAGE DETECTION ===');
+    console.log('currentPath:', currentPath);
+    console.log('isLoginPage:', isLoginPage);
+    console.log('=== END PAGE DETECTION ===');
       // Clear authentication data if on login page to ensure clean state
     // BUT only if we don't have a valid session that was just created
     if (isLoginPage && document.getElementById('loginForm')) {
