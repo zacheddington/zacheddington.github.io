@@ -18,26 +18,29 @@
         <!-- Profile Information Section -->
         <div class="profile-section">
             <h2>Personal Information</h2>
-            <form id="profileForm" class="profile-form">
-                <div class="form-row">
+            <form id="profileForm" class="profile-form">                <div class="form-row">
                     <div class="form-group">
                         <label for="firstName">First Name</label>
-                        <input type="text" id="firstName" name="firstName" required>
+                        <input type="text" id="firstName" name="firstName" required maxlength="50">
+                        <small class="field-note">Maximum 50 characters</small>
                     </div>
                     <div class="form-group">
                         <label for="middleName">Middle Name</label>
-                        <input type="text" id="middleName" name="middleName">
+                        <input type="text" id="middleName" name="middleName" maxlength="50">
+                        <small class="field-note">Maximum 50 characters</small>
                     </div>
                     <div class="form-group">
                         <label for="lastName">Last Name</label>
-                        <input type="text" id="lastName" name="lastName" required>
+                        <input type="text" id="lastName" name="lastName" required maxlength="50">
+                        <small class="field-note">Maximum 50 characters</small>
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" required>
+                        <input type="email" id="email" name="email" required maxlength="50">
+                        <small class="field-note">Maximum 50 characters</small>
                     </div>
                     <div class="form-group">
                         <label for="role">Role</label>

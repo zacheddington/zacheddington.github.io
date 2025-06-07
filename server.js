@@ -220,10 +220,23 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
     try {
         const { firstName, middleName, lastName, email } = req.body;
         const userId = req.user.id;
-        
-        // Validate required fields
+          // Validate required fields
         if (!firstName || !lastName || !email) {
             return res.status(400).json({ error: 'First name, last name, and email are required' });
+        }
+        
+        // Validate field lengths for database constraints
+        if (firstName.length > 50) {
+            return res.status(400).json({ error: 'First name must be 50 characters or less' });
+        }
+        if (middleName && middleName.length > 50) {
+            return res.status(400).json({ error: 'Middle name must be 50 characters or less' });
+        }
+        if (lastName.length > 50) {
+            return res.status(400).json({ error: 'Last name must be 50 characters or less' });
+        }
+        if (email.length > 50) {
+            return res.status(400).json({ error: 'Email must be 50 characters or less' });
         }
         
         // Validate email format
@@ -248,42 +261,37 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
                 }
             });
         }
-        
-        // Production database logic
+          // Production database logic
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
             
-            // Update user table
-            await client.query(
-                'UPDATE tbl_user SET email = $1 WHERE user_key = $2',
-                [email, userId]
-            );
-            
-            // Update name data if user has a name record
-            const nameResult = await client.query(
-                'SELECT name_key FROM tbl_user WHERE user_key = $1',
+            // Get username for the 'who' field
+            const userResult = await client.query(
+                'SELECT username FROM tbl_user WHERE user_key = $1',
                 [userId]
             );
             
-            if (nameResult.rows.length > 0 && nameResult.rows[0].name_key) {
-                await client.query(
-                    'UPDATE tbl_name_data SET first_name = $1, middle_name = $2, last_name = $3 WHERE name_key = $4',
-                    [firstName, middleName || null, lastName, nameResult.rows[0].name_key]
-                );
-            } else {
-                // Create new name record if none exists
-                const newNameResult = await client.query(
-                    'INSERT INTO tbl_name_data (first_name, middle_name, last_name) VALUES ($1, $2, $3) RETURNING name_key',
-                    [firstName, middleName || null, lastName]
-                );
-                
-                // Update user record with new name_key
-                await client.query(
-                    'UPDATE tbl_user SET name_key = $1 WHERE user_key = $2',
-                    [newNameResult.rows[0].name_key, userId]
-                );
+            if (userResult.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(404).json({ error: 'User not found' });
             }
+            
+            const username = userResult.rows[0].username;
+            
+            // Always insert a new record into tbl_name_data
+            const newNameResult = await client.query(
+                'INSERT INTO tbl_name_data (first_name, middle_name, last_name, who, date_when) VALUES ($1, $2, $3, $4, NOW()) RETURNING name_key',
+                [firstName, middleName || null, lastName, username]
+            );
+            
+            const newNameKey = newNameResult.rows[0].name_key;
+            
+            // Update user table with new name_key and email
+            await client.query(
+                'UPDATE tbl_user SET email = $1, name_key = $2 WHERE user_key = $3',
+                [email, newNameKey, userId]
+            );
             
             await client.query('COMMIT');
             

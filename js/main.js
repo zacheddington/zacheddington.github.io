@@ -579,6 +579,58 @@ function initializeProfilePage() {
             });
         }
     }
+    
+    // Add character limit validation for profile fields
+    setupProfileFieldValidation();
+}
+
+function setupProfileFieldValidation() {
+    const profileFields = [
+        { id: 'firstName', maxLength: 50, label: 'First name' },
+        { id: 'middleName', maxLength: 50, label: 'Middle name' },
+        { id: 'lastName', maxLength: 50, label: 'Last name' },
+        { id: 'email', maxLength: 50, label: 'Email' }
+    ];
+    
+    profileFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (input) {
+            // Character count prevention
+            input.addEventListener('input', function(e) {
+                if (e.target.value.length > field.maxLength) {
+                    e.target.value = e.target.value.substring(0, field.maxLength);
+                    showCharacterLimitModal(field.label, field.maxLength);
+                }
+            });
+            
+            // Paste prevention for overlength content
+            input.addEventListener('paste', function(e) {
+                setTimeout(() => {
+                    if (e.target.value.length > field.maxLength) {
+                        e.target.value = e.target.value.substring(0, field.maxLength);
+                        showCharacterLimitModal(field.label, field.maxLength);
+                    }
+                }, 0);
+            });
+        }
+    });
+}
+
+function showCharacterLimitModal(fieldName, maxLength) {
+    // Check if modal is already showing to prevent duplicates
+    if (typeof window.modalManager !== 'undefined' && window.modalManager.isShowingModal) {
+        return;
+    }
+    
+    const message = `${fieldName} cannot exceed ${maxLength} characters. The text has been automatically trimmed.`;
+    
+    if (typeof showModal === 'function') {
+        showModal('error', message);
+    } else if (typeof window.modalManager !== 'undefined') {
+        window.modalManager.showModal('error', message);
+    } else {
+        alert(message); // Fallback
+    }
 }
 
 async function loadUserProfile() {
@@ -629,10 +681,23 @@ async function updateUserProfile() {
             lastName: document.getElementById('lastName').value.trim(),
             email: document.getElementById('email').value.trim()
         };
-        
-        // Validate required fields
+          // Validate required fields
         if (!formData.firstName || !formData.lastName || !formData.email) {
             throw new Error('First name, last name, and email are required.');
+        }
+        
+        // Validate character limits
+        if (formData.firstName.length > 50) {
+            throw new Error('First name must be 50 characters or less.');
+        }
+        if (formData.middleName && formData.middleName.length > 50) {
+            throw new Error('Middle name must be 50 characters or less.');
+        }
+        if (formData.lastName.length > 50) {
+            throw new Error('Last name must be 50 characters or less.');
+        }
+        if (formData.email.length > 50) {
+            throw new Error('Email must be 50 characters or less.');
         }
         
         // Validate email format
@@ -789,6 +854,16 @@ function showPasswordError(message) {
 }
 
 function showSectionMessage(section, message, type) {
+    // Check if section exists
+    if (!section) {
+        console.error('Section not found for message display:', message);
+        // Fallback to showing modal
+        if (typeof showModal === 'function') {
+            showModal(type, message);
+        }
+        return;
+    }
+    
     // Remove existing messages
     const existingMessage = section.querySelector('.section-message');
     if (existingMessage) {
