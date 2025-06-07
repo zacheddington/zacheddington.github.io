@@ -1090,7 +1090,11 @@ button[type="submit"]:disabled,
 
 /* User Management Table Styles */
 .user-filter {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8fdff;
+    border-radius: 8px;
+    border: 1px solid #b2dfdb;
 }
 
 .user-filter .form-group {
@@ -1313,4 +1317,67 @@ button[type="submit"]:disabled,
         min-width: 100px;
         font-size: 0.75rem;
     }
+}
+
+/* Table Sorting Styles */
+.sortable-header {
+    position: relative;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    user-select: none;
+}
+
+.sortable-header:hover {
+    background: linear-gradient(135deg, #00acc1 0%, #00838f 100%) !important;
+    transform: translateY(-1px);
+}
+
+.sortable-header:active {
+    transform: translateY(0);
+}
+
+.sortable-header .header-text {
+    display: inline-block;
+}
+
+.sort-indicator {
+    display: inline-block;
+    margin-left: 0.5rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+    min-width: 12px;
+    text-align: center;
+}
+
+.sort-indicator.sort-asc {
+    color: #e8f5e8;
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.sort-indicator.sort-desc {
+    color: #e8f5e8;
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* Enhance user actions for better visibility */
+
+/* Filter Actions */
+.filter-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.filter-actions .secondary-btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+}
+
+/* User Filter Enhancements */
+.user-filter {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f8fdff;
+    border-radius: 8px;
+    border: 1px solid #b2dfdb;
 }

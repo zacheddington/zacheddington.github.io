@@ -1577,3 +1577,593 @@ function clearCreateUserErrors() {
         input.classList.remove('password-match', 'password-mismatch');
     });
 }
+
+// User Management Functions
+let allUsers = [];
+let currentRoles = [];
+let currentSort = { column: null, direction: null }; // 'asc', 'desc', or null
+
+async function loadUsers() {
+    try {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const usersLoading = document.getElementById('usersLoading');
+        const usersTableBody = document.getElementById('usersTableBody');
+        
+        if (usersLoading) usersLoading.style.display = 'block';
+        if (usersTableBody) usersTableBody.innerHTML = '';
+        
+        const response = await fetch(`${API_URL}/api/users`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            allUsers = await response.json();
+            await loadRolesForUserManagement();
+            setupTableSorting();
+            displayUsers(allUsers);
+        } else {
+            console.error('Failed to load users');
+            if (usersTableBody) {
+                usersTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #dc3545;">Failed to load users. Please refresh the page.</td></tr>';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        const usersTableBody = document.getElementById('usersTableBody');
+        if (usersTableBody) {
+            usersTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #dc3545;">Error loading users. Please check your connection.</td></tr>';
+        }
+    } finally {
+        const usersLoading = document.getElementById('usersLoading');
+        if (usersLoading) usersLoading.style.display = 'none';
+    }
+}
+
+async function loadRolesForUserManagement() {
+    try {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/roles`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            currentRoles = await response.json();
+        } else {
+            console.error('Failed to load roles for user management');
+        }
+    } catch (error) {
+        console.error('Error loading roles for user management:', error);
+    }
+}
+
+function setupTableSorting() {
+    const table = document.getElementById('usersTable');
+    if (!table) return;
+    
+    const headers = table.querySelectorAll('thead th');
+    
+    // Define sortable columns (exclude Actions column)
+    const sortableColumns = [
+        { index: 0, key: 'username', label: 'Username' },
+        { index: 1, key: 'fullName', label: 'Full Name' },
+        { index: 2, key: 'email', label: 'Email' },
+        { index: 3, key: 'role', label: 'Role' },
+        { index: 4, key: 'created', label: 'Created' }
+    ];
+    
+    sortableColumns.forEach(column => {
+        const header = headers[column.index];
+        if (header) {            // Make header clickable and add styling
+            header.style.cursor = 'pointer';
+            header.style.userSelect = 'none';
+            header.classList.add('sortable-header');
+            header.setAttribute('title', `Click to sort by ${column.label}`);
+            
+            // Add sort indicator container
+            const originalText = header.textContent;
+            header.innerHTML = `
+                <span class="header-text">${originalText}</span>
+                <span class="sort-indicator" data-column="${column.key}"></span>
+            `;
+            
+            // Add click event listener
+            header.addEventListener('click', () => handleSort(column.key));
+        }
+    });
+}
+
+function handleSort(columnKey) {
+    // Determine new sort direction
+    if (currentSort.column === columnKey) {
+        // Same column clicked
+        if (currentSort.direction === null) {
+            currentSort.direction = 'asc';
+        } else if (currentSort.direction === 'asc') {
+            currentSort.direction = 'desc';
+        } else {
+            // Remove sort
+            currentSort.column = null;
+            currentSort.direction = null;
+        }
+    } else {
+        // Different column clicked
+        currentSort.column = columnKey;
+        currentSort.direction = 'asc';
+    }
+      // Update sort indicators
+    updateSortIndicators();
+    
+    // Update reset sort button visibility
+    updateResetSortButton();
+    
+    // Sort and display users
+    const sortedUsers = getSortedUsers();
+    displayUsers(sortedUsers);
+}
+
+function updateSortIndicators() {
+    const indicators = document.querySelectorAll('.sort-indicator');
+    
+    indicators.forEach(indicator => {
+        const column = indicator.dataset.column;
+        const header = indicator.closest('th');
+        
+        if (column === currentSort.column) {
+            if (currentSort.direction === 'asc') {
+                indicator.innerHTML = ' ▲';
+                indicator.className = 'sort-indicator sort-asc';
+                header.setAttribute('title', `Sorted ascending. Click to sort descending.`);
+            } else if (currentSort.direction === 'desc') {
+                indicator.innerHTML = ' ▼';
+                indicator.className = 'sort-indicator sort-desc';
+                header.setAttribute('title', `Sorted descending. Click to remove sort.`);
+            }
+        } else {
+            indicator.innerHTML = '';
+            indicator.className = 'sort-indicator';
+            const columnLabel = header.querySelector('.header-text').textContent;
+            header.setAttribute('title', `Click to sort by ${columnLabel}`);
+        }
+    });
+}
+
+function getSortedUsers() {
+    if (!currentSort.column || !currentSort.direction) {
+        return [...allUsers];
+    }
+    
+    return [...allUsers].sort((a, b) => {
+        let valueA, valueB;
+        
+        switch (currentSort.column) {
+            case 'username':
+                valueA = a.username || '';
+                valueB = b.username || '';
+                break;
+            case 'fullName':
+                valueA = [a.first_name, a.middle_name, a.last_name]
+                    .filter(name => name && name.trim())
+                    .join(' ') || '';
+                valueB = [b.first_name, b.middle_name, b.last_name]
+                    .filter(name => name && name.trim())
+                    .join(' ') || '';
+                break;
+            case 'email':
+                valueA = a.email || '';
+                valueB = b.email || '';
+                break;
+            case 'role':
+                valueA = (a.roles && a.roles.length > 0) ? a.roles[0] : 'User';
+                valueB = (b.roles && b.roles.length > 0) ? b.roles[0] : 'User';
+                break;
+            case 'created':
+                valueA = new Date(a.date_created);
+                valueB = new Date(b.date_created);
+                break;
+            default:
+                return 0;
+        }
+        
+        // Handle date sorting
+        if (currentSort.column === 'created') {
+            return currentSort.direction === 'asc' ? valueA - valueB : valueB - valueA;
+        }
+        
+        // Handle string sorting (case insensitive)
+        const comparison = valueA.toString().toLowerCase().localeCompare(valueB.toString().toLowerCase());
+        return currentSort.direction === 'asc' ? comparison : -comparison;
+    });
+}
+
+function displayUsers(users) {
+    const usersTableBody = document.getElementById('usersTableBody');
+    const noUsersFound = document.getElementById('noUsersFound');
+    
+    if (!usersTableBody) return;
+    
+    if (users.length === 0) {
+        usersTableBody.innerHTML = '';
+        if (noUsersFound) noUsersFound.classList.remove('hidden');
+        return;
+    }
+    
+    if (noUsersFound) noUsersFound.classList.add('hidden');
+    
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    usersTableBody.innerHTML = users.map(user => {
+        const fullName = [user.first_name, user.middle_name, user.last_name]
+            .filter(name => name && name.trim())
+            .join(' ');
+        
+        const primaryRole = user.roles && user.roles.length > 0 ? user.roles[0] : 'User';
+        const primaryRoleKey = user.role_keys && user.role_keys.length > 0 ? user.role_keys[0] : 2;
+        
+        const createdDate = new Date(user.date_created).toLocaleDateString();
+        
+        const isCurrentUser = currentUser.username === user.username;
+        const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, '');
+        
+        return `
+            <tr data-user-id="${user.user_key}">
+                <td>
+                    <strong>${user.username}</strong>
+                    ${isCurrentUser ? '<span style="color: #009688; font-size: 0.8rem;">(You)</span>' : ''}
+                </td>
+                <td>
+                    <div class="user-name">
+                        <span class="user-full-name">${fullName || 'N/A'}</span>
+                    </div>
+                </td>
+                <td>${user.email || 'N/A'}</td>
+                <td>
+                    <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}">
+                        ${primaryRole}
+                    </span>
+                </td>
+                <td>
+                    <span class="user-created">${createdDate}</span>
+                </td>
+                <td>
+                    <div class="user-actions">
+                        <button class="btn-icon btn-edit" onclick="editUserRole(${user.user_key})" title="Edit Role" ${isCurrentUser ? 'disabled' : ''}>
+                            ✏️
+                        </button>
+                        <button class="btn-icon btn-delete" onclick="deleteUser(${user.user_key}, '${user.username}')" title="Delete User" ${isCurrentUser ? 'disabled' : ''}>
+                            🗑️
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function filterUsers() {
+    const filterValue = document.getElementById('userFilter').value.toLowerCase();
+    
+    if (!filterValue.trim()) {
+        const sortedUsers = getSortedUsers();
+        displayUsers(sortedUsers);
+        return;
+    }
+    
+    const filteredUsers = allUsers.filter(user => {
+        const fullName = [user.first_name, user.middle_name, user.last_name]
+            .filter(name => name && name.trim())
+            .join(' ').toLowerCase();
+        
+        return user.username.toLowerCase().includes(filterValue) ||
+               fullName.includes(filterValue) ||
+               (user.email && user.email.toLowerCase().includes(filterValue)) ||
+               (user.roles && user.roles.some(role => role.toLowerCase().includes(filterValue)));
+    });
+    
+    // Apply current sorting to filtered results
+    const sortedFilteredUsers = currentSort.column && currentSort.direction 
+        ? filteredUsers.sort((a, b) => {
+            // Same sorting logic as getSortedUsers but for filtered array
+            let valueA, valueB;
+            
+            switch (currentSort.column) {
+                case 'username':
+                    valueA = a.username || '';
+                    valueB = b.username || '';
+                    break;
+                case 'fullName':
+                    valueA = [a.first_name, a.middle_name, a.last_name]
+                        .filter(name => name && name.trim())
+                        .join(' ') || '';
+                    valueB = [b.first_name, b.middle_name, b.last_name]
+                        .filter(name => name && name.trim())
+                        .join(' ') || '';
+                    break;
+                case 'email':
+                    valueA = a.email || '';
+                    valueB = b.email || '';
+                    break;
+                case 'role':
+                    valueA = (a.roles && a.roles.length > 0) ? a.roles[0] : 'User';
+                    valueB = (b.roles && b.roles.length > 0) ? b.roles[0] : 'User';
+                    break;
+                case 'created':
+                    valueA = new Date(a.date_created);
+                    valueB = new Date(b.date_created);
+                    break;
+                default:
+                    return 0;
+            }
+            
+            if (currentSort.column === 'created') {
+                return currentSort.direction === 'asc' ? valueA - valueB : valueB - valueA;
+            }
+            
+            const comparison = valueA.toString().toLowerCase().localeCompare(valueB.toString().toLowerCase());
+            return currentSort.direction === 'asc' ? comparison : -comparison;
+        })
+        : filteredUsers;
+    
+    displayUsers(sortedFilteredUsers);
+}
+
+function setupUserFilter() {
+    const userFilter = document.getElementById('userFilter');
+    if (userFilter) {
+        userFilter.addEventListener('input', filterUsers);
+    }
+    
+    // Setup reset sort button
+    const resetSortBtn = document.getElementById('resetSort');
+    if (resetSortBtn) {
+        resetSortBtn.addEventListener('click', function() {
+            currentSort.column = null;
+            currentSort.direction = null;
+            updateSortIndicators();
+            updateResetSortButton();
+            
+            // Re-apply current filter with no sorting
+            filterUsers();
+        });
+    }
+}
+
+function updateResetSortButton() {
+    const resetSortBtn = document.getElementById('resetSort');
+    if (resetSortBtn) {
+        if (currentSort.column && currentSort.direction) {
+            resetSortBtn.style.display = 'inline-block';
+            resetSortBtn.textContent = `Clear Sort (${currentSort.column} ${currentSort.direction})`;
+        } else {
+            resetSortBtn.style.display = 'none';
+        }
+    }
+}
+
+function editUserRole(userId) {
+    const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+    if (!row) return;
+    
+    const roleCell = row.querySelector('td:nth-child(4)');
+    const actionsCell = row.querySelector('td:nth-child(6)');
+    
+    const currentRoleSpan = roleCell.querySelector('.user-role');
+    const currentRoleKey = currentRoleSpan.dataset.roleKey;
+    
+    // Create role select dropdown
+    const roleSelect = document.createElement('select');
+    roleSelect.className = 'role-select';
+    roleSelect.innerHTML = currentRoles.map(role => 
+        `<option value="${role.role_key}" ${role.role_key == currentRoleKey ? 'selected' : ''}>
+            ${role.role_name}
+        </option>`
+    ).join('');
+    
+    // Replace role display with select
+    roleCell.innerHTML = '';
+    roleCell.appendChild(roleSelect);
+    
+    // Update actions to show save/cancel
+    actionsCell.innerHTML = `
+        <div class="user-actions">
+            <button class="btn-icon btn-save" onclick="saveUserRole(${userId})" title="Save Changes">
+                ✓
+            </button>
+            <button class="btn-icon btn-cancel" onclick="cancelEditUserRole(${userId})" title="Cancel">
+                ✕
+            </button>
+        </div>
+    `;
+    
+    roleSelect.focus();
+}
+
+function cancelEditUserRole(userId) {
+    // Reload the users to reset the UI
+    const user = allUsers.find(u => u.user_key == userId);
+    if (user) {
+        const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+        if (row) {
+            const primaryRole = user.roles && user.roles.length > 0 ? user.roles[0] : 'User';
+            const primaryRoleKey = user.role_keys && user.role_keys.length > 0 ? user.role_keys[0] : 2;
+            const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, '');
+            
+            const roleCell = row.querySelector('td:nth-child(4)');
+            const actionsCell = row.querySelector('td:nth-child(6)');
+            
+            roleCell.innerHTML = `
+                <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}">
+                    ${primaryRole}
+                </span>
+            `;
+            
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const isCurrentUser = currentUser.username === user.username;
+            
+            actionsCell.innerHTML = `
+                <div class="user-actions">
+                    <button class="btn-icon btn-edit" onclick="editUserRole(${userId})" title="Edit Role" ${isCurrentUser ? 'disabled' : ''}>
+                        ✏️
+                    </button>
+                    <button class="btn-icon btn-delete" onclick="deleteUser(${userId}, '${user.username}')" title="Delete User" ${isCurrentUser ? 'disabled' : ''}>
+                        🗑️
+                    </button>
+                </div>
+            `;
+        }
+    }
+}
+
+async function saveUserRole(userId) {
+    try {
+        const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+        if (!row) return;
+        
+        const roleSelect = row.querySelector('.role-select');
+        const newRoleKey = roleSelect.value;
+        
+        if (!newRoleKey) {
+            window.modalManager.showModal('error', 'Please select a role.');
+            return;
+        }
+        
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/users/${userId}/role`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ roleKey: newRoleKey })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Update the user in allUsers array
+            const userIndex = allUsers.findIndex(u => u.user_key == userId);
+            if (userIndex !== -1) {
+                const selectedRole = currentRoles.find(r => r.role_key == newRoleKey);
+                if (selectedRole) {
+                    allUsers[userIndex].roles = [selectedRole.role_name];
+                    allUsers[userIndex].role_keys = [selectedRole.role_key];
+                }
+            }
+            
+            // Refresh the display with current sort maintained
+            const sortedUsers = getSortedUsers();
+            displayUsers(sortedUsers);
+            
+            window.modalManager.showModal('success', `User role updated successfully to ${currentRoles.find(r => r.role_key == newRoleKey)?.role_name || 'Unknown'}.`);
+        } else {
+            throw new Error(result.error || 'Failed to update user role');
+        }
+        
+    } catch (error) {
+        console.error('Error updating user role:', error);
+        cancelEditUserRole(userId);
+        
+        const errorMessage = error.message.includes('admin privileges') 
+            ? 'You cannot remove admin privileges from your own account.' 
+            : error.message || 'Failed to update user role. Please try again.';
+            
+        window.modalManager.showModal('error', errorMessage);
+    }
+}
+
+async function deleteUser(userId, username) {
+    try {
+        // Show confirmation modal
+        const confirmDelete = await showDeleteUserModal(username);
+        if (!confirmDelete) return;
+        
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/users/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Remove user from allUsers array
+            allUsers = allUsers.filter(u => u.user_key != userId);
+            
+            // Refresh the display with current sort maintained
+            const sortedUsers = getSortedUsers();
+            displayUsers(sortedUsers);
+            
+            window.modalManager.showModal('success', `User "${username}" has been successfully deleted from the system.`);
+        } else {
+            throw new Error(result.error || 'Failed to delete user');
+        }
+        
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        
+        const errorMessage = error.message.includes('your own account') 
+            ? 'You cannot delete your own account.' 
+            : error.message || 'Failed to delete user. Please try again.';
+            
+        window.modalManager.showModal('error', errorMessage);
+    }
+}
+
+function showDeleteUserModal(username) {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>⚠️ Delete User Account</h3>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Are you sure you want to delete the user "${username}"?</strong></p>
+                    <p style="color: #dc3545; margin-top: 1rem;">This action cannot be undone. The user account and all associated data will be permanently removed from the system.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn secondary" id="cancelDeleteUser">Cancel</button>
+                    <button class="modal-btn danger" id="confirmDeleteUser">Delete User</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        document.getElementById('cancelDeleteUser').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(false);
+        });
+        
+        document.getElementById('confirmDeleteUser').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(true);
+        });
+        
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modal);
+                resolve(false);
+            }
+        });
+    });
+}
