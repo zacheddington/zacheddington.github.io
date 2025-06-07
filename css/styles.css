@@ -1027,6 +1027,41 @@ button[type="submit"]:disabled,
     background-color: #fff8f8;
 }
 
+/* Password validation states for profile forms */
+.profile-form input.password-match {
+    border-color: #28a745 !important;
+    background-color: #f8fff9 !important;
+}
+
+.profile-form input.password-mismatch {
+    border-color: #dc3545 !important;
+    background-color: #fff8f8 !important;
+}
+
+.profile-form .form-group.success input {
+    border-color: #28a745 !important;
+    background-color: #f8fff9 !important;
+}
+
+.profile-form .form-group.error input {
+    border-color: #dc3545 !important;
+    background-color: #fff8f8 !important;
+}
+
+.profile-form .error-message {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.profile-form .success-message {
+    color: #28a745;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
 /* Section messages for admin pages */
 .section-message {
     padding: 1rem;

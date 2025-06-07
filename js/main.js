@@ -676,18 +676,19 @@ function initializeProfilePage() {
                 clearPasswordErrors();
             });
         }
-        
-        // Real-time password confirmation validation
+          // Real-time password confirmation validation
         const newPassword = document.getElementById('newPassword');
         const confirmPassword = document.getElementById('confirmPassword');
-        
-        if (newPassword && confirmPassword) {
+          if (newPassword && confirmPassword) {
+            // Add password strength indicator for profile page
+            addPasswordStrengthIndicator(newPassword);
+            
             confirmPassword.addEventListener('input', function() {
                 validatePasswordMatch();
             });
-            
-            newPassword.addEventListener('input', function() {
+              newPassword.addEventListener('input', function() {
                 validatePasswordMatch();
+                updatePasswordStrength(newPassword.value, newPassword.id);
             });
         }
     }
@@ -970,6 +971,7 @@ function validatePasswordMatch() {
     
     // Remove existing error/success classes and messages
     confirmGroup.classList.remove('error', 'success');
+    confirmPasswordElement.classList.remove('password-match', 'password-mismatch');
     const existingMessage = confirmGroup.querySelector('.error-message, .success-message');
     if (existingMessage) {
         existingMessage.remove();
@@ -978,12 +980,14 @@ function validatePasswordMatch() {
     if (confirmPassword && newPassword) {
         if (newPassword === confirmPassword) {
             confirmGroup.classList.add('success');
+            confirmPasswordElement.classList.add('password-match');
             const successMsg = document.createElement('div');
             successMsg.className = 'success-message';
             successMsg.textContent = 'Passwords match';
             confirmGroup.appendChild(successMsg);
         } else {
             confirmGroup.classList.add('error');
+            confirmPasswordElement.classList.add('password-mismatch');
             const errorMsg = document.createElement('div');
             errorMsg.className = 'error-message';
             errorMsg.textContent = 'Passwords do not match';
@@ -1071,6 +1075,22 @@ function clearPasswordErrors() {
         if (errorMsg) {
             errorMsg.remove();
         }
+    });
+    
+    // Clear success states
+    const successGroups = passwordSection.querySelectorAll('.form-group.success');
+    successGroups.forEach(group => {
+        group.classList.remove('success');
+        const successMsg = group.querySelector('.success-message');
+        if (successMsg) {
+            successMsg.remove();
+        }
+    });
+    
+    // Clear password matching classes
+    const passwordInputs = passwordSection.querySelectorAll('input[type="password"]');
+    passwordInputs.forEach(input => {
+        input.classList.remove('password-match', 'password-mismatch');
     });
 }
 
@@ -1243,10 +1263,9 @@ function setupCreateUserForm() {
         confirmPassword.addEventListener('input', function() {
             validateCreateUserPasswordMatch();
         });
-        
-        newPassword.addEventListener('input', function() {
+          newPassword.addEventListener('input', function() {
             validateCreateUserPasswordMatch();
-            updatePasswordStrength(newPassword.value);
+            updatePasswordStrength(newPassword.value, newPassword.id);
         });
     }
     
@@ -1578,15 +1597,19 @@ async function checkUsernameAvailability(username) {
 }
 
 function addPasswordStrengthIndicator(passwordField) {
+    // Create unique IDs to avoid conflicts between admin and profile pages
+    const fieldId = passwordField.id;
+    const uniqueId = fieldId + '_strength';
+    
     // Create password strength indicator
     const strengthContainer = document.createElement('div');
     strengthContainer.className = 'password-strength-container';
     strengthContainer.innerHTML = `
         <div class="password-strength-bar">
-            <div class="password-strength-fill" id="passwordStrengthFill"></div>
+            <div class="password-strength-fill" id="${uniqueId}Fill"></div>
         </div>
-        <div class="password-strength-text" id="passwordStrengthText">Password strength will appear here</div>
-        <div class="password-requirements" id="passwordRequirements">
+        <div class="password-strength-text" id="${uniqueId}Text">Password strength will appear here</div>
+        <div class="password-requirements" id="${uniqueId}Requirements">
             <div class="requirement-title">Password must contain:</div>
             <div class="requirement" data-requirement="length">✗ At least 8 characters</div>
             <div class="requirement" data-requirement="uppercase">✗ One uppercase letter (A-Z)</div>
@@ -1602,11 +1625,12 @@ function addPasswordStrengthIndicator(passwordField) {
     passwordField.parentNode.appendChild(strengthContainer);
 }
 
-function updatePasswordStrength(password) {
+function updatePasswordStrength(password, fieldId = 'newPassword') {
     const validation = validatePasswordStrength(password);
-    const fill = document.getElementById('passwordStrengthFill');
-    const text = document.getElementById('passwordStrengthText');
-    const requirements = document.getElementById('passwordRequirements');
+    const uniqueId = fieldId + '_strength';
+    const fill = document.getElementById(uniqueId + 'Fill');
+    const text = document.getElementById(uniqueId + 'Text');
+    const requirements = document.getElementById(uniqueId + 'Requirements');
     
     if (!fill || !text || !requirements) return;
     
