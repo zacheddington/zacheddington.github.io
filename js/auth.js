@@ -5,6 +5,12 @@ const publicPaths = ['/index.html', '/', ''];
 const SESSION_TIMEOUT = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
 const ACTIVITY_CHECK_INTERVAL = 60 * 1000; // Check every minute
 const ACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes of inactivity
+const TAB_CHECK_INTERVAL = 5 * 1000; // Check for multiple tabs every 5 seconds
+const MASTER_TAB_HEARTBEAT = 3 * 1000; // Master tab heartbeat every 3 seconds
+
+// Single-tab enforcement constants
+const MASTER_TAB_TIMEOUT = 10 * 1000; // 10 seconds without master tab heartbeat
+const TAB_TAKEOVER_DELAY = 2 * 1000; // 2 second delay before allowing tab takeover
 
 // Check if current page is public
 const isPublicPage = () => {
@@ -14,11 +20,15 @@ const isPublicPage = () => {
     return publicPaths.includes(normalizedPath) || normalizedPath === '';
 };
 
-// Enhanced session management with tab-specific tracking
+// Enhanced session management with tab-specific tracking and single-tab enforcement
 const SessionManager = {
     tabId: null,
     heartbeatInterval: null,
-      // Generate unique tab ID and initialize session
+    masterTabInterval: null,
+    tabCheckInterval: null,
+    isMasterTab: false,
+    
+    // Generate unique tab ID and initialize session
     initSession: () => {
         // Generate unique tab identifier
         SessionManager.tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -30,7 +40,9 @@ const SessionManager = {
             lastActivity: loginTime,
             tabId: SessionManager.tabId,
             lastHeartbeat: loginTime,
-            isRecentLogin: true // Flag for recent login grace period
+            isRecentLogin: true, // Flag for recent login grace period
+            masterTabId: SessionManager.tabId, // This tab becomes the master
+            masterTabHeartbeat: loginTime
         };
         
         localStorage.setItem('activeSession', JSON.stringify(sessionData));
@@ -40,11 +52,16 @@ const SessionManager = {
         localStorage.setItem('lastTabId', SessionManager.tabId);
         localStorage.setItem('loginTimestamp', loginTime.toString());
         
-        console.log('Session initialized with tab-specific tracking:', SessionManager.tabId);
+        // Set this tab as master
+        SessionManager.isMasterTab = true;
         
-        // Set up tab close detection and heartbeat
+        console.log('Session initialized with single-tab enforcement:', SessionManager.tabId);
+        
+        // Set up tab close detection, heartbeat, and single-tab monitoring
         SessionManager.setupTabCloseDetection();
         SessionManager.startHeartbeat();
+        SessionManager.startMasterTabHeartbeat();
+        SessionManager.startTabMonitoring();
     },
 
     // Start heartbeat to keep session alive
@@ -56,14 +73,304 @@ const SessionManager = {
                 localStorage.setItem('activeSession', JSON.stringify(sessionData));
             }
         }, 30000); // Heartbeat every 30 seconds
-    },
-
-    // Stop heartbeat
+    },    // Stop heartbeat
     stopHeartbeat: () => {
         if (SessionManager.heartbeatInterval) {
             clearInterval(SessionManager.heartbeatInterval);
             SessionManager.heartbeatInterval = null;
         }
+    },
+
+    // Start master tab heartbeat (for single-tab enforcement)
+    startMasterTabHeartbeat: () => {
+        if (!SessionManager.isMasterTab) return;
+        
+        SessionManager.masterTabInterval = setInterval(() => {
+            const sessionData = SessionManager.getSessionData();
+            if (sessionData && sessionData.masterTabId === SessionManager.tabId) {
+                sessionData.masterTabHeartbeat = Date.now();
+                localStorage.setItem('activeSession', JSON.stringify(sessionData));
+            }
+        }, MASTER_TAB_HEARTBEAT);
+    },
+
+    // Stop master tab heartbeat
+    stopMasterTabHeartbeat: () => {
+        if (SessionManager.masterTabInterval) {
+            clearInterval(SessionManager.masterTabInterval);
+            SessionManager.masterTabInterval = null;
+        }
+    },
+
+    // Start monitoring for multiple tabs
+    startTabMonitoring: () => {
+        SessionManager.tabCheckInterval = setInterval(() => {
+            SessionManager.checkForMultipleTabs();
+        }, TAB_CHECK_INTERVAL);
+    },
+
+    // Stop tab monitoring
+    stopTabMonitoring: () => {
+        if (SessionManager.tabCheckInterval) {
+            clearInterval(SessionManager.tabCheckInterval);
+            SessionManager.tabCheckInterval = null;
+        }
+    },
+
+    // Check for multiple tabs and enforce single-tab rule
+    checkForMultipleTabs: () => {
+        const sessionData = SessionManager.getSessionData();
+        if (!sessionData) return;
+
+        const now = Date.now();
+        const masterTabId = sessionData.masterTabId;
+        const masterTabHeartbeat = sessionData.masterTabHeartbeat || 0;
+
+        // If this is not the master tab
+        if (SessionManager.tabId !== masterTabId) {
+            // Check if master tab is still alive
+            if (now - masterTabHeartbeat > MASTER_TAB_TIMEOUT) {
+                // Master tab is dead, this tab can take over
+                console.log('Master tab appears dead, attempting takeover...');
+                SessionManager.attemptTabTakeover();
+            } else {
+                // Master tab is alive, this tab should be closed
+                console.log('Multiple tabs detected - closing secondary tab');
+                SessionManager.showMultipleTabWarning();
+                return;
+            }
+        }
+
+        // If this is the master tab, ensure we're still the master
+        if (SessionManager.isMasterTab && SessionManager.tabId === masterTabId) {
+            // Update our heartbeat
+            sessionData.masterTabHeartbeat = now;
+            localStorage.setItem('activeSession', JSON.stringify(sessionData));
+        }
+    },
+
+    // Attempt to take over as master tab
+    attemptTabTakeover: () => {
+        setTimeout(() => {
+            const sessionData = SessionManager.getSessionData();
+            if (!sessionData) return;
+
+            const now = Date.now();
+            const masterTabHeartbeat = sessionData.masterTabHeartbeat || 0;
+
+            // Double-check that master tab is still dead
+            if (now - masterTabHeartbeat > MASTER_TAB_TIMEOUT) {
+                console.log('Taking over as master tab:', SessionManager.tabId);
+                
+                // Update session data to make this tab the master
+                sessionData.masterTabId = SessionManager.tabId;
+                sessionData.masterTabHeartbeat = now;
+                localStorage.setItem('activeSession', JSON.stringify(sessionData));
+                
+                // Set this tab as master and start master heartbeat
+                SessionManager.isMasterTab = true;
+                SessionManager.startMasterTabHeartbeat();
+                
+                // Show success message
+                SessionManager.showTabTakeoverMessage();
+            }
+        }, TAB_TAKEOVER_DELAY);
+    },
+
+    // Show warning about multiple tabs
+    showMultipleTabWarning: () => {
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+
+        // Create modal content
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        `;
+
+        modal.innerHTML = `
+            <h2 style="color: #e74c3c; margin-bottom: 20px;">⚠️ Multiple Tabs Detected</h2>
+            <p style="margin-bottom: 20px; line-height: 1.5;">
+                For data security and to prevent database conflicts, only one tab can access the application at a time.
+            </p>
+            <p style="margin-bottom: 30px; font-weight: bold; color: #2c3e50;">
+                Please close this tab and continue using your original tab.
+            </p>
+            <button id="closeTabBtn" style="
+                background: #e74c3c;
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-right: 10px;
+            ">Close This Tab</button>
+            <button id="forceCloseBtn" style="
+                background: #95a5a6;
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+            ">Force Close Other Tabs</button>
+        `;
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        // Handle close tab button
+        document.getElementById('closeTabBtn').addEventListener('click', () => {
+            window.close();
+        });
+
+        // Handle force close button (clear session and redirect)
+        document.getElementById('forceCloseBtn').addEventListener('click', () => {
+            SessionManager.forceTabTakeover();
+        });
+
+        // Disable page interaction
+        document.body.style.pointerEvents = 'none';
+        overlay.style.pointerEvents = 'auto';
+    },
+
+    // Force this tab to become the master (emergency override)
+    forceTabTakeover: () => {
+        console.log('Force takeover initiated by user');
+        
+        const sessionData = SessionManager.getSessionData();
+        if (sessionData) {
+            const now = Date.now();
+            
+            // Force update session data
+            sessionData.masterTabId = SessionManager.tabId;
+            sessionData.masterTabHeartbeat = now;
+            sessionData.lastActivity = now;
+            localStorage.setItem('activeSession', JSON.stringify(sessionData));
+            
+            // Set this tab as master
+            SessionManager.isMasterTab = true;
+            SessionManager.startMasterTabHeartbeat();
+        }
+        
+        // Reload the page to clear the warning modal
+        window.location.reload();
+    },    // Show tab takeover success message
+    showTabTakeoverMessage: () => {
+        const message = document.createElement('div');
+        message.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #27ae60;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            z-index: 9999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        `;
+        message.textContent = '✓ Tab successfully activated';
+        
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+            if (message.parentNode) {
+                message.parentNode.removeChild(message);
+            }
+        }, 3000);
+    },
+
+    // Show message when new tab is denied access
+    showNewTabDeniedMessage: () => {
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+
+        // Create modal content
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        `;
+
+        modal.innerHTML = `
+            <h2 style="color: #e67e22; margin-bottom: 20px;">🚫 Access Restricted</h2>
+            <p style="margin-bottom: 20px; line-height: 1.5;">
+                You already have the application open in another tab. For data security and to prevent conflicts, only one tab can be active at a time.
+            </p>
+            <p style="margin-bottom: 30px; font-weight: bold; color: #2c3e50;">
+                Please return to your existing tab or close it first.
+            </p>
+            <button id="closeNewTabBtn" style="
+                background: #e67e22;
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-right: 10px;
+            ">Close This Tab</button>
+            <button id="loginNewTabBtn" style="
+                background: #3498db;
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+            ">Login in This Tab</button>
+        `;
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        // Handle close tab button
+        document.getElementById('closeNewTabBtn').addEventListener('click', () => {
+            window.close();
+        });
+
+        // Handle login button (redirect to login page)
+        document.getElementById('loginNewTabBtn').addEventListener('click', () => {
+            window.location.href = '/';
+        });
+
+        // Disable page interaction
+        document.body.style.pointerEvents = 'none';
+        overlay.style.pointerEvents = 'auto';
     },
 
     // Update last activity timestamp for current tab
@@ -167,14 +474,15 @@ const SessionManager = {
 
         console.log('Session validation passed');
         return true;
-    },
-
-    // Clear all session data
+    },    // Clear all session data
     clearSession: () => {
         SessionManager.stopHeartbeat();
+        SessionManager.stopMasterTabHeartbeat();
+        SessionManager.stopTabMonitoring();
+        SessionManager.isMasterTab = false;
         localStorage.removeItem('activeSession');
         sessionStorage.clear();
-        console.log('Session data cleared');
+        console.log('Session data cleared with single-tab enforcement cleanup');
     }
 };
 
@@ -254,8 +562,7 @@ const checkAuth = () => {
     const isRecentLogin = (now - loginTimestamp) < 30000; // 30 seconds grace period
     
     console.log('Login timestamp:', loginTimestamp, 'Recent login:', isRecentLogin);
-    
-    if (!currentTabId) {
+      if (!currentTabId) {
         if (isRecentLogin && sessionData && sessionData.tabId) {
             console.log('No sessionStorage tab ID but recent login detected - allowing access and restoring session');
             // Restore the session for this tab
@@ -266,9 +573,24 @@ const checkAuth = () => {
             sessionData.isRecentLogin = false;
             localStorage.setItem('activeSession', JSON.stringify(sessionData));
         } else {
-            console.log('New tab detected - no tab ID found, redirecting to login');
-            // Don't clear session data - just redirect this tab to login
-            // The original logged-in tab should still work
+            console.log('New tab detected - checking for existing session');
+            
+            // Check if there's an active session with a master tab
+            if (sessionData && sessionData.masterTabId) {
+                const now = Date.now();
+                const masterTabHeartbeat = sessionData.masterTabHeartbeat || 0;
+                
+                // If master tab is alive, deny access to this new tab
+                if (now - masterTabHeartbeat <= MASTER_TAB_TIMEOUT) {
+                    console.log('Active master tab detected - denying access to new tab');
+                    SessionManager.showNewTabDeniedMessage();
+                    return;
+                } else {
+                    console.log('Master tab appears inactive - allowing new tab access');
+                }
+            }
+            
+            console.log('No active session found - redirecting to login');
             window.location.href = '/';
             return;
         }
@@ -279,18 +601,29 @@ const checkAuth = () => {
         console.log('Session invalid or expired, logging out');
         performLogout('Invalid session');
         return;
-    }
-
-    // Restore the tab ID and start heartbeat if not already running
+    }    // Restore the tab ID and start heartbeat if not already running
     SessionManager.tabId = currentTabId;
     if (!SessionManager.heartbeatInterval) {
         SessionManager.startHeartbeat();
     }
 
+    // Check if this tab should be the master tab (reuse existing sessionData variable)
+    if (sessionData && sessionData.masterTabId === SessionManager.tabId) {
+        SessionManager.isMasterTab = true;
+        if (!SessionManager.masterTabInterval) {
+            SessionManager.startMasterTabHeartbeat();
+        }
+    }
+
+    // Start tab monitoring if not already running
+    if (!SessionManager.tabCheckInterval) {
+        SessionManager.startTabMonitoring();
+    }
+
     // Start monitoring for this session
     startActivityMonitoring();
     
-    console.log('Authentication check passed for tab:', currentTabId);
+    console.log('Authentication check passed for tab:', currentTabId, 'Master tab:', SessionManager.isMasterTab);
 };
 
 // Make logout function globally available
