@@ -4,13 +4,13 @@ const publicPaths = ['/index.html', '/', ''];
 // Session management constants
 const SESSION_TIMEOUT = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
 const ACTIVITY_CHECK_INTERVAL = 60 * 1000; // Check every minute
-const ACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes of inactivity
-const TAB_CHECK_INTERVAL = 5 * 1000; // Check for multiple tabs every 5 seconds
-const MASTER_TAB_HEARTBEAT = 3 * 1000; // Master tab heartbeat every 3 seconds
+const ACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes of inactivity
+const TAB_CHECK_INTERVAL = 1 * 1000; // Check for multiple tabs every 1 second
+const MASTER_TAB_HEARTBEAT = 1 * 1000; // Master tab heartbeat every 1 second
 
 // Single-tab enforcement constants
-const MASTER_TAB_TIMEOUT = 10 * 1000; // 10 seconds without master tab heartbeat
-const TAB_TAKEOVER_DELAY = 2 * 1000; // 2 second delay before allowing tab takeover
+const MASTER_TAB_TIMEOUT = 1 * 1000; // 1 second without master tab heartbeat
+const TAB_TAKEOVER_DELAY = 1 * 1000; // 1 second delay before allowing tab takeover
 
 // Check if current page is public
 const isPublicPage = () => {
