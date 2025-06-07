@@ -207,7 +207,7 @@ button[type="submit"],
     color: #fff;
     border: none;
     border-radius: 8px;
-    padding: 12px;
+    padding: 12px 24px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -308,7 +308,7 @@ button[type="submit"]:disabled,
     border-color: #009688;
 }
 
-.submit-btn {
+.eeg-form .submit-btn {
     margin-top: 10px;
     width: 100%;
 }
