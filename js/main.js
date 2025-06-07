@@ -139,25 +139,63 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                 if (response.ok && data.token) {
                     // Store authentication data
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));                    // Initialize session management - streamlined approach
+                    localStorage.setItem('user', JSON.stringify(data.user));                    // Initialize session management - ensure proper session creation
                     try {
-                        if (window.SessionManager) {
-                            // Use SessionManager if available
+                        if (window.SessionManager && typeof window.SessionManager.initSession === 'function') {
+                            console.log('Initializing session with SessionManager');
                             window.SessionManager.initSession();
-                            // Give a moment for session to initialize
-                            await new Promise(resolve => setTimeout(resolve, 100));
+                            
+                            // Verify session was created and give time for persistence
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                            
+                            // Double-check that session data persisted correctly
+                            const sessionData = window.SessionManager.getSessionData();
+                            const currentTabId = sessionStorage.getItem('currentTabId');
+                            
+                            console.log('Session verification after init:', {
+                                sessionData: sessionData,
+                                currentTabId: currentTabId,
+                                hasSessionData: !!sessionData,
+                                hasTabId: !!currentTabId
+                            });
+                            
+                            // If session didn't persist properly, try again
+                            if (!sessionData || !currentTabId) {
+                                console.warn('Session data not properly persisted, trying again...');
+                                window.SessionManager.initSession();
+                                await new Promise(resolve => setTimeout(resolve, 100));
+                            }
                         } else {
-                            // Simplified fallback: single session initialization
+                            console.warn('SessionManager not available, using fallback session initialization');
+                            // Enhanced fallback with session structure compatible with SessionManager
                             const loginTime = Date.now();
                             const tabId = 'tab_' + loginTime + '_' + Math.random().toString(36).substr(2, 9);
                             
+                            // Create session data structure compatible with SessionManager
+                            const sessionData = {
+                                loginTime: loginTime,
+                                lastActivity: loginTime,
+                                tabId: tabId,
+                                lastHeartbeat: loginTime,
+                                isRecentLogin: true,
+                                masterTabId: tabId,
+                                masterTabHeartbeat: loginTime
+                            };
+                            
+                            localStorage.setItem('activeSession', JSON.stringify(sessionData));
                             sessionStorage.setItem('currentTabId', tabId);
+                            localStorage.setItem('lastTabId', tabId);
                             localStorage.setItem('loginTimestamp', loginTime.toString());
-                            sessionStorage.setItem('loginTime', loginTime.toString());
+                            
+                            console.log('Fallback session initialized:', tabId);
                         }
                     } catch (sessionError) {
-                        console.warn('Session initialization error:', sessionError);
-                        // Continue with login even if session init fails
+                        console.error('Session initialization error:', sessionError);
+                        // Even if session init fails, continue with basic session tracking
+                        const loginTime = Date.now();
+                        const tabId = 'tab_' + loginTime + '_' + Math.random().toString(36).substr(2, 9);
+                        sessionStorage.setItem('currentTabId', tabId);
+                        localStorage.setItem('loginTimestamp', loginTime.toString());
                     }
                     
                     // Use utility function to check admin status and update UI
@@ -166,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
                         window.location.href = "welcome/";
-                    }, FADE_DURATION + 100); // Extra 100ms for session initialization
+                    }, FADE_DURATION + 200); // Extended delay for robust session persistence
                 } else {const message = response.status === 401 
                         ? 'Invalid username or password'
                         : data.error || 'Login failed';

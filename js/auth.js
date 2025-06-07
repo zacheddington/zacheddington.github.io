@@ -419,19 +419,43 @@ const checkAuth = () => {
     const isRecentLogin = (now - loginTimestamp) < 60000; // Extended to 60 seconds grace period
     
     console.log('Login timestamp:', loginTimestamp, 'Recent login:', isRecentLogin);
-    
-    if (!currentTabId) {
+      if (!currentTabId) {
         if (isRecentLogin && sessionData && sessionData.tabId) {
             console.log('No sessionStorage tab ID but recent login detected - allowing access and restoring session');
             // Restore the session for this tab
             sessionStorage.setItem('currentTabId', sessionData.tabId);
             SessionManager.tabId = sessionData.tabId;
             
+            // Update the current tab ID variable for the rest of the function
+            currentTabId = sessionData.tabId;
+            
             // Don't clear the recent login flag immediately - keep it for a bit longer
             // This helps with multiple page loads during login flow
             if ((now - loginTimestamp) > 45000) { // Only clear after 45 seconds
                 sessionData.isRecentLogin = false;
                 localStorage.setItem('activeSession', JSON.stringify(sessionData));
+            }
+        } else if (isRecentLogin && !sessionData) {
+            // Edge case: recent login but no session data - try to recover from localStorage backup
+            const lastTabId = localStorage.getItem('lastTabId');
+            if (lastTabId) {
+                console.log('Attempting session recovery with lastTabId:', lastTabId);
+                sessionStorage.setItem('currentTabId', lastTabId);
+                SessionManager.tabId = lastTabId;
+                currentTabId = lastTabId;
+                
+                // Re-initialize session if possible
+                if (window.SessionManager && typeof window.SessionManager.initSession === 'function') {
+                    try {
+                        window.SessionManager.initSession();
+                    } catch (e) {
+                        console.warn('Session re-initialization failed:', e);
+                    }
+                }
+            } else {
+                console.log('No active session found - redirecting to login');
+                window.location.href = '/';
+                return;
             }
         } else {
             console.log('New tab detected - checking for existing session');
