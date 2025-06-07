@@ -522,6 +522,167 @@ button[type="submit"]:disabled,
     margin-top: 80px;
 }
 
+/* Profile Styles */
+.profile-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 2rem;
+    margin-top: 80px;
+}
+
+.profile-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.profile-section:last-child {
+    margin-bottom: 0;
+}
+
+.profile-section h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #003b49;
+    font-size: 1.3rem;
+    border-bottom: 2px solid #e0f7fa;
+    padding-bottom: 0.5rem;
+}
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.profile-form .form-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.profile-form .form-row:last-child {
+    margin-bottom: 0;
+}
+
+.profile-form .form-group {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-form label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #003b49;
+}
+
+.profile-form input {
+    padding: 12px;
+    border: 2px solid #b2dfdb;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border 0.2s;
+    background: white;
+}
+
+.profile-form input:focus {
+    border-color: #009688;
+    outline: none;
+}
+
+.profile-form input:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.profile-form input[readonly] {
+    background: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.profile-form .field-note {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    justify-content: flex-start;
+}
+
+.secondary-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.secondary-btn:hover {
+    background: #5a6268;
+}
+
+.info-only {
+    background: #f8f9fa;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #003b49;
+}
+
+.info-value {
+    color: #666;
+}
+
+/* Responsive adjustments for narrow viewports */
+@media screen and (max-width: 768px) {
+    .admin-container,
+    .profile-container,
+    .welcome-container {
+        margin-top: 100px; /* Increased margin for mobile */
+        padding: 1rem;
+    }
+}
+
+/* Additional responsive adjustments for very narrow viewports (dev tools open, heavy zoom) */
+@media screen and (max-width: 600px) {
+    .admin-container,
+    .profile-container,
+    .welcome-container {
+        margin-top: 120px; /* Even more margin for very narrow screens */
+        padding: 1rem;
+    }
+}
+
 .admin-choice {
     text-align: center;
     margin: 3rem 0;
