@@ -1185,20 +1185,6 @@ function setupAdminNavigation() {
         setupUserFilter();
     });
     
-    // Back button handlers
-    document.getElementById('backFromCreate')?.addEventListener('click', function() {
-        createUserSection.classList.add('hidden');
-        adminChoice.classList.remove('hidden');
-        // Reset form
-        document.getElementById('createUserForm')?.reset();
-        clearCreateUserErrors();
-    });
-    
-    document.getElementById('backFromManage')?.addEventListener('click', function() {
-        manageUsersSection.classList.add('hidden');
-        adminChoice.classList.remove('hidden');
-    });
-    
     // Cancel button handler
     document.getElementById('cancelCreateUser')?.addEventListener('click', function() {
         createUserSection.classList.add('hidden');
