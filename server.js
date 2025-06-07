@@ -92,6 +92,13 @@ app.post('/api/login', async (req, res) => {
              WHERE u.username = $1`,
             [username]
         );
+        
+        console.log('Login query result fields:', Object.keys(userResult.rows[0] || {}));
+        console.log('User data retrieved:', {
+            middle_name: userResult.rows[0]?.middle_name,
+            email: userResult.rows[0]?.email,
+            name_key: userResult.rows[0]?.name_key
+        });
 
         if (userResult.rows.length === 0) {
             return res.status(401).json({ error: 'Invalid username or password' });
