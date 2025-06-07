@@ -55,11 +55,14 @@
                 </div>
             </form>
         </div>
-        
-        <!-- Password Change Section -->
+          <!-- Password Change Section -->
         <div class="profile-section">
             <h2>Change Password</h2>
-            <form id="passwordForm" class="profile-form">                <div class="form-row">
+            <form id="passwordForm" class="profile-form">
+                <!-- Hidden username field for accessibility and password manager compatibility -->
+                <input type="text" id="passwordFormUsername" name="username" autocomplete="username" style="display: none;" tabindex="-1" aria-hidden="true">
+                
+                <div class="form-row">
                     <div class="form-group">
                         <label for="currentPassword">Current Password</label>
                         <input type="password" id="currentPassword" name="currentPassword" required autocomplete="current-password">

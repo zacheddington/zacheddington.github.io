@@ -742,6 +742,12 @@ async function loadUserProfile() {
         document.getElementById('lastName').value = userData.lastName || '';
         document.getElementById('email').value = userData.email || '';
         
+        // Populate hidden username field for password form accessibility
+        const passwordFormUsername = document.getElementById('passwordFormUsername');
+        if (passwordFormUsername) {
+            passwordFormUsername.value = userData.username || '';
+        }
+        
         // Display role (read-only)
         const roleField = document.getElementById('role');
         if (userData.roles && userData.roles.length > 0) {
