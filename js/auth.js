@@ -399,13 +399,12 @@ const checkAuth = () => {
     }
 
     const token = localStorage.getItem('token');
-    
-    if (!token) {
+      if (!token) {
         console.log('No token found, redirecting to login');
         window.location.href = '/';
         return;
     }    // Check if this is a new tab/window - if no tab ID exists, this is a fresh tab
-    const currentTabId = sessionStorage.getItem('currentTabId');
+    let currentTabId = sessionStorage.getItem('currentTabId');
     console.log('Current tab ID from sessionStorage:', currentTabId);
     
     // Also check localStorage for session data
