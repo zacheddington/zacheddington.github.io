@@ -1500,15 +1500,25 @@ async function createUser() {
         });
         
         const result = await response.json();
-        
-        if (response.ok) {
+          if (response.ok) {
             // Clear the form
             document.getElementById('createUserForm').reset();
             clearCreateUserErrors();
             
-            // Show success modal with user details
-            const successMessage = `User "${formData.username}" has been successfully created!\n\nName: ${formData.firstName} ${formData.middleName ? formData.middleName + ' ' : ''}${formData.lastName}\nEmail: ${formData.email}\nRole: ${document.getElementById('userRole').selectedOptions[0]?.textContent || 'Unknown'}`;
+            // Show success modal with simple personalized message
+            const userName = formData.middleName 
+                ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`
+                : `${formData.firstName} ${formData.lastName}`;
+            const successMessage = `Success, new user for ${userName} created!`;
             window.modalManager.showModal('success', successMessage);
+            
+            // Redirect back to admin choice page after brief delay
+            setTimeout(() => {
+                window.modalManager.closeModal();
+                // Navigate back to main admin page
+                document.getElementById('createUserSection').classList.add('hidden');
+                document.getElementById('adminChoice').classList.remove('hidden');
+            }, 2500);
             
             // Refresh users list if we're on manage users section
             if (typeof loadUsers === 'function' && !document.getElementById('manageUsersSection').classList.contains('hidden')) {
