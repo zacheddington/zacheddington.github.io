@@ -203,31 +203,36 @@ input[type="email"]:focus {
 button[type="submit"],
 .submit-btn,
 .option-link {
-    background: #009688;
+    background: linear-gradient(135deg, #009688 0%, #00796b 100%);
     color: #fff;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 12px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
     text-decoration: none;
     display: inline-block;
     text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 150, 136, 0.3);
 }
 
 button[type="submit"]:hover,
 .submit-btn:hover,
 .option-link:hover {
-    background: #003b49;
+    background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 150, 136, 0.4);
 }
 
 button[type="submit"]:disabled,
 .submit-btn:disabled {
     opacity: 0.7;
     cursor: not-allowed;
-    background-color: #cccccc;
+    background: #cccccc;
+    box-shadow: none;
+    transform: none;
 }
 
 .option-link {
@@ -619,19 +624,22 @@ button[type="submit"]:disabled,
 }
 
 .secondary-btn {
-    background: #6c757d;
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     padding: 12px 24px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
 }
 
 .secondary-btn:hover {
-    background: #5a6268;
+    background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
 }
 
 .info-only {
@@ -774,18 +782,25 @@ button[type="submit"]:disabled,
 }
 
 .back-btn {
-    background: #6c757d;
+    background: linear-gradient(135deg, #009688 0%, #00796b 100%);
     color: white;
     border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
+    border-radius: 8px;
+    padding: 10px 20px;
     font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 150, 136, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .back-btn:hover {
-    background: #5a6268;
+    background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 150, 136, 0.4);
 }
 
 .section-header h2 {
