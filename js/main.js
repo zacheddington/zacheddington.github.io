@@ -2096,10 +2096,20 @@ async function saveUserRole(userId) {
 }
 
 async function deleteUser(userId, username) {
+    // Prevent multiple simultaneous delete operations
+    if (deleteUser.isDeleting) {
+        return;
+    }
+    
     try {
+        deleteUser.isDeleting = true;
+        
         // Show confirmation modal
         const confirmDelete = await showDeleteUserModal(username);
-        if (!confirmDelete) return;
+        if (!confirmDelete) {
+            deleteUser.isDeleting = false;
+            return;
+        }
         
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
@@ -2126,8 +2136,7 @@ async function deleteUser(userId, username) {
         } else {
             throw new Error(result.error || 'Failed to delete user');
         }
-        
-    } catch (error) {
+          } catch (error) {
         console.error('Error deleting user:', error);
         
         const errorMessage = error.message.includes('your own account') 
@@ -2135,11 +2144,19 @@ async function deleteUser(userId, username) {
             : error.message || 'Failed to delete user. Please try again.';
             
         window.modalManager.showModal('error', errorMessage);
+    } finally {
+        deleteUser.isDeleting = false;
     }
 }
 
 function showDeleteUserModal(username) {
     return new Promise((resolve) => {
+        // Prevent duplicate modals
+        const existingModal = document.querySelector('.modal-overlay');
+        if (existingModal) {
+            return resolve(false);
+        }
+        
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.innerHTML = `
@@ -2160,21 +2177,36 @@ function showDeleteUserModal(username) {
         
         document.body.appendChild(modal);
         
-        document.getElementById('cancelDeleteUser').addEventListener('click', () => {
+        // Focus on the modal for accessibility
+        modal.focus();
+        
+        // Set up event handlers
+        const cancelHandler = () => {
             document.body.removeChild(modal);
             resolve(false);
-        });
+        };
         
-        document.getElementById('confirmDeleteUser').addEventListener('click', () => {
+        const confirmHandler = () => {
             document.body.removeChild(modal);
             resolve(true);
+        };
+        
+        document.getElementById('cancelDeleteUser').addEventListener('click', cancelHandler);
+        document.getElementById('confirmDeleteUser').addEventListener('click', confirmHandler);
+        
+        // Keyboard support
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                cancelHandler();
+            } else if (e.key === 'Enter') {
+                confirmHandler();
+            }
         });
         
         // Close on background click
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
-                document.body.removeChild(modal);
-                resolve(false);
+                cancelHandler();
             }
         });
     });

@@ -1406,3 +1406,86 @@ button[type="submit"]:disabled,
     gap: 1rem;
     align-items: center;
 }
+
+/* Delete User Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+}
+
+.modal-overlay .modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 90%;
+    width: 450px;
+    text-align: left;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    animation: modalSlideIn 0.3s ease;
+}
+
+.modal-overlay .modal-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-overlay .modal-header h3 {
+    margin: 0;
+    color: #dc3545;
+    font-size: 1.2rem;
+}
+
+.modal-overlay .modal-body {
+    margin: 1rem 0 1.5rem 0;
+    line-height: 1.5;
+}
+
+.modal-overlay .modal-body p {
+    margin: 0.5rem 0;
+    color: #333;
+}
+
+.modal-overlay .modal-footer {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
+
+.modal-overlay .modal-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 100px;
+}
+
+.modal-overlay .modal-btn.secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.modal-overlay .modal-btn.secondary:hover {
+    background: #5a6268;
+}
+
+.modal-overlay .modal-btn.danger {
+    background: #dc3545;
+    color: white;
+}
+
+.modal-overlay .modal-btn.danger:hover {
+    background: #c82333;
+}
