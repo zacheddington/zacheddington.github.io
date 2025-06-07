@@ -899,9 +899,11 @@ async function updateUserPassword() {
         if (newPassword !== confirmPassword) {
             throw new Error('New passwords do not match.');
         }
-        
-        if (newPassword.length < 6) {
-            throw new Error('New password must be at least 6 characters long.');
+          // Validate new password strength using healthcare standards
+        const passwordValidation = validatePasswordStrength(newPassword);
+        if (!passwordValidation.isValid) {
+            const errorMessages = passwordValidation.failed.join('\n• ');
+            throw new Error(`New password does not meet security requirements:\n• ${errorMessages}`);
         }
         
         const token = localStorage.getItem('token');
@@ -1220,14 +1222,30 @@ function setupCreateUserForm() {
     // Real-time password confirmation validation
     const newPassword = document.getElementById('newPassword');
     const confirmPassword = document.getElementById('confirmPassword');
+    const usernameField = document.getElementById('newUsername');
     
     if (newPassword && confirmPassword) {
+        // Add password strength indicator
+        addPasswordStrengthIndicator(newPassword);
+        
         confirmPassword.addEventListener('input', function() {
             validateCreateUserPasswordMatch();
         });
         
         newPassword.addEventListener('input', function() {
             validateCreateUserPasswordMatch();
+            updatePasswordStrength(newPassword.value);
+        });
+    }
+    
+    // Username availability checking
+    if (usernameField) {
+        let usernameTimeout;
+        usernameField.addEventListener('input', function() {
+            clearTimeout(usernameTimeout);
+            usernameTimeout = setTimeout(async () => {
+                await checkAndDisplayUsernameAvailability(usernameField.value);
+            }, 500); // Check after 500ms delay to avoid too many requests
         });
     }
     
@@ -1334,10 +1352,11 @@ async function createUser() {
         if (!emailRegex.test(formData.email)) {
             throw new Error('Please enter a valid email address.');
         }
-        
-        // Validate password
-        if (formData.password.length < 6) {
-            throw new Error('Password must be at least 6 characters long.');
+          // Validate password strength using healthcare standards
+        const passwordValidation = validatePasswordStrength(formData.password);
+        if (!passwordValidation.isValid) {
+            const errorMessages = passwordValidation.failed.join('\n• ');
+            throw new Error(`Password does not meet security requirements:\n• ${errorMessages}`);
         }
         
         if (formData.password !== formData.confirmPassword) {
@@ -1441,4 +1460,214 @@ function clearAdminSectionMessages(sectionId) {
     
     const existingMessages = section.querySelectorAll('.section-message');
     existingMessages.forEach(msg => msg.remove());
+}
+
+// Password validation for healthcare security standards (HIPAA-compliant)
+function validatePasswordStrength(password) {
+    const requirements = {
+        length: { test: password.length >= 8, message: 'At least 8 characters long' },
+        uppercase: { test: /[A-Z]/.test(password), message: 'At least one uppercase letter (A-Z)' },
+        lowercase: { test: /[a-z]/.test(password), message: 'At least one lowercase letter (a-z)' },
+        number: { test: /[0-9]/.test(password), message: 'At least one number (0-9)' },
+        special: { test: /[!@#$%^&*(),.?":{}|<>]/.test(password), message: 'At least one special character (!@#$%^&*...)' },
+        noSpaces: { test: !/\s/.test(password), message: 'No spaces allowed' },
+        notCommon: { test: !isCommonPassword(password), message: 'Password is too common - please choose a stronger password' }
+    };
+    
+    const failed = Object.entries(requirements).filter(([key, req]) => !req.test);
+    const passed = Object.keys(requirements).length - failed.length;
+    const strength = passed / Object.keys(requirements).length;
+    
+    return {
+        isValid: failed.length === 0,
+        strength: strength,
+        failed: failed.map(([key, req]) => req.message),
+        passed: passed,
+        total: Object.keys(requirements).length
+    };
+}
+
+function isCommonPassword(password) {
+    const commonPasswords = [
+        'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
+        'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login',
+        'user', 'test', 'guest', 'demo', '1234567890', 'letmein', 'monkey',
+        'dragon', 'sunshine', 'master', 'shadow', 'football', 'baseball',
+        'superman', 'trustno1', 'freedom', 'whatever', 'passw0rd', 'P@ssw0rd',
+        'P@ssword1', 'Welcome123', 'Admin123'
+    ];
+    
+    return commonPasswords.some(common => 
+        password.toLowerCase().includes(common.toLowerCase()) ||
+        common.toLowerCase().includes(password.toLowerCase())
+    );
+}
+
+function getPasswordStrengthColor(strength) {
+    if (strength < 0.3) return '#dc3545'; // Red - Very weak
+    if (strength < 0.6) return '#fd7e14'; // Orange - Weak
+    if (strength < 0.8) return '#ffc107'; // Yellow - Fair
+    if (strength < 1.0) return '#20c997'; // Teal - Good
+    return '#28a745'; // Green - Strong
+}
+
+function getPasswordStrengthText(strength) {
+    if (strength < 0.3) return 'Very Weak';
+    if (strength < 0.6) return 'Weak';
+    if (strength < 0.8) return 'Fair';
+    if (strength < 1.0) return 'Good';
+    return 'Strong';
+}
+
+async function checkUsernameAvailability(username) {
+    if (!username || username.length < 3) {
+        return { available: false, message: 'Username must be at least 3 characters long' };
+    }
+    
+    if (username.length > 50) {
+        return { available: false, message: 'Username must be 50 characters or less' };
+    }
+    
+    // Check for valid characters (alphanumeric, underscore, hyphen)
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+        return { available: false, message: 'Username can only contain letters, numbers, underscores, and hyphens' };
+    }
+    
+    // Check if username starts with a letter
+    if (!/^[a-zA-Z]/.test(username)) {
+        return { available: false, message: 'Username must start with a letter' };
+    }
+    
+    try {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/check-username`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ username })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            return { available: result.available, message: result.message };
+        } else {
+            return { available: false, message: result.error || 'Unable to check username availability' };
+        }
+    } catch (error) {
+        console.error('Username check error:', error);
+        return { available: false, message: 'Unable to verify username availability - please try again' };
+    }
+}
+
+function addPasswordStrengthIndicator(passwordField) {
+    // Create password strength indicator
+    const strengthContainer = document.createElement('div');
+    strengthContainer.className = 'password-strength-container';
+    strengthContainer.innerHTML = `
+        <div class="password-strength-bar">
+            <div class="password-strength-fill" id="passwordStrengthFill"></div>
+        </div>
+        <div class="password-strength-text" id="passwordStrengthText">Password strength will appear here</div>
+        <div class="password-requirements" id="passwordRequirements">
+            <div class="requirement-title">Password must contain:</div>
+            <div class="requirement" data-requirement="length">✗ At least 8 characters</div>
+            <div class="requirement" data-requirement="uppercase">✗ One uppercase letter (A-Z)</div>
+            <div class="requirement" data-requirement="lowercase">✗ One lowercase letter (a-z)</div>
+            <div class="requirement" data-requirement="number">✗ One number (0-9)</div>
+            <div class="requirement" data-requirement="special">✗ One special character (!@#$%^&*...)</div>
+            <div class="requirement" data-requirement="noSpaces">✗ No spaces</div>
+            <div class="requirement" data-requirement="notCommon">✗ Not a common password</div>
+        </div>
+    `;
+    
+    // Insert after the password field
+    passwordField.parentNode.appendChild(strengthContainer);
+}
+
+function updatePasswordStrength(password) {
+    const validation = validatePasswordStrength(password);
+    const fill = document.getElementById('passwordStrengthFill');
+    const text = document.getElementById('passwordStrengthText');
+    const requirements = document.getElementById('passwordRequirements');
+    
+    if (!fill || !text || !requirements) return;
+    
+    // Update strength bar
+    const percentage = validation.strength * 100;
+    const color = getPasswordStrengthColor(validation.strength);
+    fill.style.width = `${percentage}%`;
+    fill.style.backgroundColor = color;
+    
+    // Update strength text
+    text.textContent = `Password strength: ${getPasswordStrengthText(validation.strength)} (${validation.passed}/${validation.total} requirements met)`;
+    text.style.color = color;
+    
+    // Update individual requirements
+    const requirementElements = requirements.querySelectorAll('.requirement');
+    requirementElements.forEach(element => {
+        const requirement = element.getAttribute('data-requirement');
+        const isPassed = !validation.failed.some(msg => {
+            switch(requirement) {
+                case 'length': return msg.includes('8 characters');
+                case 'uppercase': return msg.includes('uppercase');
+                case 'lowercase': return msg.includes('lowercase');
+                case 'number': return msg.includes('number');
+                case 'special': return msg.includes('special character');
+                case 'noSpaces': return msg.includes('spaces');
+                case 'notCommon': return msg.includes('common');
+                default: return false;
+            }
+        });
+        
+        element.style.color = isPassed ? '#28a745' : '#dc3545';
+        element.textContent = element.textContent.replace(/^[✓✗]\s/, isPassed ? '✓ ' : '✗ ');
+    });
+}
+
+async function checkAndDisplayUsernameAvailability(username) {
+    const usernameField = document.getElementById('newUsername');
+    if (!usernameField) return;
+    
+    // Remove existing feedback
+    const existingFeedback = usernameField.parentNode.querySelector('.username-feedback');
+    if (existingFeedback) {
+        existingFeedback.remove();
+    }
+    
+    if (!username || username.length < 3) {
+        return; // Don't check very short usernames
+    }
+    
+    // Show checking indicator
+    const checkingIndicator = document.createElement('div');
+    checkingIndicator.className = 'username-feedback checking';
+    checkingIndicator.textContent = 'Checking availability...';
+    usernameField.parentNode.appendChild(checkingIndicator);
+    
+    try {
+        const result = await checkUsernameAvailability(username);
+        
+        // Remove checking indicator
+        checkingIndicator.remove();
+        
+        // Show result
+        const feedback = document.createElement('div');
+        feedback.className = `username-feedback ${result.available ? 'available' : 'unavailable'}`;
+        feedback.textContent = result.message;
+        usernameField.parentNode.appendChild(feedback);
+        
+        // Update field styling
+        usernameField.classList.remove('username-available', 'username-unavailable');
+        usernameField.classList.add(result.available ? 'username-available' : 'username-unavailable');
+        
+    } catch (error) {
+        console.error('Username availability check failed:', error);
+        checkingIndicator.remove();
+    }
 }

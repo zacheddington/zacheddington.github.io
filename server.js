@@ -411,10 +411,39 @@ app.put('/api/change-password', authenticateToken, async (req, res) => {
         if (!currentPassword || !newPassword) {
             return res.status(400).json({ error: 'Current password and new password are required' });
         }
+          // Validate new password strength for healthcare security (HIPAA-compliant)
+        if (newPassword.length < 8) {
+            return res.status(400).json({ error: 'New password must be at least 8 characters long' });
+        }
         
-        // Validate new password length
-        if (newPassword.length < 6) {
-            return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+        if (!/[A-Z]/.test(newPassword)) {
+            return res.status(400).json({ error: 'New password must contain at least one uppercase letter' });
+        }
+        
+        if (!/[a-z]/.test(newPassword)) {
+            return res.status(400).json({ error: 'New password must contain at least one lowercase letter' });
+        }
+        
+        if (!/[0-9]/.test(newPassword)) {
+            return res.status(400).json({ error: 'New password must contain at least one number' });
+        }
+        
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+            return res.status(400).json({ error: 'New password must contain at least one special character (!@#$%^&*...)' });
+        }
+        
+        if (/\s/.test(newPassword)) {
+            return res.status(400).json({ error: 'New password cannot contain spaces' });
+        }
+        
+        // Check for common passwords
+        const commonPasswords = [
+            'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
+            'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
+        ];
+        
+        if (commonPasswords.some(common => newPassword.toLowerCase().includes(common.toLowerCase()))) {
+            return res.status(400).json({ error: 'New password is too common - please choose a stronger password' });
         }
         
         // Check if we're in local test mode
@@ -588,10 +617,39 @@ app.post('/api/create-user', authenticateToken, async (req, res) => {
         if (!emailRegex.test(email)) {
             return res.status(400).json({ error: 'Please enter a valid email address' });
         }
+          // Validate password strength for healthcare security (HIPAA-compliant)
+        if (password.length < 8) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+        }
         
-        // Validate password length
-        if (password.length < 6) {
-            return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+        if (!/[A-Z]/.test(password)) {
+            return res.status(400).json({ error: 'Password must contain at least one uppercase letter' });
+        }
+        
+        if (!/[a-z]/.test(password)) {
+            return res.status(400).json({ error: 'Password must contain at least one lowercase letter' });
+        }
+        
+        if (!/[0-9]/.test(password)) {
+            return res.status(400).json({ error: 'Password must contain at least one number' });
+        }
+        
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            return res.status(400).json({ error: 'Password must contain at least one special character (!@#$%^&*...)' });
+        }
+        
+        if (/\s/.test(password)) {
+            return res.status(400).json({ error: 'Password cannot contain spaces' });
+        }
+        
+        // Check for common passwords
+        const commonPasswords = [
+            'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
+            'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
+        ];
+        
+        if (commonPasswords.some(common => password.toLowerCase().includes(common.toLowerCase()))) {
+            return res.status(400).json({ error: 'Password is too common - please choose a stronger password' });
         }
         
         // Check if we're in local test mode
@@ -734,6 +792,64 @@ app.post('/api/create-user', authenticateToken, async (req, res) => {
             
         res.status(500).json({ 
             error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+});
+
+// Check username availability endpoint
+app.post('/api/check-username', authenticateToken, async (req, res) => {
+    try {
+        // Check if user is admin
+        const isAdmin = req.user.roleKeys?.includes(1) || 
+                       req.user.roles?.some(role => {
+                           const roleLower = role.toLowerCase();
+                           return roleLower.includes('admin') || 
+                                  roleLower.includes('administrator') ||
+                                  roleLower === 'admin';
+                       });
+        
+        if (!isAdmin) {
+            return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+        }
+        
+        const { username } = req.body;
+        
+        if (!username) {
+            return res.status(400).json({ error: 'Username is required' });
+        }
+        
+        // Check if we're in local test mode
+        const isLocalTest = process.env.NODE_ENV === 'development' && 
+                           process.env.DATABASE_URL?.includes('localhost');
+        
+        if (isLocalTest) {
+            // For local testing, simulate availability check
+            const unavailableUsernames = ['admin', 'test', 'user', 'guest'];
+            const available = !unavailableUsernames.includes(username.toLowerCase());
+            return res.json({ 
+                available,
+                message: available ? 'Username is available' : 'Username is already taken'
+            });
+        }
+        
+        // Production database logic
+        const result = await pool.query(
+            'SELECT username FROM tbl_user WHERE LOWER(username) = LOWER($1)',
+            [username]
+        );
+        
+        const available = result.rows.length === 0;
+        
+        res.json({
+            available,
+            message: available ? 'Username is available' : 'Username is already taken'
+        });
+        
+    } catch (err) {
+        console.error('Username check error:', err);
+        res.status(500).json({ 
+            error: 'Unable to check username availability',
             details: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     }

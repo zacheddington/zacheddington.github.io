@@ -671,6 +671,111 @@ button[type="submit"]:disabled,
     color: #666;
 }
 
+/* Password Strength Indicator */
+.password-strength-container {
+    margin-top: 0.5rem;
+}
+
+.password-strength-bar {
+    height: 6px;
+    background-color: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.password-strength-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 3px;
+}
+
+.password-strength-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.password-requirements {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.requirement-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.requirement {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+    transition: color 0.3s ease;
+}
+
+.requirement:last-child {
+    margin-bottom: 0;
+}
+
+/* Username Availability Feedback */
+.username-feedback {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.username-feedback.checking {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+}
+
+.username-feedback.available {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.username-feedback.unavailable {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+/* Username Field States */
+.admin-form input.username-available {
+    border-color: #28a745;
+    background-color: #f8fff9;
+}
+
+.admin-form input.username-unavailable {
+    border-color: #dc3545;
+    background-color: #fff8f8;
+}
+
+/* Enhanced Password Field States */
+.admin-form input[type="password"].password-strong {
+    border-color: #28a745;
+    background-color: #f8fff9;
+}
+
+.admin-form input[type="password"].password-weak {
+    border-color: #ffc107;
+    background-color: #fffdf5;
+}
+
+.admin-form input[type="password"].password-invalid {
+    border-color: #dc3545;
+    background-color: #fff8f8;
+}
+
 /* Responsive adjustments for narrow viewports */
 @media screen and (max-width: 768px) {
     .admin-container,
