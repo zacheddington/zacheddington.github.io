@@ -2112,15 +2112,20 @@ button[type="submit"]:disabled,
 }
 
 .users-table th {
-    background: #009688;
-    color: white;
+    background: #e0f7fa;
+    color: #003b49;
     padding: 0.75rem;
     text-align: center;
-    font-weight: 600;
-    border-bottom: 2px solid #004d40;
+    font-weight: 700;
+    border-bottom: 3px solid #009688;
+    border-right: 1px solid #b2dfdb;
     vertical-align: middle;
     height: 2.5rem;
     display: table-cell;
+}
+
+.users-table th:last-child {
+    border-right: none;
 }
 
 .users-table th:not(.sortable-column) {
@@ -2132,8 +2137,13 @@ button[type="submit"]:disabled,
 .users-table td {
     padding: 1rem;
     border-bottom: 1px solid #e0f7fa;
+    border-right: 1px solid #e0f7fa;
     vertical-align: middle;
     display: table-cell;
+}
+
+.users-table td:last-child {
+    border-right: none;
 }
 
 .users-table tbody tr:hover {
@@ -2302,7 +2312,7 @@ button[type="submit"]:disabled,
 }
 
 .users-table th.sortable-column:hover {
-    background: #00acc1 !important;
+    background: #b2dfdb !important;
 }
 
 .users-table th.sortable-column:active .sortable-header {
