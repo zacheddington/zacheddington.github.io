@@ -128,12 +128,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (input) input.dataset.showingModal = 'false';
                 });
             }
-        }
-    };
-
-    // Make modal functions globally available
+        }    };    // Make modal functions globally available
     window.showModal = modalManager.showModal.bind(modalManager);
-    window.closeModal = modalManager.closeModal.bind(modalManager);    // Handle login form
+    window.closeModal = modalManager.closeModal.bind(modalManager);
+    window.modalManager = modalManager; // Make modalManager globally accessible
+    
+    // Handle login form
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async function(e) {
@@ -212,15 +212,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         window.location.href = "welcome/";
                     }, FADE_DURATION);
-                } else {
-                    const message = response.status === 401 
+                } else {                    const message = response.status === 401 
                         ? 'Invalid username or password'
                         : data.error || 'Login failed';
                     
-                    modalManager.showModal('error', message);
+                    window.modalManager.showModal('error', message);
                 }            } catch (err) {
                 console.error('Login error:', err);
-                modalManager.showModal('error', 'Connection error. Please try again.');
+                window.modalManager.showModal('error', 'Connection error. Please try again.');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Login';
@@ -755,6 +754,7 @@ async function loadUserProfile() {
 async function updateUserProfile() {
     const updateBtn = document.getElementById('updateProfileBtn');
     const originalText = updateBtn.textContent;
+    let response = null; // Declare response variable in outer scope
     
     try {
         updateBtn.disabled = true;
@@ -801,7 +801,7 @@ async function updateUserProfile() {
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
         
-        const response = await fetch(`${API_URL}/api/profile`, {
+        response = await fetch(`${API_URL}/api/profile`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -822,7 +822,7 @@ async function updateUserProfile() {
             
             // Show success modal with additional details
             const successMessage = `Profile updated successfully! Your information has been saved to the database.${result.nameKey ? ` (Record ID: ${result.nameKey})` : ''}`;
-            modalManager.showModal('success', successMessage);
+            window.modalManager.showModal('success', successMessage);
         } else {
             throw new Error(result.error || 'Failed to update profile');
         }
@@ -834,7 +834,7 @@ async function updateUserProfile() {
         
         // Show appropriate feedback based on error type
         if (errorInfo.modal) {
-            modalManager.showModal('error', errorInfo.message);
+            window.modalManager.showModal('error', errorInfo.message);
         } else {
             showProfileError(errorInfo.message);
         }
@@ -847,6 +847,7 @@ async function updateUserProfile() {
 async function updateUserPassword() {
     const updateBtn = document.getElementById('updatePasswordBtn');
     const originalText = updateBtn.textContent;
+    let response = null; // Declare response variable in outer scope
     
     try {
         updateBtn.disabled = true;
@@ -878,8 +879,7 @@ async function updateUserPassword() {
         const token = localStorage.getItem('token');
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        
-        const response = await fetch(`${API_URL}/api/change-password`, {
+          const response = await fetch(`${API_URL}/api/change-password`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -892,17 +892,17 @@ async function updateUserPassword() {
         });
         
         const result = await response.json();
-          if (response.ok) {
+        if (response.ok) {
             // Clear the form
             document.getElementById('passwordForm').reset();
             clearPasswordErrors();
             
             // Show success modal instead of inline message
-            modalManager.showModal('success', 'Password changed successfully! Your new password is now active.');
+            window.modalManager.showModal('success', 'Password changed successfully! Your new password is now active.');
         } else {
             throw new Error(result.error || 'Failed to change password');
         }
-      } catch (error) {
+    } catch (error) {
         console.error('Password change error:', error);
         
         // Use enhanced error categorization
@@ -910,7 +910,7 @@ async function updateUserPassword() {
         
         // Show appropriate feedback based on error type
         if (errorInfo.modal) {
-            modalManager.showModal('error', errorInfo.message);
+            window.modalManager.showModal('error', errorInfo.message);
         } else {
             showPasswordError(errorInfo.message);
         }
@@ -922,8 +922,9 @@ async function updateUserPassword() {
 
 function validatePasswordMatch() {
     const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    const confirmGroup = confirmPassword.closest('.form-group');
+    const confirmPasswordElement = document.getElementById('confirmPassword');
+    const confirmPassword = confirmPasswordElement.value;
+    const confirmGroup = confirmPasswordElement.closest('.form-group');
     
     // Remove existing error/success classes and messages
     confirmGroup.classList.remove('error', 'success');
