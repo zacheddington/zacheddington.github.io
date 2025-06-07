@@ -1163,6 +1163,28 @@ body::after {
     z-index: 999;
 }
 
+/* Responsive overlay positioning to match sidebar widths */
+@media screen and (min-width: 576px) and (max-width: 767px) {
+    body::after {
+        left: 280px; /* Match tablet sidebar width */
+        width: calc(100% - 280px);
+    }
+}
+
+@media screen and (min-width: 480px) and (max-width: 575px) {
+    body::after {
+        left: 260px; /* Match mobile landscape sidebar width */
+        width: calc(100% - 260px);
+    }
+}
+
+@media screen and (max-width: 479px) {
+    body::after {
+        left: 240px; /* Match mobile portrait sidebar width */
+        width: calc(100% - 240px);
+    }
+}
+
 body.menu-open::after {
     opacity: 1;
     visibility: visible;
