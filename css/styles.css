@@ -1132,10 +1132,12 @@ button[type="submit"]:disabled,
 .users-table th {
     background: linear-gradient(135deg, #009688 0%, #00796b 100%);
     color: white;
-    padding: 1rem;
-    text-align: left;
+    padding: 0.75rem;
+    text-align: center;
     font-weight: 600;
     border-bottom: 2px solid #004d40;
+    vertical-align: middle;
+    height: 3rem;
 }
 
 .users-table td {
@@ -1324,6 +1326,10 @@ button[type="submit"]:disabled,
     position: relative;
     transition: background-color 0.2s ease, transform 0.1s ease;
     user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .sortable-header:hover {
