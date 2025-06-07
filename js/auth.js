@@ -191,43 +191,40 @@ const SessionManager = {
             ? 'You already have the application open in another tab. For data security and to prevent conflicts, only one tab can be active at a time.'
             : 'For data security and to prevent database conflicts, only one tab can access the application at a time.';
         const instruction = isNewTab
-            ? 'Please return to your existing tab or close it first.'
-            : 'Please close this tab and continue using your original tab.';
+            ? 'Please manually close this tab (Ctrl+W) and return to your existing tab.'
+            : 'Please manually close this tab (Ctrl+W) and continue using your original tab.';
 
         modal.innerHTML = `
             <h2 class="${titleClass}">${title}</h2>
             <p>${message}</p>
             <p class="instruction">${instruction}</p>
             <div class="tab-modal-buttons">
-                <button id="closeTabBtn" class="tab-modal-btn close">Close This Tab</button>
+                <button id="closeTabBtn" class="tab-modal-btn close">Go to Login</button>
                 ${isNewTab ? '<button id="loginNewTabBtn" class="tab-modal-btn login">Login in This Tab</button>' : ''}
             </div>
+            <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
+                💡 <strong>Tip:</strong> Use Ctrl+W to close this tab, or click "Go to Login" to return to the login page.
+            </p>
         `;
 
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        // Handle close tab button - try to close, fallback to redirect
+        // Handle "Go to Login" button - be honest about what it does
         document.getElementById('closeTabBtn').addEventListener('click', () => {
-            // Try to close the tab (works for pop-ups and some browsers)
-            try {
-                window.close();
-                // If window.close() doesn't work, redirect after a short delay
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 100);
-            } catch (e) {
-                // Fallback: redirect to login
-                window.location.href = '/';
-            }
+            // Clear any session data for this tab and redirect to login
+            sessionStorage.clear();
+            window.location.href = '/';
         });
 
         // Handle login button for new tabs
         if (isNewTab) {
             document.getElementById('loginNewTabBtn').addEventListener('click', () => {
+                // Clear any session data for this tab and redirect to login
+                sessionStorage.clear();
                 window.location.href = '/';
             });
-        }        // Disable page interaction except for modal
+        }// Disable page interaction except for modal
         document.body.style.pointerEvents = 'none';
         overlay.style.pointerEvents = 'auto';
     },
