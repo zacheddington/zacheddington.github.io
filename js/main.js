@@ -363,12 +363,24 @@ async function loadMenu() {
         // Setup hamburger button click handler
         const hamburgerBtn = document.getElementById('hamburgerBtn');
         const sideMenu = document.getElementById('sideMenu');
-        
-        if (hamburgerBtn && sideMenu) {
+          if (hamburgerBtn && sideMenu) {
             hamburgerBtn.addEventListener('click', () => {
                 document.body.classList.toggle('menu-open');
                 hamburgerBtn.classList.toggle('active');
                 sideMenu.classList.toggle('active');
+            });
+
+            // Close menu when clicking outside of it
+            document.addEventListener('click', (e) => {
+                const isMenuOpen = sideMenu.classList.contains('active');
+                const isClickInsideMenu = sideMenu.contains(e.target);
+                const isClickOnHamburger = hamburgerBtn.contains(e.target);
+                
+                if (isMenuOpen && !isClickInsideMenu && !isClickOnHamburger) {
+                    document.body.classList.remove('menu-open');
+                    hamburgerBtn.classList.remove('active');
+                    sideMenu.classList.remove('active');
+                }
             });
 
             // Hide current page in menu
