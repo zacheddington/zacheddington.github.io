@@ -523,6 +523,91 @@ function showLogoutModal() {
     });
 }
 
+// Network connectivity and database health check
+async function checkConnectivity() {
+    try {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        
+        // Simple connectivity test with short timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const response = await fetch(`${API_URL}/api/health`, {
+            method: 'GET',
+            signal: controller.signal,
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        clearTimeout(timeoutId);
+        return { connected: true, status: response.status };
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            return { connected: false, error: 'Connection timeout' };
+        }
+        return { connected: false, error: error.message };
+    }
+}
+
+// Enhanced error categorization
+function categorizeError(error, response = null) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        return {
+            type: 'network',
+            message: 'Connection failed. Please check your internet connection and try again.',
+            modal: true
+        };
+    }
+    
+    if (error.name === 'AbortError' || error.message.includes('timeout')) {
+        return {
+            type: 'timeout',
+            message: 'Request timed out. The server may be temporarily unavailable. Please try again.',
+            modal: true
+        };
+    }
+    
+    if (response && response.status >= 500) {
+        return {
+            type: 'server',
+            message: 'Server error occurred. Please try again later or contact support if the problem persists.',
+            modal: true
+        };
+    }
+    
+    if (error.message.includes('Database connection')) {
+        return {
+            type: 'database',
+            message: 'Database connection lost. Please try again in a moment.',
+            modal: true
+        };
+    }
+    
+    if (error.message.includes('Email address is already in use')) {
+        return {
+            type: 'validation',
+            message: 'This email address is already in use by another account. Please use a different email address.',
+            modal: false
+        };
+    }
+    
+    if (error.message.includes('Current password is incorrect')) {
+        return {
+            type: 'validation',
+            message: 'Current password is incorrect. Please verify your current password and try again.',
+            modal: false
+        };
+    }
+    
+    return {
+        type: 'general',
+        message: error.message || 'An unexpected error occurred. Please try again.',
+        modal: false
+    };
+}
+
 // Profile Page Functionality
 function initializeProfilePage() {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -675,6 +760,12 @@ async function updateUserProfile() {
         updateBtn.disabled = true;
         updateBtn.textContent = 'Updating...';
         
+        // Pre-flight connectivity check
+        const connectivity = await checkConnectivity();
+        if (!connectivity.connected) {
+            throw new Error(`Connection failed: ${connectivity.error}`);
+        }
+        
         const formData = {
             firstName: document.getElementById('firstName').value.trim(),
             middleName: document.getElementById('middleName').value.trim(),
@@ -720,8 +811,7 @@ async function updateUserProfile() {
         });
         
         const result = await response.json();
-        
-        if (response.ok) {
+          if (response.ok) {
             // Update local storage with new user data
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
             userData.firstName = formData.firstName;
@@ -730,14 +820,24 @@ async function updateUserProfile() {
             userData.email = formData.email;
             localStorage.setItem('user', JSON.stringify(userData));
             
-            showProfileSuccess('Profile updated successfully!');
+            // Show success modal with additional details
+            const successMessage = `Profile updated successfully! Your information has been saved to the database.${result.nameKey ? ` (Record ID: ${result.nameKey})` : ''}`;
+            modalManager.showModal('success', successMessage);
         } else {
             throw new Error(result.error || 'Failed to update profile');
         }
-        
-    } catch (error) {
+          } catch (error) {
         console.error('Profile update error:', error);
-        showProfileError(error.message);
+        
+        // Use enhanced error categorization
+        const errorInfo = categorizeError(error, response);
+        
+        // Show appropriate feedback based on error type
+        if (errorInfo.modal) {
+            modalManager.showModal('error', errorInfo.message);
+        } else {
+            showProfileError(errorInfo.message);
+        }
     } finally {
         updateBtn.disabled = false;
         updateBtn.textContent = originalText;
@@ -751,6 +851,12 @@ async function updateUserPassword() {
     try {
         updateBtn.disabled = true;
         updateBtn.textContent = 'Updating...';
+        
+        // Pre-flight connectivity check
+        const connectivity = await checkConnectivity();
+        if (!connectivity.connected) {
+            throw new Error(`Connection failed: ${connectivity.error}`);
+        }
         
         const currentPassword = document.getElementById('currentPassword').value;
         const newPassword = document.getElementById('newPassword').value;
@@ -786,18 +892,28 @@ async function updateUserPassword() {
         });
         
         const result = await response.json();
-        
-        if (response.ok) {
+          if (response.ok) {
             // Clear the form
             document.getElementById('passwordForm').reset();
-            showPasswordSuccess('Password changed successfully!');
+            clearPasswordErrors();
+            
+            // Show success modal instead of inline message
+            modalManager.showModal('success', 'Password changed successfully! Your new password is now active.');
         } else {
             throw new Error(result.error || 'Failed to change password');
         }
-        
-    } catch (error) {
+      } catch (error) {
         console.error('Password change error:', error);
-        showPasswordError(error.message);
+        
+        // Use enhanced error categorization
+        const errorInfo = categorizeError(error, response);
+        
+        // Show appropriate feedback based on error type
+        if (errorInfo.modal) {
+            modalManager.showModal('error', errorInfo.message);
+        } else {
+            showPasswordError(errorInfo.message);
+        }
     } finally {
         updateBtn.disabled = false;
         updateBtn.textContent = originalText;

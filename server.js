@@ -188,6 +188,30 @@ app.post('/api/logout', authenticateToken, async (req, res) => {
     }
 });
 
+// Health check endpoint for connectivity testing
+app.get('/api/health', authenticateToken, async (req, res) => {
+    try {
+        // Simple database connectivity test
+        const client = await pool.connect();
+        await client.query('SELECT 1');
+        client.release();
+        
+        res.json({ 
+            status: 'healthy',
+            database: 'connected',
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        console.error('Health check failed:', err);
+        res.status(503).json({ 
+            status: 'unhealthy',
+            database: 'disconnected',
+            error: 'Database connection failed',
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // Debug endpoint removed for production security
 
 // Protected endpoint example
@@ -278,20 +302,28 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
             }
             
             const username = userResult.rows[0].username;
-            
-            // Always insert a new record into tbl_name_data
+              // Always insert a new record into tbl_name_data
             const newNameResult = await client.query(
                 'INSERT INTO tbl_name_data (first_name, middle_name, last_name, who, date_when) VALUES ($1, $2, $3, $4, NOW()) RETURNING name_key',
                 [firstName, middleName || null, lastName, username]
             );
             
+            if (newNameResult.rows.length === 0) {
+                throw new Error('Failed to create name record');
+            }
+            
             const newNameKey = newNameResult.rows[0].name_key;
             
             // Update user table with new name_key and email
-            await client.query(
+            const userUpdateResult = await client.query(
                 'UPDATE tbl_user SET email = $1, name_key = $2 WHERE user_key = $3',
                 [email, newNameKey, userId]
             );
+            
+            // Verify the user update actually occurred
+            if (userUpdateResult.rowCount === 0) {
+                throw new Error('Failed to update user profile - user not found');
+            }
             
             await client.query('COMMIT');
             
@@ -302,19 +334,42 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
                     middleName,
                     lastName,
                     email
-                }
+                },
+                nameKey: newNameKey,
+                timestamp: new Date().toISOString()
             });
-            
-        } catch (err) {
+              } catch (err) {
             await client.query('ROLLBACK');
-            throw err;
+            console.error('Database transaction error:', err);
+            
+            // Provide more specific error messages
+            if (err.code === '23505') { // Unique constraint violation
+                throw new Error('Email address is already in use by another account');
+            } else if (err.code === '23503') { // Foreign key constraint violation
+                throw new Error('Database reference error. Please contact support');
+            } else if (err.code === '23514') { // Check constraint violation
+                throw new Error('Invalid data format. Please check your input');
+            } else if (err.code === '08003' || err.code === '08006') { // Connection errors
+                throw new Error('Database connection lost. Please try again');
+            } else {
+                throw new Error('Database operation failed. Please try again');
+            }
         } finally {
             client.release();
         }
         
     } catch (err) {
         console.error('Profile update error:', err);
-        res.status(500).json({ error: 'Failed to update profile' });
+        
+        // Return specific error message or generic fallback
+        const errorMessage = err.message && err.message.includes('Database') 
+            ? err.message 
+            : 'Failed to update profile. Please try again later';
+            
+        res.status(500).json({ 
+            error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
     }
 });
 
@@ -370,22 +425,49 @@ app.put('/api/change-password', authenticateToken, async (req, res) => {
             // Hash new password
             const saltRounds = 10;
             const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
-            
-            // Update password in database
-            await client.query(
+              // Update password in database
+            const updateResult = await client.query(
                 'UPDATE tbl_user SET password_hash = $1 WHERE user_key = $2',
                 [newPasswordHash, userId]
             );
             
-            res.json({ message: 'Password changed successfully' });
+            // Verify the update actually occurred
+            if (updateResult.rowCount === 0) {
+                throw new Error('Password update failed - user not found');
+            }
             
+            res.json({ 
+                message: 'Password changed successfully',
+                timestamp: new Date().toISOString()
+            });
+            
+        } catch (err) {
+            console.error('Password update database error:', err);
+            
+            // Provide specific error messages
+            if (err.code === '08003' || err.code === '08006') { // Connection errors
+                throw new Error('Database connection lost. Please try again');
+            } else if (err.message && err.message.includes('user not found')) {
+                throw new Error('User account not found. Please re-login and try again');
+            } else {
+                throw new Error('Password update failed. Please try again');
+            }
         } finally {
             client.release();
         }
         
     } catch (err) {
         console.error('Password change error:', err);
-        res.status(500).json({ error: 'Failed to change password' });
+        
+        // Return specific error message or generic fallback
+        const errorMessage = err.message && err.message.includes('Database') 
+            ? err.message 
+            : err.message || 'Failed to change password. Please try again later';
+            
+        res.status(500).json({ 
+            error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
     }
 });
 
