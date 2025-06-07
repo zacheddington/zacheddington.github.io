@@ -89,19 +89,24 @@ app.post('/api/login', async (req, res) => {
     // Production database logic
     try {
         const { username, password } = req.body;        // Query user data including name information and roles
-        const userResult = await pool.query(
-            `SELECT u.*, n.first_name, n.middle_name, n.last_name 
+        const sqlQuery = `SELECT u.*, n.first_name, n.middle_name, n.last_name 
              FROM tbl_user u 
              LEFT JOIN tbl_name_data n ON u.name_key = n.name_key 
-             WHERE u.username = $1`,
-            [username]
-        );
+             WHERE u.username = $1`;
         
-        console.log('Login query result fields:', Object.keys(userResult.rows[0] || {}));
-        console.log('User data retrieved:', {
+        console.log('Executing SQL query:', sqlQuery);
+        console.log('Query parameter:', [username]);
+        
+        const userResult = await pool.query(sqlQuery, [username]);
+          console.log('Login query result fields:', Object.keys(userResult.rows[0] || {}));
+        console.log('Full user data from database:', userResult.rows[0]);
+        console.log('User data field extraction:', {
             middle_name: userResult.rows[0]?.middle_name,
             email: userResult.rows[0]?.email,
-            name_key: userResult.rows[0]?.name_key
+            name_key: userResult.rows[0]?.name_key,
+            first_name: userResult.rows[0]?.first_name,
+            last_name: userResult.rows[0]?.last_name,
+            username: userResult.rows[0]?.username
         });
 
         if (userResult.rows.length === 0) {
@@ -155,26 +160,32 @@ app.post('/api/login', async (req, res) => {
             },
             process.env.JWT_SECRET,
             { expiresIn: '8h' }
-        );
-
-        // Update last login time
+        );        // Update last login time
         await pool.query(
             'UPDATE tbl_user SET date_when = CURRENT_TIMESTAMP WHERE user_key = $1',
             [user.user_key]
-        );        res.json({
+        );
+
+        const responseUser = {
+            username: user.username,
+            firstName: user.first_name,
+            middleName: user.middle_name,
+            lastName: user.last_name,
+            email: user.email,
+            roles: roles,
+            roleKeys: roleKeys,
+            isAdmin: isAdmin,
+            // Add timestamp to help track when role data was added
+            authVersion: '2.0'
+        };
+
+        console.log('Final response user object:', responseUser);
+        console.log('Response user middleName:', responseUser.middleName);
+        console.log('Response user email:', responseUser.email);
+
+        res.json({
             token,
-            user: {
-                username: user.username,
-                firstName: user.first_name,
-                middleName: user.middle_name,
-                lastName: user.last_name,
-                email: user.email,
-                roles: roles,
-                roleKeys: roleKeys,
-                isAdmin: isAdmin,
-                // Add timestamp to help track when role data was added
-                authVersion: '2.0'
-            }
+            user: responseUser
         });
     } catch (err) {
         console.error('Login error:', err);
