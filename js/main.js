@@ -4,11 +4,9 @@ function isUserAdmin(userData) {
     
     // Use server-determined admin status with fallback for old data
     let isAdminUser = userData.isAdmin === true;
-    
-    // Fallback: If role data is missing and username is admin, assume admin
+      // Fallback: If role data is missing and username is admin, assume admin
     if (userData.isAdmin === undefined && userData.username === 'admin') {
         isAdminUser = true;
-        console.log('Using fallback admin detection for username: admin');
     }
     
     return isAdminUser;
@@ -17,7 +15,6 @@ function isUserAdmin(userData) {
 function updateAdminUI(isAdmin) {
     if (isAdmin) {
         document.body.classList.add('is-admin');
-        console.log('Added is-admin class to body');
     } else {
         document.body.classList.remove('is-admin');
     }
@@ -25,53 +22,32 @@ function updateAdminUI(isAdmin) {
 
 function updateAdminMenuItem(isAdmin) {
     const adminLink = document.querySelector('a[data-page="admin"]')?.parentElement;
-    if (adminLink) {
-        if (isAdmin) {
+    if (adminLink) {        if (isAdmin) {
             adminLink.style.display = 'block';
             adminLink.classList.remove('admin-only');
-            console.log('Showing admin menu item');
         } else {
             adminLink.style.display = 'none';
-            console.log('Hiding admin menu item');
         }
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Detect if running locally or in production
+document.addEventListener('DOMContentLoaded', function() {    // Detect if running locally or in production
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     const FADE_DURATION = 450;
-    
-    console.log(`Running in ${isLocal ? 'LOCAL' : 'PRODUCTION'} mode, API_URL: ${API_URL}`);
-    
-    // Check if current page is login page
+      // Check if current page is login page
     const currentPath = window.location.pathname;
     const isLoginPage = currentPath === '/' || currentPath === '/index.html' || currentPath === '';
     
-    console.log('=== PAGE DETECTION ===');
-    console.log('currentPath:', currentPath);
-    console.log('isLoginPage:', isLoginPage);
-    console.log('=== END PAGE DETECTION ===');    // Clear authentication data if on login page to ensure clean state
+    // Clear authentication data if on login page to ensure clean state
     // BUT only if we don't have a valid session that was just created
     if (isLoginPage && document.getElementById('loginForm')) {
         const hasValidSession = sessionStorage.getItem('currentTabId') && localStorage.getItem('token');
         
-        console.log('=== LOGIN PAGE CLEARING CHECK ===');
-        console.log('isLoginPage:', isLoginPage);
-        console.log('hasValidSession:', hasValidSession);
-        console.log('sessionStorage.currentTabId:', sessionStorage.getItem('currentTabId'));
-        console.log('localStorage.token:', localStorage.getItem('token'));
-        console.log('localStorage.user:', localStorage.getItem('user'));
-        console.log('=== END LOGIN PAGE CHECK ===');
-        
         if (!hasValidSession) {
-            console.log('On login page - clearing any stale authentication data');
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             sessionStorage.clear();
-        } else {
-            console.log('On login page but have valid session - not clearing data');
         }
     }
     
@@ -158,28 +134,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({ username, password })
-                });
-
-                const data = await response.json();                if (response.ok && data.token) {
-                    // Debug logging for login data
-                    console.log('=== LOGIN DATA DEBUG ===');
-                    console.log('Login response data:', data);
-                    console.log('User data received:', data.user);
-                    console.log('=== END LOGIN DEBUG ===');
-                    
+                });                const data = await response.json();                if (response.ok && data.token) {
                     // Store authentication data
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));// Initialize session management (browser-lifetime storage)
-                    // CRITICAL: Ensure this happens immediately and synchronously
+                    localStorage.setItem('user', JSON.stringify(data.user));// Initialize session management (browser-lifetime storage)                    // CRITICAL: Ensure this happens immediately and synchronously
                     if (window.SessionManager) {
                         window.SessionManager.initSession();
-                        console.log('Session initialized before navigation');
-                        
-                        // Verify session was created
-                        const tabId = window.SessionManager.tabId;
-                        const storedTabId = sessionStorage.getItem('currentTabId');
-                        console.log('SessionManager tabId:', tabId);
-                        console.log('SessionStorage tabId:', storedTabId);
                           } else {
                         // Fallback: manual session initialization with tab ID
                         const loginTime = Date.now();
@@ -199,9 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             tabId: tabId,
                             lastHeartbeat: loginTime,
                             isRecentLogin: true
-                        };
-                        localStorage.setItem('activeSession', JSON.stringify(sessionData));
-                          console.log('Fallback session initialization completed with tab ID:', tabId);
+                        };                        localStorage.setItem('activeSession', JSON.stringify(sessionData));
                     }
                     
                     // Use utility function to check admin status and update UI
@@ -209,12 +167,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateAdminUI(isAdmin);
 
                     // Add a small delay to ensure sessionStorage is persisted before navigation
-                    console.log('About to navigate to welcome page...');
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
-                        // Double-check that session data is still there before navigation
-                        const finalTabId = sessionStorage.getItem('currentTabId');
-                        console.log('Final tab ID before navigation:', finalTabId);
                         
                         window.location.href = "welcome/";
                     }, FADE_DURATION);
@@ -237,10 +191,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!isLoginPage && !document.getElementById('loginForm')) {
         const token = localStorage.getItem('token');
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
-        
-        // Only update admin UI if we have a valid token and user data
+          // Only update admin UI if we have a valid token and user data
         if (token && userData && Object.keys(userData).length > 0) {
-            console.log('Valid authentication found, updating admin UI');
             // Use utility function to check admin status and update UI
             const isAdmin = isUserAdmin(userData);
             updateAdminUI(isAdmin);
@@ -279,9 +231,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 8000);                }, 2000);
                 sessionStorage.setItem('legacy-auth-notice-shown', 'true');
                 }
-            }
-        } else {
-            console.log('No valid authentication data found, skipping admin UI updates');
+            }        } else {
+            // No valid authentication data found, skip admin UI updates
         }
     }
 
@@ -724,31 +675,13 @@ function showCharacterLimitModal(fieldName, maxLength) {
 }
 
 async function loadUserProfile() {
-    try {
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
-        
-        // Debug logging to see what's in localStorage
-        console.log('=== PROFILE LOADING DEBUG ===');
-        console.log('userData from localStorage:', userData);
-        console.log('firstName:', userData.firstName);
-        console.log('middleName:', userData.middleName);
-        console.log('lastName:', userData.lastName);
-        console.log('email:', userData.email);
-        console.log('=== END PROFILE DEBUG ===');
+    try {        const userData = JSON.parse(localStorage.getItem('user') || '{}');
         
         // Populate form fields
         document.getElementById('firstName').value = userData.firstName || '';
         document.getElementById('middleName').value = userData.middleName || '';
         document.getElementById('lastName').value = userData.lastName || '';
         document.getElementById('email').value = userData.email || '';
-        
-        // Debug logging to verify fields are being set
-        console.log('=== FIELD POPULATION DEBUG ===');
-        console.log('firstName field value:', document.getElementById('firstName').value);
-        console.log('middleName field value:', document.getElementById('middleName').value);
-        console.log('lastName field value:', document.getElementById('lastName').value);
-        console.log('email field value:', document.getElementById('email').value);
-        console.log('=== END FIELD DEBUG ===');
         
         // Display role (read-only)
         const roleField = document.getElementById('role');
