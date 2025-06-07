@@ -85,13 +85,14 @@ app.post('/api/login', async (req, res) => {
         const { username, password } = req.body;
 
         // Query user data including name information and roles
+        // Use case-insensitive username comparison
         const userResult = await pool.query(
             `SELECT u.*, n.first_name, n.middle_name, n.last_name 
              FROM tbl_user u 
              LEFT JOIN tbl_name_data n ON u.name_key = n.name_key 
-             WHERE u.username = $1`,
+             WHERE LOWER(u.username) = LOWER($1)`,
             [username]
-        );        if (userResult.rows.length === 0) {
+        );if (userResult.rows.length === 0) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
@@ -673,10 +674,9 @@ app.post('/api/create-user', authenticateToken, async (req, res) => {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
-            
-            // Check if username already exists
+              // Check if username already exists (case-insensitive)
             const existingUserResult = await client.query(
-                'SELECT username FROM tbl_user WHERE username = $1',
+                'SELECT username FROM tbl_user WHERE LOWER(username) = LOWER($1)',
                 [username]
             );
             
