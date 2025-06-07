@@ -46,10 +46,6 @@ app.post('/api/login', async (req, res) => {
     const isLocalTest = process.env.NODE_ENV === 'development' && 
                        process.env.DATABASE_URL?.includes('localhost');
     
-    console.log('Login attempt - NODE_ENV:', process.env.NODE_ENV);
-    console.log('Login attempt - DATABASE_URL contains localhost:', process.env.DATABASE_URL?.includes('localhost'));
-    console.log('Login attempt - isLocalTest:', isLocalTest);
-    
     if (isLocalTest) {
         // Simple test credentials for local development
         const { username, password } = req.body;
@@ -84,43 +80,18 @@ app.post('/api/login', async (req, res) => {
         } else {
             return res.status(401).json({ error: 'Invalid username or password (use admin/admin for local testing)' });
         }
-    }
-      // Production database logic
+    }    // Production database logic
     try {
         const { username, password } = req.body;
-          // Debug: List all users to see what's in the database
-        const allUsersResult = await pool.query('SELECT username, user_key, name_key FROM tbl_user LIMIT 5');
-        console.log('Available users in database:', allUsersResult.rows);
-        
-        // Debug: Check table structure
-        const tableInfoResult = await pool.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'tbl_user' AND table_schema = 'public'");
-        console.log('tbl_user columns:', tableInfoResult.rows);
-        
-        const nameTableInfoResult = await pool.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'tbl_name_data' AND table_schema = 'public'");
-        console.log('tbl_name_data columns:', nameTableInfoResult.rows);
-        
+
         // Query user data including name information and roles
-        const sqlQuery = `SELECT u.*, n.first_name, n.middle_name, n.last_name 
+        const userResult = await pool.query(
+            `SELECT u.*, n.first_name, n.middle_name, n.last_name 
              FROM tbl_user u 
              LEFT JOIN tbl_name_data n ON u.name_key = n.name_key 
-             WHERE u.username = $1`;
-        
-        console.log('Executing SQL query:', sqlQuery);
-        console.log('Query parameter:', [username]);
-        
-        const userResult = await pool.query(sqlQuery, [username]);
-          console.log('Login query result fields:', Object.keys(userResult.rows[0] || {}));
-        console.log('Full user data from database:', userResult.rows[0]);
-        console.log('User data field extraction:', {
-            middle_name: userResult.rows[0]?.middle_name,
-            email: userResult.rows[0]?.email,
-            name_key: userResult.rows[0]?.name_key,
-            first_name: userResult.rows[0]?.first_name,
-            last_name: userResult.rows[0]?.last_name,
-            username: userResult.rows[0]?.username
-        });
-
-        if (userResult.rows.length === 0) {
+             WHERE u.username = $1`,
+            [username]
+        );        if (userResult.rows.length === 0) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
@@ -129,22 +100,15 @@ app.post('/api/login', async (req, res) => {
 
         if (!validPassword) {
             return res.status(401).json({ error: 'Invalid username or password' });
-        }        // Query user roles from junction table
+        }// Query user roles from junction table
         const rolesResult = await pool.query(
             `SELECT r.role_key, r.role_name 
              FROM tbl_role r
              JOIN tbl_user_role ur ON r.role_key = ur.role_key
              WHERE ur.user_key = $1`,
             [user.user_key]
-        );
-
-        const roles = rolesResult.rows.map(row => row.role_name);
+        );        const roles = rolesResult.rows.map(row => row.role_name);
         const roleKeys = rolesResult.rows.map(row => row.role_key);
-        
-        // Debug logging to help identify admin role_key
-        console.log('User roles found:', roles);
-        console.log('User role_keys found:', roleKeys);
-        console.log('User roles data:', rolesResult.rows);
         
         // Check if user has admin role - flexible detection
         // This checks for common admin role patterns
@@ -154,9 +118,7 @@ app.post('/api/login', async (req, res) => {
                            return roleLower.includes('admin') || 
                                   roleLower.includes('administrator') ||
                                   roleLower === 'admin';
-                       });
-
-        console.log('Admin status determined:', isAdmin);        // Create token
+                       });// Create token
         const token = jwt.sign(
             { 
                 id: user.user_key,
@@ -177,26 +139,20 @@ app.post('/api/login', async (req, res) => {
             [user.user_key]
         );
 
-        const responseUser = {
-            username: user.username,
-            firstName: user.first_name,
-            middleName: user.middle_name,
-            lastName: user.last_name,
-            email: user.email,
-            roles: roles,
-            roleKeys: roleKeys,
-            isAdmin: isAdmin,
-            // Add timestamp to help track when role data was added
-            authVersion: '2.0'
-        };
-
-        console.log('Final response user object:', responseUser);
-        console.log('Response user middleName:', responseUser.middleName);
-        console.log('Response user email:', responseUser.email);
-
         res.json({
             token,
-            user: responseUser
+            user: {
+                username: user.username,
+                firstName: user.first_name,
+                middleName: user.middle_name,
+                lastName: user.last_name,
+                email: user.email,
+                roles: roles,
+                roleKeys: roleKeys,
+                isAdmin: isAdmin,
+                // Add timestamp to help track when role data was added
+                authVersion: '2.0'
+            }
         });
     } catch (err) {
         console.error('Login error:', err);
