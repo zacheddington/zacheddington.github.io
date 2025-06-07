@@ -132,11 +132,10 @@ const SessionManager = {
             if (now - masterTabHeartbeat > MASTER_TAB_TIMEOUT) {
                 // Master tab is dead, this tab can take over
                 console.log('Master tab appears dead, attempting takeover...');
-                SessionManager.attemptTabTakeover();
-            } else {
+                SessionManager.attemptTabTakeover();            } else {
                 // Master tab is alive, this tab should be closed
                 console.log('Multiple tabs detected - closing secondary tab');
-                SessionManager.showMultipleTabWarning();
+                SessionManager.showTabAccessModal(false); // false = multiple tabs detected
                 return;
             }
         }
@@ -175,118 +174,68 @@ const SessionManager = {
                 SessionManager.showTabTakeoverMessage();
             }
         }, TAB_TAKEOVER_DELAY);
-    },
-
-    // Show warning about multiple tabs
-    showMultipleTabWarning: () => {
+    },    // Show unified modal for tab access restrictions
+    showTabAccessModal: (isNewTab = false) => {
         // Create modal overlay
         const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        `;
+        overlay.className = 'tab-modal-overlay';
 
         // Create modal content
         const modal = document.createElement('div');
-        modal.style.cssText = `
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            max-width: 400px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        `;
+        modal.className = 'tab-modal';
+
+        // Different content based on whether it's a new tab or multiple tabs detected
+        const title = isNewTab ? '🚫 Access Restricted' : '⚠️ Multiple Tabs Detected';
+        const titleClass = isNewTab ? 'restricted' : 'warning';
+        const message = isNewTab 
+            ? 'You already have the application open in another tab. For data security and to prevent conflicts, only one tab can be active at a time.'
+            : 'For data security and to prevent database conflicts, only one tab can access the application at a time.';
+        const instruction = isNewTab
+            ? 'Please return to your existing tab or close it first.'
+            : 'Please close this tab and continue using your original tab.';
 
         modal.innerHTML = `
-            <h2 style="color: #e74c3c; margin-bottom: 20px;">⚠️ Multiple Tabs Detected</h2>
-            <p style="margin-bottom: 20px; line-height: 1.5;">
-                For data security and to prevent database conflicts, only one tab can access the application at a time.
-            </p>
-            <p style="margin-bottom: 30px; font-weight: bold; color: #2c3e50;">
-                Please close this tab and continue using your original tab.
-            </p>
-            <button id="closeTabBtn" style="
-                background: #e74c3c;
-                color: white;
-                border: none;
-                padding: 12px 30px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 16px;
-                margin-right: 10px;
-            ">Close This Tab</button>
-            <button id="forceCloseBtn" style="
-                background: #95a5a6;
-                color: white;
-                border: none;
-                padding: 12px 30px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 16px;
-            ">Force Close Other Tabs</button>
+            <h2 class="${titleClass}">${title}</h2>
+            <p>${message}</p>
+            <p class="instruction">${instruction}</p>
+            <div class="tab-modal-buttons">
+                <button id="closeTabBtn" class="tab-modal-btn close">Close This Tab</button>
+                ${isNewTab ? '<button id="loginNewTabBtn" class="tab-modal-btn login">Login in This Tab</button>' : ''}
+            </div>
         `;
 
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        // Handle close tab button
+        // Handle close tab button - try to close, fallback to redirect
         document.getElementById('closeTabBtn').addEventListener('click', () => {
-            window.close();
+            // Try to close the tab (works for pop-ups and some browsers)
+            try {
+                window.close();
+                // If window.close() doesn't work, redirect after a short delay
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 100);
+            } catch (e) {
+                // Fallback: redirect to login
+                window.location.href = '/';
+            }
         });
 
-        // Handle force close button (clear session and redirect)
-        document.getElementById('forceCloseBtn').addEventListener('click', () => {
-            SessionManager.forceTabTakeover();
-        });
-
-        // Disable page interaction
+        // Handle login button for new tabs
+        if (isNewTab) {
+            document.getElementById('loginNewTabBtn').addEventListener('click', () => {
+                window.location.href = '/';
+            });
+        }        // Disable page interaction except for modal
         document.body.style.pointerEvents = 'none';
         overlay.style.pointerEvents = 'auto';
     },
 
-    // Force this tab to become the master (emergency override)
-    forceTabTakeover: () => {
-        console.log('Force takeover initiated by user');
-        
-        const sessionData = SessionManager.getSessionData();
-        if (sessionData) {
-            const now = Date.now();
-            
-            // Force update session data
-            sessionData.masterTabId = SessionManager.tabId;
-            sessionData.masterTabHeartbeat = now;
-            sessionData.lastActivity = now;
-            localStorage.setItem('activeSession', JSON.stringify(sessionData));
-            
-            // Set this tab as master
-            SessionManager.isMasterTab = true;
-            SessionManager.startMasterTabHeartbeat();
-        }
-        
-        // Reload the page to clear the warning modal
-        window.location.reload();
-    },    // Show tab takeover success message
+    // Show tab takeover success message
     showTabTakeoverMessage: () => {
         const message = document.createElement('div');
-        message.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #27ae60;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 5px;
-            z-index: 9999;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        `;
+        message.className = 'tab-success-message';
         message.textContent = '✓ Tab successfully activated';
         
         document.body.appendChild(message);
@@ -295,83 +244,7 @@ const SessionManager = {
             if (message.parentNode) {
                 message.parentNode.removeChild(message);
             }
-        }, 3000);
-    },
-
-    // Show message when new tab is denied access
-    showNewTabDeniedMessage: () => {
-        // Create modal overlay
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        `;
-
-        // Create modal content
-        const modal = document.createElement('div');
-        modal.style.cssText = `
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            max-width: 400px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        `;
-
-        modal.innerHTML = `
-            <h2 style="color: #e67e22; margin-bottom: 20px;">🚫 Access Restricted</h2>
-            <p style="margin-bottom: 20px; line-height: 1.5;">
-                You already have the application open in another tab. For data security and to prevent conflicts, only one tab can be active at a time.
-            </p>
-            <p style="margin-bottom: 30px; font-weight: bold; color: #2c3e50;">
-                Please return to your existing tab or close it first.
-            </p>
-            <button id="closeNewTabBtn" style="
-                background: #e67e22;
-                color: white;
-                border: none;
-                padding: 12px 30px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 16px;
-                margin-right: 10px;
-            ">Close This Tab</button>
-            <button id="loginNewTabBtn" style="
-                background: #3498db;
-                color: white;
-                border: none;
-                padding: 12px 30px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 16px;
-            ">Login in This Tab</button>
-        `;
-
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-
-        // Handle close tab button
-        document.getElementById('closeNewTabBtn').addEventListener('click', () => {
-            window.close();
-        });
-
-        // Handle login button (redirect to login page)
-        document.getElementById('loginNewTabBtn').addEventListener('click', () => {
-            window.location.href = '/';
-        });
-
-        // Disable page interaction
-        document.body.style.pointerEvents = 'none';
-        overlay.style.pointerEvents = 'auto';
-    },
+        }, 3000);    },
 
     // Update last activity timestamp for current tab
     updateActivity: () => {
@@ -579,11 +452,10 @@ const checkAuth = () => {
             if (sessionData && sessionData.masterTabId) {
                 const now = Date.now();
                 const masterTabHeartbeat = sessionData.masterTabHeartbeat || 0;
-                
-                // If master tab is alive, deny access to this new tab
+                  // If master tab is alive, deny access to this new tab
                 if (now - masterTabHeartbeat <= MASTER_TAB_TIMEOUT) {
                     console.log('Active master tab detected - denying access to new tab');
-                    SessionManager.showNewTabDeniedMessage();
+                    SessionManager.showTabAccessModal(true); // true = new tab denied
                     return;
                 } else {
                     console.log('Master tab appears inactive - allowing new tab access');
