@@ -47,11 +47,17 @@ document.addEventListener('DOMContentLoaded', function() {
       // Check if current page is login page
     const currentPath = window.location.pathname;
     const isLoginPage = currentPath === '/' || currentPath === '/index.html' || currentPath.endsWith('/');
-    
-    // Clear authentication data if on login page to ensure clean state
+      // Clear authentication data if on login page to ensure clean state
     // BUT only if we don't have a valid session that was just created
     if (isLoginPage && document.getElementById('loginForm')) {
         const hasValidSession = sessionStorage.getItem('currentTabId') && localStorage.getItem('token');
+        
+        console.log('=== LOGIN PAGE CLEARING CHECK ===');
+        console.log('isLoginPage:', isLoginPage);
+        console.log('hasValidSession:', hasValidSession);
+        console.log('sessionStorage.currentTabId:', sessionStorage.getItem('currentTabId'));
+        console.log('localStorage.token:', localStorage.getItem('token'));
+        console.log('=== END LOGIN PAGE CHECK ===');
         
         if (!hasValidSession) {
             console.log('On login page - clearing any stale authentication data');

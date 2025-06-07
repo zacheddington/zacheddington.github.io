@@ -74,18 +74,19 @@ const SessionManager = {
             sessionData.lastHeartbeat = Date.now();
             localStorage.setItem('activeSession', JSON.stringify(sessionData));
         }
-    },
-
-    // Get current session data
+    },    // Get current session data
     getSessionData: () => {
         try {
             const data = localStorage.getItem('activeSession');
-            return data ? JSON.parse(data) : null;
+            console.log('getSessionData() - raw data from localStorage:', data);
+            const parsed = data ? JSON.parse(data) : null;
+            console.log('getSessionData() - parsed data:', parsed);
+            return parsed;
         } catch (e) {
             console.error('Error parsing session data:', e);
             return null;
         }
-    },    // Setup tab close detection
+    },// Setup tab close detection
     setupTabCloseDetection: () => {
         // Clear session when tab/window is actually closed (not just switched)
         window.addEventListener('beforeunload', (event) => {
@@ -232,6 +233,17 @@ const startActivityMonitoring = () => {
 // Check authentication
 const checkAuth = () => {
     console.log('checkAuth() called for page:', window.location.pathname);
+    
+    // Debug all storage before anything else
+    console.log('=== STORAGE DEBUG ===');
+    console.log('localStorage.token:', localStorage.getItem('token'));
+    console.log('localStorage.activeSession:', localStorage.getItem('activeSession'));
+    console.log('localStorage.lastTabId:', localStorage.getItem('lastTabId'));
+    console.log('localStorage.loginTimestamp:', localStorage.getItem('loginTimestamp'));
+    console.log('sessionStorage.currentTabId:', sessionStorage.getItem('currentTabId'));
+    console.log('sessionStorage keys:', Object.keys(sessionStorage));
+    console.log('localStorage keys:', Object.keys(localStorage));
+    console.log('=== END STORAGE DEBUG ===');
     
     if (isPublicPage()) {
         console.log('Public page detected, skipping auth check');
