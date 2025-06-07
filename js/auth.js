@@ -27,9 +27,14 @@ const SessionManager = {
     masterTabInterval: null,
     tabCheckInterval: null,
     isMasterTab: false,
-    
-    // Generate unique tab ID and initialize session
+      // Generate unique tab ID and initialize session
     initSession: () => {
+        // Prevent double initialization
+        if (SessionManager.tabId) {
+            console.log('Session already initialized, skipping duplicate initialization');  
+            return;
+        }
+        
         // Generate unique tab identifier
         SessionManager.tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const loginTime = Date.now();

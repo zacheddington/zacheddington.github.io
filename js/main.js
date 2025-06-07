@@ -134,45 +134,40 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({ username, password })
-                });                const data = await response.json();                if (response.ok && data.token) {
+                });                if (response.ok && data.token) {
                     // Store authentication data
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));// Initialize session management (browser-lifetime storage)                    // CRITICAL: Ensure this happens immediately and synchronously
-                    if (window.SessionManager) {
-                        window.SessionManager.initSession();
-                          } else {
-                        // Fallback: manual session initialization with tab ID
-                        const loginTime = Date.now();
-                        const tabId = 'tab_' + loginTime + '_' + Math.random().toString(36).substr(2, 9);
-                        
-                        // Store in both sessionStorage and localStorage for resilience
-                        sessionStorage.setItem('currentTabId', tabId);
-                        localStorage.setItem('lastTabId', tabId);
-                        localStorage.setItem('loginTimestamp', loginTime.toString());
-                        sessionStorage.setItem('loginTime', loginTime.toString());
-                        sessionStorage.setItem('lastActivity', loginTime.toString());
-                        
-                        // Store session data in localStorage as well
-                        const sessionData = {
-                            loginTime: loginTime,
-                            lastActivity: loginTime,
-                            tabId: tabId,
-                            lastHeartbeat: loginTime,
-                            isRecentLogin: true
-                        };                        localStorage.setItem('activeSession', JSON.stringify(sessionData));
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                    // Initialize session management - streamlined approach
+                    try {
+                        if (window.SessionManager) {
+                            // Use SessionManager if available
+                            window.SessionManager.initSession();
+                        } else {
+                            // Simplified fallback: single session initialization
+                            const loginTime = Date.now();
+                            const tabId = 'tab_' + loginTime + '_' + Math.random().toString(36).substr(2, 9);
+                            
+                            sessionStorage.setItem('currentTabId', tabId);
+                            localStorage.setItem('loginTimestamp', loginTime.toString());
+                            sessionStorage.setItem('loginTime', loginTime.toString());
+                        }
+                    } catch (sessionError) {
+                        console.warn('Session initialization error:', sessionError);
+                        // Continue with login even if session init fails
                     }
                     
                     // Use utility function to check admin status and update UI
                     const isAdmin = isUserAdmin(data.user);
                     updateAdminUI(isAdmin);
 
-                    // Add a small delay to ensure sessionStorage is persisted before navigation
+                    // Add a small delay to ensure all data is persisted before navigation
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
-                        
                         window.location.href = "welcome/";
                     }, FADE_DURATION);
-                } else {                    const message = response.status === 401 
+                } else {const message = response.status === 401 
                         ? 'Invalid username or password'
                         : data.error || 'Login failed';
                     
@@ -349,39 +344,42 @@ async function loadMenu() {
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
             const isAdmin = isUserAdmin(userData);
             updateAdminMenuItem(isAdmin);
-        }        // Add click handler for logout with confirmation
+        }        // Add click handler for logout with confirmation (prevent duplicates)
         const logoutLink = document.getElementById('logoutLink');
-        logoutLink?.addEventListener('click', async (e) => {
-            e.preventDefault();
-            
-            // Use enhanced logout modal instead of confirm()
-            const shouldLogout = await showLogoutModal();
-            if (!shouldLogout) {
-                return;
-            }
+        if (logoutLink && !logoutLink.hasAttribute('data-logout-handler')) {
+            logoutLink.setAttribute('data-logout-handler', 'true');
+            logoutLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                
+                // Use enhanced logout modal instead of confirm()
+                const shouldLogout = await showLogoutModal();
+                if (!shouldLogout) {
+                    return;
+                }
 
-            // Show logging out indicator
-            logoutLink.textContent = 'Logging out...';
-            logoutLink.style.pointerEvents = 'none';
+                // Show logging out indicator
+                logoutLink.textContent = 'Logging out...';
+                logoutLink.style.pointerEvents = 'none';
 
-            try {
-                // Use the enhanced logout function from auth.js
-                if (window.performLogout) {
-                    await window.performLogout('User clicked logout');
-                } else {
-                    // Fallback logout if auth.js not loaded
+                try {
+                    // Use the enhanced logout function from auth.js
+                    if (window.performLogout) {
+                        await window.performLogout('User clicked logout');
+                    } else {
+                        // Fallback logout if auth.js not loaded
+                        localStorage.clear();
+                        sessionStorage.clear();
+                        window.location.href = '../';
+                    }
+                } catch (err) {
+                    console.error('Logout error:', err);
+                    // Force logout even if server call fails
                     localStorage.clear();
                     sessionStorage.clear();
                     window.location.href = '../';
                 }
-            } catch (err) {
-                console.error('Logout error:', err);
-                // Force logout even if server call fails
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = '../';
-            }
-        });
+            });
+        }
 
     } catch (err) {        console.error('Error loading menu:', err);
     }
@@ -443,6 +441,12 @@ function addSessionStatusIndicator() {
 // Enhanced logout modal
 function showLogoutModal() {
     return new Promise((resolve) => {
+        // Remove any existing logout modals to prevent duplicates
+        const existingModal = document.querySelector('.logout-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
         const modal = document.createElement('div');
         modal.className = 'logout-modal';
         modal.innerHTML = `
