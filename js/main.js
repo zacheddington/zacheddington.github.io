@@ -218,10 +218,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         : data.error || 'Login failed';
                     
                     modalManager.showModal('error', message);
-                }
-            } catch (err) {
+                }            } catch (err) {
                 console.error('Login error:', err);
-                modalManager.showModal('error', 'Connection error. Please try again.');            } finally {
+                modalManager.showModal('error', 'Connection error. Please try again.');
+            } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Login';
             }
@@ -271,9 +271,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (notice.parentNode) {
                             notice.remove();
                         }
-                    }, 8000);
-                }, 2000);
+                    }, 8000);                }, 2000);
                 sessionStorage.setItem('legacy-auth-notice-shown', 'true');
+                }
             }
         } else {
             console.log('No valid authentication data found, skipping admin UI updates');
@@ -298,9 +298,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Simple fade navigation without custom function
                 document.body.classList.add('fade-out');
                 setTimeout(() => {
-                    window.location.href = href;
-                }, FADE_DURATION);
-            }        });
+                    window.location.href = href;                }, FADE_DURATION);
+            }
+        });
     });
     
     // Patient number validation - only allow numbers and hyphens
