@@ -7,50 +7,111 @@
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/styles.css">
 </head>
-<body>
-    <div id="hamburger-menu"></div>
+<body>    <div id="hamburger-menu"></div>
     <div class="admin-container">
         <h1>User Management</h1>
         
-        <div class="admin-tabs">
-            <button class="tab-btn active" data-tab="create">Create User</button>
-            <button class="tab-btn" data-tab="manage">Manage Users</button>
+        <!-- Initial Choice Buttons -->
+        <div class="admin-choice" id="adminChoice">
+            <div class="choice-buttons">
+                <button class="choice-btn primary" id="createUserBtn">
+                    <h3>Create New User</h3>
+                    <p>Add a new user account to the system</p>
+                </button>
+                <button class="choice-btn secondary" id="manageUsersBtn">
+                    <h3>Manage Existing Users</h3>
+                    <p>View, edit, or disable existing user accounts</p>
+                </button>
+            </div>
         </div>
 
-        <div class="tab-content active" id="create-tab">
+        <!-- Create User Form -->
+        <div class="admin-section hidden" id="createUserSection">
+            <div class="section-header">
+                <button class="back-btn" id="backFromCreate">← Back to User Management</button>
+                <h2>Create New User</h2>
+            </div>
+            
             <form id="createUserForm" class="admin-form">
-                <div class="form-group">
-                    <label for="newUsername">Username</label>
-                    <input type="text" id="newUsername" required>
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h3>Personal Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name</label>
+                            <input type="text" id="firstName" name="firstName" required maxlength="50">
+                            <small class="field-note">Maximum 50 characters</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="middleName">Middle Name</label>
+                            <input type="text" id="middleName" name="middleName" maxlength="50">
+                            <small class="field-note">Maximum 50 characters (optional)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" name="lastName" required maxlength="50">
+                            <small class="field-note">Maximum 50 characters</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required maxlength="50">
+                            <small class="field-note">Maximum 50 characters</small>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="newPassword">Password</label>
-                    <input type="password" id="newPassword" required>
+
+                <!-- Account Information -->
+                <div class="form-section">
+                    <h3>Account Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newUsername">Username</label>
+                            <input type="text" id="newUsername" name="username" required maxlength="50">
+                            <small class="field-note">Maximum 50 characters</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="userRole">Role</label>
+                            <select id="userRole" name="role" required>
+                                <option value="">Select a role...</option>
+                                <!-- Roles will be populated dynamically -->
+                            </select>
+                            <small class="field-note">Determines user permissions</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newPassword">Password</label>
+                            <input type="password" id="newPassword" name="password" required minlength="6">
+                            <small class="field-note">Minimum 6 characters</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6">
+                            <small class="field-note">Must match password</small>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="confirmPassword">Confirm Password</label>
-                    <input type="password" id="confirmPassword" required>
+
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn" id="createUserSubmitBtn">Create User</button>
+                    <button type="button" class="secondary-btn" id="cancelCreateUser">Cancel</button>
                 </div>
-                <div class="form-group">
-                    <label for="firstName">First Name</label>
-                    <input type="text" id="firstName" required>
-                </div>
-                <div class="form-group">
-                    <label for="lastName">Last Name</label>
-                    <input type="text" id="lastName" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required>
-                </div>
-                <button type="submit">Create User</button>
             </form>
         </div>
 
-        <div class="tab-content" id="manage-tab">
+        <!-- Manage Users Section -->
+        <div class="admin-section hidden" id="manageUsersSection">
+            <div class="section-header">
+                <button class="back-btn" id="backFromManage">← Back to User Management</button>
+                <h2>Manage Existing Users</h2>
+            </div>
             <div class="users-list">
                 <!-- Users will be loaded here dynamically -->
-            </div>        </div>
+                <p>User management functionality will be implemented next.</p>
+            </div>
+        </div>
     </div>
     <script src="../js/auth.js"></script>
     <script src="../js/main.js"></script>

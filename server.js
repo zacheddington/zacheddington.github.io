@@ -455,10 +455,249 @@ app.put('/api/change-password', authenticateToken, async (req, res) => {
         const errorMessage = err.message && err.message.includes('Database') 
             ? err.message 
             : err.message || 'Failed to change password. Please try again later';
+              res.status(500).json({ 
+            error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
+    }
+});
+
+// Admin endpoints for user management
+app.get('/api/roles', authenticateToken, async (req, res) => {
+    try {
+        // Check if user is admin
+        const isAdmin = req.user.roleKeys?.includes(1) || 
+                       req.user.roles?.some(role => {
+                           const roleLower = role.toLowerCase();
+                           return roleLower.includes('admin') || 
+                                  roleLower.includes('administrator') ||
+                                  roleLower === 'admin';
+                       });
+        
+        if (!isAdmin) {
+            return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+        }
+        
+        // Check if we're in local test mode
+        const isLocalTest = process.env.NODE_ENV === 'development' && 
+                           process.env.DATABASE_URL?.includes('localhost');
+        
+        if (isLocalTest) {
+            // Return test roles for local development
+            return res.json([
+                { role_key: 1, role_name: 'Administrator' },
+                { role_key: 2, role_name: 'User' },
+                { role_key: 3, role_name: 'Viewer' }
+            ]);
+        }
+        
+        // Production database logic
+        const rolesResult = await pool.query(
+            'SELECT role_key, role_name FROM tbl_role ORDER BY role_name'
+        );
+        
+        res.json(rolesResult.rows);
+        
+    } catch (err) {
+        console.error('Get roles error:', err);
+        res.status(500).json({ 
+            error: 'Failed to fetch roles',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+});
+
+app.post('/api/create-user', authenticateToken, async (req, res) => {
+    try {
+        // Check if user is admin
+        const isAdmin = req.user.roleKeys?.includes(1) || 
+                       req.user.roles?.some(role => {
+                           const roleLower = role.toLowerCase();
+                           return roleLower.includes('admin') || 
+                                  roleLower.includes('administrator') ||
+                                  roleLower === 'admin';
+                       });
+        
+        if (!isAdmin) {
+            return res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+        }
+        
+        const { firstName, middleName, lastName, email, username, password, roleKey } = req.body;
+        
+        // Validate required fields
+        if (!firstName || !lastName || !email || !username || !password || !roleKey) {
+            return res.status(400).json({ error: 'All fields except middle name are required' });
+        }
+        
+        // Validate field lengths
+        if (firstName.length > 50) {
+            return res.status(400).json({ error: 'First name must be 50 characters or less' });
+        }
+        if (middleName && middleName.length > 50) {
+            return res.status(400).json({ error: 'Middle name must be 50 characters or less' });
+        }
+        if (lastName.length > 50) {
+            return res.status(400).json({ error: 'Last name must be 50 characters or less' });
+        }
+        if (email.length > 50) {
+            return res.status(400).json({ error: 'Email must be 50 characters or less' });
+        }
+        if (username.length > 50) {
+            return res.status(400).json({ error: 'Username must be 50 characters or less' });
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Please enter a valid email address' });
+        }
+        
+        // Validate password length
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+        }
+        
+        // Check if we're in local test mode
+        const isLocalTest = process.env.NODE_ENV === 'development' && 
+                           process.env.DATABASE_URL?.includes('localhost');
+        
+        if (isLocalTest) {
+            // For local testing, just return success
+            return res.json({ 
+                message: 'User created successfully',
+                user: {
+                    username,
+                    firstName,
+                    middleName,
+                    lastName,
+                    email,
+                    roleKey
+                }
+            });
+        }
+        
+        // Production database logic
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            
+            // Check if username already exists
+            const existingUserResult = await client.query(
+                'SELECT username FROM tbl_user WHERE username = $1',
+                [username]
+            );
+            
+            if (existingUserResult.rows.length > 0) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ error: 'Username already exists. Please choose a different username.' });
+            }
+            
+            // Check if email already exists
+            const existingEmailResult = await client.query(
+                'SELECT email FROM tbl_user WHERE email = $1',
+                [email]
+            );
+            
+            if (existingEmailResult.rows.length > 0) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ error: 'Email address is already registered. Please use a different email.' });
+            }
+            
+            // Get the creator's username for the 'who' field
+            const creatorUsername = req.user.username;
+            
+            // Insert into tbl_name_data
+            const nameResult = await client.query(
+                'INSERT INTO tbl_name_data (first_name, middle_name, last_name, who, date_when) VALUES ($1, $2, $3, $4, NOW()) RETURNING name_key',
+                [firstName, middleName || null, lastName, creatorUsername]
+            );
+            
+            if (nameResult.rows.length === 0) {
+                throw new Error('Failed to create name record');
+            }
+            
+            const nameKey = nameResult.rows[0].name_key;
+            
+            // Hash password
+            const saltRounds = 10;
+            const passwordHash = await bcrypt.hash(password, saltRounds);
+            
+            // Insert into tbl_user
+            const userResult = await client.query(
+                'INSERT INTO tbl_user (username, password_hash, email, name_key, who, date_created, date_when) VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING user_key',
+                [username, passwordHash, email, nameKey, creatorUsername]
+            );
+            
+            if (userResult.rows.length === 0) {
+                throw new Error('Failed to create user account');
+            }
+            
+            const userKey = userResult.rows[0].user_key;
+            
+            // Insert into tbl_user_role
+            const userRoleResult = await client.query(
+                'INSERT INTO tbl_user_role (user_key, role_key, date_created, date_when) VALUES ($1, $2, NOW(), NOW())',
+                [userKey, roleKey]
+            );
+            
+            if (userRoleResult.rowCount === 0) {
+                throw new Error('Failed to assign user role');
+            }
+            
+            await client.query('COMMIT');
+            
+            res.json({ 
+                message: 'User created successfully',
+                user: {
+                    username,
+                    firstName,
+                    middleName,
+                    lastName,
+                    email,
+                    roleKey,
+                    userKey,
+                    nameKey
+                },
+                timestamp: new Date().toISOString()
+            });
+            
+        } catch (err) {
+            await client.query('ROLLBACK');
+            console.error('User creation database error:', err);
+            
+            // Provide specific error messages
+            if (err.code === '23505') { // Unique constraint violation
+                if (err.constraint?.includes('username')) {
+                    throw new Error('Username already exists. Please choose a different username.');
+                } else if (err.constraint?.includes('email')) {
+                    throw new Error('Email address is already registered. Please use a different email.');
+                } else {
+                    throw new Error('A user with this information already exists.');
+                }
+            } else if (err.code === '23503') { // Foreign key constraint violation
+                throw new Error('Invalid role selected. Please refresh the page and try again.');
+            } else if (err.code === '23514') { // Check constraint violation
+                throw new Error('Invalid data format. Please check your input.');
+            } else if (err.code === '08003' || err.code === '08006') { // Connection errors
+                throw new Error('Database connection lost. Please try again.');
+            } else {
+                throw new Error('User creation failed. Please try again.');
+            }
+        } finally {
+            client.release();
+        }
+        
+    } catch (err) {
+        console.error('User creation error:', err);
+        
+        // Return specific error message or generic fallback
+        const errorMessage = err.message && err.message.includes('Database') 
+            ? err.message 
+            : err.message || 'Failed to create user. Please try again later';
             
         res.status(500).json({ 
             error: errorMessage,
-            details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     }
 });

@@ -433,501 +433,244 @@ button[type="submit"]:disabled,
 
 /* Admin Styles */
 .admin-container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.admin-tabs {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 1rem;
-}
-
-.tab-btn {
-    padding: 0.5rem 1rem;
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #666;
-    transition: color 0.3s;
-}
-
-.tab-btn.active {
-    color: #007bff;
-    border-bottom: 2px solid #007bff;
-}
-
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-.admin-form {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.users-list {
-    display: grid;
-    gap: 1rem;
-}
-
-.user-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 4px;
-}
-
-.user-info {
-    flex-grow: 1;
-}
-
-.user-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.user-actions button {
-    padding: 0.25rem 0.5rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.edit-btn {
-    background: #28a745;
-    color: white;
-}
-
-.reset-btn {
-    background: #ffc107;
-    color: #212529;
-}
-
-.delete-btn {
-    background: #dc3545;
-    color: white;
-}
-
-/* Admin menu item visibility */
-.admin-only {
-    display: none;
-}
-
-body.is-admin .admin-only {
-    display: block;
-}
-
-/* Session Status Indicator */
-.session-status {
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    z-index: 1000;
-    opacity: 0.7;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-}
-
-.session-status:hover {
-    opacity: 1;
-}
-
-.session-status.warning {
-    background: #ff9800;
-    color: white;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { opacity: 0.7; }
-    50% { opacity: 1; }
-    100% { opacity: 0.7; }
-}
-
-/* Logout confirmation modal enhancement */
-.logout-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-}
-
-.logout-modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    max-width: 400px;
-    text-align: center;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.logout-modal-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    margin-top: 1.5rem;
-}
-
-.logout-modal-btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background 0.3s ease;
-}
-
-.logout-modal-btn.confirm {
-    background: #dc3545;
-    color: white;
-}
-
-.logout-modal-btn.confirm:hover {
-    background: #c82333;
-}
-
-.logout-modal-btn.cancel {
-    background: #6c757d;
-    color: white;
-}
-
-.logout-modal-btn.cancel:hover {
-    background: #5a6268;
-}
-
-/* Single-tab enforcement modal styles */
-.tab-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.tab-modal {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-    max-width: 400px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.tab-modal h2 {
-    margin-bottom: 20px;
-}
-
-.tab-modal h2.warning {
-    color: #e74c3c;
-}
-
-.tab-modal h2.restricted {
-    color: #e67e22;
-}
-
-.tab-modal p {
-    margin-bottom: 20px;
-    line-height: 1.5;
-}
-
-.tab-modal p.instruction {
-    margin-bottom: 30px;
-    font-weight: bold;
-    color: #2c3e50;
-}
-
-.tab-modal-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.tab-modal-btn {
-    border: none;
-    padding: 12px 30px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    font-family: inherit;
-    transition: background-color 0.3s ease;
-}
-
-.tab-modal-btn.close {
-    background: #e74c3c;
-    color: white;
-}
-
-.tab-modal-btn.close:hover {
-    background: #c0392b;
-}
-
-.tab-modal-btn.login {
-    background: #3498db;
-    color: white;
-}
-
-.tab-modal-btn.login:hover {
-    background: #2980b9;
-}
-
-/* Success message for tab takeover */
-.tab-success-message {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #27ae60;
-    color: white;
-    padding: 15px 20px;
-    border-radius: 5px;
-    z-index: 9999;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    animation: slideInRight 0.3s ease;
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-/* Profile Page Styles */
-.profile-container {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 2rem auto;
     padding: 2rem;
     margin-top: 80px;
 }
 
-.profile-section {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 2rem;
-    padding: 2rem;
+.admin-choice {
+    text-align: center;
+    margin: 3rem 0;
 }
 
-.profile-section h2 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    color: #003b49;
-    border-bottom: 2px solid #e0f7fa;
-    padding-bottom: 0.5rem;
-}
-
-.profile-form {
+.choice-buttons {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.profile-form .form-row {
-    display: flex;
-    gap: 1rem;
+    gap: 2rem;
+    justify-content: center;
     flex-wrap: wrap;
 }
 
-.profile-form .form-group {
+.choice-btn {
+    background: white;
+    border: 2px solid #e0f7fa;
+    border-radius: 12px;
+    padding: 2rem;
+    min-width: 280px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.choice-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-color: #009688;
+}
+
+.choice-btn.primary {
+    border-color: #009688;
+}
+
+.choice-btn.primary:hover {
+    background: #f0fdfc;
+}
+
+.choice-btn.secondary:hover {
+    background: #f8f9fa;
+}
+
+.choice-btn h3 {
+    margin: 0 0 0.5rem 0;
+    color: #003b49;
+    font-size: 1.25rem;
+}
+
+.choice-btn p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.admin-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.admin-section.hidden {
+    display: none;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e0f7fa;
+}
+
+.back-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.back-btn:hover {
+    background: #5a6268;
+}
+
+.section-header h2 {
+    margin: 0;
+    color: #003b49;
+}
+
+.admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.form-section {
+    border: 1px solid #e0f7fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background: #fafbfc;
+}
+
+.form-section h3 {
+    margin: 0 0 1.5rem 0;
+    color: #003b49;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #e0f7fa;
+    padding-bottom: 0.5rem;
+}
+
+.admin-form .form-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.admin-form .form-row:last-child {
+    margin-bottom: 0;
+}
+
+.admin-form .form-group {
     flex: 1;
     min-width: 250px;
     display: flex;
     flex-direction: column;
 }
 
-.profile-form label {
+.admin-form label {
     margin-bottom: 0.5rem;
     font-weight: 600;
     color: #003b49;
 }
 
-.profile-form input {
-    padding: 0.75rem;
+.admin-form input,
+.admin-form select {
+    padding: 12px;
     border: 2px solid #b2dfdb;
     border-radius: 6px;
     font-size: 1rem;
     transition: border 0.2s;
-    background: #f7fafc;
+    background: white;
 }
 
-.profile-form input:focus {
+.admin-form input:focus,
+.admin-form select:focus {
     border-color: #009688;
-    background: #fff;
     outline: none;
 }
 
-.profile-form input[readonly] {
-    background-color: #f5f5f5;
-    color: #666;
-    cursor: not-allowed;
+.admin-form select {
+    cursor: pointer;
 }
 
-.profile-form input:disabled {
-    background-color: #f5f5f5;
-    color: #666;
-    cursor: not-allowed;
-    border-color: #d6d9dc;
-}
-
-.field-note {
+.admin-form .field-note {
     font-size: 0.8rem;
     color: #666;
     margin-top: 0.25rem;
-    font-style: italic;
 }
 
-.form-actions {
+.admin-form .form-actions {
     display: flex;
     gap: 1rem;
     margin-top: 1.5rem;
     justify-content: flex-start;
 }
 
-.secondary-btn {
-    background: #6c757d;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 12px 24px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-    text-decoration: none;
-    display: inline-block;
-    text-align: center;
-}
-
-.secondary-btn:hover {
-    background: #5a6268;
-}
-
-.secondary-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-    background-color: #cccccc;
-}
-
-/* Account Information Section */
-.info-only {
-    background: #f8f9fa;
-}
-
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-}
-
-.info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem;
-    background: white;
-    border-radius: 4px;
-    border-left: 4px solid #009688;
-}
-
-.info-label {
-    font-weight: 600;
-    color: #003b49;
-}
-
-.info-value {
-    color: #666;
-    font-family: monospace;
-}
-
-/* Profile form responsive design */
-@media (max-width: 768px) {
-    .profile-container {
-        margin: 1rem;
-        padding: 1rem;
-        margin-top: 60px;
-    }
-    
-    .profile-section {
-        padding: 1.5rem;
-    }
-    
-    .profile-form .form-row {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .profile-form .form-group {
-        min-width: 100%;
-    }
-    
-    .form-actions {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .form-actions button {
-        width: 100%;
-    }
-    
-    .info-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Success and error states for profile forms */
-.profile-form .form-group.success input {
+/* Admin form validation states */
+.admin-form .form-group.success input,
+.admin-form .form-group.success select {
     border-color: #28a745;
     background-color: #f8fff9;
 }
 
-.profile-form .form-group.error input {
+.admin-form .form-group.error input,
+.admin-form .form-group.error select {
     border-color: #dc3545;
     background-color: #fff8f8;
 }
 
-.profile-form .error-message {
+.admin-form .error-message {
     color: #dc3545;
     font-size: 0.85rem;
     margin-top: 0.25rem;
 }
 
-.profile-form .success-message {
+.admin-form .success-message {
     color: #28a745;
     font-size: 0.85rem;
     margin-top: 0.25rem;
+}
+
+/* Password validation states for admin forms */
+.admin-form input.password-match {
+    border-color: #28a745;
+    background-color: #f8fff9;
+}
+
+.admin-form input.password-mismatch {
+    border-color: #dc3545;
+    background-color: #fff8f8;
+}
+
+/* Section messages for admin pages */
+.section-message {
+    padding: 1rem;
+    border-radius: 6px;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.section-message.success-message {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.section-message.error-message {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+/* Hidden utility class */
+.hidden {
+    display: none !important;
 }

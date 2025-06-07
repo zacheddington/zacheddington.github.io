@@ -307,10 +307,14 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
             tooltip.classList.remove('show');
         });
     }
-    
-    // Initialize profile page if we're on it
+      // Initialize profile page if we're on it
     if (window.location.pathname.includes('/profile/')) {
         initializeProfilePage();
+    }
+    
+    // Initialize admin page if we're on it
+    if (window.location.pathname.includes('/admin/')) {
+        initializeAdminPage();
     }
 });
 
@@ -1058,4 +1062,335 @@ function cancelProfileEditing() {
     
     // Clear stored original data
     delete window.originalProfileData;
+}
+
+// Admin Page Functionality
+function initializeAdminPage() {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    
+    // Load roles for dropdown
+    loadRoles();
+    
+    // Navigation handlers
+    setupAdminNavigation();
+    
+    // Form handlers
+    setupCreateUserForm();
+    
+    // Load hamburger menu
+    if (document.getElementById('hamburger-menu')) {
+        loadMenu();
+    }
+}
+
+function setupAdminNavigation() {
+    const adminChoice = document.getElementById('adminChoice');
+    const createUserSection = document.getElementById('createUserSection');
+    const manageUsersSection = document.getElementById('manageUsersSection');
+    
+    // Choice button handlers
+    document.getElementById('createUserBtn')?.addEventListener('click', function() {
+        adminChoice.classList.add('hidden');
+        createUserSection.classList.remove('hidden');
+    });
+    
+    document.getElementById('manageUsersBtn')?.addEventListener('click', function() {
+        adminChoice.classList.add('hidden');
+        manageUsersSection.classList.remove('hidden');
+        // TODO: Load existing users
+    });
+    
+    // Back button handlers
+    document.getElementById('backFromCreate')?.addEventListener('click', function() {
+        createUserSection.classList.add('hidden');
+        adminChoice.classList.remove('hidden');
+        // Reset form
+        document.getElementById('createUserForm')?.reset();
+        clearCreateUserErrors();
+    });
+    
+    document.getElementById('backFromManage')?.addEventListener('click', function() {
+        manageUsersSection.classList.add('hidden');
+        adminChoice.classList.remove('hidden');
+    });
+    
+    // Cancel button handler
+    document.getElementById('cancelCreateUser')?.addEventListener('click', function() {
+        createUserSection.classList.add('hidden');
+        adminChoice.classList.remove('hidden');
+        document.getElementById('createUserForm')?.reset();
+        clearCreateUserErrors();
+    });
+}
+
+async function loadRoles() {
+    try {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/roles`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const roles = await response.json();
+            const roleSelect = document.getElementById('userRole');
+            
+            // Clear existing options except first
+            roleSelect.innerHTML = '<option value="">Select a role...</option>';
+            
+            // Add role options
+            roles.forEach(role => {
+                const option = document.createElement('option');
+                option.value = role.role_key;
+                option.textContent = role.role_name;
+                roleSelect.appendChild(option);
+            });
+        } else {
+            console.error('Failed to load roles');
+            window.modalManager.showModal('error', 'Failed to load user roles. Please refresh the page.');
+        }
+    } catch (error) {
+        console.error('Error loading roles:', error);
+        window.modalManager.showModal('error', 'Error loading user roles. Please check your connection.');
+    }
+}
+
+function setupCreateUserForm() {
+    const form = document.getElementById('createUserForm');
+    if (!form) return;
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await createUser();
+    });
+    
+    // Real-time password confirmation validation
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    
+    if (newPassword && confirmPassword) {
+        confirmPassword.addEventListener('input', function() {
+            validateCreateUserPasswordMatch();
+        });
+        
+        newPassword.addEventListener('input', function() {
+            validateCreateUserPasswordMatch();
+        });
+    }
+    
+    // Character limit validation for admin form
+    setupAdminFieldValidation();
+}
+
+function setupAdminFieldValidation() {
+    const fields = [
+        { id: 'firstName', maxLength: 50, name: 'First Name' },
+        { id: 'middleName', maxLength: 50, name: 'Middle Name' },
+        { id: 'lastName', maxLength: 50, name: 'Last Name' },
+        { id: 'email', maxLength: 50, name: 'Email' },
+        { id: 'newUsername', maxLength: 50, name: 'Username' }
+    ];
+    
+    fields.forEach(field => {
+        const element = document.getElementById(field.id);
+        if (element) {
+            element.addEventListener('input', function() {
+                if (this.value.length > field.maxLength) {
+                    showCharacterLimitModal(field.name, field.maxLength);
+                    this.value = this.value.substring(0, field.maxLength);
+                }
+            });
+        }
+    });
+}
+
+function validateCreateUserPasswordMatch() {
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    
+    if (newPassword && confirmPassword) {
+        const match = newPassword.value === confirmPassword.value;
+        
+        // Remove existing validation classes
+        confirmPassword.classList.remove('password-match', 'password-mismatch');
+        
+        if (confirmPassword.value.length > 0) {
+            if (match) {
+                confirmPassword.classList.add('password-match');
+            } else {
+                confirmPassword.classList.add('password-mismatch');
+            }
+        }
+    }
+}
+
+async function createUser() {
+    const submitBtn = document.getElementById('createUserSubmitBtn');
+    const originalText = submitBtn.textContent;
+    let response = null;
+    
+    try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating User...';
+        
+        // Clear previous errors
+        clearCreateUserErrors();
+        
+        // Pre-flight connectivity check
+        const connectivity = await checkConnectivity();
+        if (!connectivity.connected) {
+            throw new Error(`Connection failed: ${connectivity.error}`);
+        }
+        
+        const formData = {
+            firstName: document.getElementById('firstName').value.trim(),
+            middleName: document.getElementById('middleName').value.trim(),
+            lastName: document.getElementById('lastName').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            username: document.getElementById('newUsername').value.trim(),
+            password: document.getElementById('newPassword').value,
+            confirmPassword: document.getElementById('confirmPassword').value,
+            roleKey: document.getElementById('userRole').value
+        };
+        
+        // Validate required fields
+        if (!formData.firstName || !formData.lastName || !formData.email || 
+            !formData.username || !formData.password || !formData.roleKey) {
+            throw new Error('All fields except middle name are required.');
+        }
+        
+        // Validate character limits
+        if (formData.firstName.length > 50) {
+            throw new Error('First name must be 50 characters or less.');
+        }
+        if (formData.middleName && formData.middleName.length > 50) {
+            throw new Error('Middle name must be 50 characters or less.');
+        }
+        if (formData.lastName.length > 50) {
+            throw new Error('Last name must be 50 characters or less.');
+        }
+        if (formData.email.length > 50) {
+            throw new Error('Email must be 50 characters or less.');
+        }
+        if (formData.username.length > 50) {
+            throw new Error('Username must be 50 characters or less.');
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            throw new Error('Please enter a valid email address.');
+        }
+        
+        // Validate password
+        if (formData.password.length < 6) {
+            throw new Error('Password must be at least 6 characters long.');
+        }
+        
+        if (formData.password !== formData.confirmPassword) {
+            throw new Error('Passwords do not match.');
+        }
+        
+        const token = localStorage.getItem('token');
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        
+        response = await fetch(`${API_URL}/api/create-user`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                firstName: formData.firstName,
+                middleName: formData.middleName,
+                lastName: formData.lastName,
+                email: formData.email,
+                username: formData.username,
+                password: formData.password,
+                roleKey: formData.roleKey
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Show success modal
+            const successMessage = `User "${formData.username}" created successfully! The user can now log in with the provided credentials.`;
+            window.modalManager.showModal('success', successMessage);
+            
+            // Reset form and go back to choice
+            document.getElementById('createUserForm').reset();
+            document.getElementById('createUserSection').classList.add('hidden');
+            document.getElementById('adminChoice').classList.remove('hidden');
+            
+        } else {
+            throw new Error(result.error || 'Failed to create user');
+        }
+        
+    } catch (error) {
+        console.error('User creation error:', error);
+        
+        // Use enhanced error categorization
+        const errorInfo = categorizeError(error, response);
+        
+        // Show appropriate feedback based on error type
+        if (errorInfo.modal) {
+            window.modalManager.showModal('error', errorInfo.message);
+        } else {
+            showCreateUserError(errorInfo.message);
+        }
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+}
+
+function showCreateUserError(message) {
+    showAdminSectionMessage('createUserSection', message, 'error');
+}
+
+function clearCreateUserErrors() {
+    clearAdminSectionMessages('createUserSection');
+}
+
+function showAdminSectionMessage(sectionId, message, type) {
+    clearAdminSectionMessages(sectionId);
+    
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `section-message ${type}-message`;
+    messageDiv.textContent = message;
+    
+    // Insert after section header
+    const sectionHeader = section.querySelector('.section-header');
+    if (sectionHeader) {
+        sectionHeader.insertAdjacentElement('afterend', messageDiv);
+    } else {
+        section.insertBefore(messageDiv, section.firstChild);
+    }
+    
+    // Auto-hide after 10 seconds for success messages
+    if (type === 'success') {
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.remove();
+            }
+        }, 10000);
+    }
+}
+
+function clearAdminSectionMessages(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    
+    const existingMessages = section.querySelectorAll('.section-message');
+    existingMessages.forEach(msg => msg.remove());
 }
