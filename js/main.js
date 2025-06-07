@@ -58,29 +58,24 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
         showModal: function(type, message) {
             if (this.isShowingModal) return;
             
-            this.isShowingModal = true;
-            const modalHtml = `
+            this.isShowingModal = true;            const modalHtml = `
                 <div class="modal" id="feedbackModal" tabindex="-1">
                     <div class="modal-content ${type}">
                         <h2>${type === 'success' ? '✓ Success!' : '⚠ Error'}</h2>
                         <p>${message}</p>
-                        ${type === 'success' ? '' : '<button class="modal-btn" onclick="closeModal()">Close</button>'}
+                        <button class="modal-btn" onclick="closeModal()">Close</button>
                     </div>
                 </div>
             `;
             document.body.insertAdjacentHTML('beforeend', modalHtml);
-            
-            // Add keyboard event listener for error modals
-            if (type !== 'success') {
-                const modal = document.getElementById('feedbackModal');
-                modal.focus();
-                modal.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === 'Escape') {
-                        closeModal();
-                    }
-                });
-            }
-              if (type === 'success') {
+              // Add keyboard event listener for all modals
+            const modal = document.getElementById('feedbackModal');
+            modal.focus();
+            modal.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === 'Escape') {
+                    closeModal();
+                }
+            });if (type === 'success') {
                 // Only redirect to welcome page if we're not on the admin page
                 const isAdminPage = window.location.pathname.includes('/admin/');
                 if (!isAdminPage) {
@@ -90,6 +85,11 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                             window.location.href = "../welcome/";
                         }, FADE_DURATION);
                     }, 2000);
+                } else {
+                    // On admin pages, auto-hide success modal after 4 seconds
+                    setTimeout(() => {
+                        this.closeModal();
+                    }, 4000);
                 }
             }
         },
