@@ -721,11 +721,28 @@ async function loadUserProfile() {
     try {
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         
+        // Debug logging to see what's in localStorage
+        console.log('=== PROFILE LOADING DEBUG ===');
+        console.log('userData from localStorage:', userData);
+        console.log('firstName:', userData.firstName);
+        console.log('middleName:', userData.middleName);
+        console.log('lastName:', userData.lastName);
+        console.log('email:', userData.email);
+        console.log('=== END PROFILE DEBUG ===');
+        
         // Populate form fields
         document.getElementById('firstName').value = userData.firstName || '';
         document.getElementById('middleName').value = userData.middleName || '';
         document.getElementById('lastName').value = userData.lastName || '';
         document.getElementById('email').value = userData.email || '';
+        
+        // Debug logging to verify fields are being set
+        console.log('=== FIELD POPULATION DEBUG ===');
+        console.log('firstName field value:', document.getElementById('firstName').value);
+        console.log('middleName field value:', document.getElementById('middleName').value);
+        console.log('lastName field value:', document.getElementById('lastName').value);
+        console.log('email field value:', document.getElementById('email').value);
+        console.log('=== END FIELD DEBUG ===');
         
         // Display role (read-only)
         const roleField = document.getElementById('role');
