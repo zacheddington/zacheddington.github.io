@@ -435,14 +435,13 @@ app.put('/api/change-password', authenticateToken, async (req, res) => {
         if (/\s/.test(newPassword)) {
             return res.status(400).json({ error: 'New password cannot contain spaces' });
         }
-        
-        // Check for common passwords
+          // Check for common passwords
         const commonPasswords = [
             'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
             'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
         ];
         
-        if (commonPasswords.some(common => newPassword.toLowerCase().includes(common.toLowerCase()))) {
+        if (commonPasswords.some(common => newPassword.toLowerCase() === common.toLowerCase())) {
             return res.status(400).json({ error: 'New password is too common - please choose a stronger password' });
         }
         
@@ -641,14 +640,13 @@ app.post('/api/create-user', authenticateToken, async (req, res) => {
         if (/\s/.test(password)) {
             return res.status(400).json({ error: 'Password cannot contain spaces' });
         }
-        
-        // Check for common passwords
+          // Check for common passwords
         const commonPasswords = [
             'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
             'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
         ];
         
-        if (commonPasswords.some(common => password.toLowerCase().includes(common.toLowerCase()))) {
+        if (commonPasswords.some(common => password.toLowerCase() === common.toLowerCase())) {
             return res.status(400).json({ error: 'Password is too common - please choose a stronger password' });
         }
         

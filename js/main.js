@@ -1529,8 +1529,7 @@ function isCommonPassword(password) {
     ];
     
     return commonPasswords.some(common => 
-        password.toLowerCase().includes(common.toLowerCase()) ||
-        common.toLowerCase().includes(password.toLowerCase())
+        password.toLowerCase() === common.toLowerCase()
     );
 }
 
