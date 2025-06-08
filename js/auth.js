@@ -26,18 +26,62 @@ const SessionManager = {
     heartbeatInterval: null,
     masterTabInterval: null,
     tabCheckInterval: null,
-    isMasterTab: false,
-      // Generate unique tab ID and initialize session
+    isMasterTab: false,    // Generate unique tab ID and initialize session
     initSession: () => {
         // Prevent double initialization
         if (SessionManager.tabId) {
-            console.log('Session already initialized, skipping duplicate initialization');  
+            console.log('🔧 DEBUGGING: Session already initialized, skipping duplicate initialization');  
             return;
         }
         
-        // Generate unique tab identifier
+        // Check if this tab already has a tab ID (from previous session or page reload)
+        let existingTabId = sessionStorage.getItem('currentTabId');
+        console.log('🔧 DEBUGGING: Existing tab ID from sessionStorage:', existingTabId);
+        
+        // If we have an existing tab ID and valid session data for it, reuse it
+        if (existingTabId) {
+            const sessionData = SessionManager.getSessionData();
+            if (sessionData && sessionData.tabId === existingTabId) {
+                console.log('🔧 DEBUGGING: Reusing existing tab ID:', existingTabId);
+                SessionManager.tabId = existingTabId;
+                
+                // Update the session with current login time
+                sessionData.loginTime = Date.now();
+                sessionData.lastActivity = Date.now();
+                sessionData.lastHeartbeat = Date.now();
+                sessionData.isRecentLogin = true;
+                localStorage.setItem('activeSession', JSON.stringify(sessionData));
+                
+                // Set this tab as master if no master exists or master is stale
+                const now = Date.now();
+                const masterTabHeartbeat = sessionData.masterTabHeartbeat || 0;
+                if (!sessionData.masterTabId || (now - masterTabHeartbeat) > MASTER_TAB_TIMEOUT) {
+                    sessionData.masterTabId = SessionManager.tabId;
+                    sessionData.masterTabHeartbeat = now;
+                    localStorage.setItem('activeSession', JSON.stringify(sessionData));
+                    SessionManager.isMasterTab = true;
+                }
+                
+                console.log('🔧 DEBUGGING: Session reinitialized with existing tab ID');
+                
+                // Set up monitoring
+                SessionManager.setupTabCloseDetection();
+                SessionManager.startHeartbeat();
+                if (SessionManager.isMasterTab) {
+                    SessionManager.startMasterTabHeartbeat();
+                }
+                SessionManager.startTabMonitoring();
+                return;
+            }
+        }
+        
+        // Generate new unique tab identifier
         SessionManager.tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const loginTime = Date.now();
+        
+        console.log('🔧 DEBUGGING: Session initialization starting with new tab ID');
+        console.log('🔧 Generated new tab ID:', SessionManager.tabId);
+        console.log('🔧 Login time:', loginTime);
         
         // Store session data in localStorage with tab-specific key
         const sessionData = {
@@ -49,13 +93,18 @@ const SessionManager = {
             masterTabId: SessionManager.tabId, // This tab becomes the master
             masterTabHeartbeat: loginTime
         };
-        
-        localStorage.setItem('activeSession', JSON.stringify(sessionData));
+          localStorage.setItem('activeSession', JSON.stringify(sessionData));
         
         // Store tab ID in BOTH sessionStorage and localStorage for resilience
         sessionStorage.setItem('currentTabId', SessionManager.tabId);
         localStorage.setItem('lastTabId', SessionManager.tabId);
         localStorage.setItem('loginTimestamp', loginTime.toString());
+        
+        console.log('🔧 DEBUGGING: Session data stored');
+        console.log('🔧 SessionStorage currentTabId:', sessionStorage.getItem('currentTabId'));
+        console.log('🔧 LocalStorage lastTabId:', localStorage.getItem('lastTabId'));
+        console.log('🔧 LocalStorage loginTimestamp:', localStorage.getItem('loginTimestamp'));
+        console.log('🔧 SessionManager.tabId:', SessionManager.tabId);
         
         // Set this tab as master
         SessionManager.isMasterTab = true;
@@ -268,49 +317,72 @@ const SessionManager = {
         window.location.replace = function(url) {
             trackNavigation();
             return originalReplace.call(this, url);
-        };
-        
-        // Override href setter to detect programmatic navigation
-        const originalHref = Object.getOwnPropertyDescriptor(window.location, 'href') || 
-                           Object.getOwnPropertyDescriptor(Location.prototype, 'href');
-        if (originalHref && originalHref.set) {
-            Object.defineProperty(window.location, 'href', {
-                set: function(url) {
-                    trackNavigation();
-                    return originalHref.set.call(this, url);
-                },
-                get: originalHref.get
-            });
-        }
-          // Monitor for programmatic href changes
+        };        // Override href setter to detect programmatic navigation
+        // Check if we've already overridden this property to avoid redefinition error
+        if (!window.location._hrefOverridden) {
+            const originalHref = Object.getOwnPropertyDescriptor(window.location, 'href') || 
+                               Object.getOwnPropertyDescriptor(Location.prototype, 'href');
+            if (originalHref && originalHref.set) {
+                try {
+                    Object.defineProperty(window.location, 'href', {
+                        set: function(url) {
+                            console.log('🔧 DEBUGGING: href setter called with:', url);
+                            trackNavigation();
+                            return originalHref.set.call(this, url);
+                        },
+                        get: originalHref.get,
+                        configurable: true // Allow redefinition
+                    });
+                    // Mark as overridden to prevent future attempts
+                    window.location._hrefOverridden = true;
+                    console.log('🔧 DEBUGGING: Successfully set up href tracking');
+                } catch (error) {
+                    console.warn('🔧 DEBUGGING: Failed to override href setter:', error);
+                    // Continue without href tracking - other methods will still work
+                }
+            } else {
+                console.log('🔧 DEBUGGING: No href property descriptor found');
+            }
+        } else {
+            console.log('🔧 DEBUGGING: href already overridden, skipping');
+        }// Monitor for programmatic href changes
         let lastHref = window.location.href;
         const hrefWatcher = setInterval(() => {
             if (window.location.href !== lastHref) {
+                console.log('🔧 DEBUGGING: Href change detected:', lastHref, '->', window.location.href);
                 trackNavigation();
                 lastHref = window.location.href;
             }
-        }, 100);
-          // Monitor for login form submissions specifically
+        }, 100);        // Monitor for login form submissions specifically
         document.addEventListener('submit', (event) => {
             if (event.target && event.target.id === 'loginForm') {
-                console.log('Login form submission detected - tracking navigation');
+                console.log('🔧 DEBUGGING: Login form submission detected - tracking navigation');
                 trackNavigation();
                 // Extended tracking for login flow with longer protection
                 setTimeout(() => {
+                    console.log('🔧 DEBUGGING: Setting extended navigation protection');
                     isNavigating = true;
-                    setTimeout(() => { isNavigating = false; }, 3000); // 3 second extended protection for complete login flow
+                    setTimeout(() => { 
+                        console.log('🔧 DEBUGGING: Clearing extended navigation protection');
+                        isNavigating = false; 
+                    }, 3000); // 3 second extended protection for complete login flow
                 }, 100);
                 
                 // Also set a login flag in localStorage for additional detection
                 localStorage.setItem('loginFlowActive', Date.now().toString());
+                console.log('🔧 DEBUGGING: Set loginFlowActive flag');
                 setTimeout(() => {
                     localStorage.removeItem('loginFlowActive');
+                    console.log('🔧 DEBUGGING: Cleared loginFlowActive flag');
                 }, 5000); // Clear flag after 5 seconds
             }
         });
-        
-        // Clear session when tab/window is actually closed (not just switched)
+          // Clear session when tab/window is actually closed (not just switched)
         window.addEventListener('beforeunload', (event) => {
+            console.log('🔧 DEBUGGING: beforeunload event fired');
+            console.log('🔧 DEBUGGING: isNavigating:', isNavigating);
+            console.log('🔧 DEBUGGING: loginFlowActive:', localStorage.getItem('loginFlowActive'));
+            
             // Enhanced detection for internal navigation vs tab close
             const currentHostname = window.location.hostname;
               // Check various indicators of internal navigation
@@ -385,21 +457,28 @@ const SessionManager = {
             clearInterval(hrefWatcher);
             return originalClearSession.call(this);
         };
-    },// Check if session is valid for current tab
+    },    // Check if session is valid for current tab
     isSessionValid: () => {
-        // Get stored tab ID for this tab/window
-        const currentTabId = sessionStorage.getItem('currentTabId');
-        SessionManager.tabId = currentTabId;
+        // Get stored tab ID for this tab/window - prioritize SessionManager.tabId if already set
+        const currentTabId = SessionManager.tabId || sessionStorage.getItem('currentTabId');
+        
+        console.log('🔧 DEBUGGING: Session validation - SessionManager.tabId:', SessionManager.tabId);
+        console.log('🔧 DEBUGGING: Session validation - sessionStorage tabId:', sessionStorage.getItem('currentTabId'));
+        console.log('🔧 DEBUGGING: Session validation - using currentTabId:', currentTabId);
         
         if (!currentTabId) {
             console.log('Session invalid: No tab ID found');
             return false;
         }
         
+        // Ensure SessionManager.tabId is set
+        SessionManager.tabId = currentTabId;
+        
         const sessionData = SessionManager.getSessionData();
         
-        console.log('Session validation check:', {
+        console.log('🔧 DEBUGGING: Session validation check:', {
             currentTabId: currentTabId,
+            sessionTabId: sessionData ? sessionData.tabId : 'no session data',
             sessionData: sessionData,
             hasSessionData: !!sessionData
         });
@@ -411,7 +490,7 @@ const SessionManager = {
         
         // Check if this tab's session matches the active session
         if (sessionData.tabId !== currentTabId) {
-            console.log('Session invalid: Tab ID mismatch');
+            console.log('🔧 DEBUGGING: Session invalid: Tab ID mismatch - sessionData.tabId:', sessionData.tabId, 'currentTabId:', currentTabId);
             return false;
         }
         
