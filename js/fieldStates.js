@@ -25,9 +25,7 @@ class FieldStateManager {
         } else {
             this.setupFieldStateManagement();
         }
-    }
-
-    /**
+    }    /**
      * Set up field state management for all forms on the page
      */
     setupFieldStateManagement() {
@@ -42,6 +40,23 @@ class FieldStateManager {
             field.addEventListener('input', () => this.updateFieldState(field));
             field.addEventListener('blur', () => this.updateFieldState(field));
             field.addEventListener('focus', () => this.updateFieldState(field));
+            
+            // Add special handling for profile fields to ensure immediate updates
+            const fieldId = field.id || field.name || field.dataset.fieldName;
+            const isProfileField = ['firstName', 'lastName', 'middleName', 'email'].includes(fieldId);
+            
+            if (isProfileField) {
+                // Add additional event listeners for profile fields
+                field.addEventListener('keyup', () => {
+                    // Delay slightly to ensure value is updated
+                    setTimeout(() => this.updateFieldState(field), 10);
+                });
+                
+                field.addEventListener('change', () => this.updateFieldState(field));
+                
+                // Add a property change observer for edge cases
+                field.addEventListener('propertychange', () => this.updateFieldState(field));
+            }
             
             // Set initial state
             this.updateFieldState(field);
@@ -68,6 +83,19 @@ class FieldStateManager {
                 field.placeholder?.toLowerCase().includes(pattern.toLowerCase()) ||
                 field.name?.toLowerCase().includes(pattern.toLowerCase())
             );
+        }        // Debug logging for field requirement detection (can be removed in production)
+        const isProfileField = ['firstName', 'lastName', 'middleName', 'email'].includes(fieldId);
+        if (isProfileField && console.groupCollapsed) {
+            console.groupCollapsed(`Field Requirement: ${fieldId}`);
+            console.log('Field ID:', fieldId);
+            console.log('Has required attribute:', field.hasAttribute('required'));
+            console.log('Matches patterns:', requiredPatterns.some(pattern => 
+                fieldId.toLowerCase().includes(pattern.toLowerCase())
+            ));
+            console.log('Final isRequired:', isRequired);
+            console.log('Placeholder:', field.placeholder);
+            console.log('Name:', field.name);
+            console.groupEnd();
         }
 
         // Special cases for password confirmation
@@ -84,9 +112,7 @@ class FieldStateManager {
         }
 
         this.fieldRequirements.set(fieldId, isRequired);
-    }
-
-    /**
+    }    /**
      * Update the visual state of a field based on its current value and validation
      */
     updateFieldState(field) {
@@ -98,17 +124,42 @@ class FieldStateManager {
         // Remove all existing field state classes
         field.classList.remove('field-error', 'field-required', 'field-optional', 'field-filled', 'field-disabled');
 
-        // Check if field is disabled
+        const value = field.value.trim();
+        const isRequired = this.fieldRequirements.get(fieldId) || false;
+        const hasError = this.hasFieldError(field);        // Debug logging for profile fields (can be removed in production)
+        const isProfileField = ['firstName', 'lastName', 'middleName', 'email'].includes(fieldId);
+        if (isProfileField && console.groupCollapsed) {
+            console.groupCollapsed(`Field State: ${fieldId}`);
+            console.log('Value:', value);
+            console.log('Disabled:', field.disabled);
+            console.log('Is Required:', isRequired);
+            console.log('Has Error:', hasError);
+            console.log('Is Editing Mode:', this.isInEditingMode());
+            console.groupEnd();
+        }// Check if field is disabled
         if (field.disabled) {
-            field.classList.add('field-disabled');
+            // For profile editing scenario: check if this is a temporarily disabled field
+            // that should show required state when empty during editing mode
+            const isEditingMode = this.isInEditingMode();
+              if (isProfileField && !isEditingMode && isRequired && !value) {
+                // Show required state for empty required fields even when disabled (profile view mode)
+                field.classList.add('field-required');
+            } else {
+                // Standard disabled state
+                field.classList.add('field-disabled');
+            }
             return;
         }
 
-        const value = field.value.trim();
-        const isRequired = this.fieldRequirements.get(fieldId) || false;
-        const hasError = this.hasFieldError(field);
-
-        // Priority: Error > Required Empty > Filled > Optional Empty
+        // Additional check: If this is a profile field that appears disabled but shouldn't be
+        // This handles edge cases where disabled state might be cached or not properly updated
+        if (isProfileField && this.isInEditingMode()) {
+            // Force check if field should actually be enabled in editing mode
+            const profileFields = ['firstName', 'middleName', 'lastName', 'email'];            if (profileFields.includes(fieldId) && field.disabled) {
+                // Field should be enabled in editing mode, but it's disabled - force enable
+                field.disabled = false;
+            }
+        }        // Priority: Error > Required Empty > Filled > Optional Empty
         if (hasError) {
             field.classList.add('field-error');
         } else if (isRequired && !value) {
@@ -119,7 +170,15 @@ class FieldStateManager {
             // Optional field with no value
             field.classList.add('field-optional');
         }
-    }    /**
+    }
+
+    /**
+     * Check if the profile is currently in editing mode
+     */
+    isInEditingMode() {
+        const updateBtn = document.getElementById('updateProfileBtn');
+        return updateBtn && updateBtn.textContent === 'Save Profile';
+    }/**
      * Check if a field has validation errors
      */
     hasFieldError(field) {
@@ -245,9 +304,7 @@ class FieldStateManager {
     updateAllFields() {
         const fields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], select, textarea');
         fields.forEach(field => this.updateFieldState(field));
-    }
-
-    /**
+    }    /**
      * Reset all field states to their initial state
      */
     resetAllFields() {
@@ -256,6 +313,47 @@ class FieldStateManager {
             field.classList.remove('field-error', 'field-required', 'field-optional', 'field-filled', 'field-disabled');
             this.setFieldRequirement(field);
             this.updateFieldState(field);
+        });
+    }
+
+    /**
+     * Force update a specific field by ID or element reference
+     * Useful for manual triggering when field state needs immediate update
+     */
+    forceUpdateField(fieldSelector) {
+        const field = typeof fieldSelector === 'string' ? 
+            document.querySelector(fieldSelector) : fieldSelector;
+            
+        if (field) {
+            this.updateFieldState(field);
+            return true;
+        }
+        return false;
+    }    /**
+     * Force update all profile fields
+     * Useful when profile editing state changes
+     */
+    updateProfileFields() {
+        const profileFields = ['firstName', 'middleName', 'lastName', 'email'];
+        profileFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                // Re-evaluate field requirements first
+                this.setFieldRequirement(field);
+                // Then update field state
+                this.updateFieldState(field);
+            }
+        });
+    }
+
+    /**
+     * Refresh field requirements for all fields
+     * Useful when field attributes might have changed
+     */
+    refreshFieldRequirements() {
+        const fields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], select, textarea');
+        fields.forEach(field => {
+            this.setFieldRequirement(field);
         });
     }
 }

@@ -737,11 +737,35 @@ function setupProfileFieldValidation() {
     profileFields.forEach(field => {
         const input = document.getElementById(field.id);
         if (input) {
-            // Character count prevention
+            // Enhanced input handler with field state management
             input.addEventListener('input', function(e) {
+                // Character count prevention
                 if (e.target.value.length > field.maxLength) {
                     e.target.value = e.target.value.substring(0, field.maxLength);
                     showCharacterLimitModal(field.label, field.maxLength);
+                }
+                
+                // Immediate field state update for content changes
+                if (window.fieldStateManager) {
+                    // Force immediate update for responsive field state changes
+                    window.fieldStateManager.forceUpdateField(e.target);
+                }
+            });
+            
+            // Additional event listeners for field state management
+            input.addEventListener('keyup', function(e) {
+                // Handle immediate content clearing (backspace, delete, etc.)
+                if (window.fieldStateManager) {
+                    setTimeout(() => {
+                        window.fieldStateManager.forceUpdateField(e.target);
+                    }, 10); // Small delay to ensure value is updated
+                }
+            });
+            
+            input.addEventListener('change', function(e) {
+                // Handle value changes from other sources (cut, paste, etc.)
+                if (window.fieldStateManager) {
+                    window.fieldStateManager.forceUpdateField(e.target);
                 }
             });
             
@@ -1157,6 +1181,10 @@ function setProfileEditingState(isEditing) {
         const field = document.getElementById(fieldId);
         if (field) {
             field.disabled = !isEditing;
+            // Update field state after changing disabled status
+            if (window.fieldStateManager) {
+                window.fieldStateManager.updateFieldState(field);
+            }
         }
     });
     
@@ -1166,6 +1194,18 @@ function setProfileEditingState(isEditing) {
     
     if (cancelBtn) {
         cancelBtn.style.display = isEditing ? 'inline-block' : 'none';
+    }
+      // Force update all profile fields after state change
+    if (window.fieldStateManager && window.fieldStateManager.updateProfileFields) {
+        // Small delay to ensure DOM updates are complete
+        setTimeout(() => {
+            // First refresh field requirements to ensure email field is properly detected
+            if (window.fieldStateManager.refreshFieldRequirements) {
+                window.fieldStateManager.refreshFieldRequirements();
+            }
+            // Then update all profile field states
+            window.fieldStateManager.updateProfileFields();
+        }, 50);
     }
 }
 
@@ -1191,6 +1231,22 @@ function cancelProfileEditing() {
         document.getElementById('middleName').value = window.originalProfileData.middleName;
         document.getElementById('lastName').value = window.originalProfileData.lastName;
         document.getElementById('email').value = window.originalProfileData.email;
+        
+        // Update field states after restoring values using enhanced method
+        if (window.fieldStateManager) {
+            if (window.fieldStateManager.updateProfileFields) {
+                // Use the new dedicated method for profile fields
+                window.fieldStateManager.updateProfileFields();
+            } else {
+                // Fallback to individual updates
+                ['firstName', 'middleName', 'lastName', 'email'].forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        window.fieldStateManager.updateFieldState(field);
+                    }
+                });
+            }
+        }
     }
     
     setProfileEditingState(false);
