@@ -206,14 +206,24 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                         sessionStorage.setItem('currentTabId', tabId);
                         localStorage.setItem('loginTimestamp', loginTime.toString());
                     }
-                    
-                    // Use utility function to check admin status and update UI
+                      // Use utility function to check admin status and update UI
                     const isAdmin = isUserAdmin(data.user);
-                    updateAdminUI(isAdmin);                    // Add a delay to ensure all data is persisted and session is initialized before navigation
-                    document.body.classList.add('fade-out');
-                    setTimeout(() => {
-                        window.location.href = "welcome/";
-                    }, FADE_DURATION + 200); // Extended delay for robust session persistence
+                    updateAdminUI(isAdmin);
+
+                    // Check if user needs to change password on first login
+                    if (data.user.passwordChangeRequired) {
+                        // Redirect to forced password change page
+                        document.body.classList.add('fade-out');
+                        setTimeout(() => {
+                            window.location.href = "force-password-change/";
+                        }, FADE_DURATION + 200);
+                    } else {
+                        // Normal login flow - redirect to welcome page
+                        document.body.classList.add('fade-out');
+                        setTimeout(() => {
+                            window.location.href = "welcome/";
+                        }, FADE_DURATION + 200); // Extended delay for robust session persistence
+                    }
                 } else {const message = response.status === 401 
                         ? 'Invalid username or password'
                         : data.error || 'Login failed';
@@ -2017,6 +2027,7 @@ function filterUsers() {
             .filter(name => name && name.trim())
             .join(' ').toLowerCase();
         
+        
         return user.username.toLowerCase().includes(filterValue) ||
                fullName.includes(filterValue) ||
                (user.email && user.email.toLowerCase().includes(filterValue)) ||
@@ -2529,24 +2540,21 @@ function validatePasswordStrength(password) {
         isValid = false;
     }
     
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-        failed.push('Password must contain at least one special character (!@#$%^&*...)');
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+        failed.push('Password must contain at least one special character');
         isValid = false;
     }
     
-    if (/\s/.test(password)) {
-        failed.push('Password cannot contain spaces');
+    // Healthcare-specific requirements
+    if (userData.username && password.toLowerCase().includes(userData.username.toLowerCase())) {
+        failed.push('Password cannot contain your username');
         isValid = false;
     }
     
-    // Check for common passwords
-    const commonPasswords = [
-        'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
-        'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
-    ];
-    
-    if (commonPasswords.some(common => password.toLowerCase() === common.toLowerCase())) {
-        failed.push('Password is too common - please choose a stronger password');
+    // Common weak passwords
+    const weakPasswords = ['password', '12345678', 'qwerty123', 'admin123', 'healthcare'];
+    if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
+        failed.push('Password is too common or predictable');
         isValid = false;
     }
     
@@ -2859,167 +2867,219 @@ async function createPatient() {
     }
 }
 
-function showCreatePatientError(message) {
-    const createPatientSection = document.getElementById('createPatientSection');
-    showSectionMessage(createPatientSection, message, 'error');
-}
-
-function clearCreatePatientErrors() {
-    const createPatientSection = document.getElementById('createPatientSection');
+// Forced Password Change Functionality
+function initializeForcePasswordChangePage() {
+    // Detect if running locally or in production
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     
-    // Clear section-level error messages
-    const errorMessage = createPatientSection.querySelector('.section-message.error-message');
-    if (errorMessage) {
-        errorMessage.remove();
-    }
+    // Check if user is authenticated and actually needs to change password
+    const token = localStorage.getItem('token');
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
     
-    // Clear field-level errors
-    const errorGroups = createPatientSection.querySelectorAll('.form-group.error');
-    errorGroups.forEach(group => {
-        group.classList.remove('error');
-        const errorMsg = group.querySelector('.error-message');
-        if (errorMsg) {
-            errorMsg.remove();
-        }
-    });
-    
-    // Clear success states
-    const successGroups = createPatientSection.querySelectorAll('.form-group.success');
-    successGroups.forEach(group => {
-        group.classList.remove('success');
-        const successMsg = group.querySelector('.success-message');
-        if (successMsg) {
-            successMsg.remove();
-        }
-    });
-    
-    // Update field states using the field state manager
-    if (window.fieldStateManager) {
-        const allFields = createPatientSection.querySelectorAll('input[type="text"], input[type="tel"], select');
-        allFields.forEach(field => {
-            window.fieldStateManager.updateFieldState(field);
-        });
-    }
-}
-
-// Patient Management Functions
-let allPatients = [];
-
-async function loadPatients() {
-    // For now, show placeholder since database connectivity will be added later
-    const patientsTableBody = document.getElementById('patientsTableBody');
-    const patientsLoading = document.getElementById('patientsLoading');
-    const noPatientsFound = document.getElementById('noPatientsFound');
-    
-    if (patientsLoading) patientsLoading.style.display = 'block';
-    if (patientsTableBody) patientsTableBody.innerHTML = '';
-    
-    // Simulate loading delay
-    setTimeout(() => {
-        if (patientsLoading) patientsLoading.style.display = 'none';
-        if (noPatientsFound) noPatientsFound.classList.remove('hidden');
-        if (noPatientsFound) noPatientsFound.textContent = 'No patients found. Database connectivity will be added soon.';
-        
-        // For demo purposes, you could add some sample data here
-        // allPatients = [];
-        // displayPatients(allPatients);
-    }, 1000);
-}
-
-function displayPatients(patients) {
-    const patientsTableBody = document.getElementById('patientsTableBody');
-    const noPatientsFound = document.getElementById('noPatientsFound');
-    
-    if (!patientsTableBody) return;
-    
-    if (patients.length === 0) {
-        patientsTableBody.innerHTML = '';
-        if (noPatientsFound) noPatientsFound.classList.remove('hidden');
+    if (!token || !userData.username) {
+        // User is not authenticated, redirect to login
+        window.location.href = '../';
         return;
     }
     
-    if (noPatientsFound) noPatientsFound.classList.add('hidden');
-    
-    patientsTableBody.innerHTML = patients.map(patient => {
-        const fullName = [patient.firstName, patient.middleName, patient.lastName]
-            .filter(name => name && name.trim())
-            .join(' ');
-        
-        const acceptsTextsDisplay = patient.acceptsTexts === 'yes' ? 'Yes' : 'No';
-        const createdDate = new Date(patient.dateCreated).toLocaleDateString();
-        
-        return `
-            <tr data-patient-id="${patient.id}">
-                <td>
-                    <div class="patient-name">
-                        <span class="patient-full-name">${fullName || 'N/A'}</span>
-                    </div>
-                </td>
-                <td>${patient.address || 'N/A'}</td>
-                <td>${patient.phone || 'N/A'}</td>
-                <td>
-                    <span class="accepts-texts ${patient.acceptsTexts}">${acceptsTextsDisplay}</span>
-                </td>
-                <td>
-                    <span class="patient-created">${createdDate}</span>
-                </td>
-                <td>
-                    <div class="patient-actions">
-                        <button class="btn-icon btn-edit" onclick="editPatient(${patient.id})" title="Edit Patient">
-                            ✏️
-                        </button>
-                        <button class="btn-icon btn-delete" onclick="deletePatient(${patient.id}, '${fullName}')" title="Delete Patient">
-                            🗑️
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-function setupPatientFilter() {
-    const patientFilter = document.getElementById('patientFilter');
-    if (patientFilter) {
-        patientFilter.addEventListener('input', filterPatients);
+    // Set the hidden username field for password managers
+    const usernameField = document.getElementById('forceChangeUsername');
+    if (usernameField && userData.username) {
+        usernameField.value = userData.username;
     }
     
-    // Setup reset sort button
-    const resetPatientSortBtn = document.getElementById('resetPatientSort');
-    if (resetPatientSortBtn) {
-        resetPatientSortBtn.addEventListener('click', function() {
-            // Reset sort functionality will be added with database integration
-            filterPatients();
+    // Password strength validation
+    function validatePassword(password) {
+        const errors = [];
+        
+        if (password.length < 8) {
+            errors.push('Password must be at least 8 characters long');
+        }
+        
+        if (!/[A-Z]/.test(password)) {
+            errors.push('Password must contain at least one uppercase letter');
+        }
+        
+        if (!/[a-z]/.test(password)) {
+            errors.push('Password must contain at least one lowercase letter');
+        }
+        
+        if (!/[0-9]/.test(password)) {
+            errors.push('Password must contain at least one number');
+        }
+        
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+            errors.push('Password must contain at least one special character');
+        }
+        
+        // Healthcare-specific requirements
+        if (userData.username && password.toLowerCase().includes(userData.username.toLowerCase())) {
+            errors.push('Password cannot contain your username');
+        }
+        
+        // Common weak passwords
+        const weakPasswords = ['password', '12345678', 'qwerty123', 'admin123', 'healthcare'];
+        if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
+            errors.push('Password is too common or predictable');
+        }
+        
+        return errors;
+    }
+    
+    // Show error message
+    function showError(message) {
+        const errorContainer = document.getElementById('errorContainer');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        if (errorContainer && errorMessage) {
+            errorMessage.textContent = message;
+            errorContainer.style.display = 'block';
+            errorContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+    
+    // Hide error message
+    function hideError() {
+        const errorContainer = document.getElementById('errorContainer');
+        if (errorContainer) {
+            errorContainer.style.display = 'none';
+        }
+    }
+    
+    // Show modal
+    function showModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+    
+    // Hide modal
+    function hideModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+    
+    // Make closeErrorModal globally available
+    window.closeErrorModal = function() {
+        hideModal('errorModal');
+    };
+    
+    // Handle form submission
+    const form = document.getElementById('forcePasswordChangeForm');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideError();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const submitBtn = document.getElementById('changePasswordBtn');
+            
+            // Validate new password
+            const passwordErrors = validatePassword(newPassword);
+            if (passwordErrors.length > 0) {
+                showError(passwordErrors.join('. '));
+                return;
+            }
+            
+            // Check password confirmation
+            if (newPassword !== confirmPassword) {
+                showError('New password and confirmation password do not match');
+                return;
+            }
+            
+            // Check that new password is different from current
+            if (currentPassword === newPassword) {
+                showError('New password must be different from your current password');
+                return;
+            }
+            
+            // Show loading modal
+            showModal('loadingModal');
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/force-change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Hide loading modal and show success
+                    hideModal('loadingModal');
+                    showModal('successModal');
+                    
+                    // Update stored user data to remove password change requirement
+                    const updatedUserData = { ...userData, passwordChangeRequired: false };
+                    localStorage.setItem('user', JSON.stringify(updatedUserData));
+                    
+                    // Redirect to welcome page after success
+                    setTimeout(() => {
+                        window.location.href = '../welcome/';
+                    }, 3000);
+                    
+                } else {
+                    // Hide loading modal and show error
+                    hideModal('loadingModal');
+                    const errorMessage = data.error || 'Failed to change password. Please try again.';
+                    
+                    document.getElementById('modalErrorMessage').textContent = errorMessage;
+                    showModal('errorModal');
+                }
+                
+            } catch (error) {
+                console.error('Password change error:', error);
+                hideModal('loadingModal');
+                document.getElementById('modalErrorMessage').textContent = 'Connection error. Please check your internet connection and try again.';
+                showModal('errorModal');
+            } finally {
+                submitBtn.disabled = false;
+            }
         });
-    }
-}
-
-function filterPatients() {
-    const filterText = document.getElementById('patientFilter')?.value.toLowerCase() || '';
-    
-    if (!filterText) {
-        displayPatients(allPatients);
-        return;
-    }
-    
-    const filteredPatients = allPatients.filter(patient => {
-        const fullName = [patient.firstName, patient.middleName, patient.lastName]
-            .filter(name => name && name.trim())
-            .join(' ').toLowerCase();
         
-        return fullName.includes(filterText) ||
-               (patient.phone && patient.phone.toLowerCase().includes(filterText)) ||
-               (patient.address && patient.address.toLowerCase().includes(filterText));
-    });
-    
-    displayPatients(filteredPatients);
-}
-
-// Patient action functions (placeholders for future database integration)
-function editPatient(patientId) {
-    window.modalManager.showModal('info', 'Patient editing functionality will be available when database connectivity is added.');
-}
-
-function deletePatient(patientId, patientName) {
-    window.modalManager.showModal('info', 'Patient deletion functionality will be available when database connectivity is added.');
+        // Real-time password validation feedback
+        const newPasswordField = document.getElementById('newPassword');
+        const confirmPasswordField = document.getElementById('confirmPassword');
+        
+        if (newPasswordField) {
+            newPasswordField.addEventListener('input', function() {
+                const password = this.value;
+                if (password.length > 0) {
+                    const errors = validatePassword(password);
+                    if (errors.length > 0) {
+                        this.setCustomValidity(errors[0]);
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                }
+            });
+        }
+        
+        if (confirmPasswordField) {
+            confirmPasswordField.addEventListener('input', function() {
+                const newPassword = newPasswordField.value;
+                const confirmPassword = this.value;
+                
+                if (confirmPassword.length > 0 && newPassword !== confirmPassword) {
+                    this.setCustomValidity('Passwords do not match');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+        }
+    }
 }

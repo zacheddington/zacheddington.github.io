@@ -1,5 +1,6 @@
-// Only the login page is public
+// Only the login page is public, force-password-change requires authentication but has special handling
 const publicPaths = ['/index.html', '/', ''];
+const specialAuthPaths = ['/force-password-change/', '/force-password-change/index.html'];
 
 // Session management constants
 const SESSION_TIMEOUT = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
@@ -18,6 +19,12 @@ const isPublicPage = () => {
     // Normalize path by removing trailing slash
     const normalizedPath = fullPath.endsWith('/') ? fullPath.slice(0, -1) : fullPath;
     return publicPaths.includes(normalizedPath) || normalizedPath === '';
+};
+
+// Check if current page is a special auth page (requires token but has custom handling)
+const isSpecialAuthPage = () => {
+    const fullPath = window.location.pathname;
+    return specialAuthPaths.some(path => fullPath.includes(path.replace('/', '')));
 };
 
 // Enhanced session management with tab-specific tracking and single-tab enforcement
@@ -543,12 +550,30 @@ const startActivityMonitoring = () => {
 const checkAuth = () => {
     if (isPublicPage()) {
         return; // Public page, no auth required
-    }
-
-    const token = localStorage.getItem('token');
-      if (!token) {
+    }    const token = localStorage.getItem('token');
+    
+    if (!token) {
         console.log('No token found, redirecting to login');
         window.location.href = '/';
+        return;
+    }
+    
+    // Check for forced password change requirement
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    const currentPath = window.location.pathname;
+    const isForcePasswordChangePage = currentPath.includes('/force-password-change/');
+    
+    // If user requires password change and is not on the force password change page, redirect
+    if (userData.passwordChangeRequired === true && !isForcePasswordChangePage) {
+        console.log('User requires password change, redirecting to force-password-change page');
+        window.location.href = '/force-password-change/';
+        return;
+    }
+    
+    // If user is on force password change page but doesn't require it, redirect to welcome
+    if (isForcePasswordChangePage && userData.passwordChangeRequired !== true) {
+        console.log('User does not require password change, redirecting to welcome page');
+        window.location.href = '/welcome/';
         return;
     }
     
