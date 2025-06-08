@@ -799,59 +799,18 @@ label, p, input, button, a {
         margin-top: 130px;
     }
     
-    .admin-container h1,
-    .profile-container h1 {
-        font-size: 1.4rem;
-        margin-bottom: 1rem;
+    .admin-section {
+        padding: 1.5rem;
     }
     
-    .admin-section,
     .profile-section {
-        padding: 1rem;
+        padding: 1.5rem;
     }
     
     .section-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.5rem;
-    }
-      .section-header h2 {
-        font-size: 1.2rem;
-    }
-    
-    .form-section {
-        padding: 1rem;
-    }
-    
-    .form-section h3 {
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-    }
-    
-    .admin-form input,
-    .admin-form select,
-    .profile-form input {
-        padding: 8px;
-        font-size: 0.85rem;
-    }
-    
-    .admin-form label,
-    .profile-form label {
-        font-size: 0.85rem;
-        margin-bottom: 0.25rem;
-    }
-    
-    .field-note {
-        font-size: 0.7rem;
-    }
-    
-    .user-filter {
-        padding: 0.75rem;
-    }
-    
-    .users-table-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
     }
     
     .users-table {
@@ -862,27 +821,6 @@ label, p, input, button, a {
     .users-table td {
         padding: 0.4rem 0.2rem;
         font-size: 0.7rem;
-    }
-    
-    .users-table th {
-        height: 2rem;
-    }
-    
-    .user-actions {
-        flex-direction: column;
-        gap: 0.2rem;
-    }
-    
-    .btn-icon {
-        padding: 0.3rem;
-        width: 24px;
-        height: 24px;
-    }
-    
-    .role-select {
-        min-width: 80px;
-        font-size: 0.65rem;
-        padding: 0.3rem;
     }
     
     .modal-content,
@@ -2588,4 +2526,71 @@ button[type="submit"]:disabled,
 
 .modal-overlay .modal-btn.danger:hover {
     background: #c82333;
+}
+
+/* Tab Access Modal Styles */
+.tab-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000; /* High z-index to ensure it appears above everything */
+}
+
+.tab-modal {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 90%;
+    width: 450px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+.tab-modal .modal-title {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #dc3545;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.tab-modal .modal-message {
+    margin-bottom: 1.5rem;
+    color: #495057;
+    line-height: 1.5;
+    font-size: 1rem;
+}
+
+.tab-modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.tab-modal-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.tab-modal-btn.close {
+    background: #dc3545;
+    color: white;
+}
+
+.tab-modal-btn.close:hover {
+    background: #c82333;
+    transform: translateY(-1px);
 }
