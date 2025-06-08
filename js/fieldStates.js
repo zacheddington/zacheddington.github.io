@@ -118,15 +118,21 @@ class FieldStateManager {
     updateFieldState(field) {
         if (!field) return;
 
+        // Set flag to prevent infinite recursion
+        this._updatingState = true;
+
         const fieldId = field.id || field.name || field.dataset.fieldName;
-        if (!fieldId) return;
+        if (!fieldId) {
+            this._updatingState = false;
+            return;
+        }
 
         // Remove all existing field state classes
         field.classList.remove('field-error', 'field-required', 'field-optional', 'field-filled', 'field-disabled');
 
         const value = field.value.trim();
         const isRequired = this.fieldRequirements.get(fieldId) || false;
-        const hasError = this.hasFieldError(field);        // Debug logging for profile fields (can be removed in production)
+        const hasError = this.hasFieldError(field);// Debug logging for profile fields (can be removed in production)
         const isProfileField = ['firstName', 'lastName', 'middleName', 'email'].includes(fieldId);
         if (isProfileField && console.groupCollapsed) {
             console.groupCollapsed(`Field State: ${fieldId}`);
@@ -150,9 +156,7 @@ class FieldStateManager {
                 field.classList.add('field-disabled');
             }
             return;
-        }
-
-        // Additional check: If this is a profile field that appears disabled but shouldn't be
+        }        // Additional check: If this is a profile field that appears disabled but shouldn't be
         // This handles edge cases where disabled state might be cached or not properly updated
         if (isProfileField && this.isInEditingMode()) {
             // Force check if field should actually be enabled in editing mode
@@ -160,7 +164,15 @@ class FieldStateManager {
                 // Field should be enabled in editing mode, but it's disabled - force enable
                 field.disabled = false;
             }
-        }        // Priority: Error > Required Empty > Filled > Optional Empty
+        }
+
+        // Final check: if field is still disabled after all processing, apply disabled state
+        if (field.disabled) {
+            field.classList.add('field-disabled');
+            return;
+        }
+
+        // Priority: Error > Required Empty > Filled > Optional Empty
         if (hasError) {
             field.classList.add('field-error');
         } else if (isRequired && !value) {
@@ -171,6 +183,9 @@ class FieldStateManager {
             // Optional field with no value
             field.classList.add('field-optional');
         }
+
+        // Clear the recursion protection flag
+        this._updatingState = false;
     }
 
     /**
@@ -275,9 +290,7 @@ class FieldStateManager {
         if (state && ['field-error', 'field-required', 'field-optional', 'field-filled', 'field-disabled'].includes(state)) {
             field.classList.add(state);
         }
-    }
-
-    /**
+    }    /**
      * Manually set a field as required or optional
      */
     setFieldRequirement(field, isRequired = null) {
@@ -292,11 +305,15 @@ class FieldStateManager {
         if (isRequired !== null) {
             this.fieldRequirements.set(fieldId, isRequired);
         } else {
-            // Auto-detect requirement
-            this.setFieldRequirement(field);
+            // Auto-detect requirement based on field attributes
+            const autoDetectedRequired = field.hasAttribute('required') || 
+                                       field.hasAttribute('data-required') ||
+                                       field.classList.contains('required');
+            this.fieldRequirements.set(fieldId, autoDetectedRequired);
         }
 
-        this.updateFieldState(field);
+        // Note: Removed recursive updateFieldState call to prevent stack overflow
+        // Field state will be updated by the next user interaction or manual call
     }
 
     /**
