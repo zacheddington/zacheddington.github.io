@@ -142,40 +142,26 @@ class FieldStateManager {
             console.log('Has Error:', hasError);
             console.log('Is Editing Mode:', this.isInEditingMode());
             console.groupEnd();
-        }        // Check if field is disabled
-        if (field.disabled) {
-            // For profile editing scenario: check if this is a temporarily disabled field
-            // that should show required state when empty during editing mode
-            const isEditingMode = this.isInEditingMode();
-            
-            if (isProfileField && isEditingMode && isRequired && !value) {
-                // Show required state for empty required fields when disabled but in editing mode
-                field.classList.add('field-required');
-            } else {
-                // Standard disabled state
-                field.classList.add('field-disabled');
-            }
-            return;
         }        // Additional check: If this is a profile field that appears disabled but shouldn't be
         // This handles edge cases where disabled state might be cached or not properly updated
         if (isProfileField && this.isInEditingMode()) {
             // Force check if field should actually be enabled in editing mode
-            const profileFields = ['firstName', 'middleName', 'lastName', 'email'];            if (profileFields.includes(fieldId) && field.disabled) {
+            const profileFields = ['firstName', 'middleName', 'lastName', 'email'];
+            if (profileFields.includes(fieldId) && field.disabled) {
                 // Field should be enabled in editing mode, but it's disabled - force enable
                 field.disabled = false;
             }
-        }
-
-        // Final check: if field is still disabled after all processing, apply disabled state
-        if (field.disabled) {
+        }        // Check if field is disabled or readonly
+        if (field.disabled || field.readOnly) {
+            // Always show disabled state for readonly fields (like role field)
             field.classList.add('field-disabled');
+            this._updatingState = false;
             return;
-        }
-
-        // Priority: Error > Required Empty > Filled > Optional Empty
+        }        // Priority: Error > Required Invalid > Required Empty > Filled > Optional Empty
         if (hasError) {
             field.classList.add('field-error');
-        } else if (isRequired && !value) {
+        } else if (isRequired && (!value || this.isRequiredFieldIncomplete(field))) {
+            // Required field that is either empty OR doesn't meet validation criteria
             field.classList.add('field-required');
         } else if (value) {
             field.classList.add('field-filled');
@@ -186,14 +172,58 @@ class FieldStateManager {
 
         // Clear the recursion protection flag
         this._updatingState = false;
-    }
-
-    /**
+    }    /**
      * Check if the profile is currently in editing mode
      */
     isInEditingMode() {
         const updateBtn = document.getElementById('updateProfileBtn');
         return updateBtn && updateBtn.textContent === 'Save Profile';
+    }
+
+    /**
+     * Check if a required field is incomplete (has value but doesn't meet validation criteria)
+     * This is different from hasFieldError - this checks for incomplete but not necessarily error state
+     */
+    isRequiredFieldIncomplete(field) {
+        const fieldId = field.id || field.name || field.dataset.fieldName;
+        if (!fieldId) return false;
+
+        const value = field.value.trim();
+        if (!value) return false; // Empty fields are handled separately
+
+        // Password validation for new passwords - must meet ALL criteria
+        if (field.type === 'password' && fieldId.toLowerCase().includes('new') && value) {
+            // Check each criterion - if any fails, field is incomplete
+            if (value.length < 8) return true;
+            if (!/[A-Z]/.test(value)) return true;
+            if (!/[a-z]/.test(value)) return true;
+            if (!/[0-9]/.test(value)) return true;
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return true;
+            if (/\s/.test(value)) return true;
+            
+            // Check for common passwords
+            const commonPasswords = [
+                'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
+                'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
+            ];
+            if (commonPasswords.some(common => value.toLowerCase() === common.toLowerCase())) {
+                return true;
+            }
+        }
+
+        // Email validation - if has value but invalid format, it's incomplete
+        if (field.type === 'email' && value) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) return true;
+        }
+
+        // Password confirmation - if has value but doesn't match, it's incomplete
+        if (fieldId.toLowerCase().includes('confirm') && fieldId.toLowerCase().includes('password') && value) {
+            const newPasswordField = document.querySelector('input[id*="newPassword"], input[id*="new-password"], input[name*="newPassword"]');
+            if (newPasswordField && value !== newPasswordField.value) return true;
+        }
+
+        return false;
     }/**
      * Check if a field has validation errors
      */
@@ -226,13 +256,24 @@ class FieldStateManager {
         if (field.type === 'email' && value) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(value)) return true;
-        }
-
-        // Password validation for new passwords
+        }        // Password validation for new passwords
         if (field.type === 'password' && fieldId.toLowerCase().includes('new') && value) {
-            // Check password strength (at least 8 characters, with letters and numbers)
+            // Use comprehensive password validation (similar to main.js validatePasswordStrength)
             if (value.length < 8) return true;
-            if (!/[a-zA-Z]/.test(value) || !/[0-9]/.test(value)) return true;
+            if (!/[A-Z]/.test(value)) return true;
+            if (!/[a-z]/.test(value)) return true;
+            if (!/[0-9]/.test(value)) return true;
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) return true;
+            if (/\s/.test(value)) return true;
+            
+            // Check for common passwords
+            const commonPasswords = [
+                'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
+                'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
+            ];
+            if (commonPasswords.some(common => value.toLowerCase() === common.toLowerCase())) {
+                return true;
+            }
         }
 
         // Password confirmation validation
