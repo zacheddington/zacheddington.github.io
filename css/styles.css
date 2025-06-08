@@ -1145,41 +1145,19 @@ iframe {
 
 /* Legacy media query removed - now handled by comprehensive responsive system above */
 
-/* Add overlay when menu is open - covers only the main content area */
+/* Add overlay when menu is open - covers the entire screen for consistent dimming */
 body::after {
     content: '';
     position: fixed;
     top: 0;
-    left: 300px; /* Start after the sidebar width */
-    width: calc(100% - 300px); /* Cover remaining width */
+    left: 0; /* Cover entire screen from left edge */
+    width: 100%; /* Cover full width */
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
-    z-index: 999;
-}
-
-/* Responsive overlay positioning to match sidebar widths */
-@media screen and (min-width: 576px) and (max-width: 767px) {
-    body::after {
-        left: 280px; /* Match tablet sidebar width */
-        width: calc(100% - 280px);
-    }
-}
-
-@media screen and (min-width: 480px) and (max-width: 575px) {
-    body::after {
-        left: 260px; /* Match mobile landscape sidebar width */
-        width: calc(100% - 260px);
-    }
-}
-
-@media screen and (max-width: 479px) {
-    body::after {
-        left: 240px; /* Match mobile portrait sidebar width */
-        width: calc(100% - 240px);
-    }
+    z-index: 999; /* Below sidebar (z-index: 1000) but above content */
 }
 
 body.menu-open::after {
