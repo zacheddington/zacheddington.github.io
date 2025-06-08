@@ -247,29 +247,129 @@ const SessionManager = {
             console.error('Error parsing session data:', e);
             return null;
         }
-    },// Setup tab close detection
+    },    // Setup tab close detection
     setupTabCloseDetection: () => {
+        // Track if navigation is happening programmatically
+        let isNavigating = false;
+        
+        // Override navigation methods to detect programmatic navigation
+        const originalAssign = window.location.assign;
+        const originalReplace = window.location.replace;        // Track programmatic navigation
+        const trackNavigation = () => {
+            isNavigating = true;
+            setTimeout(() => { isNavigating = false; }, 1500); // Extended to 1500ms for login flow
+        };
+          // Override window.location setters and methods
+        window.location.assign = function(url) {
+            trackNavigation();
+            return originalAssign.call(this, url);
+        };
+        
+        window.location.replace = function(url) {
+            trackNavigation();
+            return originalReplace.call(this, url);
+        };
+        
+        // Override href setter to detect programmatic navigation
+        const originalHref = Object.getOwnPropertyDescriptor(window.location, 'href') || 
+                           Object.getOwnPropertyDescriptor(Location.prototype, 'href');
+        if (originalHref && originalHref.set) {
+            Object.defineProperty(window.location, 'href', {
+                set: function(url) {
+                    trackNavigation();
+                    return originalHref.set.call(this, url);
+                },
+                get: originalHref.get
+            });
+        }
+          // Monitor for programmatic href changes
+        let lastHref = window.location.href;
+        const hrefWatcher = setInterval(() => {
+            if (window.location.href !== lastHref) {
+                trackNavigation();
+                lastHref = window.location.href;
+            }
+        }, 100);
+          // Monitor for login form submissions specifically
+        document.addEventListener('submit', (event) => {
+            if (event.target && event.target.id === 'loginForm') {
+                console.log('Login form submission detected - tracking navigation');
+                trackNavigation();
+                // Extended tracking for login flow with longer protection
+                setTimeout(() => {
+                    isNavigating = true;
+                    setTimeout(() => { isNavigating = false; }, 3000); // 3 second extended protection for complete login flow
+                }, 100);
+                
+                // Also set a login flag in localStorage for additional detection
+                localStorage.setItem('loginFlowActive', Date.now().toString());
+                setTimeout(() => {
+                    localStorage.removeItem('loginFlowActive');
+                }, 5000); // Clear flag after 5 seconds
+            }
+        });
+        
         // Clear session when tab/window is actually closed (not just switched)
         window.addEventListener('beforeunload', (event) => {
-            // Only clear if the user is navigating away from the domain or closing the tab
-            // Don't clear on internal navigation within the app
-            const isInternalNavigation = event.target.activeElement && 
-                event.target.activeElement.tagName === 'A' && 
-                event.target.activeElement.hostname === window.location.hostname;
+            // Enhanced detection for internal navigation vs tab close
+            const currentHostname = window.location.hostname;
+              // Check various indicators of internal navigation
+            const isInternalNavigation = 
+                // Programmatic navigation detected
+                isNavigating ||
+                // Login flow is active (recently submitted login form)
+                (() => {
+                    const loginFlowTimestamp = localStorage.getItem('loginFlowActive');
+                    return loginFlowTimestamp && (Date.now() - parseInt(loginFlowTimestamp)) < 5000;
+                })() ||
+                // Link-based navigation
+                (event.target && event.target.activeElement && 
+                 event.target.activeElement.tagName === 'A' && 
+                 event.target.activeElement.hostname === currentHostname) ||
+                // Form submission to same domain
+                (event.target && event.target.activeElement && 
+                 event.target.activeElement.tagName === 'BUTTON' &&
+                 event.target.activeElement.form) ||
+                // Page refresh detection (Ctrl+R, F5, etc.)
+                (event.type === 'beforeunload' && !event.returnValue);
+              // Extended grace period indicators for login flow
+            const isLikelyInternalNavigation = 
+                // Recent login (within 10 minutes) suggests this might be login flow navigation
+                (() => {
+                    const loginTimestamp = parseInt(localStorage.getItem('loginTimestamp') || '0');
+                    const now = Date.now();
+                    return (now - loginTimestamp) < 600000; // Extended to 10 minutes
+                })() ||
+                // Very active session suggests ongoing use
+                (() => {
+                    const sessionData = SessionManager.getSessionData();
+                    return sessionData && sessionData.lastActivity && 
+                           (Date.now() - sessionData.lastActivity) < 120000; // Active within last 2 minutes
+                })() ||
+                // Recent session initialization
+                (() => {
+                    const sessionData = SessionManager.getSessionData();
+                    return sessionData && sessionData.loginTime && 
+                           (Date.now() - sessionData.loginTime) < 180000; // Session created within 3 minutes
+                })();
             
-            if (!isInternalNavigation) {
+            // Only clear session if this is clearly not internal navigation
+            if (!isInternalNavigation && !isLikelyInternalNavigation) {
                 // Mark this tab as closed - use a timestamp approach
                 const closeTime = Date.now();
                 sessionStorage.setItem('tabCloseTime', closeTime.toString());
-                
-                // Set a delayed clear to distinguish between tab close and refresh
+                  // Increased delay to better distinguish between tab close and navigation
                 setTimeout(() => {
                     const currentCloseTime = sessionStorage.getItem('tabCloseTime');
                     if (currentCloseTime === closeTime.toString()) {
-                        // Tab was actually closed, not just refreshed
+                        // Tab was actually closed, not just refreshed/navigated
+                        console.log('Tab close detected - clearing session');
                         SessionManager.clearSession();
+                        clearInterval(hrefWatcher);
                     }
-                }, 100);
+                }, 750); // Increased from 500ms to 750ms for better login flow detection
+            } else {
+                console.log('Internal navigation detected - preserving session');
             }
         });
         
@@ -278,7 +378,14 @@ const SessionManager = {
             // Clear any pending close time since the page loaded successfully
             sessionStorage.removeItem('tabCloseTime');
         });
-    },    // Check if session is valid for current tab
+        
+        // Clean up href watcher when session is cleared
+        const originalClearSession = SessionManager.clearSession;
+        SessionManager.clearSession = function() {
+            clearInterval(hrefWatcher);
+            return originalClearSession.call(this);
+        };
+    },// Check if session is valid for current tab
     isSessionValid: () => {
         // Get stored tab ID for this tab/window
         const currentTabId = sessionStorage.getItem('currentTabId');
@@ -410,12 +517,11 @@ const checkAuth = () => {
     // Also check localStorage for session data
     const sessionData = SessionManager.getSessionData();
     console.log('Session data from localStorage:', sessionData);
-    
-    // Extended grace period for recent logins - if login was within last 60 seconds and we have session data,
+      // Extended grace period for recent logins - if login was within last 2 minutes and we have session data,
     // allow access even without sessionStorage tab ID (handles immediate post-login navigation)
     const now = Date.now();
     const loginTimestamp = parseInt(localStorage.getItem('loginTimestamp') || '0');
-    const isRecentLogin = (now - loginTimestamp) < 60000; // Extended to 60 seconds grace period
+    const isRecentLogin = (now - loginTimestamp) < 180000; // Extended to 3 minutes grace period for login flow
     
     console.log('Login timestamp:', loginTimestamp, 'Recent login:', isRecentLogin);
       if (!currentTabId) {
@@ -426,11 +532,9 @@ const checkAuth = () => {
             SessionManager.tabId = sessionData.tabId;
             
             // Update the current tab ID variable for the rest of the function
-            currentTabId = sessionData.tabId;
-            
-            // Don't clear the recent login flag immediately - keep it for a bit longer
+            currentTabId = sessionData.tabId;            // Don't clear the recent login flag immediately - keep it for a bit longer
             // This helps with multiple page loads during login flow
-            if ((now - loginTimestamp) > 45000) { // Only clear after 45 seconds
+            if ((now - loginTimestamp) > 120000) { // Only clear after 2 minutes for extended grace
                 sessionData.isRecentLogin = false;
                 localStorage.setItem('activeSession', JSON.stringify(sessionData));
             }
