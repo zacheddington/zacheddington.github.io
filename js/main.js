@@ -22,7 +22,13 @@ function updateAdminUI(isAdmin) {
 
 function updateAdminMenuItem(isAdmin) {
     const adminLink = document.querySelector('a[data-page="admin"]')?.parentElement;
-    if (adminLink) {        if (isAdmin) {
+    if (adminLink) {
+        // Check if we're currently on the admin page
+        const currentPath = window.location.pathname;
+        const currentPage = currentPath.split('/').filter(Boolean).pop() || 'welcome';
+        const isCurrentPage = currentPage === 'admin';
+        
+        if (isAdmin && !isCurrentPage) {
             adminLink.style.display = 'block';
             adminLink.classList.remove('admin-only');
         } else {
@@ -379,16 +385,16 @@ async function loadMenu() {
                     hamburgerBtn.classList.remove('active');
                     sideMenu.classList.remove('active');
                 }
-            });
-
-            // Hide current page in menu
+            });            // Hide current page in menu
             const currentPath = window.location.pathname;
             const currentPage = currentPath.split('/').filter(Boolean).pop() || 'welcome';
             
             const menuItems = sideMenu.querySelectorAll('a[data-page]');
             menuItems.forEach(item => {
-                if (item.getAttribute('data-page') === currentPage) {
-                    item.parentElement.style.display = 'none';                }
+                const itemPage = item.getAttribute('data-page');
+                if (itemPage === currentPage) {
+                    item.parentElement.style.display = 'none';
+                }
             });
             
             // Check if user is admin and show/hide admin link
