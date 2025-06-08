@@ -665,29 +665,49 @@ function initializeProfilePage() {
             e.preventDefault();
             await updateUserPassword();
         });
-        
-        // Handle cancel button
+          // Handle cancel button
         const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
         if (cancelPasswordBtn) {
             cancelPasswordBtn.addEventListener('click', function() {
                 passwordForm.reset();
                 clearPasswordErrors();
+                // Hide the clear button after clearing
+                cancelPasswordBtn.style.display = 'none';
             });
         }
           // Real-time password confirmation validation
         const newPassword = document.getElementById('newPassword');
         const confirmPassword = document.getElementById('confirmPassword');
-          if (newPassword && confirmPassword) {
+        const currentPassword = document.getElementById('currentPassword');
+          if (newPassword && confirmPassword && currentPassword) {
             // Add password strength indicator for profile page
             addPasswordStrengthIndicator(newPassword);
             
+            // Function to toggle Clear button visibility
+            const toggleClearButton = () => {
+                const hasContent = currentPassword.value.trim() || newPassword.value.trim() || confirmPassword.value.trim();
+                if (cancelPasswordBtn) {
+                    cancelPasswordBtn.style.display = hasContent ? 'inline-block' : 'none';
+                }
+            };
+            
+            // Add event listeners to all password fields to monitor changes
+            currentPassword.addEventListener('input', function() {
+                toggleClearButton();
+            });
+            
             confirmPassword.addEventListener('input', function() {
                 validatePasswordMatch();
+                toggleClearButton();
             });
               newPassword.addEventListener('input', function() {
                 validatePasswordMatch();
                 updatePasswordStrength(newPassword.value, newPassword.id);
+                toggleClearButton();
             });
+            
+            // Initial check on page load
+            toggleClearButton();
         }
     }
     
@@ -1084,12 +1104,21 @@ function clearPasswordErrors() {
             successMsg.remove();
         }
     });
-    
-    // Clear password matching classes
+      // Clear password matching classes
     const passwordInputs = passwordSection.querySelectorAll('input[type="password"]');
     passwordInputs.forEach(input => {
         input.classList.remove('password-match', 'password-mismatch');
     });
+    
+    // Hide the clear button if all password fields are empty after clearing errors
+    const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+    if (cancelPasswordBtn) {
+        const allPasswordFields = passwordSection.querySelectorAll('input[type="password"]');
+        const hasContent = Array.from(allPasswordFields).some(input => input.value.trim());
+        if (!hasContent) {
+            cancelPasswordBtn.style.display = 'none';
+        }
+    }
 }
 
 // Profile editing state management functions
