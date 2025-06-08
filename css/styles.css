@@ -20,6 +20,11 @@ body {
     padding-top: 60px; /* Add top padding to account for fixed header */
 }
 
+/* Login page has no header, so remove the top padding */
+body.login-page {
+    padding-top: 0;
+}
+
 @keyframes fadeInBody {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -45,7 +50,7 @@ label, p, input, button, a {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 10px; /* Further reduced to bring content higher */
+    margin-top: 5px; /* Further reduced to bring content higher */
 }
 
 .options {
@@ -232,10 +237,9 @@ label, p, input, button, a {
 @media screen and (min-width: 1400px) {
     :root {
         --container-max-width: 1400px;
-        --container-padding: 3rem;
-        --grid-gap: 1.5rem;
+        --container-padding: 3rem;        --grid-gap: 1.5rem;
     }      .welcome-container {
-        margin-top: 20px; /* Further reduced to bring content higher */
+        margin-top: 10px; /* Further reduced to bring content higher */
     }
     
     .options {
@@ -279,9 +283,8 @@ label, p, input, button, a {
     :root {
         --container-max-width: 1200px;
         --container-padding: 2.5rem;
-    }
-      .welcome-container {
-        margin-top: 45px; /* Reduced to bring content higher */
+    }      .welcome-container {
+        margin-top: 20px; /* Further reduced to bring content higher */
     }
     
     .options {
@@ -309,9 +312,8 @@ label, p, input, button, a {
     :root {
         --container-max-width: 960px;
         --container-padding: 2rem;
-    }
-      .welcome-container {
-        margin-top: 40px; /* Reduced to bring content higher */
+    }      .welcome-container {
+        margin-top: 15px; /* Further reduced to bring content higher */
     }
     
     .options {
@@ -347,9 +349,8 @@ label, p, input, button, a {
     }
     
     .show-tablet { display: block; }
-    .hide-tablet { display: none; }
-      .welcome-container {
-        margin-top: 50px; /* Reduced to bring content higher */
+    .hide-tablet { display: none; }      .welcome-container {
+        margin-top: 25px; /* Further reduced to bring content higher */
         padding: 1.5rem;
     }
     
@@ -463,9 +464,8 @@ label, p, input, button, a {
     .side-menu {
         width: 280px;
         padding: 70px 15px 15px;
-    }
-      .welcome-container {
-        margin-top: 60px; /* Reduced to bring content higher */
+    }      .welcome-container {
+        margin-top: 30px; /* Further reduced to bring content higher */
         padding: 1rem;
     }
     
@@ -582,9 +582,8 @@ label, p, input, button, a {
     
     .side-menu ul li a {
         font-size: 1rem;
-    }
-      .welcome-container {
-        margin-top: 70px; /* Reduced to bring content higher */
+    }      .welcome-container {
+        margin-top: 35px; /* Further reduced to bring content higher */
         padding: 0.75rem;
     }
     
@@ -719,9 +718,8 @@ label, p, input, button, a {
     
     .side-menu ul li a {
         font-size: 0.95rem;
-    }
-      .welcome-container {
-        margin-top: 80px; /* Reduced to bring content higher */
+    }      .welcome-container {
+        margin-top: 40px; /* Further reduced to bring content higher */
         padding: 0.5rem;
     }
     
@@ -960,11 +958,10 @@ iframe {
 }
 
 /* Landscape orientation adjustments for mobile */
-@media screen and (max-height: 500px) and (orientation: landscape) {
-    .welcome-container,
+@media screen and (max-height: 500px) and (orientation: landscape) {    .welcome-container,
     .admin-container,
     .profile-container {
-        margin-top: 30px; /* Reduced to bring content higher on landscape */
+        margin-top: 15px; /* Further reduced to bring content higher on landscape */
     }
     
     .hamburger-btn {
@@ -1384,7 +1381,7 @@ button[type="submit"]:disabled,
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     max-width: 400px;
     width: 90%;
-    margin: 2rem auto;
+    margin: 0.5rem auto; /* Reduced from 2rem to bring login form higher */
 }
 
 /* Modal Styles */
