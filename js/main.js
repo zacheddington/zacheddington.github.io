@@ -358,6 +358,11 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
     if (window.location.pathname.includes('/admin/')) {
         initializeAdminPage();
     }
+    
+    // Initialize patient page if present
+    if (document.getElementById('patientChoice')) {
+        initializePatientPage();
+    }
 });
 
 async function loadMenu() {
@@ -2015,7 +2020,7 @@ function filterUsers() {
         return user.username.toLowerCase().includes(filterValue) ||
                fullName.includes(filterValue) ||
                (user.email && user.email.toLowerCase().includes(filterValue)) ||
-               (user.roles && user.roles.some(role => role.toLowerCase().includes(filterValue)));
+                             (user.roles && user.roles.some(role => role.toLowerCase().includes(filterValue)));
     });
     
     // Apply current sorting to filtered results
@@ -2165,7 +2170,6 @@ function cancelEditUserRole(userId) {
                     </button>
                     <button class="btn-icon btn-delete" onclick="deleteUser(${userId}, '${user.username}')" title="Delete User" ${isCurrentUser ? 'disabled' : ''}>
                         🗑️
-                   
                     </button>
                 </div>
             `;
@@ -2589,4 +2593,433 @@ function calculatePasswordScore(password) {
     }
     
     return Math.max(0, Math.min(100, score));
+}
+
+// Patient Page Functionality
+function initializePatientPage() {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    
+    // Navigation handlers
+    setupPatientNavigation();
+    
+    // Form handlers
+    setupCreatePatientForm();
+    
+    // Load hamburger menu
+    if (document.getElementById('hamburger-menu')) {
+        loadMenu();
+    }
+}
+
+function setupPatientNavigation() {
+    const patientChoice = document.getElementById('patientChoice');
+    const createPatientSection = document.getElementById('createPatientSection');
+    const managePatientsSection = document.getElementById('managePatientsSection');
+    
+    // Choice button handlers
+    document.getElementById('createPatientBtn')?.addEventListener('click', function() {
+        patientChoice.classList.add('hidden');
+        createPatientSection.classList.remove('hidden');
+    });
+    
+    document.getElementById('managePatientsBtn')?.addEventListener('click', function() {
+        patientChoice.classList.add('hidden');
+        managePatientsSection.classList.remove('hidden');
+        // Load patients and setup patient management
+        loadPatients();
+        setupPatientFilter();
+    });
+    
+    // Cancel button handler
+    document.getElementById('cancelCreatePatient')?.addEventListener('click', function() {
+        createPatientSection.classList.add('hidden');
+        patientChoice.classList.remove('hidden');
+        document.getElementById('createPatientForm')?.reset();
+        clearCreatePatientErrors();
+    });
+}
+
+function setupCreatePatientForm() {
+    const createPatientForm = document.getElementById('createPatientForm');
+    if (!createPatientForm) return;
+    
+    // Get form elements
+    const patientPhone = document.getElementById('patientPhone');
+    
+    // Add phone number formatting and validation
+    if (patientPhone) {
+        patientPhone.addEventListener('input', function() {
+            formatPhoneNumber(patientPhone);
+            // Update field states
+            if (window.fieldStateManager) {
+                window.fieldStateManager.updateFieldState(patientPhone);
+            }
+        });
+        
+        // Ensure initial field state is set for required phone field
+        if (window.fieldStateManager) {
+            window.fieldStateManager.updateFieldState(patientPhone);
+        }
+    }
+    
+    // Character limit validation for create patient form fields
+    setupCreatePatientFieldValidation();
+    
+    // Handle form submission
+    createPatientForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await createPatient();
+    });
+}
+
+function setupCreatePatientFieldValidation() {
+    const createPatientFields = [
+        { id: 'patientFirstName', maxLength: 50, label: 'First name' },
+        { id: 'patientMiddleName', maxLength: 50, label: 'Middle name' },
+        { id: 'patientLastName', maxLength: 50, label: 'Last name' },
+        { id: 'patientAddress', maxLength: 100, label: 'Address' }
+    ];
+    
+    createPatientFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (input) {
+            // Character count prevention
+            input.addEventListener('input', function(e) {
+                if (e.target.value.length > field.maxLength) {
+                    e.target.value = e.target.value.substring(0, field.maxLength);
+                    showCharacterLimitModal(field.label, field.maxLength);
+                }
+                
+                // Update field states for responsive UI
+                if (window.fieldStateManager) {
+                    window.fieldStateManager.updateFieldState(e.target);
+                }
+            });
+            
+            // Paste prevention for overlength content
+            input.addEventListener('paste', function(e) {
+                setTimeout(() => {
+                    if (e.target.value.length > field.maxLength) {
+                        e.target.value = e.target.value.substring(0, field.maxLength);
+                        showCharacterLimitModal(field.label, field.maxLength);
+                    }
+                    
+                    // Update field states after paste
+                    if (window.fieldStateManager) {
+                        window.fieldStateManager.updateFieldState(e.target);
+                    }
+                }, 0);
+            });
+            
+            // Initial field state setup
+            if (window.fieldStateManager) {
+                window.fieldStateManager.updateFieldState(input);
+            }
+        }
+    });
+      // Special handling for phone field and accepts texts dropdown
+    const phoneField = document.getElementById('patientPhone');
+    const acceptsTextsField = document.getElementById('acceptsTexts');
+    
+    if (phoneField && window.fieldStateManager) {
+        // Add input validation for phone field
+        phoneField.addEventListener('input', function(e) {
+            const phoneDigits = e.target.value.replace(/\D/g, '');
+            
+            // Update field state based on digit count
+            if (phoneDigits.length === 10) {
+                // Valid 10 digits - update field state normally
+                window.fieldStateManager.updateFieldState(e.target);
+            } else if (phoneDigits.length > 0) {
+                // Has some digits but not 10 - show as error state
+                e.target.classList.remove('field-required', 'field-filled');
+                e.target.classList.add('field-error');
+            } else {
+                // Empty field - show as required
+                e.target.classList.remove('field-error', 'field-filled');
+                e.target.classList.add('field-required');
+            }
+        });
+        
+        // Initial field state for phone
+        window.fieldStateManager.updateFieldState(phoneField);
+    }
+    
+    if (acceptsTextsField && window.fieldStateManager) {
+        // Add change listener for dropdown
+        acceptsTextsField.addEventListener('change', function(e) {
+            window.fieldStateManager.updateFieldState(e.target);
+        });
+        // Initial field state for dropdown
+        window.fieldStateManager.updateFieldState(acceptsTextsField);
+    }
+}
+
+function formatPhoneNumber(input) {
+    // Remove all non-numeric characters
+    let value = input.value.replace(/\D/g, '');
+    
+    // Limit to exactly 10 digits
+    if (value.length > 10) {
+        value = value.substring(0, 10);
+    }
+    
+    // Format as (XXX) XXX-XXXX
+    if (value.length >= 6) {
+        value = value.replace(/(\d{3})(\d{3})(\d{0,4})/, '($1) $2-$3');
+    } else if (value.length >= 3) {
+        value = value.replace(/(\d{3})(\d{0,3})/, '($1) $2');
+    } else if (value.length > 0) {
+        value = value.replace(/(\d{0,3})/, '($1');
+    }
+    
+    input.value = value;
+}
+
+async function createPatient() {
+    const submitBtn = document.getElementById('createPatientSubmitBtn');
+    const originalText = submitBtn.textContent;
+    
+    try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating Patient...';
+        
+        // Pre-flight connectivity check
+        const connectivity = await checkConnectivity();
+        if (!connectivity.connected) {
+            throw new Error(`Connection failed: ${connectivity.error}`);
+        }
+        
+        // Get form data
+        const formData = {
+            firstName: document.getElementById('patientFirstName').value.trim(),
+            middleName: document.getElementById('patientMiddleName').value.trim(),
+            lastName: document.getElementById('patientLastName').value.trim(),
+            address: document.getElementById('patientAddress').value.trim(),
+            phone: document.getElementById('patientPhone').value.trim(),
+            acceptsTexts: document.getElementById('acceptsTexts').value
+        };
+        
+        // Validate required fields
+        if (!formData.firstName || !formData.lastName || !formData.address || !formData.phone || !formData.acceptsTexts) {
+            throw new Error('All fields except middle name are required.');
+        }
+        
+        // Validate character limits
+        if (formData.firstName.length > 50) {
+            throw new Error('First name must be 50 characters or less.');
+        }
+        if (formData.middleName && formData.middleName.length > 50) {
+            throw new Error('Middle name must be 50 characters or less.');
+        }
+        if (formData.lastName.length > 50) {
+            throw new Error('Last name must be 50 characters or less.');
+        }
+        if (formData.address.length > 100) {
+            throw new Error('Address must be 100 characters or less.');
+        }
+          // Validate phone number format and digit count
+        const phoneDigits = formData.phone.replace(/\D/g, '');
+        if (phoneDigits.length !== 10) {
+            throw new Error('Phone number must be exactly 10 digits.');
+        }
+        
+        const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
+        if (!phoneRegex.test(formData.phone)) {
+            throw new Error('Please enter a valid phone number in format (XXX) XXX-XXXX.');
+        }
+        
+        // For now, just show success message (database will be added later)
+        // Clear the form
+        document.getElementById('createPatientForm').reset();
+        clearCreatePatientErrors();
+        
+        // Show success modal with personalized message
+        const patientName = formData.middleName 
+            ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`
+            : `${formData.firstName} ${formData.lastName}`;
+        const successMessage = `Success! Patient record for ${patientName} has been created.`;
+        window.modalManager.showModal('success', successMessage);
+        
+        // Redirect back to patient choice page after brief delay
+        setTimeout(() => {
+            window.modalManager.closeModal();
+            // Navigate back to main patient page
+            document.getElementById('createPatientSection').classList.add('hidden');
+            document.getElementById('patientChoice').classList.remove('hidden');
+        }, 2500);
+        
+    } catch (error) {
+        console.error('Create patient error:', error);
+        window.modalManager.showModal('error', error.message || 'Failed to create patient. Please try again.');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+}
+
+function showCreatePatientError(message) {
+    const createPatientSection = document.getElementById('createPatientSection');
+    showSectionMessage(createPatientSection, message, 'error');
+}
+
+function clearCreatePatientErrors() {
+    const createPatientSection = document.getElementById('createPatientSection');
+    
+    // Clear section-level error messages
+    const errorMessage = createPatientSection.querySelector('.section-message.error-message');
+    if (errorMessage) {
+        errorMessage.remove();
+    }
+    
+    // Clear field-level errors
+    const errorGroups = createPatientSection.querySelectorAll('.form-group.error');
+    errorGroups.forEach(group => {
+        group.classList.remove('error');
+        const errorMsg = group.querySelector('.error-message');
+        if (errorMsg) {
+            errorMsg.remove();
+        }
+    });
+    
+    // Clear success states
+    const successGroups = createPatientSection.querySelectorAll('.form-group.success');
+    successGroups.forEach(group => {
+        group.classList.remove('success');
+        const successMsg = group.querySelector('.success-message');
+        if (successMsg) {
+            successMsg.remove();
+        }
+    });
+    
+    // Update field states using the field state manager
+    if (window.fieldStateManager) {
+        const allFields = createPatientSection.querySelectorAll('input[type="text"], input[type="tel"], select');
+        allFields.forEach(field => {
+            window.fieldStateManager.updateFieldState(field);
+        });
+    }
+}
+
+// Patient Management Functions
+let allPatients = [];
+
+async function loadPatients() {
+    // For now, show placeholder since database connectivity will be added later
+    const patientsTableBody = document.getElementById('patientsTableBody');
+    const patientsLoading = document.getElementById('patientsLoading');
+    const noPatientsFound = document.getElementById('noPatientsFound');
+    
+    if (patientsLoading) patientsLoading.style.display = 'block';
+    if (patientsTableBody) patientsTableBody.innerHTML = '';
+    
+    // Simulate loading delay
+    setTimeout(() => {
+        if (patientsLoading) patientsLoading.style.display = 'none';
+        if (noPatientsFound) noPatientsFound.classList.remove('hidden');
+        if (noPatientsFound) noPatientsFound.textContent = 'No patients found. Database connectivity will be added soon.';
+        
+        // For demo purposes, you could add some sample data here
+        // allPatients = [];
+        // displayPatients(allPatients);
+    }, 1000);
+}
+
+function displayPatients(patients) {
+    const patientsTableBody = document.getElementById('patientsTableBody');
+    const noPatientsFound = document.getElementById('noPatientsFound');
+    
+    if (!patientsTableBody) return;
+    
+    if (patients.length === 0) {
+        patientsTableBody.innerHTML = '';
+        if (noPatientsFound) noPatientsFound.classList.remove('hidden');
+        return;
+    }
+    
+    if (noPatientsFound) noPatientsFound.classList.add('hidden');
+    
+    patientsTableBody.innerHTML = patients.map(patient => {
+        const fullName = [patient.firstName, patient.middleName, patient.lastName]
+            .filter(name => name && name.trim())
+            .join(' ');
+        
+        const acceptsTextsDisplay = patient.acceptsTexts === 'yes' ? 'Yes' : 'No';
+        const createdDate = new Date(patient.dateCreated).toLocaleDateString();
+        
+        return `
+            <tr data-patient-id="${patient.id}">
+                <td>
+                    <div class="patient-name">
+                        <span class="patient-full-name">${fullName || 'N/A'}</span>
+                    </div>
+                </td>
+                <td>${patient.address || 'N/A'}</td>
+                <td>${patient.phone || 'N/A'}</td>
+                <td>
+                    <span class="accepts-texts ${patient.acceptsTexts}">${acceptsTextsDisplay}</span>
+                </td>
+                <td>
+                    <span class="patient-created">${createdDate}</span>
+                </td>
+                <td>
+                    <div class="patient-actions">
+                        <button class="btn-icon btn-edit" onclick="editPatient(${patient.id})" title="Edit Patient">
+                            ✏️
+                        </button>
+                        <button class="btn-icon btn-delete" onclick="deletePatient(${patient.id}, '${fullName}')" title="Delete Patient">
+                            🗑️
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function setupPatientFilter() {
+    const patientFilter = document.getElementById('patientFilter');
+    if (patientFilter) {
+        patientFilter.addEventListener('input', filterPatients);
+    }
+    
+    // Setup reset sort button
+    const resetPatientSortBtn = document.getElementById('resetPatientSort');
+    if (resetPatientSortBtn) {
+        resetPatientSortBtn.addEventListener('click', function() {
+            // Reset sort functionality will be added with database integration
+            filterPatients();
+        });
+    }
+}
+
+function filterPatients() {
+    const filterText = document.getElementById('patientFilter')?.value.toLowerCase() || '';
+    
+    if (!filterText) {
+        displayPatients(allPatients);
+        return;
+    }
+    
+    const filteredPatients = allPatients.filter(patient => {
+        const fullName = [patient.firstName, patient.middleName, patient.lastName]
+            .filter(name => name && name.trim())
+            .join(' ').toLowerCase();
+        
+        return fullName.includes(filterText) ||
+               (patient.phone && patient.phone.toLowerCase().includes(filterText)) ||
+               (patient.address && patient.address.toLowerCase().includes(filterText));
+    });
+    
+    displayPatients(filteredPatients);
+}
+
+// Patient action functions (placeholders for future database integration)
+function editPatient(patientId) {
+    window.modalManager.showModal('info', 'Patient editing functionality will be available when database connectivity is added.');
+}
+
+function deletePatient(patientId, patientName) {
+    window.modalManager.showModal('info', 'Patient deletion functionality will be available when database connectivity is added.');
 }

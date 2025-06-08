@@ -27,10 +27,9 @@ class FieldStateManager {
         }
     }    /**
      * Set up field state management for all forms on the page
-     */
-    setupFieldStateManagement() {
+     */    setupFieldStateManagement() {
         // Find all input, select, and textarea elements
-        const fields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], select, textarea');
+        const fields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="tel"], select, textarea');
         
         fields.forEach(field => {
             // Set initial field requirements
@@ -350,15 +349,14 @@ class FieldStateManager {
 
     /**
      * Update all fields on the page
-     */
-    updateAllFields() {
-        const fields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], select, textarea');
+     */    updateAllFields() {
+        const fields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="tel"], select, textarea');
         fields.forEach(field => this.updateFieldState(field));
     }    /**
      * Reset all field states to their initial state
      */
     resetAllFields() {
-        const fields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], select, textarea');
+        const fields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="tel"], select, textarea');
         fields.forEach(field => {
             field.classList.remove('field-error', 'field-required', 'field-optional', 'field-filled', 'field-disabled');
             this.setFieldRequirement(field);
@@ -399,9 +397,8 @@ class FieldStateManager {
     /**
      * Refresh field requirements for all fields
      * Useful when field attributes might have changed
-     */
-    refreshFieldRequirements() {
-        const fields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], select, textarea');
+     */    refreshFieldRequirements() {
+        const fields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], input[type="tel"], select, textarea');
         fields.forEach(field => {
             this.setFieldRequirement(field);
         });

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patients - Integris Neuro</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="icon" type="image/png" href="../favicon.png">
+</head>
+<body>
+    <!-- Header Bar -->
+    <header class="app-header">
+        <div id="hamburger-menu"></div>
+        <h1 class="page-title">Patients</h1>
+    </header>
+
+    <div class="admin-container">
+        
+        <!-- Initial Choice Buttons -->
+        <div class="admin-choice" id="patientChoice">
+            <div class="choice-buttons">
+                <button class="choice-btn primary" id="createPatientBtn">
+                    <h3>Create New Patient</h3>
+                    <p>Add a new patient to the system</p>
+                </button>
+                <button class="choice-btn secondary" id="managePatientsBtn">
+                    <h3>Manage Existing Patients</h3>
+                    <p>View, edit, or manage existing patient records</p>
+                </button>
+            </div>
+        </div>
+
+        <!-- Create Patient Form -->
+        <div class="admin-section hidden" id="createPatientSection">
+            <div class="section-header">
+                <h2>Create New Patient</h2>
+            </div>
+            
+            <form id="createPatientForm" class="admin-form" data-form-type="patient-registration">
+                <!-- Patient Information -->
+                <div class="form-section">
+                    <h3>Patient Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="patientFirstName">First Name</label>
+                            <input type="text" id="patientFirstName" name="firstName" required maxlength="50" autocomplete="given-name">
+                            <small class="field-note">Maximum 50 characters</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="patientMiddleName">Middle Name</label>
+                            <input type="text" id="patientMiddleName" name="middleName" maxlength="50" autocomplete="additional-name">
+                            <small class="field-note">Maximum 50 characters (optional)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="patientLastName">Last Name</label>
+                            <input type="text" id="patientLastName" name="lastName" required maxlength="50" autocomplete="family-name">
+                            <small class="field-note">Maximum 50 characters</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="patientAddress">Address</label>
+                            <input type="text" id="patientAddress" name="address" required maxlength="100" autocomplete="street-address">
+                            <small class="field-note">Maximum 100 characters</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="patientPhone">Phone Number</label>                            <input type="tel" id="patientPhone" name="phone" required pattern="[0-9\-\(\)\s\+\.]+" autocomplete="tel">
+                            <small class="field-note">Must be exactly 10 digits (e.g., (555) 123-4567)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="acceptsTexts">Accepts Text Messages</label>
+                            <select id="acceptsTexts" name="acceptsTexts" required autocomplete="off">
+                                <option value="">Select...</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                            <small class="field-note">Patient consent for text messaging</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn" id="createPatientSubmitBtn">Create Patient</button>
+                    <button type="button" class="secondary-btn" id="cancelCreatePatient">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Manage Patients Section -->
+        <div class="admin-section hidden" id="managePatientsSection">
+            <div class="section-header">
+                <h2>Manage Existing Patients</h2>
+            </div>
+            
+            <!-- Patient Filter -->
+            <div class="user-filter">
+                <div class="form-group">
+                    <label for="patientFilter">Search Patients</label>
+                    <input type="text" id="patientFilter" placeholder="Search by name, phone, or address..." autocomplete="off">
+                    <small class="field-note">Filter patients to quickly find specific records</small>
+                </div>
+                <div class="filter-actions">
+                    <button type="button" class="secondary-btn" id="resetPatientSort" style="display: none;">
+                        Clear Sort
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Patients Table -->
+            <div class="users-table-container">
+                <table class="users-table" id="patientsTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Address</th>
+                            <th>Phone</th>
+                            <th>Accepts Texts</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientsTableBody">
+                        <!-- Patients will be loaded here dynamically -->
+                    </tbody>
+                </table>
+                <div id="patientsLoading" class="loading-message">Loading patients...</div>
+                <div id="noPatientsFound" class="no-results hidden">No patients found matching your search.</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/fieldStates.js"></script>
+    <script src="../js/main.js"></script>
+</body>
+</html>

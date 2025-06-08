@@ -69,11 +69,12 @@ label, p, input, button, a {
     max-width: 400px;
     box-sizing: border-box;
     margin: 0 auto;
-    transition: box-shadow 0.2s;
-    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+    border: 2px solid #e0f7fa;
 }
 
 .option-card:hover {
+    transform: translateY(-2px);
     box-shadow: 0 6px 24px rgba(0,59,73,0.16);
     border-color: #009688;
 }
@@ -773,11 +774,9 @@ label, p, input, button, a {
         font-size: 0.75rem;
         line-height: 1.25;
     }
-    
-    .eeg-form {
+      .eeg-form {
         padding: 12px 8px;
         max-width: 350px;
-        margin: 0 auto;
     }
       .admin-container,
     .profile-container {
@@ -1121,6 +1120,7 @@ input[type="email"]:focus {
 input[type="text"].field-error,
 input[type="password"].field-error,
 input[type="email"].field-error,
+input[type="tel"].field-error,
 select.field-error,
 textarea.field-error {
     background-color: #ffeaea !important;
@@ -1131,6 +1131,7 @@ textarea.field-error {
 input[type="text"].field-error:focus,
 input[type="password"].field-error:focus,
 input[type="email"].field-error:focus,
+input[type="tel"].field-error:focus,
 select.field-error:focus,
 textarea.field-error:focus {
     background-color: #ffeaea !important;
@@ -1142,6 +1143,7 @@ textarea.field-error:focus {
 input[type="text"].field-required,
 input[type="password"].field-required,
 input[type="email"].field-required,
+input[type="tel"].field-required,
 select.field-required,
 textarea.field-required {
     background-color: #fffbea !important;
@@ -1152,6 +1154,7 @@ textarea.field-required {
 input[type="text"].field-required:focus,
 input[type="password"].field-required:focus,
 input[type="email"].field-required:focus,
+input[type="tel"].field-required:focus,
 select.field-required:focus,
 textarea.field-required:focus {
     background-color: #fffbea !important;
@@ -1163,6 +1166,7 @@ textarea.field-required:focus {
 input[type="text"].field-optional,
 input[type="password"].field-optional,
 input[type="email"].field-optional,
+input[type="tel"].field-optional,
 select.field-optional,
 textarea.field-optional {
     background-color: #eafaf1 !important;
@@ -1173,6 +1177,7 @@ textarea.field-optional {
 input[type="text"].field-optional:focus,
 input[type="password"].field-optional:focus,
 input[type="email"].field-optional:focus,
+input[type="tel"].field-optional:focus,
 select.field-optional:focus,
 textarea.field-optional:focus {
     background-color: #eafaf1 !important;
@@ -1184,6 +1189,7 @@ textarea.field-optional:focus {
 input[type="text"].field-filled,
 input[type="password"].field-filled,
 input[type="email"].field-filled,
+input[type="tel"].field-filled,
 select.field-filled,
 textarea.field-filled {
     background-color: #fff !important;
@@ -1194,6 +1200,7 @@ textarea.field-filled {
 input[type="text"].field-filled:focus,
 input[type="password"].field-filled:focus,
 input[type="email"].field-filled:focus,
+input[type="tel"].field-filled:focus,
 select.field-filled:focus,
 textarea.field-filled:focus {
     background-color: #fff !important;
@@ -1205,11 +1212,13 @@ textarea.field-filled:focus {
 input[type="text"].field-disabled,
 input[type="password"].field-disabled,
 input[type="email"].field-disabled,
+input[type="tel"].field-disabled,
 select.field-disabled,
 textarea.field-disabled,
 input[type="text"]:disabled,
 input[type="password"]:disabled,
 input[type="email"]:disabled,
+input[type="tel"]:disabled,
 select:disabled,
 textarea:disabled {
     background-color: #f8f9fa !important;
@@ -2368,215 +2377,44 @@ button[type="submit"]:disabled,
     font-size: 0.85rem;
 }
 
-/* Table Sorting Styles */
-.sortable-header {
-    position: relative;
-    transition: transform 0.1s ease;
-    user-select: none;
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+/* Patient-specific styles */
+.patient-name {
+    display: flex;
+    flex-direction: column;
     gap: 0.25rem;
 }
 
-.users-table th.sortable-column {
-    transition: background-color 0.2s ease;
+.patient-full-name {
+    font-weight: 600;
+    color: #003b49;
 }
 
-.users-table th.sortable-column:hover {
-    background: #b2dfdb !important;
-}
-
-.users-table th.sortable-column:active .sortable-header {
-    transform: translateY(0);
-}
-
-.sortable-header:hover {
-    transform: translateY(-1px);
-}
-
-.sortable-header .header-text {
-    display: inline-block;
-    text-align: center;
-}
-
-.sort-indicator {
-    display: inline-block;
-    font-weight: 700;
-    min-width: 12px;
-    text-align: center;
-    flex-shrink: 0;
-}
-
-.sort-indicator.sort-asc {
-    color: #009688;
-    text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
-}
-
-.sort-indicator.sort-desc {
-    color: #009688;
-    text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
-}
-
-/* Enhance user actions for better visibility */
-
-/* Filter Actions */
-.filter-actions {
-    margin-top: 1rem;
+.patient-actions {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
     align-items: center;
 }
 
-/* Delete User Modal Styles */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1001;
-}
-
-.modal-overlay .modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    max-width: 90%;
-    width: 450px;
-    text-align: left;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    animation: modalSlideIn 0.3s ease;
-}
-
-.modal-overlay .modal-header {
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.modal-overlay .modal-header h3 {
-    margin: 0;
-    color: #dc3545;
-    font-size: 1.2rem;
-}
-
-.modal-overlay .modal-body {
-    margin: 1rem 0 1.5rem 0;
-    line-height: 1.5;
-}
-
-.modal-overlay .modal-body p {
-    margin: 0.5rem 0;
-    color: #333;
-}
-
-.modal-overlay .modal-footer {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-    margin-top: 1.5rem;
-}
-
-.modal-overlay .modal-btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
+.accepts-texts {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 100px;
-}
-
-.modal-overlay .modal-btn.secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.modal-overlay .modal-btn.secondary:hover {
-    background: #5a6268;
-}
-
-.modal-overlay .modal-btn.danger {
-    background: #dc3545;
-    color: white;
-}
-
-.modal-overlay .modal-btn.danger:hover {
-    background: #c82333;
-}
-
-/* Tab Access Modal Styles */
-.tab-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000; /* High z-index to ensure it appears above everything */
-}
-
-.tab-modal {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    max-width: 90%;
-    width: 450px;
     text-align: center;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    animation: modalSlideIn 0.3s ease;
+    min-width: 40px;
 }
 
-.tab-modal .modal-title {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    color: #dc3545;
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-.tab-modal .modal-message {
-    margin-bottom: 1.5rem;
-    color: #495057;
-    line-height: 1.5;
-    font-size: 1rem;
-}
-
-.tab-modal-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-}
-
-.tab-modal-btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 120px;
-}
-
-.tab-modal-btn.close {
-    background: #dc3545;
+.accepts-texts.yes {
+    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
     color: white;
 }
 
-.tab-modal-btn.close:hover {
-    background: #c82333;
-    transform: translateY(-1px);
+.accepts-texts.no {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+}
+
+.patient-created {
+    color: #666;
+    font-size: 0.85rem;
 }
