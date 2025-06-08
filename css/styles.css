@@ -45,7 +45,7 @@ label, p, input, button, a {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px; /* Reduced since we have fixed header */
+    margin-top: 10px; /* Further reduced to bring content higher */
 }
 
 .options {
@@ -234,9 +234,8 @@ label, p, input, button, a {
         --container-max-width: 1400px;
         --container-padding: 3rem;
         --grid-gap: 1.5rem;
-    }
-      .welcome-container {
-        margin-top: 40px; /* Reduced since we have fixed header */
+    }      .welcome-container {
+        margin-top: 20px; /* Further reduced to bring content higher */
     }
     
     .options {
@@ -281,9 +280,8 @@ label, p, input, button, a {
         --container-max-width: 1200px;
         --container-padding: 2.5rem;
     }
-    
-    .welcome-container {
-        margin-top: 90px;
+      .welcome-container {
+        margin-top: 45px; /* Reduced to bring content higher */
     }
     
     .options {
@@ -312,9 +310,8 @@ label, p, input, button, a {
         --container-max-width: 960px;
         --container-padding: 2rem;
     }
-    
-    .welcome-container {
-        margin-top: 80px;
+      .welcome-container {
+        margin-top: 40px; /* Reduced to bring content higher */
     }
     
     .options {
@@ -351,9 +348,8 @@ label, p, input, button, a {
     
     .show-tablet { display: block; }
     .hide-tablet { display: none; }
-    
-    .welcome-container {
-        margin-top: 100px;
+      .welcome-container {
+        margin-top: 50px; /* Reduced to bring content higher */
         padding: 1.5rem;
     }
     
@@ -397,12 +393,11 @@ label, p, input, button, a {
         min-width: auto;
         flex: none;
     }
-    
-    .admin-container,
+      .admin-container,
     .profile-container {
         max-width: 700px;
         padding: 1.5rem;
-        margin-top: 100px;
+        margin-top: 50px; /* Reduced to bring content higher */
     }
     
     .admin-form .form-row {
@@ -469,9 +464,8 @@ label, p, input, button, a {
         width: 280px;
         padding: 70px 15px 15px;
     }
-    
-    .welcome-container {
-        margin-top: 110px;
+      .welcome-container {
+        margin-top: 60px; /* Reduced to bring content higher */
         padding: 1rem;
     }
     
@@ -517,12 +511,11 @@ label, p, input, button, a {
         padding: 20px 16px;
         max-width: 500px;
     }
-    
-    .admin-container,
+      .admin-container,
     .profile-container {
         max-width: 550px;
         padding: 1rem;
-        margin-top: 110px;
+        margin-top: 60px; /* Reduced to bring content higher */
     }
     
     .admin-section {
@@ -590,9 +583,8 @@ label, p, input, button, a {
     .side-menu ul li a {
         font-size: 1rem;
     }
-    
-    .welcome-container {
-        margin-top: 120px;
+      .welcome-container {
+        margin-top: 70px; /* Reduced to bring content higher */
         padding: 0.75rem;
     }
     
@@ -645,12 +637,11 @@ label, p, input, button, a {
         padding: 16px 12px;
         max-width: 420px;
     }
-    
-    .admin-container,
+      .admin-container,
     .profile-container {
         max-width: 450px;
         padding: 0.75rem;
-        margin-top: 120px;
+        margin-top: 70px; /* Reduced to bring content higher */
     }
     
     .admin-section {
@@ -729,9 +720,8 @@ label, p, input, button, a {
     .side-menu ul li a {
         font-size: 0.95rem;
     }
-    
-    .welcome-container {
-        margin-top: 130px;
+      .welcome-container {
+        margin-top: 80px; /* Reduced to bring content higher */
         padding: 0.5rem;
     }
     
@@ -791,12 +781,11 @@ label, p, input, button, a {
         max-width: 350px;
         margin: 0 auto;
     }
-    
-    .admin-container,
+      .admin-container,
     .profile-container {
         max-width: 380px;
         padding: 0.5rem;
-        margin-top: 130px;
+        margin-top: 80px; /* Reduced to bring content higher */
     }
     
     .admin-section {
@@ -975,7 +964,7 @@ iframe {
     .welcome-container,
     .admin-container,
     .profile-container {
-        margin-top: 60px;
+        margin-top: 30px; /* Reduced to bring content higher on landscape */
     }
     
     .hamburger-btn {
@@ -1579,7 +1568,7 @@ button[type="submit"]:disabled,
     width: 100%;
     margin: 2rem auto;
     padding: 2rem;
-    margin-top: 20px; /* Reduced since we have fixed header */
+    margin-top: 10px; /* Further reduced to bring content higher */
     box-sizing: border-box;
 }
 
@@ -1589,7 +1578,7 @@ button[type="submit"]:disabled,
     width: 100%;
     margin: 2rem auto;
     padding: 2rem;
-    margin-top: 20px; /* Reduced since we have fixed header */
+    margin-top: 10px; /* Further reduced to bring content higher */
     box-sizing: border-box;
 }
 
