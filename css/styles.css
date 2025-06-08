@@ -1145,20 +1145,20 @@ iframe {
 
 /* Legacy media query removed - now handled by comprehensive responsive system above */
 
-/* Add overlay when menu is open - covers the area to the right of the sidebar */
+/* Add overlay when menu is open - covers the entire screen for consistent dimming */
 body::after {
     content: '';
     position: fixed;
     top: 0;
-    left: 300px; /* Start after the sidebar width */
-    width: calc(100% - 300px); /* Cover remaining width */
+    left: 0; /* Cover entire screen from left edge */
+    width: 100%; /* Cover full width */
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
-    z-index: 999; /* Below sidebar (z-index: 1000) but above content */
-    pointer-events: auto; /* Allow clicks to close menu */
+    z-index: 998; /* Below sidebar (z-index: 1000) and below click area */
+    pointer-events: none; /* Don't block any clicks */
 }
 
 body.menu-open::after {
