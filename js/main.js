@@ -690,20 +690,31 @@ function initializeProfilePage() {
                     cancelPasswordBtn.style.display = hasContent ? 'inline-block' : 'none';
                 }
             };
-            
-            // Add event listeners to all password fields to monitor changes
+              // Add event listeners to all password fields to monitor changes
             currentPassword.addEventListener('input', function() {
                 toggleClearButton();
+                // Update field states
+                if (window.fieldStateManager) {
+                    window.fieldStateManager.updateFieldState(currentPassword);
+                }
             });
             
             confirmPassword.addEventListener('input', function() {
                 validatePasswordMatch();
                 toggleClearButton();
+                // Update field states
+                if (window.fieldStateManager) {
+                    window.fieldStateManager.updateFieldState(confirmPassword);
+                }
             });
               newPassword.addEventListener('input', function() {
                 validatePasswordMatch();
                 updatePasswordStrength(newPassword.value, newPassword.id);
                 toggleClearButton();
+                // Update field states
+                if (window.fieldStateManager) {
+                    window.fieldStateManager.updateFieldState(newPassword);
+                }
             });
             
             // Initial check on page load
@@ -994,8 +1005,7 @@ function validatePasswordMatch() {
     if (existingMessage) {
         existingMessage.remove();
     }
-    
-    if (confirmPassword && newPassword) {
+      if (confirmPassword && newPassword) {
         if (newPassword === confirmPassword) {
             confirmGroup.classList.add('success');
             confirmPasswordElement.classList.add('password-match');
@@ -1010,6 +1020,15 @@ function validatePasswordMatch() {
             errorMsg.className = 'error-message';
             errorMsg.textContent = 'Passwords do not match';
             confirmGroup.appendChild(errorMsg);
+        }
+    }
+    
+    // Update field states using the field state manager
+    if (window.fieldStateManager) {
+        window.fieldStateManager.updateFieldState(confirmPasswordElement);
+        const newPasswordElement = document.getElementById('newPassword');
+        if (newPasswordElement) {
+            window.fieldStateManager.updateFieldState(newPasswordElement);
         }
     }
 }
@@ -1109,6 +1128,13 @@ function clearPasswordErrors() {
     passwordInputs.forEach(input => {
         input.classList.remove('password-match', 'password-mismatch');
     });
+    
+    // Update field states using the field state manager
+    if (window.fieldStateManager) {
+        passwordInputs.forEach(input => {
+            window.fieldStateManager.updateFieldState(input);
+        });
+    }
     
     // Hide the clear button if all password fields are empty after clearing errors
     const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
@@ -1269,16 +1295,23 @@ function setupCreateUserForm() {
     if (newPassword) {
         addPasswordStrengthIndicator(newPassword);
     }
-    
-    // Real-time password confirmation validation
+      // Real-time password confirmation validation
     if (newPassword && confirmPassword) {
         confirmPassword.addEventListener('input', function() {
             validateCreateUserPasswordMatch();
+            // Update field states
+            if (window.fieldStateManager) {
+                window.fieldStateManager.updateFieldState(confirmPassword);
+            }
         });
         
         newPassword.addEventListener('input', function() {
             validateCreateUserPasswordMatch();
             updatePasswordStrength(newPassword.value, newPassword.id);
+            // Update field states
+            if (window.fieldStateManager) {
+                window.fieldStateManager.updateFieldState(newPassword);
+            }
         });
     }
     
@@ -1290,6 +1323,10 @@ function setupCreateUserForm() {
             usernameTimeout = setTimeout(() => {
                 checkUsernameAvailability(newUsername.value.trim());
             }, 500);
+            // Update field states
+            if (window.fieldStateManager) {
+                window.fieldStateManager.updateFieldState(newUsername);
+            }
         });
     }
     
@@ -1316,8 +1353,7 @@ function validateCreateUserPasswordMatch() {
     if (existingMessage) {
         existingMessage.remove();
     }
-    
-    if (confirmPassword && newPassword) {
+      if (confirmPassword && newPassword) {
         if (newPassword === confirmPassword) {
             confirmGroup.classList.add('success');
             confirmPasswordElement.classList.add('password-match');
@@ -1332,6 +1368,15 @@ function validateCreateUserPasswordMatch() {
             errorMsg.className = 'error-message';
             errorMsg.textContent = 'Passwords do not match';
             confirmGroup.appendChild(errorMsg);
+        }
+    }
+    
+    // Update field states using the field state manager
+    if (window.fieldStateManager) {
+        window.fieldStateManager.updateFieldState(confirmPasswordElement);
+        const newPasswordElement = document.getElementById('newPassword');
+        if (newPasswordElement) {
+            window.fieldStateManager.updateFieldState(newPasswordElement);
         }
     }
 }
@@ -1593,12 +1638,19 @@ function clearCreateUserErrors() {
         if (successMsg) {
             successMsg.remove();
         }
-    });
-      // Clear password matching classes
+    });      // Clear password matching classes
     const passwordInputs = createUserSection.querySelectorAll('input[type="password"]');
     passwordInputs.forEach(input => {
         input.classList.remove('password-match', 'password-mismatch');
     });
+    
+    // Update field states using the field state manager
+    if (window.fieldStateManager) {
+        const allFields = createUserSection.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], select');
+        allFields.forEach(field => {
+            window.fieldStateManager.updateFieldState(field);
+        });
+    }
 }
 
 // User Management Functions

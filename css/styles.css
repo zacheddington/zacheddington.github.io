@@ -815,11 +815,8 @@ label, p, input, button, a {
         align-items: flex-start;
         gap: 0.5rem;
     }
-    
-    .section-header h2 {
+      .section-header h2 {
         font-size: 1.2rem;
-    }
-    
     }
     
     .form-section {
@@ -1214,6 +1211,125 @@ input[type="email"]:focus {
     border-color: #009688;
     background: #fff;
     outline: none;
+}
+
+/* Field State Color-Coding System */
+/* Error state: Pale red background with darker red outline */
+input[type="text"].field-error,
+input[type="password"].field-error,
+input[type="email"].field-error,
+select.field-error,
+textarea.field-error {
+    background-color: #ffeaea !important;
+    border-color: #dc3545 !important;
+    border-width: 2px !important;
+}
+
+input[type="text"].field-error:focus,
+input[type="password"].field-error:focus,
+input[type="email"].field-error:focus,
+select.field-error:focus,
+textarea.field-error:focus {
+    background-color: #ffeaea !important;
+    border-color: #c82333 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* Required unfilled state: Pale yellow background with darker yellow outline */
+input[type="text"].field-required,
+input[type="password"].field-required,
+input[type="email"].field-required,
+select.field-required,
+textarea.field-required {
+    background-color: #fffbea !important;
+    border-color: #ffc107 !important;
+    border-width: 2px !important;
+}
+
+input[type="text"].field-required:focus,
+input[type="password"].field-required:focus,
+input[type="email"].field-required:focus,
+select.field-required:focus,
+textarea.field-required:focus {
+    background-color: #fffbea !important;
+    border-color: #e0a800 !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25) !important;
+}
+
+/* Optional empty state: Pale green background with darker green outline */
+input[type="text"].field-optional,
+input[type="password"].field-optional,
+input[type="email"].field-optional,
+select.field-optional,
+textarea.field-optional {
+    background-color: #eafaf1 !important;
+    border-color: #28a745 !important;
+    border-width: 2px !important;
+}
+
+input[type="text"].field-optional:focus,
+input[type="password"].field-optional:focus,
+input[type="email"].field-optional:focus,
+select.field-optional:focus,
+textarea.field-optional:focus {
+    background-color: #eafaf1 !important;
+    border-color: #1e7e34 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+}
+
+/* Filled/valid state: No fill color (plain text field) */
+input[type="text"].field-filled,
+input[type="password"].field-filled,
+input[type="email"].field-filled,
+select.field-filled,
+textarea.field-filled {
+    background-color: #fff !important;
+    border-color: #b2dfdb !important;
+    border-width: 2px !important;
+}
+
+input[type="text"].field-filled:focus,
+input[type="password"].field-filled:focus,
+input[type="email"].field-filled:focus,
+select.field-filled:focus,
+textarea.field-filled:focus {
+    background-color: #fff !important;
+    border-color: #009688 !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 150, 136, 0.25) !important;
+}
+
+/* Disabled state: Light gray background with greyed out text */
+input[type="text"].field-disabled,
+input[type="password"].field-disabled,
+input[type="email"].field-disabled,
+select.field-disabled,
+textarea.field-disabled,
+input[type="text"]:disabled,
+input[type="password"]:disabled,
+input[type="email"]:disabled,
+select:disabled,
+textarea:disabled {
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    border-width: 2px !important;
+}
+
+/* Ensure disabled fields don't respond to focus */
+input[type="text"].field-disabled:focus,
+input[type="password"].field-disabled:focus,
+input[type="email"].field-disabled:focus,
+select.field-disabled:focus,
+textarea.field-disabled:focus,
+input[type="text"]:disabled:focus,
+input[type="password"]:disabled:focus,
+input[type="email"]:disabled:focus,
+select:disabled:focus,
+textarea:disabled:focus {
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    box-shadow: none !important;
 }
 
 /* Common button styles */
@@ -1844,7 +1960,7 @@ button[type="submit"]:disabled,
 }
 
 .choice-btn.secondary {
-    border-color: #e0f7fa; /* Ensure consistent border color */
+    border-color: #009688; /* Match primary button for consistent outline */
 }
 
 .choice-btn.secondary:hover {
