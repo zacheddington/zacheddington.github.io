@@ -136,13 +136,14 @@ class FieldStateManager {
             console.log('Has Error:', hasError);
             console.log('Is Editing Mode:', this.isInEditingMode());
             console.groupEnd();
-        }// Check if field is disabled
+        }        // Check if field is disabled
         if (field.disabled) {
             // For profile editing scenario: check if this is a temporarily disabled field
             // that should show required state when empty during editing mode
             const isEditingMode = this.isInEditingMode();
-              if (isProfileField && !isEditingMode && isRequired && !value) {
-                // Show required state for empty required fields even when disabled (profile view mode)
+            
+            if (isProfileField && isEditingMode && isRequired && !value) {
+                // Show required state for empty required fields when disabled but in editing mode
                 field.classList.add('field-required');
             } else {
                 // Standard disabled state

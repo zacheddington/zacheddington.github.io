@@ -1752,28 +1752,24 @@ button[type="submit"]:disabled,
     background-color: #fffbea !important;
     border-color: #ffc107 !important;
     color: #495057 !important;
-    cursor: auto !important;
 }
 
 .profile-form input.field-error {
     background-color: #ffeaea !important;
     border-color: #dc3545 !important;
     color: #495057 !important;
-    cursor: auto !important;
 }
 
 .profile-form input.field-optional {
     background-color: #eafaf1 !important;
     border-color: #28a745 !important;
     color: #495057 !important;
-    cursor: auto !important;
 }
 
 .profile-form input.field-filled {
     background-color: #fff !important;
     border-color: #b2dfdb !important;
     color: #495057 !important;
-    cursor: auto !important;
 }
 
 .profile-form input.field-disabled,
