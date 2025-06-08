@@ -664,13 +664,19 @@ function initializeProfilePage() {
         passwordForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             await updateUserPassword();
-        });
-          // Handle cancel button
+        });        // Handle cancel button
         const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
         if (cancelPasswordBtn) {
             cancelPasswordBtn.addEventListener('click', function() {
                 passwordForm.reset();
                 clearPasswordErrors();
+                
+                // Reset password strength indicators after clearing
+                const newPassword = document.getElementById('newPassword');
+                if (newPassword) {
+                    updatePasswordStrength('', newPassword.id);
+                }
+                
                 // Hide the clear button after clearing
                 cancelPasswordBtn.style.display = 'none';
             });
@@ -1152,12 +1158,17 @@ function clearPasswordErrors() {
     passwordInputs.forEach(input => {
         input.classList.remove('password-match', 'password-mismatch');
     });
-    
-    // Update field states using the field state manager
+      // Update field states using the field state manager
     if (window.fieldStateManager) {
         passwordInputs.forEach(input => {
             window.fieldStateManager.updateFieldState(input);
         });
+    }
+    
+    // Reset password strength indicators for empty password fields
+    const newPasswordField = passwordSection.querySelector('#newPassword');
+    if (newPasswordField && !newPasswordField.value.trim()) {
+        updatePasswordStrength('', newPasswordField.id);
     }
     
     // Hide the clear button if all password fields are empty after clearing errors
