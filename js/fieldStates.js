@@ -189,10 +189,8 @@ class FieldStateManager {
         if (!fieldId) return false;
 
         const value = field.value.trim();
-        if (!value) return false; // Empty fields are handled separately
-
-        // Password validation for new passwords - must meet ALL criteria
-        if (field.type === 'password' && fieldId.toLowerCase().includes('new') && value) {
+        if (!value) return false; // Empty fields are handled separately        // Password validation for all password fields - must meet ALL criteria
+        if (field.type === 'password' && value) {
             // Check each criterion - if any fails, field is incomplete
             if (value.length < 8) return true;
             if (!/[A-Z]/.test(value)) return true;
@@ -239,25 +237,18 @@ class FieldStateManager {
 
         // Check for error messages
         const errorMessage = formGroup?.querySelector('.error-message');
-        if (errorMessage && !errorMessage.classList.contains('hidden')) return true;
-
-        // Check for password-specific error classes
+        if (errorMessage && !errorMessage.classList.contains('hidden')) return true;        // Check for password-specific error classes
         if (field.type === 'password') {
             if (field.classList.contains('password-mismatch')) return true;
             if (field.classList.contains('password-invalid')) return true;
-            if (field.classList.contains('password-weak') && value.length > 0) {
-                // Only consider weak passwords as errors if they have content
-                const score = this.calculatePasswordScore(value);
-                return score < 40; // Consider very weak passwords as errors
-            }
         }
 
         // Email validation
         if (field.type === 'email' && value) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(value)) return true;
-        }        // Password validation for new passwords
-        if (field.type === 'password' && fieldId.toLowerCase().includes('new') && value) {
+        }        // Password validation for all password fields (not just new passwords)
+        if (field.type === 'password' && value) {
             // Use comprehensive password validation (similar to main.js validatePasswordStrength)
             if (value.length < 8) return true;
             if (!/[A-Z]/.test(value)) return true;
