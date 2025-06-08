@@ -9,7 +9,7 @@ const TAB_CHECK_INTERVAL = 1 * 1000; // Check for multiple tabs every 1 second
 const MASTER_TAB_HEARTBEAT = 1 * 1000; // Master tab heartbeat every 1 second
 
 // Single-tab enforcement constants
-const MASTER_TAB_TIMEOUT = 1 * 1000; // 1 second without master tab heartbeat
+const MASTER_TAB_TIMEOUT = 3 * 1000; // 3 seconds without master tab heartbeat
 const TAB_TAKEOVER_DELAY = 1 * 1000; // 1 second delay before allowing tab takeover
 
 // Check if current page is public
@@ -30,19 +30,18 @@ const SessionManager = {
     initSession: () => {
         // Prevent double initialization
         if (SessionManager.tabId) {
-            console.log('🔧 DEBUGGING: Session already initialized, skipping duplicate initialization');  
+            console.log('Session already initialized, skipping duplicate initialization');  
             return;
         }
         
         // Check if this tab already has a tab ID (from previous session or page reload)
         let existingTabId = sessionStorage.getItem('currentTabId');
-        console.log('🔧 DEBUGGING: Existing tab ID from sessionStorage:', existingTabId);
         
         // If we have an existing tab ID and valid session data for it, reuse it
         if (existingTabId) {
             const sessionData = SessionManager.getSessionData();
             if (sessionData && sessionData.tabId === existingTabId) {
-                console.log('🔧 DEBUGGING: Reusing existing tab ID:', existingTabId);
+                console.log('Reusing existing tab ID:', existingTabId);
                 SessionManager.tabId = existingTabId;
                 
                 // Update the session with current login time
@@ -62,8 +61,6 @@ const SessionManager = {
                     SessionManager.isMasterTab = true;
                 }
                 
-                console.log('🔧 DEBUGGING: Session reinitialized with existing tab ID');
-                
                 // Set up monitoring
                 SessionManager.setupTabCloseDetection();
                 SessionManager.startHeartbeat();
@@ -79,9 +76,7 @@ const SessionManager = {
         SessionManager.tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const loginTime = Date.now();
         
-        console.log('🔧 DEBUGGING: Session initialization starting with new tab ID');
-        console.log('🔧 Generated new tab ID:', SessionManager.tabId);
-        console.log('🔧 Login time:', loginTime);
+        console.log('Generated new tab ID:', SessionManager.tabId);
         
         // Store session data in localStorage with tab-specific key
         const sessionData = {
@@ -92,19 +87,12 @@ const SessionManager = {
             isRecentLogin: true, // Flag for recent login grace period
             masterTabId: SessionManager.tabId, // This tab becomes the master
             masterTabHeartbeat: loginTime
-        };
-          localStorage.setItem('activeSession', JSON.stringify(sessionData));
+        };          localStorage.setItem('activeSession', JSON.stringify(sessionData));
         
         // Store tab ID in BOTH sessionStorage and localStorage for resilience
         sessionStorage.setItem('currentTabId', SessionManager.tabId);
         localStorage.setItem('lastTabId', SessionManager.tabId);
         localStorage.setItem('loginTimestamp', loginTime.toString());
-        
-        console.log('🔧 DEBUGGING: Session data stored');
-        console.log('🔧 SessionStorage currentTabId:', sessionStorage.getItem('currentTabId'));
-        console.log('🔧 LocalStorage lastTabId:', localStorage.getItem('lastTabId'));
-        console.log('🔧 LocalStorage loginTimestamp:', localStorage.getItem('loginTimestamp'));
-        console.log('🔧 SessionManager.tabId:', SessionManager.tabId);
         
         // Set this tab as master
         SessionManager.isMasterTab = true;
@@ -319,32 +307,27 @@ const SessionManager = {
             return originalReplace.call(this, url);
         };        // Override href setter to detect programmatic navigation
         // Check if we've already overridden this property to avoid redefinition error
-        if (!window.location._hrefOverridden) {
+        if (!window._authHrefOverridden) {
             const originalHref = Object.getOwnPropertyDescriptor(window.location, 'href') || 
                                Object.getOwnPropertyDescriptor(Location.prototype, 'href');
-            if (originalHref && originalHref.set) {
+            if (originalHref && originalHref.set && originalHref.configurable !== false) {
                 try {
                     Object.defineProperty(window.location, 'href', {
                         set: function(url) {
-                            console.log('🔧 DEBUGGING: href setter called with:', url);
                             trackNavigation();
                             return originalHref.set.call(this, url);
                         },
                         get: originalHref.get,
-                        configurable: true // Allow redefinition
+                        configurable: true,
+                        enumerable: originalHref.enumerable
                     });
-                    // Mark as overridden to prevent future attempts
-                    window.location._hrefOverridden = true;
-                    console.log('🔧 DEBUGGING: Successfully set up href tracking');
+                    // Mark as overridden globally to prevent future attempts
+                    window._authHrefOverridden = true;
                 } catch (error) {
-                    console.warn('🔧 DEBUGGING: Failed to override href setter:', error);
-                    // Continue without href tracking - other methods will still work
+                    // Silently continue without href tracking - other methods will still work
+                    window._authHrefOverridden = true; // Prevent retry attempts
                 }
-            } else {
-                console.log('🔧 DEBUGGING: No href property descriptor found');
             }
-        } else {
-            console.log('🔧 DEBUGGING: href already overridden, skipping');
         }// Monitor for programmatic href changes
         let lastHref = window.location.href;
         const hrefWatcher = setInterval(() => {
@@ -356,33 +339,23 @@ const SessionManager = {
         }, 100);        // Monitor for login form submissions specifically
         document.addEventListener('submit', (event) => {
             if (event.target && event.target.id === 'loginForm') {
-                console.log('🔧 DEBUGGING: Login form submission detected - tracking navigation');
                 trackNavigation();
                 // Extended tracking for login flow with longer protection
                 setTimeout(() => {
-                    console.log('🔧 DEBUGGING: Setting extended navigation protection');
                     isNavigating = true;
                     setTimeout(() => { 
-                        console.log('🔧 DEBUGGING: Clearing extended navigation protection');
                         isNavigating = false; 
                     }, 3000); // 3 second extended protection for complete login flow
                 }, 100);
                 
                 // Also set a login flag in localStorage for additional detection
                 localStorage.setItem('loginFlowActive', Date.now().toString());
-                console.log('🔧 DEBUGGING: Set loginFlowActive flag');
                 setTimeout(() => {
                     localStorage.removeItem('loginFlowActive');
-                    console.log('🔧 DEBUGGING: Cleared loginFlowActive flag');
                 }, 5000); // Clear flag after 5 seconds
             }
-        });
-          // Clear session when tab/window is actually closed (not just switched)
+        });        // Clear session when tab/window is actually closed (not just switched)
         window.addEventListener('beforeunload', (event) => {
-            console.log('🔧 DEBUGGING: beforeunload event fired');
-            console.log('🔧 DEBUGGING: isNavigating:', isNavigating);
-            console.log('🔧 DEBUGGING: loginFlowActive:', localStorage.getItem('loginFlowActive'));
-            
             // Enhanced detection for internal navigation vs tab close
             const currentHostname = window.location.hostname;
               // Check various indicators of internal navigation
@@ -462,10 +435,6 @@ const SessionManager = {
         // Get stored tab ID for this tab/window - prioritize SessionManager.tabId if already set
         const currentTabId = SessionManager.tabId || sessionStorage.getItem('currentTabId');
         
-        console.log('🔧 DEBUGGING: Session validation - SessionManager.tabId:', SessionManager.tabId);
-        console.log('🔧 DEBUGGING: Session validation - sessionStorage tabId:', sessionStorage.getItem('currentTabId'));
-        console.log('🔧 DEBUGGING: Session validation - using currentTabId:', currentTabId);
-        
         if (!currentTabId) {
             console.log('Session invalid: No tab ID found');
             return false;
@@ -475,13 +444,6 @@ const SessionManager = {
         SessionManager.tabId = currentTabId;
         
         const sessionData = SessionManager.getSessionData();
-        
-        console.log('🔧 DEBUGGING: Session validation check:', {
-            currentTabId: currentTabId,
-            sessionTabId: sessionData ? sessionData.tabId : 'no session data',
-            sessionData: sessionData,
-            hasSessionData: !!sessionData
-        });
 
         if (!sessionData) {
             console.log('Session invalid: No session data found');
@@ -490,7 +452,7 @@ const SessionManager = {
         
         // Check if this tab's session matches the active session
         if (sessionData.tabId !== currentTabId) {
-            console.log('🔧 DEBUGGING: Session invalid: Tab ID mismatch - sessionData.tabId:', sessionData.tabId, 'currentTabId:', currentTabId);
+            console.log('Session invalid: Tab ID mismatch - sessionData.tabId:', sessionData.tabId, 'currentTabId:', currentTabId);
             return false;
         }
         
@@ -572,8 +534,7 @@ const startActivityMonitoring = () => {
     setInterval(() => {
         if (!isPublicPage() && !SessionManager.isSessionValid()) {
             performLogout('Session timeout');
-        }
-    }, ACTIVITY_CHECK_INTERVAL);
+        }    }, ACTIVITY_CHECK_INTERVAL);
 
     console.log('Activity monitoring started');
 };
@@ -589,21 +550,21 @@ const checkAuth = () => {
         console.log('No token found, redirecting to login');
         window.location.href = '/';
         return;
-    }    // Check if this is a new tab/window - if no tab ID exists, this is a fresh tab
+    }
+    
+    // Check if this is a new tab/window - if no tab ID exists, this is a fresh tab
     let currentTabId = sessionStorage.getItem('currentTabId');
-    console.log('Current tab ID from sessionStorage:', currentTabId);
     
     // Also check localStorage for session data
     const sessionData = SessionManager.getSessionData();
-    console.log('Session data from localStorage:', sessionData);
-      // Extended grace period for recent logins - if login was within last 2 minutes and we have session data,
+    
+    // Extended grace period for recent logins - if login was within last 3 minutes and we have session data,
     // allow access even without sessionStorage tab ID (handles immediate post-login navigation)
     const now = Date.now();
     const loginTimestamp = parseInt(localStorage.getItem('loginTimestamp') || '0');
-    const isRecentLogin = (now - loginTimestamp) < 180000; // Extended to 3 minutes grace period for login flow
+    const isRecentLogin = (now - loginTimestamp) < 180000; // 3 minutes grace period for login flow
     
-    console.log('Login timestamp:', loginTimestamp, 'Recent login:', isRecentLogin);
-      if (!currentTabId) {
+    if (!currentTabId) {
         if (isRecentLogin && sessionData && sessionData.tabId) {
             console.log('No sessionStorage tab ID but recent login detected - allowing access and restoring session');
             // Restore the session for this tab
@@ -678,9 +639,7 @@ const checkAuth = () => {
         if (!SessionManager.masterTabInterval) {
             SessionManager.startMasterTabHeartbeat();
         }
-    }
-
-    // Start tab monitoring if not already running
+    }    // Start tab monitoring if not already running
     if (!SessionManager.tabCheckInterval) {
         SessionManager.startTabMonitoring();
     }
