@@ -376,13 +376,13 @@ function initializePage() {    // Detect if running locally or in production
     if (window.location.pathname.includes('/profile/')) {
         initializeProfilePage();
     }
-    
-    // Initialize admin page if we're on it
+      // Initialize admin page if we're on it
     if (window.location.pathname.includes('/admin/')) {
         initializeAdminPage();
     }
     
-    // Initialize patient page if present    if (document.getElementById('patientChoice')) {
+    // Initialize patient page if present
+    if (document.getElementById('patientChoice')) {
         initializePatientPage();
     }
 }
@@ -1413,12 +1413,10 @@ function setupCreateUserForm() {
             // Update field states
             if (window.fieldStateManager) {
                 window.fieldStateManager.updateFieldState(confirmPassword);
-            }
-        });
+            }        });
         
         newPassword.addEventListener('input', function() {
             validateCreateUserPasswordMatch();
-            updatePasswordStrength(newPassword.value, newPassword.id);
             // Update field states
             if (window.fieldStateManager) {
                 window.fieldStateManager.updateFieldState(newPassword);
@@ -1449,6 +1447,62 @@ function setupCreateUserForm() {
         e.preventDefault();
         await createUser();
     });
+}
+
+async function createUser() {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    
+    const form = document.getElementById('createUserForm');
+    const formData = new FormData(form);
+    
+    const newUser = {
+        username: formData.get('newUsername'),
+        firstName: formData.get('newFirstName'),
+        lastName: formData.get('newLastName'),
+        password: formData.get('newPassword'),
+        confirmPassword: formData.get('confirmPassword')
+    };
+    
+    // Validate required fields
+    if (!newUser.username || !newUser.firstName || !newUser.lastName || !newUser.password || !newUser.confirmPassword) {
+        window.modalManager.showModal('error', 'All fields are required.');
+        return;
+    }
+    
+    // Validate password match
+    if (newUser.password !== newUser.confirmPassword) {
+        window.modalManager.showModal('error', 'Passwords do not match.');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/admin/create-user`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(newUser)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            window.modalManager.showModal('success', 'User created successfully!');
+            form.reset();
+            clearCreateUserErrors();
+            document.getElementById('createUserSection').classList.add('hidden');
+            // Refresh the users list
+            loadUsers();
+        } else {
+            window.modalManager.showModal('error', result.error || 'Failed to create user');
+        }
+        
+    } catch (error) {
+        console.error('Error creating user:', error);
+        window.modalManager.showModal('error', 'Network error. Please try again.');
+    }
 }
 
 function validateCreateUserPasswordMatch() {
@@ -1994,16 +2048,60 @@ async function deletePatient(patientKey) {
     }
 }
 
-function clearCreatePatientErrors() {
-    // Clear any error messages or states from the create patient form
-    const form = document.getElementById('createPatientForm');
-    if (form) {
-        const errorMessages = form.querySelectorAll('.error-message');
-        errorMessages.forEach(msg => msg.remove());
+// Admin helper functions
+function clearCreateUserErrors() {
+    const formGroups = document.querySelectorAll('#createUserForm .form-group');
+    formGroups.forEach(group => {
+        group.classList.remove('error', 'success');
+        const errorMessage = group.querySelector('.error-message');
+        if (errorMessage) {
+            errorMessage.remove();
+        }
+    });
+}
+
+async function loadUsers() {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    
+    try {
+        const response = await fetch(`${API_URL}/api/admin/users`, {
+            method: 'GET',
+            credentials: 'include'
+        });
         
-        const errorGroups = form.querySelectorAll('.form-group.error');
-        errorGroups.forEach(group => group.classList.remove('error'));
+        if (response.ok) {
+            const users = await response.json();
+            displayUsers(users);
+        } else {
+            console.error('Failed to load users');
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
     }
+}
+
+function displayUsers(users) {
+    const usersList = document.getElementById('usersList');
+    if (!usersList) return;
+    
+    if (users.length === 0) {
+        usersList.innerHTML = '<p>No users found.</p>';
+        return;
+    }
+    
+    usersList.innerHTML = users.map(user => `
+        <div class="user-item">
+            <div class="user-info">
+                <strong>${user.username}</strong>
+                <span>${user.firstName} ${user.lastName}</span>
+            </div>
+            <div class="user-actions">
+                <button onclick="editUser('${user.username}')" class="btn-secondary">Edit</button>
+                <button onclick="deleteUser('${user.username}')" class="btn-danger">Delete</button>
+            </div>
+        </div>
+    `).join('');
 }
 
 // 2FA Management Functions
