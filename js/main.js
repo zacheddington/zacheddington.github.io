@@ -405,11 +405,16 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                         isShowingModal: window.modalManager?.isShowingModal,
                         showModalFunction: typeof window.modalManager?.showModal
                     });
-                    
-                    console.log('Calling modalManager.showModal with force=true...');
+                      console.log('Calling modalManager.showModal with force=true...');
                     try {
                         const result = window.modalManager.showModal('error', message, true); // Force show error modal
                         console.log('showModal returned:', result);
+                        
+                        // Clear the 2FA code field when showing error modal
+                        if (is2FAMode) {
+                            document.getElementById('twofaCode').value = '';
+                            document.getElementById('twofaCode').focus();
+                        }
                     } catch (modalError) {
                         console.error('ERROR in showModal call:', modalError);
                     }
