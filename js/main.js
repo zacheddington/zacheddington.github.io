@@ -489,9 +489,7 @@ function addSessionStatusIndicator() {
             else if (remainingActivity < 5) {
                 statusText = `⚠ Inactive timeout in ${remainingActivity}m`;
                 isWarning = true;
-            }
-
-            // Add tab ID indicator for debugging (can be removed later)
+            }            // Add tab ID indicator - shows last 4 characters of session ID for session tracking
             const currentTabId = sessionStorage.getItem('currentTabId');
             if (currentTabId) {
                 const shortTabId = currentTabId.substring(currentTabId.length - 4);

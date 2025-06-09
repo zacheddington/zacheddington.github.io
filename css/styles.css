@@ -838,6 +838,56 @@ label, p, input, button, a {
     }
 }
 
+/* ============================================================================
+   SESSION STATUS INDICATOR
+   ============================================================================ */
+
+/* Session Status Indicator - Fixed to bottom of page */
+.session-status {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-family: monospace;
+    z-index: 9999;
+    pointer-events: none;
+    user-select: none;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.session-status.warning {
+    background-color: rgba(255, 193, 7, 0.9);
+    color: #000;
+    border-color: rgba(255, 193, 7, 0.8);
+    animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { 
+        opacity: 0.9; 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 1; 
+        transform: scale(1.02);
+    }
+}
+
+/* Responsive positioning for mobile */
+@media (max-width: 768px) {
+    .session-status {
+        bottom: 5px;
+        right: 5px;
+        font-size: 0.7rem;
+        padding: 6px 8px;
+    }
+}
+
 /* ENHANCED RESPONSIVE UTILITIES */
 
 /* Enhanced responsive form utilities */
