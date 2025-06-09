@@ -365,22 +365,34 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     // Use utility function to check admin status and update UI
                     const isAdmin = isUserAdmin(data.user);
                     updateAdminUI(isAdmin);                    // Add a delay to ensure all data is persisted and session is initialized before navigation
-                    document.body.classList.add('fade-out');
-                    setTimeout(() => {
+                    document.body.classList.add('fade-out');                    setTimeout(() => {
                         window.location.href = "welcome/";
                     }, FADE_DURATION + 200); // Extended delay for robust session persistence                } else {
+                    console.log('=== ENTERING ERROR HANDLING SECTION ===');
+                    console.log('Response details:', {
+                        status: response.status,
+                        ok: response.ok,
+                        data: data,
+                        is2FAMode: is2FAMode,
+                        hasToken: !!data.token
+                    });
+                    
                     // Context-aware error messages
                     let message;
                     if (response.status === 401) {
                         if (is2FAMode) {
                             message = data.error === 'Invalid 2FA code' ? 'Invalid 2FA code. Please try again.' : 'Invalid 2FA code. Please try again.';
+                            console.log('2FA error detected - message set to:', message);
                         } else {
                             message = 'Invalid username or password';
+                            console.log('Username/password error detected - message set to:', message);
                         }
                     } else {
                         message = data.error || 'Login failed';
+                        console.log('Other error detected - message set to:', message);
                     }
-                      console.log('=== DEBUGGING 2FA ERROR MODAL ===');
+                    
+                    console.log('=== DEBUGGING 2FA ERROR MODAL ===');
                     console.log('About to show error modal:', {
                         status: response.status,
                         is2FAMode: is2FAMode,
@@ -401,6 +413,24 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     
                     console.log('Modal call completed. isShowingModal now:', window.modalManager?.isShowingModal);
                     console.log('Checking if modal element exists in DOM:', !!document.getElementById('feedbackModal'));
+                    
+                    // Additional DOM debugging
+                    const modalElement = document.getElementById('feedbackModal');
+                    if (modalElement) {
+                        console.log('Modal element found! Details:', {
+                            display: getComputedStyle(modalElement).display,
+                            visibility: getComputedStyle(modalElement).visibility,
+                            zIndex: getComputedStyle(modalElement).zIndex,
+                            position: getComputedStyle(modalElement).position,
+                            top: getComputedStyle(modalElement).top,
+                            left: getComputedStyle(modalElement).left,
+                            width: getComputedStyle(modalElement).width,
+                            height: getComputedStyle(modalElement).height
+                        });
+                    } else {
+                        console.error('Modal element NOT found in DOM!');
+                    }
+                    
                     console.log('=== END 2FA ERROR MODAL DEBUG ===');
                 }} catch (err) {
                 console.error('Login error:', err);
