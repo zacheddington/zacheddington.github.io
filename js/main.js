@@ -56,31 +56,98 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
     // Unified modal management
     const modalManager = {
         isShowingModal: false,        showModal: function(type, message, force = false) {
+            console.log('=== MODAL MANAGER showModal CALLED ===');
             console.log('showModal called with:', { type, message, force, currentlyShowing: this.isShowingModal });
             
             // For error messages, allow overriding existing modals
             if (this.isShowingModal && !force && type !== 'error') {
                 console.log('Modal blocked - already showing and not forced');
-                return;
+                return false;
             }
             
             // Close any existing modal first
             if (this.isShowingModal) {
-                console.log('Closing existing modal');
+                console.log('Closing existing modal first...');
                 this.closeModal();
             }
             
-            this.isShowingModal = true;
-            console.log('Creating modal HTML for type:', type);const modalHtml = `
-                <div class="modal" id="feedbackModal" tabindex="-1">
-                    <div class="modal-content ${type}">
+            console.log('Setting isShowingModal to true...');
+            this.isShowingModal = true;            console.log('Creating modal HTML for type:', type);
+            
+            const modalHtml = `
+                <div class="modal" id="feedbackModal" tabindex="-1" style="display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; background-color: rgba(0, 0, 0, 0.5) !important; z-index: 9999 !important; justify-content: center !important; align-items: center !important;">
+                    <div class="modal-content ${type}" style="display: block !important; background: white !important; padding: 2rem !important; border-radius: 8px !important; max-width: 90% !important; width: 400px !important; text-align: center !important; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;">
                         <h2>${type === 'success' ? '✓ Success!' : '⚠ Error'}</h2>
                         <p>${message}</p>
-                        <button class="modal-btn" onclick="closeModal()">Close</button>
+                        <button class="modal-btn" onclick="closeModal()" style="margin-top: 1rem !important; padding: 0.5rem 1rem !important; border: none !important; border-radius: 4px !important; background: #f44336 !important; color: white !important; cursor: pointer !important;">Close</button>
                     </div>
-                </div>
-            `;            document.body.insertAdjacentHTML('beforeend', modalHtml);
-            console.log('Modal HTML inserted. Modal element exists:', !!document.getElementById('feedbackModal'));
+                </div>            `;            console.log('Inserting modal HTML into document.body...');
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            console.log('Modal HTML inserted. Checking if modal element exists:', !!document.getElementById('feedbackModal'));
+            
+            // Small timeout to ensure DOM is ready
+            setTimeout(() => {
+                // Verify the modal is in the DOM
+                const modalElement = document.getElementById('feedbackModal');
+                if (modalElement) {
+                    console.log('✓ Modal element found in DOM');
+                    const computedStyle = getComputedStyle(modalElement);
+                    console.log('Modal element styles:', {
+                        display: computedStyle.display,
+                        visibility: computedStyle.visibility,
+                        opacity: computedStyle.opacity,
+                        zIndex: computedStyle.zIndex,
+                        position: computedStyle.position,
+                        top: computedStyle.top,
+                        left: computedStyle.left,
+                        width: computedStyle.width,
+                        height: computedStyle.height
+                    });
+                    
+                    // Check if modal is actually visible in viewport
+                    const rect = modalElement.getBoundingClientRect();
+                    console.log('Modal bounding rect:', rect);
+                    console.log('Modal HTML content:', modalElement.outerHTML);
+                    
+                    // Ensure modal is visible and bring to front
+                    console.log('Ensuring modal visibility...');
+                    modalElement.style.display = 'flex';
+                    modalElement.style.position = 'fixed';
+                    modalElement.style.top = '0';
+                    modalElement.style.left = '0';
+                    modalElement.style.width = '100%';
+                    modalElement.style.height = '100%';
+                    modalElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                    modalElement.style.zIndex = '99999';
+                    modalElement.style.justifyContent = 'center';
+                    modalElement.style.alignItems = 'center';
+                    
+                    // Force styles on modal content too
+                    const modalContent = modalElement.querySelector('.modal-content');
+                    if (modalContent) {
+                        modalContent.style.display = 'block';
+                        modalContent.style.backgroundColor = 'white';
+                        modalContent.style.padding = '2rem';
+                        modalContent.style.borderRadius = '8px';
+                        modalContent.style.maxWidth = '90%';
+                        modalContent.style.width = '400px';
+                        modalContent.style.textAlign = 'center';
+                        modalContent.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+                        console.log('Modal content styles applied');
+                    }
+                    
+                    // Final check after forcing styles
+                    const newRect = modalElement.getBoundingClientRect();
+                    console.log('Modal rect after forcing styles:', newRect);
+                    console.log('Is modal visible now?', newRect.width > 0 && newRect.height > 0);
+                    
+                    // Focus the modal for accessibility
+                    modalElement.focus();
+                    
+                } else {
+                    console.error('✗ Modal element NOT found in DOM after insertion!');
+                }
+            }, 10);
               // Add keyboard event listener for all modals
             const modal = document.getElementById('feedbackModal');
             modal.focus();
@@ -102,16 +169,23 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     // On admin pages, auto-hide success modal after 4 seconds
                     setTimeout(() => {
                         this.closeModal();
-                    }, 4000);
-                }
+                    }, 4000);                }
             }
+            
+            console.log('=== showModal function completed ===');
+            console.log('Final state - isShowingModal:', this.isShowingModal);
+            console.log('Modal exists in DOM:', !!document.getElementById('feedbackModal'));
+            return true;
         },
         
         closeModal: function() {
+            console.log('=== closeModal CALLED ===');
             const modal = document.getElementById('feedbackModal');
+            console.log('Modal element found for closing:', !!modal);
             if (modal) {
                 modal.remove();
                 this.isShowingModal = false;
+                console.log('Modal removed and isShowingModal set to false');
                 
                 // Reset all input modal states for EEG form
                 const inputs = ['patientNumber', 'firstName', 'middleName', 'lastName', 'address'];
@@ -119,7 +193,11 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     const input = document.getElementById(id);
                     if (input) input.dataset.showingModal = 'false';
                 });
+            } else {
+                console.log('No modal found to close');
+                this.isShowingModal = false;
             }
+            console.log('=== closeModal COMPLETED ===');
         }    };    // Make modal functions globally available
     window.showModal = modalManager.showModal.bind(modalManager);
     window.closeModal = modalManager.closeModal.bind(modalManager);
@@ -302,18 +380,28 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     } else {
                         message = data.error || 'Login failed';
                     }
-                    
+                      console.log('=== DEBUGGING 2FA ERROR MODAL ===');
                     console.log('About to show error modal:', {
                         status: response.status,
                         is2FAMode: is2FAMode,
                         message: message,
+                        dataError: data.error,
                         modalManagerExists: !!window.modalManager,
-                        isShowingModal: window.modalManager?.isShowingModal
+                        isShowingModal: window.modalManager?.isShowingModal,
+                        showModalFunction: typeof window.modalManager?.showModal
                     });
                     
-                    window.modalManager.showModal('error', message, true); // Force show error modal
+                    console.log('Calling modalManager.showModal with force=true...');
+                    try {
+                        const result = window.modalManager.showModal('error', message, true); // Force show error modal
+                        console.log('showModal returned:', result);
+                    } catch (modalError) {
+                        console.error('ERROR in showModal call:', modalError);
+                    }
                     
                     console.log('Modal call completed. isShowingModal now:', window.modalManager?.isShowingModal);
+                    console.log('Checking if modal element exists in DOM:', !!document.getElementById('feedbackModal'));
+                    console.log('=== END 2FA ERROR MODAL DEBUG ===');
                 }} catch (err) {
                 console.error('Login error:', err);
                 window.modalManager.showModal('error', 'Connection error. Please try again.', true); // Force show error modal
