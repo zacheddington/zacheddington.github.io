@@ -1801,6 +1801,158 @@ function calculatePasswordStrength(password) {
     };
 }
 
+// Password validation functions
+function validatePasswordWithCurrentCheck(newPassword, currentPassword) {
+    const failed = [];
+    
+    // Check if new password is same as current password
+    if (newPassword === currentPassword) {
+        failed.push('New password must be different from current password');
+    }
+    
+    // Healthcare-grade password requirements
+    if (newPassword.length < 12) {
+        failed.push('At least 12 characters');
+    }
+    
+    if (!/[a-z]/.test(newPassword)) {
+        failed.push('At least one lowercase letter');
+    }
+    
+    if (!/[A-Z]/.test(newPassword)) {
+        failed.push('At least one uppercase letter');
+    }
+    
+    if (!/\d/.test(newPassword)) {
+        failed.push('At least one number');
+    }
+    
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+        failed.push('At least one special character');
+    }
+    
+    // Check for common patterns (prevent sequential, repeated, etc.)
+    if (/(.)\1{2,}/.test(newPassword)) {
+        failed.push('No more than 2 consecutive identical characters');
+    }
+    
+    if (/012|123|234|345|456|567|678|789|890|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/i.test(newPassword)) {
+        failed.push('No sequential characters (123, abc, etc.)');
+    }
+    
+    return {
+        isValid: failed.length === 0,
+        failed: failed,
+        score: calculatePasswordStrength(newPassword).percentage
+    };
+}
+
+// User management functions
+async function editUser(username) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    
+    try {
+        // For now, show a modal indicating this feature is coming soon
+        // In a full implementation, this would open an edit modal
+        window.modalManager.showModal('info', `Edit user functionality for "${username}" is coming soon.`);
+        
+        // TODO: Implement user editing functionality
+        // This would typically:
+        // 1. Fetch user details
+        // 2. Show edit modal with pre-filled form
+        // 3. Handle form submission
+        // 4. Update user data via API
+        
+    } catch (error) {
+        console.error('Error in editUser:', error);
+        window.modalManager.showModal('error', 'Error opening user editor.');
+    }
+}
+
+async function deleteUser(username) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    
+    // Show confirmation dialog
+    const confirmed = confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`);
+    
+    if (!confirmed) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/admin/delete-user`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ username })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            window.modalManager.showModal('success', `User "${username}" has been deleted successfully.`);
+            // Refresh the users list
+            loadUsers();
+        } else {
+            window.modalManager.showModal('error', result.error || 'Failed to delete user');
+        }
+        
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        window.modalManager.showModal('error', 'Network error. Please try again.');
+    }
+}
+
+// Additional admin utility functions
+async function loadRolesForUserManagement() {
+    // This function loads roles for the user management section
+    try {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/roles`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const roles = await response.json();
+            console.log('Roles loaded for user management:', roles);
+            // TODO: Populate role filters/dropdowns in user management section
+        } else {
+            console.error('Failed to load roles for user management');
+        }
+    } catch (error) {
+        console.error('Error loading roles for user management:', error);
+    }
+}
+
+function setupUserFilter() {
+    // This function sets up filtering functionality for the user management section
+    const filterInput = document.getElementById('userFilter');
+    if (filterInput) {
+        filterInput.addEventListener('input', function(e) {
+            const filterText = e.target.value.toLowerCase();
+            const userItems = document.querySelectorAll('.user-item');
+            
+            userItems.forEach(item => {
+                const userText = item.textContent.toLowerCase();
+                if (userText.includes(filterText)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    }
+}
+
 // Patient Page Functionality
 function initializePatientPage() {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';

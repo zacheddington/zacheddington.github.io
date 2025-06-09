@@ -1748,14 +1748,14 @@ async function runDatabaseMigrations() {
         const client = await pool.connect();
         
         // Check if password_change_required column exists, if not add it
-        const columnCheck = await client.query(`
+        const passwordColumnCheck = await client.query(`
             SELECT column_name 
             FROM information_schema.columns 
             WHERE table_name = 'tbl_user' 
             AND column_name = 'password_change_required'
         `);
         
-        if (columnCheck.rows.length === 0) {
+        if (passwordColumnCheck.rows.length === 0) {
             console.log('Adding password_change_required column to tbl_user table...');
             
             await client.query(`
@@ -1777,7 +1777,43 @@ async function runDatabaseMigrations() {
             console.log('password_change_required column already exists');
         }
         
+        // Check and add 2FA columns
+        const twofaColumns = [
+            { name: 'twofa_secret', type: 'VARCHAR(32)', description: '2FA secret key' },
+            { name: 'twofa_enabled', type: 'BOOLEAN DEFAULT FALSE', description: '2FA enabled flag' },
+            { name: 'backup_codes', type: 'TEXT', description: '2FA backup codes (JSON)' },
+            { name: 'twofa_setup_date', type: 'TIMESTAMP', description: '2FA setup timestamp' }
+        ];
+        
+        for (const column of twofaColumns) {
+            const columnCheck = await client.query(`
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name = 'tbl_user' 
+                AND column_name = $1
+            `, [column.name]);
+            
+            if (columnCheck.rows.length === 0) {
+                console.log(`Adding ${column.name} column to tbl_user table (${column.description})...`);
+                
+                await client.query(`
+                    ALTER TABLE tbl_user ADD COLUMN ${column.name} ${column.type}
+                `);
+                
+                console.log(`Successfully added ${column.name} column`);
+            } else {
+                console.log(`${column.name} column already exists`);
+            }
+        }
+        
+        // Ensure twofa_enabled has default value for existing users
+        await client.query(`
+            UPDATE tbl_user SET twofa_enabled = FALSE WHERE twofa_enabled IS NULL
+        `);
+        
+        console.log('Database migration completed successfully');
         client.release();
+        
     } catch (err) {
         console.error('Database migration error:', err.message);
         // Don't fail server startup for migration errors
