@@ -1509,12 +1509,12 @@ async function createUser() {
         });
         
         const result = await response.json();
-        
-        if (response.ok) {
+          if (response.ok) {
             window.modalManager.showModal('success', 'User created successfully!');
             form.reset();
             clearCreateUserErrors();
             document.getElementById('createUserSection').classList.add('hidden');
+            document.getElementById('adminChoice').classList.remove('hidden');
             // Refresh the users list
             loadUsers();
         } else {
