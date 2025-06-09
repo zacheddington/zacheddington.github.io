@@ -711,11 +711,14 @@ function initializeProfilePage() {
             cancelPasswordBtn.addEventListener('click', function() {
                 passwordForm.reset();
                 clearPasswordErrors();
-                
-                // Reset password strength indicators after clearing
+                  // Reset password strength indicators after clearing
                 const newPassword = document.getElementById('newPassword');
                 if (newPassword) {
-                    updatePasswordStrength('', newPassword.id);
+                    const strengthFill = newPassword.parentNode.querySelector('.password-strength-fill');
+                    const strengthText = newPassword.parentNode.querySelector('.password-strength-text');
+                    if (strengthFill && strengthText) {
+                        updatePasswordStrength(newPassword, strengthFill, strengthText);
+                    }
                 }
                 
                 // Hide the clear button after clearing
@@ -753,10 +756,14 @@ function initializeProfilePage() {
                 if (window.fieldStateManager) {
                     window.fieldStateManager.updateFieldState(confirmPassword);
                 }
-            });
-              newPassword.addEventListener('input', function() {
+            });            newPassword.addEventListener('input', function() {
                 validatePasswordMatch();
-                updatePasswordStrength(newPassword.value, newPassword.id);
+                // Update password strength using the unified system
+                const strengthFill = newPassword.parentNode.querySelector('.password-strength-fill');
+                const strengthText = newPassword.parentNode.querySelector('.password-strength-text');
+                if (strengthFill && strengthText) {
+                    updatePasswordStrength(newPassword, strengthFill, strengthText);
+                }
                 toggleClearButton();
                 // Update field states
                 if (window.fieldStateManager) {
@@ -1208,11 +1215,14 @@ function clearPasswordErrors() {
             window.fieldStateManager.updateFieldState(input);
         });
     }
-    
-    // Reset password strength indicators for empty password fields
+      // Reset password strength indicators for empty password fields
     const newPasswordField = passwordSection.querySelector('#newPassword');
     if (newPasswordField && !newPasswordField.value.trim()) {
-        updatePasswordStrength('', newPasswordField.id);
+        const strengthFill = newPasswordField.parentNode.querySelector('.password-strength-fill');
+        const strengthText = newPasswordField.parentNode.querySelector('.password-strength-text');
+        if (strengthFill && strengthText) {
+            updatePasswordStrength(newPasswordField, strengthFill, strengthText);
+        }
     }
     
     // Hide the clear button if all password fields are empty after clearing errors
