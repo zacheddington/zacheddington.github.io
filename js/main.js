@@ -152,13 +152,15 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                 document.getElementById('username').focus();
             });
         }
-        
-        loginForm.addEventListener('submit', async function(e) {
+          loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            // Close any existing modal before processing new submission
             if (modalManager.isShowingModal) {
-                return;
-            }            const submitBtn = loginForm.querySelector('button[type="submit"]');
+                modalManager.closeModal();
+            }
+
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             
             // Update button text based on mode
