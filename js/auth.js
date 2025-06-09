@@ -681,3 +681,12 @@ window.SessionManager = SessionManager;
 
 // Run auth check when page loads
 document.addEventListener('DOMContentLoaded', checkAuth);
+
+// Handle bfcache restoration to ensure proper auth state
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        console.log('Page restored from bfcache, revalidating auth state...');
+        // Re-run authentication check when page is restored from bfcache
+        checkAuth();
+    }
+});

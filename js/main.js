@@ -37,7 +37,8 @@ function updateAdminMenuItem(isAdmin) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {    // Detect if running locally or in production
+// Handle both normal page loads and back/forward cache restores
+function initializePage() {    // Detect if running locally or in production
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     const FADE_DURATION = 500;
@@ -381,9 +382,18 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
         initializeAdminPage();
     }
     
-    // Initialize patient page if present
-    if (document.getElementById('patientChoice')) {
+    // Initialize patient page if present    if (document.getElementById('patientChoice')) {
         initializePatientPage();
+    }
+}
+
+// Handle both normal page loads and bfcache restores
+document.addEventListener('DOMContentLoaded', initializePage);
+window.addEventListener('pageshow', function(event) {
+    // If page was restored from bfcache, reinitialize
+    if (event.persisted) {
+        console.log('Page restored from bfcache, reinitializing...');
+        initializePage();
     }
 });
 
