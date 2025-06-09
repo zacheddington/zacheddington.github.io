@@ -1578,1243 +1578,144 @@ function setupCreateUserFieldValidation() {
     });
 }
 
-async function createUser() {
-    const submitBtn = document.getElementById('createUserSubmitBtn');
-    const originalText = submitBtn.textContent;
-    let response = null;
+// Password strength indicator functions
+function addPasswordStrengthIndicator(passwordField) {
+    if (!passwordField || passwordField.dataset.strengthAdded === 'true') {
+        return; // Already added or field doesn't exist
+    }
     
-    try {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Creating User...';
-        
-        // Pre-flight connectivity check
-        const connectivity = await checkConnectivity();
-        if (!connectivity.connected) {
-            throw new Error(`Connection failed: ${connectivity.error}`);
-        }
-        
-        // Get form data
-        const formData = {
-            firstName: document.getElementById('firstName').value.trim(),
-            middleName: document.getElementById('middleName').value.trim(),
-            lastName: document.getElementById('lastName').value.trim(),
-            email: document.getElementById('email').value.trim(),
-            username: document.getElementById('newUsername').value.trim(),
-            password: document.getElementById('newPassword').value,
-            roleKey: document.getElementById('userRole').value
+    // Create strength indicator container
+    const strengthContainer = document.createElement('div');
+    strengthContainer.className = 'password-strength-container';
+    strengthContainer.style.marginTop = '5px';
+    
+    // Create strength bar
+    const strengthBar = document.createElement('div');
+    strengthBar.className = 'password-strength-bar';
+    strengthBar.style.height = '4px';
+    strengthBar.style.backgroundColor = '#e0e0e0';
+    strengthBar.style.borderRadius = '2px';
+    strengthBar.style.overflow = 'hidden';
+    
+    const strengthFill = document.createElement('div');
+    strengthFill.className = 'password-strength-fill';
+    strengthFill.style.height = '100%';
+    strengthFill.style.width = '0%';
+    strengthFill.style.transition = 'width 0.3s ease, background-color 0.3s ease';
+    strengthFill.style.borderRadius = '2px';
+    
+    strengthBar.appendChild(strengthFill);
+    
+    // Create strength text
+    const strengthText = document.createElement('div');
+    strengthText.className = 'password-strength-text';
+    strengthText.style.fontSize = '12px';
+    strengthText.style.marginTop = '2px';
+    strengthText.style.color = '#666';
+    strengthText.textContent = 'Password strength will appear here';
+    
+    strengthContainer.appendChild(strengthBar);
+    strengthContainer.appendChild(strengthText);
+    
+    // Insert after the password field
+    passwordField.parentNode.insertBefore(strengthContainer, passwordField.nextSibling);
+    
+    // Add event listener
+    passwordField.addEventListener('input', function() {
+        updatePasswordStrength(passwordField, strengthFill, strengthText);
+    });
+    
+    // Mark as added to prevent duplicates
+    passwordField.dataset.strengthAdded = 'true';
+}
+
+function updatePasswordStrength(passwordField, strengthFill, strengthText) {
+    const password = passwordField.value;
+    const strength = calculatePasswordStrength(password);
+    
+    // Update strength bar
+    strengthFill.style.width = strength.percentage + '%';
+    strengthFill.style.backgroundColor = strength.color;
+    
+    // Update strength text
+    strengthText.textContent = strength.message;
+    strengthText.style.color = strength.color;
+}
+
+function calculatePasswordStrength(password) {
+    if (!password) {
+        return {
+            percentage: 0,
+            color: '#e0e0e0',
+            message: 'Enter a password'
         };
-        
-        // Validate required fields
-        if (!formData.firstName || !formData.lastName || !formData.email || !formData.username || !formData.password || !formData.roleKey) {
-            throw new Error('All fields except middle name are required.');
-        }
-        
-        // Validate password confirmation
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        if (formData.password !== confirmPassword) {
-            throw new Error('Passwords do not match.');
-        }
-        
-        // Validate character limits
-        if (formData.firstName.length > 50) {
-            throw new Error('First name must be 50 characters or less.');
-        }
-        if (formData.middleName && formData.middleName.length > 50) {
-            throw new Error('Middle name must be 50 characters or less.');
-        }
-        if (formData.lastName.length > 50) {
-            throw new Error('Last name must be 50 characters or less.');
-        }
-        if (formData.email.length > 50) {
-            throw new Error('Email must be 50 characters or less.');
-        }
-        if (formData.username.length > 50) {
-            throw new Error('Username must be 50 characters or less.');
-        }
-        
-        // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(formData.email)) {
-            throw new Error('Please enter a valid email address.');
-        }
-        
-        // Validate password strength using healthcare standards
-        const passwordValidation = validatePasswordStrength(formData.password);
-        if (!passwordValidation.isValid) {
-            const errorMessages = passwordValidation.failed.join('\n• ');
-            throw new Error(`Password does not meet security requirements:\n• ${errorMessages}`);
-        }
-        
-        const token = localStorage.getItem('token');
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        
-        response = await fetch(`${API_URL}/api/create-user`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(formData)
-        });
-        
-        const result = await response.json();
-          if (response.ok) {
-            // Clear the form
-            document.getElementById('createUserForm').reset();
-            clearCreateUserErrors();
-            
-            // Show success modal with simple personalized message
-            const userName = formData.middleName 
-                ? `${formData.firstName} ${formData.middleName} ${formData.lastName}` 
-                : `${formData.firstName} ${formData.lastName}`;
-            const successMessage = `Success, new user for ${userName} created!`;
-            window.modalManager.showModal('success', successMessage);
-            
-            // Redirect back to admin choice page after brief delay
-            setTimeout(() => {
-                window.modalManager.closeModal();
-                // Navigate back to main admin page
-                document.getElementById('createUserSection').classList.add('hidden');
-                document.getElementById('adminChoice').classList.remove('hidden');
-            }, 2500);
-            
-            // Refresh users list if we're on manage users section
-            if (typeof loadUsers === 'function' && !document.getElementById('manageUsersSection').classList.contains('hidden')) {
-                setTimeout(() => {
-                    loadUsers();
-                }, 1000);
-            }
-        } else {
-            throw new Error(result.error || 'Failed to create user');
-        }
-        
-    } catch (error) {
-        console.error('Create user error:', error);
-        
-        // Use enhanced error categorization
-        const errorInfo = categorizeError(error, response);
-        
-        // Show appropriate feedback based on error type
-        if (errorInfo.modal) {
-            window.modalManager.showModal('error', errorInfo.message);
-        } else {
-            showCreateUserError(errorInfo.message);
-        }
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
-    }
-}
-
-function showCreateUserError(message) {
-    const createUserSection = document.getElementById('createUserSection');
-    showSectionMessage(createUserSection, message, 'error');
-}
-
-function clearCreateUserErrors() {
-    const createUserSection = document.getElementById('createUserSection');
-    
-    // Clear section-level error messages
-    const errorMessage = createUserSection.querySelector('.section-message.error-message');
-    if (errorMessage) {
-        errorMessage.remove();
     }
     
-    // Clear field-level errors
-    const errorGroups = createUserSection.querySelectorAll('.form-group.error');
-    errorGroups.forEach(group => {
-        group.classList.remove('error');
-        const errorMsg = group.querySelector('.error-message');
-        if (errorMsg) {
-            errorMsg.remove();
-        }
-    });
+    let score = 0;
+    let feedback = [];
     
-    // Clear success states
-    const successGroups = createUserSection.querySelectorAll('.form-group.success');
-    successGroups.forEach(group => {
-        group.classList.remove('success');
-        const successMsg = group.querySelector('.success-message');
-        if (successMsg) {
-            successMsg.remove();
-        }
-    });      // Clear password matching classes
-    const passwordInputs = createUserSection.querySelectorAll('input[type="password"]');
-    passwordInputs.forEach(input => {
-        input.classList.remove('password-match', 'password-mismatch');
-    });
-    
-    // Update field states using the field state manager
-    if (window.fieldStateManager) {
-        const allFields = createUserSection.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], select');
-        allFields.forEach(field => {
-            window.fieldStateManager.updateFieldState(field);
-        });
-    }
-}
-
-// User Management Functions
-let allUsers = [];
-let currentRoles = [];
-let currentSort = { column: null, direction: null }; // 'asc', 'desc', or null
-
-async function loadUsers() {
-    try {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const usersLoading = document.getElementById('usersLoading');
-        const usersTableBody = document.getElementById('usersTableBody');
-        
-        if (usersLoading) usersLoading.style.display = 'block';
-        if (usersTableBody) usersTableBody.innerHTML = '';
-        
-        const response = await fetch(`${API_URL}/api/users`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.ok) {
-            allUsers = await response.json();
-            await loadRolesForUserManagement();
-            setupTableSorting();
-            displayUsers(allUsers);
-        } else {
-            console.error('Failed to load users');
-            if (usersTableBody) {
-                usersTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #dc3545;">Failed to load users. Please refresh the page.</td></tr>';
-            }
-        }
-    } catch (error) {
-        console.error('Error loading users:', error);
-        const usersTableBody = document.getElementById('usersTableBody');
-        if (usersTableBody) {
-            usersTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #dc3545;">Error loading users. Please check your connection.</td></tr>';
-        }
-    } finally {
-        const usersLoading = document.getElementById('usersLoading');
-        if (usersLoading) usersLoading.style.display = 'none';
-    }
-}
-
-async function loadRolesForUserManagement() {
-    try {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${API_URL}/api/roles`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.ok) {
-            currentRoles = await response.json();
-        } else {
-            console.error('Failed to load roles for user management');
-        }
-    } catch (error) {
-        console.error('Error loading roles for user management:', error);
-    }
-}
-
-function setupTableSorting() {
-    const table = document.getElementById('usersTable');
-    if (!table) return;
-    
-    const headers = table.querySelectorAll('thead th');
-    
-    // Define sortable columns (exclude Actions column)
-    const sortableColumns = [
-        { index: 0, key: 'username', label: 'Username' },
-        { index: 1, key: 'fullName', label: 'Full Name' },
-        { index: 2, key: 'email', label: 'Email' },
-        { index: 3, key: 'role', label: 'Role' },
-        { index: 4, key: 'created', label: 'Created' }
-    ];    sortableColumns.forEach(column => {
-        const header = headers[column.index];
-        if (header) {
-            // Make header clickable and add styling
-            header.style.cursor = 'pointer';
-            header.style.userSelect = 'none';
-            header.classList.add('sortable-column');
-            header.setAttribute('title', `Click to sort by ${column.label}`);
-            
-            // Add sort indicator container with sortable wrapper
-            const originalText = header.textContent;
-            header.innerHTML = `
-                <div class="sortable-header">
-                    <span class="header-text">${originalText}</span>
-                    <span class="sort-indicator" data-column="${column.key}"></span>
-                </div>
-            `;
-            
-            // Add click event listener
-            header.addEventListener('click', () => handleSort(column.key));
-        }
-    });
-}
-
-function handleSort(columnKey) {
-    // Determine new sort direction
-    if (currentSort.column === columnKey) {
-        // Same column clicked
-        if (currentSort.direction === null) {
-            currentSort.direction = 'asc';
-        } else if (currentSort.direction === 'asc') {
-            currentSort.direction = 'desc';
-        } else {
-            // Remove sort
-            currentSort.column = null;
-            currentSort.direction = null;
-        }
+    // Length check
+    if (password.length >= 8) {
+        score += 20;
     } else {
-        // Different column clicked
-        currentSort.column = columnKey;
-        currentSort.direction = 'asc';
-    }
-      // Update sort indicators
-    updateSortIndicators();
-    
-    // Update reset sort button visibility
-    updateResetSortButton();
-    
-    // Sort and display users
-    const sortedUsers = getSortedUsers();
-    displayUsers(sortedUsers);
-}
-
-function updateSortIndicators() {
-    const indicators = document.querySelectorAll('.sort-indicator');
-    
-    indicators.forEach(indicator => {
-        const column = indicator.dataset.column;
-        const header = indicator.closest('th');
-        
-        if (column === currentSort.column) {
-            if (currentSort.direction === 'asc') {
-                indicator.innerHTML = ' ▲';
-                indicator.className = 'sort-indicator sort-asc';
-                header.setAttribute('title', `Sorted ascending. Click to sort descending.`);
-            } else if (currentSort.direction === 'desc') {
-                indicator.innerHTML = ' ▼';
-                indicator.className = 'sort-indicator sort-desc';
-                header.setAttribute('title', `Sorted descending. Click to remove sort.`);
-            }
-        } else {
-            indicator.innerHTML = '';
-            indicator.className = 'sort-indicator';
-            const columnLabel = header.querySelector('.header-text').textContent;
-            header.setAttribute('title', `Click to sort by ${columnLabel}`);
-        }
-    });
-}
-
-function getSortedUsers() {
-    if (!currentSort.column || !currentSort.direction) {
-        return [...allUsers];
+        feedback.push('at least 8 characters');
     }
     
-    return [...allUsers].sort((a, b) => {
-        let valueA, valueB;
-        
-        switch (currentSort.column) {
-            case 'username':
-                valueA = a.username || '';
-                valueB = b.username || '';
-                break;
-            case 'fullName':
-                valueA = [a.first_name, a.middle_name, a.last_name]
-                    .filter(name => name && name.trim())
-                    .join(' ') || '';
-                valueB = [b.first_name, b.middle_name, b.last_name]
-                    .filter(name => name && name.trim())
-                    .join(' ') || '';
-                break;
-            case 'email':
-                valueA = a.email || '';
-                valueB = b.email || '';
-                break;
-            case 'role':
-                valueA = (a.roles && a.roles.length > 0) ? a.roles[0] : 'User';
-                valueB = (b.roles && b.roles.length > 0) ? b.roles[0] : 'User';
-                break;
-            case 'created':
-                valueA = new Date(a.date_created);
-                valueB = new Date(b.date_created);
-                break;
-            default:
-                return 0;
-        }
-        
-        // Handle date sorting
-        if (currentSort.column === 'created') {
-            return currentSort.direction === 'asc' ? valueA - valueB : valueB - valueA;
-        }
-        
-        // Handle string sorting (case insensitive)
-        const comparison = valueA.toString().toLowerCase().localeCompare(valueB.toString().toLowerCase());
-        return currentSort.direction === 'asc' ? comparison : -comparison;
-    });
-}
-
-function displayUsers(users) {
-    const usersTableBody = document.getElementById('usersTableBody');
-    const noUsersFound = document.getElementById('noUsersFound');
-    
-    if (!usersTableBody) return;
-    
-    if (users.length === 0) {
-        usersTableBody.innerHTML = '';
-        if (noUsersFound) noUsersFound.classList.remove('hidden');
-        return;
+    // Uppercase check
+    if (/[A-Z]/.test(password)) {
+        score += 20;
+    } else {
+        feedback.push('uppercase letter');
     }
     
-    if (noUsersFound) noUsersFound.classList.add('hidden');
-    
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    usersTableBody.innerHTML = users.map(user => {
-        const fullName = [user.first_name, user.middle_name, user.last_name]
-            .filter(name => name && name.trim())
-            .join(' ');
-        
-        const primaryRole = user.roles && user.roles.length > 0 ? user.roles[0] : 'User';
-        const primaryRoleKey = user.role_keys && user.role_keys.length > 0 ? user.role_keys[0] : 2;
-        
-        const createdDate = new Date(user.date_created).toLocaleDateString();
-        
-        const isCurrentUser = currentUser.username === user.username;
-        const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, '');
-        
-        return `
-            <tr data-user-id="${user.user_key}">
-                <td>
-                    <strong>${user.username}</strong>
-                    ${isCurrentUser ? '<span style="color: #009688; font-size: 0.8rem;">(You)</span>' : ''}
-                </td>
-                <td>
-                    <div class="user-name">
-                        <span class="user-full-name">${fullName || 'N/A'}</span>
-                    </div>
-                </td>
-                <td>${user.email || 'N/A'}</td>
-                <td>
-                    <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}">
-                        ${primaryRole}
-                    </span>
-                </td>
-                <td>
-                    <span class="user-created">${createdDate}</span>
-                </td>
-                <td>
-                    <div class="user-actions">
-                        <button class="btn-icon btn-edit" onclick="editUserRole(${user.user_key})" title="Edit Role" ${isCurrentUser ? 'disabled' : ''}>
-                            ✏️
-                        </button>
-                        <button class="btn-icon btn-delete" onclick="deleteUser(${user.user_key}, '${user.username}')" title="Delete User" ${isCurrentUser ? 'disabled' : ''}>
-                            🗑️
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
-function filterUsers() {
-    const filterValue = document.getElementById('userFilter').value.toLowerCase();
-    
-    if (!filterValue.trim()) {
-        const sortedUsers = getSortedUsers();
-        displayUsers(sortedUsers);
-        return;
+    // Lowercase check
+    if (/[a-z]/.test(password)) {
+        score += 20;
+    } else {
+        feedback.push('lowercase letter');
     }
     
-    const filteredUsers = allUsers.filter(user => {
-        const fullName = [user.first_name, user.middle_name, user.last_name]
-            .filter(name => name && name.trim())
-            .join(' ').toLowerCase();
-        
-        
-        return user.username.toLowerCase().includes(filterValue) ||
-               fullName.includes(filterValue) ||
-               (user.email && user.email.toLowerCase().includes(filterValue)) ||
-                             (user.roles && user.roles.some(role => role.toLowerCase().includes(filterValue)));
-    });
-    
-    // Apply current sorting to filtered results
-    const sortedFilteredUsers = currentSort.column && currentSort.direction 
-        ? filteredUsers.sort((a, b) => {
-            // Same sorting logic as getSortedUsers but for filtered array
-            let valueA, valueB;
-            
-            switch (currentSort.column) {
-                case 'username':
-                    valueA = a.username || '';
-                    valueB = b.username || '';
-                    break;
-                case 'fullName':
-                    valueA = [a.first_name, a.middle_name, a.last_name]
-                        .filter(name => name && name.trim())
-                        .join(' ') || '';
-                    valueB = [b.first_name, b.middle_name, b.last_name]
-                        .filter(name => name && name.trim())
-                        .join(' ') || '';
-                break;
-                case 'email':
-                    valueA = a.email || '';
-                    valueB = b.email || '';
-                    break;
-                case 'role':
-                    valueA = (a.roles && a.roles.length > 0) ? a.roles[0] : 'User';
-                    valueB = (b.roles && b.roles.length > 0) ? b.roles[0] : 'User';
-                    break;
-                case 'created':
-                    valueA = new Date(a.date_created);
-                    valueB = new Date(b.date_created);
-                    break;
-                default:
-                return 0;
-            }
-            
-            if (currentSort.column === 'created') {
-                return currentSort.direction === 'asc' ? valueA - valueB : valueB - valueA;
-            }
-            
-            const comparison = valueA.toString().toLowerCase().localeCompare(valueB.toString().toLowerCase());
-            return currentSort.direction === 'asc' ? comparison : -comparison;
-        })
-        : filteredUsers;
-    
-    displayUsers(sortedFilteredUsers);
-}
-
-function setupUserFilter() {
-    const userFilter = document.getElementById('userFilter');
-    if (userFilter) {
-        userFilter.addEventListener('input', filterUsers);
+    // Number check
+    if (/\d/.test(password)) {
+        score += 20;
+    } else {
+        feedback.push('number');
     }
     
-    // Setup reset sort button
-    const resetSortBtn = document.getElementById('resetSort');
-    if (resetSortBtn) {
-        resetSortBtn.addEventListener('click', function() {
-            currentSort.column = null;
-            currentSort.direction = null;
-            updateSortIndicators();
-            updateResetSortButton();
-            
-            // Re-apply current filter with no sorting
-            filterUsers();
-        });
-    }
-}
-
-function updateResetSortButton() {
-    const resetSortBtn = document.getElementById('resetSort');
-    if (resetSortBtn) {
-        if (currentSort.column && currentSort.direction) {
-            resetSortBtn.style.display = 'inline-block';
-            resetSortBtn.textContent = `Clear Sort (${currentSort.column} ${currentSort.direction})`;
-        } else {
-            resetSortBtn.style.display = 'none';
-        }
-    }
-}
-
-function editUserRole(userId) {
-    const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-    if (!row) return;
-    
-    const roleCell = row.querySelector('td:nth-child(4)');
-    const actionsCell = row.querySelector('td:nth-child(6)');
-    
-    const currentRoleSpan = roleCell.querySelector('.user-role');
-    const currentRoleKey = currentRoleSpan.dataset.roleKey;
-    
-    // Create role select dropdown
-    const roleSelect = document.createElement('select');
-    roleSelect.className = 'role-select';
-    roleSelect.innerHTML = currentRoles.map(role => 
-        `<option value="${role.role_key}" ${role.role_key == currentRoleKey ? 'selected' : ''}>
-            ${role.role_name}
-        </option>`
-    ).join('');
-    
-    // Replace role display with select
-    roleCell.innerHTML = '';
-    roleCell.appendChild(roleSelect);
-    
-    // Update actions to show save/cancel
-    actionsCell.innerHTML = `
-        <div class="user-actions">
-            <button class="btn-icon btn-save" onclick="saveUserRole(${userId})" title="Save Changes">
-                ✓
-            </button>
-            <button class="btn-icon btn-cancel" onclick="cancelEditUserRole(${userId})" title="Cancel">
-                ✕
-            </button>
-        </div>
-    `;
-    
-    roleSelect.focus();
-}
-
-function cancelEditUserRole(userId) {
-    // Reload the users to reset the UI
-    const user = allUsers.find(u => u.user_key == userId);
-    if (user) {
-        const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-        if (row) {
-            const primaryRole = user.roles && user.roles.length > 0 ? user.roles[0] : 'User';
-            const primaryRoleKey = user.role_keys && user.role_keys.length > 0 ? user.role_keys[0] : 2;
-            const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, '');
-            
-            const roleCell = row.querySelector('td:nth-child(4)');
-            const actionsCell = row.querySelector('td:nth-child(6)');
-            
-            roleCell.innerHTML = `
-                <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}">
-                    ${primaryRole}
-                </span>
-            `;
-            
-            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-            const isCurrentUser = currentUser.username === user.username;
-            
-            actionsCell.innerHTML = `
-                <div class="user-actions">
-                    <button class="btn-icon btn-edit" onclick="editUserRole(${userId})" title="Edit Role" ${isCurrentUser ? 'disabled' : ''}>
-                        ✏️
-                    </button>
-                    <button class="btn-icon btn-delete" onclick="deleteUser(${userId}, '${user.username}')" title="Delete User" ${isCurrentUser ? 'disabled' : ''}>
-                        🗑️
-                    </button>
-                </div>
-            `;
-        }
-    }
-}
-
-async function saveUserRole(userId) {
-    try {
-        const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-        if (!row) return;
-        
-        const roleSelect = row.querySelector('.role-select');
-        const newRoleKey = roleSelect.value;
-        
-        if (!newRoleKey) {
-            window.modalManager.showModal('error', 'Please select a role.');
-            return;
-        }
-        
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${API_URL}/api/users/${userId}/role`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ roleKey: newRoleKey })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            // Update the user in allUsers array
-            const userIndex = allUsers.findIndex(u => u.user_key == userId);
-            if (userIndex !== -1) {
-                const selectedRole = currentRoles.find(r => r.role_key == newRoleKey);
-                if (selectedRole) {
-                    allUsers[userIndex].roles = [selectedRole.role_name];
-                    allUsers[userIndex].role_keys = [selectedRole.role_key];
-                }
-            }
-            
-            // Refresh the display with current sort maintained
-            const sortedUsers = getSortedUsers();
-            displayUsers(sortedUsers);
-            
-            window.modalManager.showModal('success', `User role updated successfully to ${currentRoles.find(r => r.role_key == newRoleKey)?.role_name || 'Unknown'}.`);
-        } else {
-            throw new Error(result.error || 'Failed to update user role');
-        }
-        
-    } catch (error) {
-        console.error('Error updating user role:', error);
-        cancelEditUserRole(userId);
-        
-        const errorMessage = error.message.includes('admin privileges') 
-            ? 'You cannot remove admin privileges from your own account.' 
-            : error.message || 'Failed to update user role. Please try again.';
-            
-        window.modalManager.showModal('error', errorMessage);
-    }
-}
-
-async function deleteUser(userId, username) {
-    // Prevent multiple simultaneous delete operations
-    if (deleteUser.isDeleting) {
-        return;
+    // Special character check
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        score += 20;
+    } else {
+        feedback.push('special character');
     }
     
-    try {
-        deleteUser.isDeleting = true;
-        
-        // Show confirmation modal
-        const confirmDelete = await showDeleteUserModal(username);
-        if (!confirmDelete) {
-            deleteUser.isDeleting = false;
-            return;
-        }
-        
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${API_URL}/api/users/${userId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            // Remove user from allUsers array
-            allUsers = allUsers.filter(u => u.user_key != userId);
-            
-            // Refresh the display with current sort maintained
-            const sortedUsers = getSortedUsers();
-            displayUsers(sortedUsers);
-            
-            window.modalManager.showModal('success', `User "${username}" has been successfully deleted from the system.`);
-        } else {
-            throw new Error(result.error || 'Failed to delete user');
-        }
-          } catch (error) {
-        console.error('Error deleting user:', error);
-        
-        const errorMessage = error.message.includes('your own account') 
-            ? 'You cannot delete your own account.' 
-            : error.message || 'Failed to delete user. Please try again.';
-            
-        window.modalManager.showModal('error', errorMessage);
-    } finally {
-        deleteUser.isDeleting = false;
-    }
-}
-
-function showDeleteUserModal(username) {
-    return new Promise((resolve) => {
-        // Prevent duplicate modals
-        const existingModal = document.querySelector('.modal-overlay');
-        if (existingModal) {
-            return resolve(false);
-        }
-        
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>⚠️ Delete User Account</h3>
-                </div>
-                <div class="modal-body">
-                    <p><strong>Are you sure you want to delete the user "${username}"?</strong></p>
-                    <p style="color: #dc3545; margin-top: 1rem;">This action cannot be undone. The user account and all associated data will be permanently removed from the system.</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="modal-btn secondary" id="cancelDeleteUser">Cancel</button>
-                    <button class="modal-btn danger" id="confirmDeleteUser">Delete User</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        // Focus on the modal for accessibility
-        modal.focus();
-        
-        // Set up event handlers
-        const cancelHandler = () => {
-            document.body.removeChild(modal);
-            resolve(false);
-        };
-        
-        const confirmHandler = () => {
-            document.body.removeChild(modal);
-            resolve(true);
-        };
-        
-        document.getElementById('cancelDeleteUser').addEventListener('click', cancelHandler);
-        document.getElementById('confirmDeleteUser').addEventListener('click', confirmHandler);
-        
-        // Keyboard support
-        modal.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                cancelHandler();
-            } else if (e.key === 'Enter') {
-                confirmHandler();
-            }
-        });
-        
-        // Close on background click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                cancelHandler();
-            }
-        });
-    });
-}
-
-// 2FA Management Functions
-function initialize2FAManagement() {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    // Determine strength level and color
+    let level, color, message;
     
-    // Check current 2FA status on page load
-    check2FAStatus();
-    
-    // Set up event listeners for 2FA controls
-    const enableBtn = document.getElementById('enable2FA');
-    const disableBtn = document.getElementById('disable2FA');
-    
-    if (enableBtn) {
-        enableBtn.addEventListener('click', () => {
-            window.location.href = '../2fa-setup/';
-        });
+    if (score < 40) {
+        level = 'Weak';
+        color = '#ff4757';
+        message = `Weak - Add: ${feedback.join(', ')}`;
+    } else if (score < 60) {
+        level = 'Fair';
+        color = '#ffa502';
+        message = `Fair - Add: ${feedback.join(', ')}`;
+    } else if (score < 80) {
+        level = 'Good';
+        color = '#3742fa';
+        message = feedback.length > 0 ? `Good - Add: ${feedback.join(', ')}` : 'Good password';
+    } else {
+        level = 'Strong';
+        color = '#2ed573';
+        message = 'Strong password';
     }
     
-    if (disableBtn) {
-        disableBtn.addEventListener('click', disable2FA);
-    }
-}
-
-async function check2FAStatus() {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-    const token = localStorage.getItem('token');
-    
-    if (!token) return;
-    
-    try {
-        const response = await fetch(`${API_URL}/api/2fa/status`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            update2FADisplay(data.enabled);
-        } else {
-            console.error('Failed to check 2FA status');
-        }
-    } catch (error) {
-        console.error('Error checking 2FA status:', error);
-    }
-}
-
-function update2FADisplay(enabled) {
-    const statusElement = document.getElementById('twofaStatus');
-    const enableBtn = document.getElementById('enable2FA');
-    const disableBtn = document.getElementById('disable2FA');
-    
-    if (statusElement) {
-        statusElement.textContent = enabled ? 'Enabled' : 'Disabled';
-        statusElement.className = `status-badge ${enabled ? 'enabled' : 'disabled'}`;
-    }
-    
-    if (enableBtn) {
-        enableBtn.style.display = enabled ? 'none' : 'inline-block';
-    }
-    
-    if (disableBtn) {
-        disableBtn.style.display = enabled ? 'inline-block' : 'none';
-    }
-}
-
-async function disable2FA() {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-        alert('Authentication required. Please log in again.');
-        return;
-    }
-    
-    // Confirm disable action
-    const confirmed = confirm('Are you sure you want to disable 2FA? This will reduce the security of your account. You will need to enter your current password to confirm.');
-    if (!confirmed) return;
-    
-    // Prompt for current password
-    const currentPassword = prompt('Please enter your current password to confirm disabling 2FA:');
-    if (!currentPassword) return;
-    
-    try {
-        const response = await fetch(`${API_URL}/api/2fa/disable`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ currentPassword })
-        });
-        
-        if (response.ok) {
-            update2FADisplay(false);
-            alert('2FA has been disabled successfully.');
-        } else {
-            const error = await response.json();
-            alert(`Failed to disable 2FA: ${error.error || 'Unknown error'}`);
-        }
-    } catch (error) {
-        console.error('Error disabling 2FA:', error);
-        alert('An error occurred while disabling 2FA. Please try again.');
-    }
-}
-
-// Enhanced login function to handle 2FA
-async function enhancedLogin(event) {
-    event.preventDefault();
-    
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-    
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;    const totpCode = document.getElementById('twofaCode')?.value || '';
-    
-    // Clear any previous error messages
-    const errorDiv = document.getElementById('error-message');
-    if (errorDiv) errorDiv.style.display = 'none';
-    
-    try {
-        const response = await fetch(`${API_URL}/api/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                username,
-                password,
-                totpCode
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            if (data.requires2FA) {
-                // Show 2FA input field
-                show2FAInput();
-                showError('Please enter your 2FA code to complete login.');
-                return;
-            }
-            
-            // Successful login
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            
-            // Create session for this tab
-            const tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            sessionStorage.setItem('currentTabId', tabId);
-            
-            // Redirect to welcome page
-            window.location.href = './welcome/';
-        } else {
-            showError(data.error || 'Login failed');
-            
-            // If 2FA was required but failed, keep the 2FA input visible
-            if (data.error && data.error.includes('2FA')) {
-                show2FAInput();
-            }
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showError('Network error. Please try again.');
-    }
-}
-
-function show2FAInput() {
-    const totpContainer = document.getElementById('twofaGroup');
-    if (totpContainer) {
-        totpContainer.classList.remove('hidden');
-        const totpInput = document.getElementById('twofaCode');
-        if (totpInput) {
-            totpInput.focus();
-        }
-    }
-}
-
-function showError(message) {
-    const errorDiv = document.getElementById('error-message');
-    if (errorDiv) {
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-    }
-}
-
-// Patient Page Initialization
-function initializePatientPage() {
-    const createPatientBtn = document.getElementById('createPatientBtn');
-    const managePatientsBtn = document.getElementById('managePatientsBtn');
-    const createPatientSection = document.getElementById('createPatientSection');
-    const managePatientsSection = document.getElementById('managePatientsSection');
-    const patientChoice = document.getElementById('patientChoice');
-    const createPatientForm = document.getElementById('createPatientForm');
-    
-    // Handle create patient button
-    if (createPatientBtn) {
-        createPatientBtn.addEventListener('click', () => {
-            patientChoice.classList.add('hidden');
-            createPatientSection.classList.remove('hidden');
-            managePatientsSection.classList.add('hidden');
-        });
-    }
-    
-    // Handle manage patients button
-    if (managePatientsBtn) {
-        managePatientsBtn.addEventListener('click', () => {
-            patientChoice.classList.add('hidden');
-            createPatientSection.classList.add('hidden');
-            managePatientsSection.classList.remove('hidden');
-            loadPatients();
-        });
-    }
-    
-    // Handle create patient form submission
-    if (createPatientForm) {
-        createPatientForm.addEventListener('submit', handleCreatePatient);
-    }
-    
-    // Set up patient search/filter functionality
-    const patientFilter = document.getElementById('patientFilter');
-    if (patientFilter) {
-        patientFilter.addEventListener('input', filterPatients);
-    }
-    
-    // Add back buttons functionality
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('back-btn')) {
-            showPatientChoice();
-        }
-    });
-}
-
-function showPatientChoice() {
-    const patientChoice = document.getElementById('patientChoice');
-    const createPatientSection = document.getElementById('createPatientSection');
-    const managePatientsSection = document.getElementById('managePatientsSection');
-    
-    if (patientChoice) patientChoice.classList.remove('hidden');
-    if (createPatientSection) createPatientSection.classList.add('hidden');
-    if (managePatientsSection) managePatientsSection.classList.add('hidden');
-}
-
-async function handleCreatePatient(event) {
-    event.preventDefault();
-    
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-        alert('Authentication required. Please log in again.');
-        return;
-    }
-    
-    // Get form data
-    const formData = new FormData(event.target);
-    const patientData = {
-        firstName: formData.get('firstName'),
-        middleName: formData.get('middleName') || '',
-        lastName: formData.get('lastName'),
-        address: formData.get('address') || '',
-        city: formData.get('city') || '',
-        state: formData.get('state') || '',
-        zipCode: formData.get('zipCode') || '',
-        phone: formData.get('phone') || '',
-        acceptsTexts: formData.get('acceptsTexts') === 'on',
-        who: 'patient', // Default value
-        datewhen: new Date().toISOString()
+    return {
+        percentage: score,
+        color: color,
+        message: message,
+        level: level
     };
-    
-    try {
-        const response = await fetch(`${API_URL}/api/eeg`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(patientData)
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            alert('Patient created successfully!');
-            event.target.reset(); // Clear the form
-            showPatientChoice(); // Return to main choice screen
-        } else {
-            const error = await response.json();
-            alert(`Failed to create patient: ${error.error || 'Unknown error'}`);
-        }
-    } catch (error) {
-        console.error('Error creating patient:', error);
-        alert('An error occurred while creating the patient. Please try again.');
-    }
 }
 
-async function loadPatients() {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-        alert('Authentication required. Please log in again.');
-        return;
-    }
-    
-    const loadingDiv = document.getElementById('patientsLoading');
-    const tableBody = document.getElementById('patientsTableBody');
-    const noResultsDiv = document.getElementById('noPatientsFound');
-    
-    if (loadingDiv) loadingDiv.classList.remove('hidden');
-    if (noResultsDiv) noResultsDiv.classList.add('hidden');
-    
-    try {
-        const response = await fetch(`${API_URL}/api/patients`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            const patients = await response.json();
-            displayPatients(patients);
-        } else {
-            console.error('Failed to load patients');
-            if (tableBody) {
-                tableBody.innerHTML = '<tr><td colspan="6">Failed to load patients</td></tr>';
-            }
-        }
-    } catch (error) {
-        console.error('Error loading patients:', error);
-        if (tableBody) {
-            tableBody.innerHTML = '<tr><td colspan="6">Error loading patients</td></tr>';
-        }
-    } finally {
-        if (loadingDiv) loadingDiv.classList.add('hidden');
-    }
-}
-
-function displayPatients(patients) {
-    const tableBody = document.getElementById('patientsTableBody');
-    const noResultsDiv = document.getElementById('noPatientsFound');
-    
-    if (!tableBody) return;
-    
-    if (!patients || patients.length === 0) {
-        tableBody.innerHTML = '';
-        if (noResultsDiv) noResultsDiv.classList.remove('hidden');
-        return;
-    }
-    
-    if (noResultsDiv) noResultsDiv.classList.add('hidden');
-    
-    tableBody.innerHTML = patients.map(patient => `
-        <tr>
-            <td>${escapeHtml(patient.first_name)} ${escapeHtml(patient.middle_name || '')} ${escapeHtml(patient.last_name)}</td>
-            <td>${escapeHtml(patient.address || 'N/A')}</td>
-            <td>${escapeHtml(patient.phone || 'N/A')}</td>
-            <td>${patient.accepts_texts ? 'Yes' : 'No'}</td>
-            <td>${patient.date_when ? new Date(patient.date_when).toLocaleDateString() : 'N/A'}</td>
-            <td>
-                <button class="action-btn edit" onclick="editPatient(${patient.patient_key})">Edit</button>
-                <button class="action-btn delete" onclick="deletePatient(${patient.patient_key})">Delete</button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-function filterPatients() {
-    const filterValue = document.getElementById('patientFilter')?.value.toLowerCase() || '';
-    const table = document.getElementById('patientsTable');
-    const rows = table?.querySelectorAll('tbody tr') || [];
-    
-    rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        const shouldShow = text.includes(filterValue);
-        row.style.display = shouldShow ? '' : 'none';
-    });
-    
-    // Show/hide no results message
-    const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
-    const noResultsDiv = document.getElementById('noPatientsFound');
-    if (noResultsDiv) {
-        noResultsDiv.classList.toggle('hidden', visibleRows.length > 0 || filterValue === '');
-    }
-}
-
-async function editPatient(patientKey) {
-    // TODO: Implement patient editing functionality
-    alert('Patient editing functionality coming soon!');
-}
-
-async function deletePatient(patientKey) {
-    if (!confirm('Are you sure you want to delete this patient? This action cannot be undone.')) {
-        return;
-    }
-    
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-        alert('Authentication required. Please log in again.');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_URL}/api/patients/${patientKey}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            alert('Patient deleted successfully!');
-            loadPatients(); // Reload the patients list
-        } else {
-            const error = await response.json();
-            alert(`Failed to delete patient: ${error.error || 'Unknown error'}`);
-        }
-    } catch (error) {
-        console.error('Error deleting patient:', error);
-        alert('An error occurred while deleting the patient. Please try again.');
-    }
-}
-
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+// ...existing code...
