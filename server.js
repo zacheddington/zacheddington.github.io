@@ -3,6 +3,8 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const speakeasy = require('speakeasy');
+const QRCode = require('qrcode');
 require('dotenv').config();
 
 const app = express();
@@ -44,7 +46,8 @@ const authenticateToken = (req, res, next) => {
 app.post('/api/login', async (req, res) => {
     // Check if we're in local development mode without proper database
     const isLocalTest = process.env.NODE_ENV === 'development' && 
-                       process.env.DATABASE_URL?.includes('localhost');
+
+    process.env.DATABASE_URL?.includes('localhost');
     
     if (isLocalTest) {
         // Simple test credentials for local development
@@ -82,7 +85,7 @@ app.post('/api/login', async (req, res) => {
         }
     }    // Production database logic
     try {
-        const { username, password } = req.body;
+        const { username, password, twofaToken } = req.body;
 
         // Query user data including name information and roles
         // Use case-insensitive username comparison
@@ -92,7 +95,9 @@ app.post('/api/login', async (req, res) => {
              LEFT JOIN tbl_name_data n ON u.name_key = n.name_key 
              WHERE LOWER(u.username) = LOWER($1)`,
             [username]
-        );if (userResult.rows.length === 0) {
+        );
+
+        if (userResult.rows.length === 0) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
@@ -101,14 +106,57 @@ app.post('/api/login', async (req, res) => {
 
         if (!validPassword) {
             return res.status(401).json({ error: 'Invalid username or password' });
-        }// Query user roles from junction table
+        }
+
+        // Check if user has 2FA enabled
+        if (user.twofa_enabled && user.twofa_secret) {
+            if (!twofaToken) {
+                return res.status(200).json({ 
+                    requires2FA: true,
+                    message: '2FA verification required'
+                });
+            }
+
+            // Verify 2FA token
+            const verified = speakeasy.totp.verify({
+                secret: user.twofa_secret,
+                encoding: 'base32',
+                token: twofaToken,
+                window: 2
+            });
+
+            // Check backup codes if TOTP fails
+            let backupCodeUsed = false;
+            if (!verified && user.backup_codes) {
+                const backupCodes = JSON.parse(user.backup_codes);
+                const codeIndex = backupCodes.indexOf(twofaToken.toUpperCase());
+                
+                if (codeIndex !== -1) {
+                    // Remove used backup code
+                    backupCodes.splice(codeIndex, 1);
+                    await pool.query(
+                        'UPDATE tbl_user SET backup_codes = $1 WHERE user_key = $2',
+                        [JSON.stringify(backupCodes), user.user_key]
+                    );
+                    backupCodeUsed = true;
+                }
+            }
+
+            if (!verified && !backupCodeUsed) {
+                return res.status(401).json({ error: 'Invalid 2FA code' });
+            }
+        }
+
+        // Query user roles from junction table
         const rolesResult = await pool.query(
             `SELECT r.role_key, r.role_name 
              FROM tbl_role r
              JOIN tbl_user_role ur ON r.role_key = ur.role_key
              WHERE ur.user_key = $1`,
             [user.user_key]
-        );        const roles = rolesResult.rows.map(row => row.role_name);
+        );
+
+        const roles = rolesResult.rows.map(row => row.role_name);
         const roleKeys = rolesResult.rows.map(row => row.role_key);
         
         // Check if user has admin role - flexible detection
@@ -119,7 +167,9 @@ app.post('/api/login', async (req, res) => {
                            return roleLower.includes('admin') || 
                                   roleLower.includes('administrator') ||
                                   roleLower === 'admin';
-                       });// Create token
+                       });
+
+        // Create token
         const token = jwt.sign(
             { 
                 id: user.user_key,
@@ -134,7 +184,9 @@ app.post('/api/login', async (req, res) => {
             },
             process.env.JWT_SECRET,
             { expiresIn: '8h' }
-        );        // Update last login time
+        );
+
+        // Update last login time
         await pool.query(
             'UPDATE tbl_user SET date_when = CURRENT_TIMESTAMP WHERE user_key = $1',
             [user.user_key]
@@ -151,6 +203,8 @@ app.post('/api/login', async (req, res) => {
                 roles: roles,
                 roleKeys: roleKeys,
                 isAdmin: isAdmin,
+                // Add 2FA status
+                twofa_enabled: user.twofa_enabled || false,
                 // Add password change requirement flag
                 passwordChangeRequired: user.password_change_required || false,
                 // Add timestamp to help track when role data was added
@@ -661,6 +715,191 @@ app.put('/api/force-change-password', authenticateToken, async (req, res) => {
             error: errorMessage,
             details: process.env.NODE_ENV === 'development' ? err.stack : undefined
         });
+    }
+});
+
+// === 2FA ENDPOINTS ===
+
+// Setup 2FA - Generate secret and QR code
+app.post('/api/2fa/setup', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const username = req.user.username;
+        
+        // Generate a secret for the user
+        const secret = speakeasy.generateSecret({
+            name: `IntegrisNeuro:${username}`,
+            issuer: 'IntegrisNeuro Medical Records',
+            length: 32
+        });
+        
+        // Generate QR code
+        const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
+        
+        // Store the secret temporarily (not activated until verified)
+        const client = await pool.connect();
+        try {
+            await client.query(
+                'UPDATE tbl_user SET twofa_secret = $1 WHERE user_key = $2',
+                [secret.base32, userId]
+            );
+        } finally {
+            client.release();
+        }
+        
+        res.json({
+            secret: secret.base32,
+            qrCode: qrCodeUrl,
+            manualEntryKey: secret.base32,
+            issuer: 'IntegrisNeuro Medical Records',
+            accountName: username
+        });
+        
+    } catch (err) {
+        console.error('2FA setup error:', err);
+        res.status(500).json({ error: 'Failed to setup 2FA' });
+    }
+});
+
+// Verify and enable 2FA
+app.post('/api/2fa/verify', authenticateToken, async (req, res) => {
+    try {
+        const { token } = req.body;
+        const userId = req.user.id;
+        
+        if (!token) {
+            return res.status(400).json({ error: 'Verification token is required' });
+        }
+        
+        // Get user's secret
+        const client = await pool.connect();
+        try {
+            const userResult = await client.query(
+                'SELECT twofa_secret FROM tbl_user WHERE user_key = $1',
+                [userId]
+            );
+            
+            if (userResult.rows.length === 0) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            
+            const secret = userResult.rows[0].twofa_secret;
+            if (!secret) {
+                return res.status(400).json({ error: '2FA setup not initiated' });
+            }
+            
+            // Verify the token
+            const verified = speakeasy.totp.verify({
+                secret: secret,
+                encoding: 'base32',
+                token: token,
+                window: 2 // Allow some time drift
+            });
+            
+            if (!verified) {
+                return res.status(400).json({ error: 'Invalid verification code' });
+            }
+            
+            // Generate backup codes
+            const backupCodes = [];
+            for (let i = 0; i < 10; i++) {
+                backupCodes.push(Math.random().toString(36).substr(2, 8).toUpperCase());
+            }
+            
+            // Enable 2FA and store backup codes
+            await client.query(
+                'UPDATE tbl_user SET twofa_enabled = true, backup_codes = $1, twofa_setup_date = CURRENT_TIMESTAMP WHERE user_key = $2',
+                [JSON.stringify(backupCodes), userId]
+            );
+            
+            res.json({
+                message: '2FA successfully enabled',
+                backupCodes: backupCodes
+            });
+            
+        } finally {
+            client.release();
+        }
+        
+    } catch (err) {
+        console.error('2FA verification error:', err);
+        res.status(500).json({ error: 'Failed to verify 2FA' });
+    }
+});
+
+// Disable 2FA
+app.post('/api/2fa/disable', authenticateToken, async (req, res) => {
+    try {
+        const { currentPassword } = req.body;
+        const userId = req.user.id;
+        
+        if (!currentPassword) {
+            return res.status(400).json({ error: 'Current password is required to disable 2FA' });
+        }
+        
+        const client = await pool.connect();
+        try {
+            // Verify current password
+            const userResult = await client.query(
+                'SELECT password_hash FROM tbl_user WHERE user_key = $1',
+                [userId]
+            );
+            
+            if (userResult.rows.length === 0) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            
+            const validPassword = await bcrypt.compare(currentPassword, userResult.rows[0].password_hash);
+            if (!validPassword) {
+                return res.status(400).json({ error: 'Incorrect password' });
+            }
+              // Disable 2FA
+            await client.query(
+                'UPDATE tbl_user SET twofa_enabled = false, twofa_secret = NULL, backup_codes = NULL WHERE user_key = $1',
+                [userId]
+            );
+            
+            res.json({ message: '2FA successfully disabled' });
+            
+        } finally {
+            client.release();
+        }
+        
+    } catch (err) {
+        console.error('2FA disable error:', err);
+        res.status(500).json({ error: 'Failed to disable 2FA' });
+    }
+});
+
+// Check 2FA status
+app.get('/api/2fa/status', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        const client = await pool.connect();
+        try {
+            const result = await client.query(
+                'SELECT twofa_enabled, twofa_setup_date FROM tbl_user WHERE user_key = $1',
+                [userId]
+            );
+            
+            if (result.rows.length === 0) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            
+            const user = result.rows[0];
+            res.json({
+                enabled: user.twofa_enabled || false,
+                setupDate: user.twofa_setup_date
+            });
+            
+        } finally {
+            client.release();
+        }
+        
+    } catch (err) {
+        console.error('2FA status check error:', err);
+        res.status(500).json({ error: 'Failed to check 2FA status' });
     }
 });
 

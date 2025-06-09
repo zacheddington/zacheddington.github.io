@@ -41,7 +41,8 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     const FADE_DURATION = 450;
-      // Check if current page is login page
+    
+    // Check if current page is login page
     const currentPath = window.location.pathname;
     const isLoginPage = currentPath === '/' || currentPath === '/index.html' || currentPath === '';
     
@@ -130,20 +131,31 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
 
             const submitBtn = loginForm.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Logging in...';
-
-            try {
+            submitBtn.textContent = 'Logging in...';            try {
                 const username = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value;                const response = await fetch(`${API_URL}/api/login`, {
+                const password = document.getElementById('password').value;
+                const twofaCode = document.getElementById('twofaCode').value.trim();
+
+                const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ username, password, twofaToken: twofaCode })
                 });
                 
                 const data = await response.json();
+                
+                // Handle 2FA requirement
+                if (response.ok && data.requires2FA) {
+                    // Show 2FA input field
+                    document.getElementById('twofaGroup').classList.remove('hidden');
+                    document.getElementById('twofaCode').focus();
+                    submitBtn.textContent = 'Verify Code';
+                    window.modalManager.showModal('success', '2FA verification required. Please enter your authenticator code.');
+                    return;
+                }
                 
                 if (response.ok && data.token) {
                     // Store authentication data
@@ -746,9 +758,13 @@ function initializeProfilePage() {
             toggleClearButton();
         }
     }
-    
-    // Add character limit validation for profile fields
+      // Add character limit validation for profile fields
     setupProfileFieldValidation();
+    
+    // Initialize 2FA management if on profile page
+    if (document.getElementById('twofaStatus')) {
+        initialize2FAManagement();
+    }
 }
 
 function setupProfileFieldValidation() {
@@ -2049,7 +2065,7 @@ function filterUsers() {
                     valueB = [b.first_name, b.middle_name, b.last_name]
                         .filter(name => name && name.trim())
                         .join(' ') || '';
-                    break;
+                break;
                 case 'email':
                     valueA = a.email || '';
                     valueB = b.email || '';
@@ -2362,768 +2378,192 @@ function showDeleteUserModal(username) {
     });
 }
 
-// Password validation functions - consolidated for consistency
-function validatePasswordRequirements(password) {
-    const failed = [];
-    let isValid = true;
-    
-    if (!password) {
-        return { isValid: false, failed: ['Password is required'] };
-    }
-    
-    if (password.length < 8) {
-        failed.push('Password must be at least 8 characters long');
-        isValid = false;
-    }
-    
-    if (!/[A-Z]/.test(password)) {
-        failed.push('Password must contain at least one uppercase letter');
-        isValid = false;
-    }
-    
-    if (!/[a-z]/.test(password)) {
-        failed.push('Password must contain at least one lowercase letter');
-        isValid = false;
-    }
-    
-    if (!/[0-9]/.test(password)) {
-        failed.push('Password must contain at least one number');
-        isValid = false;
-    }
-      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-        failed.push('Password must contain at least one special character (!@#$%^&*...)');
-        isValid = false;
-    }
-    
-    if (/\s/.test(password)) {
-        failed.push('Password cannot contain spaces');
-        isValid = false;
-    }
-      // Common weak passwords - use exact match like server validation
-    const commonPasswords = [
-        'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
-        'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
-    ];
-    if (commonPasswords.some(common => password.toLowerCase() === common.toLowerCase())) {
-        failed.push('Password is too common - please choose a stronger password');
-        isValid = false;
-    }
-    
-    return { isValid, failed };
-}
-
-function validatePasswordWithCurrentCheck(password, currentPassword) {
-    const basicValidation = validatePasswordRequirements(password);
-    
-    // Add check for same as current password
-    if (currentPassword && password === currentPassword) {
-        basicValidation.failed.push('New password must be different from your current password');
-        basicValidation.isValid = false;
-    }
-    
-    return basicValidation;
-}
-
-// Password Strength Functions
-function addPasswordStrengthIndicator(passwordElement) {
-    if (!passwordElement) return;
-    
-    const formGroup = passwordElement.closest('.form-group');
-    if (!formGroup) return;
-    
-    // Check if indicator already exists
-    if (formGroup.querySelector('.password-strength-container')) return;
-    
-    // Create password strength container
-    const strengthContainer = document.createElement('div');
-    strengthContainer.className = 'password-strength-container';
-    
-    // Create strength bar
-    const strengthBar = document.createElement('div');
-    strengthBar.className = 'password-strength-bar';
-    
-    const strengthFill = document.createElement('div');
-    strengthFill.className = 'password-strength-fill';
-    strengthBar.appendChild(strengthFill);
-    
-    // Create strength text
-    const strengthText = document.createElement('div');
-    strengthText.className = 'password-strength-text';
-    strengthText.textContent = 'Password Strength: ';
-    
-    // Create requirements list
-    const requirementsContainer = document.createElement('div');
-    requirementsContainer.className = 'password-requirements';
-    
-    const requirementTitle = document.createElement('div');
-    requirementTitle.className = 'requirement-title';
-    requirementTitle.textContent = 'Password Requirements:';
-    
-    const requirements = [
-        'At least 8 characters long',
-        'At least one uppercase letter (A-Z)',
-        'At least one lowercase letter (a-z)', 
-        'At least one number (0-9)',
-        'At least one special character (!@#$%...)',
-        'No spaces allowed'
-    ];
-    
-    requirementsContainer.appendChild(requirementTitle);
-    requirements.forEach(req => {
-        const reqElement = document.createElement('div');
-        reqElement.className = 'requirement';
-        reqElement.textContent = `• ${req}`;
-        requirementsContainer.appendChild(reqElement);
-    });
-    
-    // Assemble the strength indicator
-    strengthContainer.appendChild(strengthText);
-    strengthContainer.appendChild(strengthBar);
-    strengthContainer.appendChild(requirementsContainer);
-    
-    // Insert after the password field
-    const fieldNote = formGroup.querySelector('.field-note');
-    if (fieldNote) {
-        formGroup.insertBefore(strengthContainer, fieldNote.nextSibling);
-    } else {
-        formGroup.appendChild(strengthContainer);
-    }
-}
-
-function updatePasswordStrength(password, inputId) {
-    const passwordElement = document.getElementById(inputId);
-    if (!passwordElement) return;
-    
-    const formGroup = passwordElement.closest('.form-group');
-    const strengthContainer = formGroup.querySelector('.password-strength-container');
-    
-    if (!strengthContainer) return;
-    
-    const strengthFill = strengthContainer.querySelector('.password-strength-fill');
-    const strengthText = strengthContainer.querySelector('.password-strength-text');
-    const requirements = strengthContainer.querySelectorAll('.requirement');
-    
-    if (!password) {
-        // Reset when password is empty
-        strengthFill.style.width = '0%';
-        strengthFill.style.backgroundColor = '#e9ecef';
-        strengthText.textContent = 'Password Strength: ';
-        passwordElement.classList.remove('password-strong', 'password-weak', 'password-invalid');
-        
-        requirements.forEach(req => {
-            req.style.color = '#495057';
-        });
-        return;
-    }
-    
-    const validation = validatePasswordStrength(password);
-    const score = calculatePasswordScore(password);
-    
-    // Update strength bar
-    let strength = 'Very Weak';
-    let color = '#dc3545';
-    let width = '20%';
-    
-    if (score >= 80) {
-        strength = 'Very Strong';
-        color = '#28a745';
-        width = '100%';
-        passwordElement.classList.remove('password-weak', 'password-invalid');
-        passwordElement.classList.add('password-strong');
-    } else if (score >= 60) {
-        strength = 'Strong';
-        color = '#20c997';
-        width = '80%';
-        passwordElement.classList.remove('password-weak', 'password-invalid');
-        passwordElement.classList.add('password-strong');
-    } else if (score >= 40) {
-        strength = 'Medium';
-        color = '#ffc107';
-        width = '60%';
-        passwordElement.classList.remove('password-strong', 'password-invalid');
-        passwordElement.classList.add('password-weak');
-    } else if (score >= 20) {
-        strength = 'Weak';
-        color = '#fd7e14';
-        width = '40%';
-        passwordElement.classList.remove('password-strong', 'password-invalid');
-        passwordElement.classList.add('password-weak');
-    } else {
-        strength = 'Very Weak';
-        color = '#dc3545';
-        width = '20%';
-        passwordElement.classList.remove('password-strong', 'password-weak');
-        passwordElement.classList.add('password-invalid');
-    }
-    
-    strengthFill.style.width = width;
-    strengthFill.style.backgroundColor = color;
-    strengthText.textContent = `Password Strength: ${strength}`;
-    
-    // Update individual requirements
-    if (requirements.length >= 6) {
-        requirements[0].style.color = password.length >= 8 ? '#28a745' : '#dc3545';
-        requirements[1].style.color = /[A-Z]/.test(password) ? '#28a745' : '#dc3545';
-        requirements[2].style.color = /[a-z]/.test(password) ? '#28a745' : '#dc3545';
-        requirements[3].style.color = /[0-9]/.test(password) ? '#28a745' : '#dc3545';
-        requirements[4].style.color = /[!@#$%^&*(),.?":{}|<>]/.test(password) ? '#28a745' : '#dc3545';
-        requirements[5].style.color = !/\s/.test(password) ? '#28a745' : '#dc3545';
-    }
-}
-
-function validatePasswordStrength(password) {
-    // Use the consolidated validation function
-    return validatePasswordRequirements(password);
-}
-
-function calculatePasswordScore(password) {
-    let score = 0;
-    
-    // Length scoring
-    if (password.length >= 8) score += 20;
-    if (password.length >= 12) score += 10;
-    if (password.length >= 16) score += 10;
-    
-    // Character type scoring
-    if (/[a-z]/.test(password)) score += 10;
-    if (/[A-Z]/.test(password)) score += 10;
-    if (/[0-9]/.test(password)) score += 10;
-    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 15;
-    
-    // Complexity bonus
-    const charTypes = [
-        /[a-z]/.test(password),
-        /[A-Z]/.test(password),
-        /[0-9]/.test(password),
-        /[!@#$%^&*(),.?":{}|<>]/.test(password)
-    ].filter(Boolean).length;
-    
-    if (charTypes >= 3) score += 10;
-    if (charTypes === 4) score += 5;
-    
-    // Penalties
-    if (/\s/.test(password)) score -= 20;
-    if (password.length < 8) score -= 30;
-    
-    // Common password penalty
-    const commonPasswords = [
-        'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
-        'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
-    ];
-    
-    if (commonPasswords.some(common => password.toLowerCase() === common.toLowerCase())) {
-        score -= 50;
-    }
-    
-    return Math.max(0, Math.min(100, score));
-}
-
-// Patient Page Functionality
-function initializePatientPage() {
+// 2FA Management Functions
+function initialize2FAManagement() {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     
-    // Navigation handlers
-    setupPatientNavigation();
+    // Check current 2FA status on page load
+    check2FAStatus();
     
-    // Form handlers
-    setupCreatePatientForm();
+    // Set up event listeners for 2FA controls
+    const enableBtn = document.getElementById('enable2FA');
+    const disableBtn = document.getElementById('disable2FA');
     
-    // Load hamburger menu
-    if (document.getElementById('hamburger-menu')) {
-        loadMenu();
-    }
-}
-
-function setupPatientNavigation() {
-    const patientChoice = document.getElementById('patientChoice');
-    const createPatientSection = document.getElementById('createPatientSection');
-    const managePatientsSection = document.getElementById('managePatientsSection');
-    
-    // Choice button handlers
-    document.getElementById('createPatientBtn')?.addEventListener('click', function() {
-        patientChoice.classList.add('hidden');
-        createPatientSection.classList.remove('hidden');
-    });
-    
-    document.getElementById('managePatientsBtn')?.addEventListener('click', function() {
-        patientChoice.classList.add('hidden');
-        managePatientsSection.classList.remove('hidden');
-        // Load patients and setup patient management
-        loadPatients();
-        setupPatientFilter();
-    });
-    
-    // Cancel button handler
-    document.getElementById('cancelCreatePatient')?.addEventListener('click', function() {
-        createPatientSection.classList.add('hidden');
-        patientChoice.classList.remove('hidden');
-        document.getElementById('createPatientForm')?.reset();
-        clearCreatePatientErrors();
-    });
-}
-
-function setupCreatePatientForm() {
-    const createPatientForm = document.getElementById('createPatientForm');
-    if (!createPatientForm) return;
-    
-    // Get form elements
-    const patientPhone = document.getElementById('patientPhone');
-    
-    // Add phone number formatting and validation
-    if (patientPhone) {
-        patientPhone.addEventListener('input', function() {
-            formatPhoneNumber(patientPhone);
-            // Update field states
-            if (window.fieldStateManager) {
-                window.fieldStateManager.updateFieldState(patientPhone);
-            }
+    if (enableBtn) {
+        enableBtn.addEventListener('click', () => {
+            window.location.href = '../2fa-setup/';
         });
-        
-        // Ensure initial field state is set for required phone field
-        if (window.fieldStateManager) {
-            window.fieldStateManager.updateFieldState(patientPhone);
-        }
     }
     
-    // Character limit validation for create patient form fields
-    setupCreatePatientFieldValidation();
-    
-    // Handle form submission
-    createPatientForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        await createPatient();
-    });
-}
-
-function setupCreatePatientFieldValidation() {
-    const createPatientFields = [
-        { id: 'patientFirstName', maxLength: 50, label: 'First name' },
-        { id: 'patientMiddleName', maxLength: 50, label: 'Middle name' },
-        { id: 'patientLastName', maxLength: 50, label: 'Last name' },
-        { id: 'patientAddress', maxLength: 100, label: 'Address' }
-    ];
-    
-    createPatientFields.forEach(field => {
-        const input = document.getElementById(field.id);
-        if (input) {
-            // Character count prevention
-            input.addEventListener('input', function(e) {
-                if (e.target.value.length > field.maxLength) {
-                    e.target.value = e.target.value.substring(0, field.maxLength);
-                    showCharacterLimitModal(field.label, field.maxLength);
-                }
-                
-                // Update field states for responsive UI
-                if (window.fieldStateManager) {
-                    window.fieldStateManager.updateFieldState(e.target);
-                }
-            });
-            
-            // Paste prevention for overlength content
-            input.addEventListener('paste', function(e) {
-                setTimeout(() => {
-                    if (e.target.value.length > field.maxLength) {
-                        e.target.value = e.target.value.substring(0, field.maxLength);
-                        showCharacterLimitModal(field.label, field.maxLength);
-                    }
-                    
-                    // Update field states after paste
-                    if (window.fieldStateManager) {
-                        window.fieldStateManager.updateFieldState(e.target);
-                    }
-                }, 0);
-            });
-            
-            // Initial field state setup
-            if (window.fieldStateManager) {
-                window.fieldStateManager.updateFieldState(input);
-            }
-        }
-    });
-      // Special handling for phone field and accepts texts dropdown
-    const phoneField = document.getElementById('patientPhone');
-    const acceptsTextsField = document.getElementById('acceptsTexts');
-    
-    if (phoneField && window.fieldStateManager) {
-        // Add input validation for phone field
-        phoneField.addEventListener('input', function(e) {
-            const phoneDigits = e.target.value.replace(/\D/g, '');
-            
-            // Update field state based on digit count
-            if (phoneDigits.length === 10) {
-                // Valid 10 digits - update field state normally
-                window.fieldStateManager.updateFieldState(e.target);
-            } else if (phoneDigits.length > 0) {
-                // Has some digits but not 10 - show as error state
-                e.target.classList.remove('field-required', 'field-filled');
-                e.target.classList.add('field-error');
-            } else {
-                // Empty field - show as required
-                e.target.classList.remove('field-error', 'field-filled');
-                e.target.classList.add('field-required');
-            }
-        });
-        
-        // Initial field state for phone
-        window.fieldStateManager.updateFieldState(phoneField);
-    }
-    
-    if (acceptsTextsField && window.fieldStateManager) {
-        // Add change listener for dropdown
-        acceptsTextsField.addEventListener('change', function(e) {
-            window.fieldStateManager.updateFieldState(e.target);
-        });
-        // Initial field state for dropdown
-        window.fieldStateManager.updateFieldState(acceptsTextsField);
+    if (disableBtn) {
+        disableBtn.addEventListener('click', disable2FA);
     }
 }
 
-function formatPhoneNumber(input) {
-    // Remove all non-numeric characters
-    let value = input.value.replace(/\D/g, '');
+async function check2FAStatus() {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    const token = localStorage.getItem('token');
     
-    // Limit to exactly 10 digits
-    if (value.length > 10) {
-        value = value.substring(0, 10);
-    }
-    
-    // Format as (XXX) XXX-XXXX
-    if (value.length >= 6) {
-        value = value.replace(/(\d{3})(\d{3})(\d{0,4})/, '($1) $2-$3');
-    } else if (value.length >= 3) {
-        value = value.replace(/(\d{3})(\d{0,3})/, '($1) $2');
-    } else if (value.length > 0) {
-        value = value.replace(/(\d{0,3})/, '($1');
-    }
-    
-    input.value = value;
-}
-
-async function createPatient() {
-    const submitBtn = document.getElementById('createPatientSubmitBtn');
-    const originalText = submitBtn.textContent;
+    if (!token) return;
     
     try {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Creating Patient...';
+        const response = await fetch(`${API_URL}/api/2fa/status`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
         
-        // Pre-flight connectivity check
-        const connectivity = await checkConnectivity();
-        if (!connectivity.connected) {
-            throw new Error(`Connection failed: ${connectivity.error}`);
+        if (response.ok) {
+            const data = await response.json();
+            update2FADisplay(data.enabled);
+        } else {
+            console.error('Failed to check 2FA status');
         }
-        
-        // Get form data
-        const formData = {
-            firstName: document.getElementById('patientFirstName').value.trim(),
-            middleName: document.getElementById('patientMiddleName').value.trim(),
-            lastName: document.getElementById('patientLastName').value.trim(),
-            address: document.getElementById('patientAddress').value.trim(),
-            phone: document.getElementById('patientPhone').value.trim(),
-            acceptsTexts: document.getElementById('acceptsTexts').value
-        };
-        
-        // Validate required fields
-        if (!formData.firstName || !formData.lastName || !formData.address || !formData.phone || !formData.acceptsTexts) {
-            throw new Error('All fields except middle name are required.');
-        }
-        
-        // Validate character limits
-        if (formData.firstName.length > 50) {
-            throw new Error('First name must be 50 characters or less.');
-        }
-        if (formData.middleName && formData.middleName.length > 50) {
-            throw new Error('Middle name must be 50 characters or less.');
-        }
-        if (formData.lastName.length > 50) {
-            throw new Error('Last name must be 50 characters or less.');
-        }
-        if (formData.address.length > 100) {
-            throw new Error('Address must be 100 characters or less.');
-        }
-          // Validate phone number format and digit count
-        const phoneDigits = formData.phone.replace(/\D/g, '');
-        if (phoneDigits.length !== 10) {
-            throw new Error('Phone number must be exactly 10 digits.');
-        }
-        
-        const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
-        if (!phoneRegex.test(formData.phone)) {
-            throw new Error('Please enter a valid phone number in format (XXX) XXX-XXXX.');
-        }
-        
-        // For now, just show success message (database will be added later)
-        // Clear the form
-        document.getElementById('createPatientForm').reset();
-        clearCreatePatientErrors();
-        
-        // Show success modal with personalized message
-        const patientName = formData.middleName 
-            ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`
-            : `${formData.firstName} ${formData.lastName}`;
-        const successMessage = `Success! Patient record for ${patientName} has been created.`;
-        window.modalManager.showModal('success', successMessage);
-        
-        // Redirect back to patient choice page after brief delay
-        setTimeout(() => {
-            window.modalManager.closeModal();
-            // Navigate back to main patient page
-            document.getElementById('createPatientSection').classList.add('hidden');
-            document.getElementById('patientChoice').classList.remove('hidden');
-        }, 2500);
-        
     } catch (error) {
-        console.error('Create patient error:', error);
-        window.modalManager.showModal('error', error.message || 'Failed to create patient. Please try again.');
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
+        console.error('Error checking 2FA status:', error);
     }
 }
 
-// Forced Password Change Functionality
-function initializeForcePasswordChangePage() {
-    // Detect if running locally or in production
+function update2FADisplay(enabled) {
+    const statusElement = document.getElementById('twofaStatus');
+    const enableBtn = document.getElementById('enable2FA');
+    const disableBtn = document.getElementById('disable2FA');
+    
+    if (statusElement) {
+        statusElement.textContent = enabled ? 'Enabled' : 'Disabled';
+        statusElement.className = `status-badge ${enabled ? 'enabled' : 'disabled'}`;
+    }
+    
+    if (enableBtn) {
+        enableBtn.style.display = enabled ? 'none' : 'inline-block';
+    }
+    
+    if (disableBtn) {
+        disableBtn.style.display = enabled ? 'inline-block' : 'none';
+    }
+}
+
+async function disable2FA() {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-    
-    // Check if user is authenticated and actually needs to change password
     const token = localStorage.getItem('token');
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
     
-    if (!token || !userData.username) {
-        // User is not authenticated, redirect to login
-        window.location.href = '../';
+    if (!token) {
+        alert('Authentication required. Please log in again.');
         return;
     }
     
-    // Set the hidden username field for password managers
-    const usernameField = document.getElementById('forceChangeUsername');
-    if (usernameField && userData.username) {
-        usernameField.value = userData.username;
-    }
-      // Password strength validation
-    function validatePassword(password) {
-        // Use the consolidated validation function
-        const validation = validatePasswordRequirements(password);
-        return validation.failed; // Return array of error messages for backward compatibility
-    }
+    // Confirm disable action
+    const confirmed = confirm('Are you sure you want to disable 2FA? This will reduce the security of your account. You will need to enter your current password to confirm.');
+    if (!confirmed) return;
     
-    // Show error message
-    function showError(message) {
-        const errorContainer = document.getElementById('errorContainer');
-        const errorMessage = document.getElementById('errorMessage');
+    // Prompt for current password
+    const currentPassword = prompt('Please enter your current password to confirm disabling 2FA:');
+    if (!currentPassword) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/api/2fa/disable`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ currentPassword })
+        });
         
-        if (errorContainer && errorMessage) {
-            errorMessage.textContent = message;
-            errorContainer.style.display = 'block';
-            errorContainer.scrollIntoView({ behavior: 'smooth' });
+        if (response.ok) {
+            update2FADisplay(false);
+            alert('2FA has been disabled successfully.');
+        } else {
+            const error = await response.json();
+            alert(`Failed to disable 2FA: ${error.error || 'Unknown error'}`);
         }
+    } catch (error) {
+        console.error('Error disabling 2FA:', error);
+        alert('An error occurred while disabling 2FA. Please try again.');
     }
+}
+
+// Enhanced login function to handle 2FA
+async function enhancedLogin(event) {
+    event.preventDefault();
     
-    // Hide error message
-    function hideError() {
-        const errorContainer = document.getElementById('errorContainer');
-        if (errorContainer) {
-            errorContainer.style.display = 'none';
-        }
-    }
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     
-    // Show modal
-    function showModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = 'flex';
-        }
-    }
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;    const totpCode = document.getElementById('twofaCode')?.value || '';
     
-    // Hide modal
-    function hideModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = 'none';
-        }
-    }
+    // Clear any previous error messages
+    const errorDiv = document.getElementById('error-message');
+    if (errorDiv) errorDiv.style.display = 'none';
     
-    // Make closeErrorModal globally available
-    window.closeErrorModal = function() {
-        hideModal('errorModal');
-    };
-    
-    // Handle form submission
-    const form = document.getElementById('forcePasswordChangeForm');
-    if (form) {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            hideError();
-            
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const submitBtn = document.getElementById('changePasswordBtn');            // Validate new password using consolidated validation with current password check
-            const passwordValidation = validatePasswordWithCurrentCheck(newPassword, currentPassword);
-            if (!passwordValidation.isValid) {
-                // Check if this is specifically the "same password" error and show as modal
-                if (passwordValidation.failed.some(error => error.includes('New password must be different from your current password'))) {
-                    document.getElementById('modalErrorMessage').textContent = 'New password must be different from your current password';
-                    showModal('errorModal');
-                    return;
-                } else {
-                    // Show other validation errors inline
-                    showError(passwordValidation.failed.join('. '));
-                    return;
-                }
-            }
-            
-            // Check password confirmation
-            if (newPassword !== confirmPassword) {
-                showError('New password and confirmation password do not match');
+    try {
+        const response = await fetch(`${API_URL}/api/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username,
+                password,
+                totpCode
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            if (data.requires2FA) {
+                // Show 2FA input field
+                show2FAInput();
+                showError('Please enter your 2FA code to complete login.');
                 return;
             }
             
-            // Show loading modal
-            showModal('loadingModal');
-            submitBtn.disabled = true;
-              try {
-                const response = await fetch(`${API_URL}/api/force-change-password`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        currentPassword: currentPassword,
-                        newPassword: newPassword
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    // Hide loading modal and show success
-                    hideModal('loadingModal');
-                    showModal('successModal');
-                    
-                    // Update stored user data to remove password change requirement
-                    const updatedUserData = { ...userData, passwordChangeRequired: false };
-                    localStorage.setItem('user', JSON.stringify(updatedUserData));
-                    
-                    // Redirect to welcome page after success
-                    setTimeout(() => {
-                        window.location.href = '../welcome/';
-                    }, 3000);
-                    
-                } else {
-                    // Hide loading modal and show error
-                    hideModal('loadingModal');
-                    const errorMessage = data.error || 'Failed to change password. Please try again.';
-                    
-                    document.getElementById('modalErrorMessage').textContent = errorMessage;
-                    showModal('errorModal');
-                }
-                
-            } catch (error) {
-                console.error('Password change error:', error);
-                hideModal('loadingModal');
-                document.getElementById('modalErrorMessage').textContent = 'Connection error. Please check your internet connection and try again.';
-                showModal('errorModal');
-            } finally {
-                submitBtn.disabled = false;
+            // Successful login
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            
+            // Create session for this tab
+            const tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            sessionStorage.setItem('currentTabId', tabId);
+            
+            // Redirect to welcome page
+            window.location.href = './welcome/';
+        } else {
+            showError(data.error || 'Login failed');
+            
+            // If 2FA was required but failed, keep the 2FA input visible
+            if (data.error && data.error.includes('2FA')) {
+                show2FAInput();
             }
-        });
-          // Real-time password validation feedback with strength indicator
-        const newPasswordField = document.getElementById('newPassword');
-        const confirmPasswordField = document.getElementById('confirmPassword');
-        
-        if (newPasswordField && confirmPasswordField) {
-            // Add password strength indicator for forced password change page
-            addPasswordStrengthIndicator(newPasswordField);
-            
-            // Password match validation function for forced password change
-            function validateForcePasswordMatch() {
-                const newPassword = newPasswordField.value;
-                const confirmPasswordElement = confirmPasswordField;
-                const confirmPassword = confirmPasswordElement.value;
-                const confirmGroup = confirmPasswordElement.closest('.form-group');
-                
-                // Remove existing error/success classes and messages
-                confirmGroup.classList.remove('error', 'success');
-                confirmPasswordElement.classList.remove('password-match', 'password-mismatch');
-                const existingMessage = confirmGroup.querySelector('.error-message, .success-message');
-                if (existingMessage) {
-                    existingMessage.remove();
-                }
-                
-                if (confirmPassword && newPassword) {
-                    if (newPassword === confirmPassword) {
-                        confirmGroup.classList.add('success');
-                        confirmPasswordElement.classList.add('password-match');
-                        const successMsg = document.createElement('div');
-                        successMsg.className = 'success-message';
-                        successMsg.textContent = 'Passwords match';
-                        confirmGroup.appendChild(successMsg);
-                    } else {
-                        confirmGroup.classList.add('error');
-                        confirmPasswordElement.classList.add('password-mismatch');
-                        const errorMsg = document.createElement('div');
-                        errorMsg.className = 'error-message';
-                        errorMsg.textContent = 'Passwords do not match';
-                        confirmGroup.appendChild(errorMsg);
-                    }
-                }
-                
-                // Update field states using the field state manager
-                if (window.fieldStateManager) {
-                    window.fieldStateManager.updateFieldState(confirmPasswordElement);
-                    window.fieldStateManager.updateFieldState(newPasswordField);
-                }
-            }
-            
-            newPasswordField.addEventListener('input', function() {
-                const password = this.value;
-                
-                // Update password strength indicator
-                updatePasswordStrength(password, this.id);
-                
-                // Validate password match
-                validateForcePasswordMatch();
-                
-                // Legacy validation for form submission
-                if (password.length > 0) {
-                    const errors = validatePassword(password);
-                    if (errors.length > 0) {
-                        this.setCustomValidity(errors[0]);
-                    } else {
-                        this.setCustomValidity('');
-                    }
-                }
-                
-                // Update field states
-                if (window.fieldStateManager) {
-                    window.fieldStateManager.updateFieldState(this);
-                }
-            });
-            
-            confirmPasswordField.addEventListener('input', function() {
-                // Validate password match with visual feedback
-                validateForcePasswordMatch();
-                
-                // Legacy validation for form submission
-                const newPassword = newPasswordField.value;
-                const confirmPassword = this.value;
-                
-                if (confirmPassword.length > 0 && newPassword !== confirmPassword) {
-                    this.setCustomValidity('Passwords do not match');
-                } else {
-                    this.setCustomValidity('');
-                }
-                
-                // Update field states
-                if (window.fieldStateManager) {
-                    window.fieldStateManager.updateFieldState(this);
-                }
-            });
         }
+    } catch (error) {
+        console.error('Login error:', error);
+        showError('Network error. Please try again.');
+    }
+}
+
+function show2FAInput() {
+    const totpContainer = document.getElementById('twofaGroup');
+    if (totpContainer) {
+        totpContainer.classList.remove('hidden');
+        const totpInput = document.getElementById('twofaCode');
+        if (totpInput) {
+            totpInput.focus();
+        }
+    }
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('error-message');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
     }
 }

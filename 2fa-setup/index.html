@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Factor Authentication Setup - IntegrisNeuro</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .setup-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .step {
+            margin: 2rem 0;
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+        
+        .step.active {
+            border-color: #2196F3;
+            background-color: #f8f9fa;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #2196F3;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        
+        .qr-code {
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .qr-code img {
+            max-width: 200px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: white;
+        }
+        
+        .manual-entry {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 1rem 0;
+            word-break: break-all;
+            font-family: monospace;
+        }
+        
+        .backup-codes {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .backup-codes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .backup-code {
+            font-family: monospace;
+            background: white;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            text-align: center;
+        }
+        
+        .verification-input {
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 2px;
+            font-family: monospace;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <h1>Two-Factor Authentication Setup</h1>
+        <p>Enhance your account security by enabling two-factor authentication (2FA).</p>
+        
+        <!-- Step 1: Download App -->
+        <div class="step active" id="step1">
+            <h3><span class="step-number">1</span>Download Authenticator App</h3>
+            <p>If you don't already have one, download a TOTP authenticator app:</p>
+            <ul>
+                <li><strong>Google Authenticator</strong> (iOS/Android)</li>
+                <li><strong>Microsoft Authenticator</strong> (iOS/Android)</li>
+                <li><strong>Authy</strong> (iOS/Android/Desktop)</li>
+                <li><strong>1Password</strong> (if you have a subscription)</li>
+            </ul>
+            <button onclick="nextStep(2)" class="btn btn-primary">I have an authenticator app</button>
+        </div>
+        
+        <!-- Step 2: Scan QR Code -->
+        <div class="step hidden" id="step2">
+            <h3><span class="step-number">2</span>Scan QR Code</h3>
+            <p>Open your authenticator app and scan this QR code:</p>
+            
+            <div class="qr-code" id="qrCodeContainer">
+                <p>Loading QR code...</p>
+            </div>
+            
+            <details>
+                <summary>Can't scan the QR code?</summary>
+                <p>You can manually enter this key instead:</p>
+                <div class="manual-entry" id="manualKey">Loading...</div>
+                <p><strong>Account:</strong> <span id="accountName"></span></p>
+                <p><strong>Issuer:</strong> IntegrisNeuro Medical Records</p>
+            </details>
+            
+            <button onclick="nextStep(3)" class="btn btn-primary">I've added the account</button>
+        </div>
+        
+        <!-- Step 3: Verify Code -->
+        <div class="step hidden" id="step3">
+            <h3><span class="step-number">3</span>Verify Setup</h3>
+            <p>Enter the 6-digit code from your authenticator app to verify the setup:</p>
+            
+            <div class="form-group">
+                <input type="text" id="verificationCode" class="verification-input" placeholder="000000" maxlength="6" autocomplete="off">
+            </div>
+            
+            <div id="verificationError" class="error-message hidden"></div>
+            
+            <button onclick="verifyCode()" class="btn btn-primary" id="verifyBtn">Verify & Enable 2FA</button>
+            <button onclick="previousStep(2)" class="btn btn-secondary">Back</button>
+        </div>
+        
+        <!-- Step 4: Backup Codes -->
+        <div class="step hidden" id="step4">
+            <h3><span class="step-number">4</span>Save Backup Codes</h3>
+            <div class="success-message">
+                <strong>Success!</strong> Two-factor authentication has been enabled for your account.
+            </div>
+            
+            <div class="backup-codes">
+                <h4>⚠️ Important: Save these backup codes</h4>
+                <p>Store these codes in a safe place. You can use them to access your account if you lose your phone:</p>
+                <div class="backup-codes-grid" id="backupCodesContainer">
+                    <!-- Backup codes will be inserted here -->
+                </div>
+                <p><strong>Each code can only be used once.</strong></p>
+            </div>
+            
+            <button onclick="downloadBackupCodes()" class="btn btn-secondary">Download Codes</button>
+            <button onclick="completeSetup()" class="btn btn-primary">Complete Setup</button>
+        </div>
+        
+        <!-- Loading/Error States -->
+        <div id="loadingMessage" class="hidden">
+            <p>Setting up 2FA...</p>
+        </div>
+        
+        <div id="errorMessage" class="error-message hidden"></div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        let currentStep = 1;
+        let setupData = null;
+        let backupCodes = [];
+        
+        // Auto-detect environment
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize 2FA setup when moving to step 2
+        });
+        
+        function nextStep(step) {
+            if (step === 2) {
+                initiate2FASetup();
+            }
+            
+            // Hide current step
+            document.getElementById(`step${currentStep}`).classList.add('hidden');
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            
+            // Show next step
+            document.getElementById(`step${step}`).classList.remove('hidden');
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            currentStep = step;
+        }
+        
+        function previousStep(step) {
+            // Hide current step
+            document.getElementById(`step${currentStep}`).classList.add('hidden');
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            
+            // Show previous step
+            document.getElementById(`step${step}`).classList.remove('hidden');
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            currentStep = step;
+        }
+        
+        async function initiate2FASetup() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                const response = await fetch(`${API_URL}/api/2fa/setup`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    setupData = data;
+                    
+                    // Display QR code
+                    document.getElementById('qrCodeContainer').innerHTML = 
+                        `<img src="${data.qrCode}" alt="2FA QR Code">`;
+                    
+                    // Display manual entry key
+                    document.getElementById('manualKey').textContent = data.manualEntryKey;
+                    document.getElementById('accountName').textContent = data.accountName;
+                    
+                } else {
+                    showError(data.error || 'Failed to setup 2FA');
+                }
+                
+            } catch (error) {
+                console.error('2FA setup error:', error);
+                showError('Network error. Please try again.');
+            }
+        }
+        
+        async function verifyCode() {
+            const code = document.getElementById('verificationCode').value.trim();
+            
+            if (!code || code.length !== 6) {
+                showVerificationError('Please enter a 6-digit code');
+                return;
+            }
+            
+            try {
+                const verifyBtn = document.getElementById('verifyBtn');
+                verifyBtn.disabled = true;
+                verifyBtn.textContent = 'Verifying...';
+                
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/api/2fa/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ token: code })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    backupCodes = data.backupCodes;
+                    displayBackupCodes();
+                    nextStep(4);
+                } else {
+                    showVerificationError(data.error || 'Invalid verification code');
+                }
+                
+            } catch (error) {
+                console.error('2FA verification error:', error);
+                showVerificationError('Network error. Please try again.');
+            } finally {
+                const verifyBtn = document.getElementById('verifyBtn');
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Verify & Enable 2FA';
+            }
+        }
+        
+        function displayBackupCodes() {
+            const container = document.getElementById('backupCodesContainer');
+            container.innerHTML = '';
+            
+            backupCodes.forEach(code => {
+                const codeElement = document.createElement('div');
+                codeElement.className = 'backup-code';
+                codeElement.textContent = code;
+                container.appendChild(codeElement);
+            });
+        }
+        
+        function downloadBackupCodes() {
+            const codesText = backupCodes.join('\n');
+            const blob = new Blob([
+                'IntegrisNeuro 2FA Backup Codes\n',
+                'Generated: ' + new Date().toLocaleString() + '\n\n',
+                'IMPORTANT: Store these codes safely. Each can only be used once.\n\n',
+                codesText
+            ], { type: 'text/plain' });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'integrisneuro-2fa-backup-codes.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function completeSetup() {
+            // Redirect back to profile or security settings
+            window.location.href = '../profile/';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+        
+        function showVerificationError(message) {
+            const errorDiv = document.getElementById('verificationError');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+        
+        // Handle Enter key in verification input
+        document.addEventListener('DOMContentLoaded', function() {
+            const verificationInput = document.getElementById('verificationCode');
+            if (verificationInput) {
+                verificationInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        verifyCode();
+                    }
+                });
+                
+                // Auto-format as user types
+                verificationInput.addEventListener('input', function(e) {
+                    // Only allow numbers
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                    
+                    // Clear previous errors
+                    document.getElementById('verificationError').classList.add('hidden');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

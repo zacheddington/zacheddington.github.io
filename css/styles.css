@@ -1161,6 +1161,17 @@ input[type="email"]:focus {
     outline: none;
 }
 
+/* Error message styling */
+.error-message {
+    background-color: #fee;
+    color: #c33;
+    padding: 10px;
+    border: 1px solid #fcc;
+    border-radius: 4px;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
 /* Field State Color-Coding System */
 /* Error state: Pale red background with darker red outline */
 input[type="text"].field-error,
@@ -2206,7 +2217,6 @@ button[type="submit"]:disabled,
     color: #721c24;
 }
 
-/* Hidden utility class */
 .hidden {
     display: none !important;
 }
@@ -2498,4 +2508,143 @@ button[type="submit"]:disabled,
 .patient-created {
     color: #666;
     font-size: 0.85rem;
+}
+
+/* Security Settings Styles */
+.security-option {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.security-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.security-header h3 {
+    margin: 0;
+    color: #003b49;
+    font-size: 1.1rem;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.enabled {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.disabled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-badge.loading {
+    background: #e2e3e5;
+    color: #495057;
+}
+
+.security-description {
+    color: #666;
+    margin: 0.5rem 0 1rem 0;
+    line-height: 1.4;
+}
+
+.security-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.security-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.security-btn.primary {
+    background: #2196F3;
+    color: white;
+}
+
+.security-btn.primary:hover {
+    background: #1976D2;
+}
+
+.security-btn.danger {
+    background: #f44336;
+    color: white;
+}
+
+.security-btn.danger:hover {
+    background: #d32f2f;
+}
+
+.security-btn.secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.security-btn.secondary:hover {
+    background: #5a6268;
+}
+
+.security-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 2FA Disable Modal */
+.twofa-disable-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.twofa-disable-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+}
+
+.twofa-disable-content h3 {
+    margin-top: 0;
+    color: #dc3545;
+}
+
+.twofa-disable-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.twofa-disable-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
 }

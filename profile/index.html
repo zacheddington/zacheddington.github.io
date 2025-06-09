@@ -87,8 +87,7 @@
                 </div>
             </form>
         </div>
-        
-        <!-- Account Information Section -->
+          <!-- Account Information Section -->
         <div class="profile-section info-only">
             <h2>Account Information</h2>
             <div class="info-grid">
@@ -101,7 +100,26 @@
                     <span class="info-value" id="lastLoginDisplay">-</span>
                 </div>
             </div>
-        </div>    </div>
+        </div>
+
+        <!-- Security Settings Section -->
+        <div class="profile-section">
+            <h2>Security Settings</h2>
+            <div class="security-option">
+                <div class="security-header">
+                    <h3>Two-Factor Authentication</h3>
+                    <span class="status-badge" id="twofaStatus">Loading...</span>
+                </div>
+                <p class="security-description">
+                    Add an extra layer of security to your account with two-factor authentication.
+                    This requires a code from your mobile device in addition to your password.
+                </p>
+                <div class="security-actions" id="twofaActions">
+                    <!-- Actions will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script src="../js/fieldStates.js"></script>
     <script src="../js/main.js"></script>
