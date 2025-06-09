@@ -113,12 +113,13 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
             }, 10);
               // Add keyboard event listener for all modals
             const modal = document.getElementById('feedbackModal');
-            modal.focus();
-            modal.addEventListener('keydown', (e) => {
+            modal.focus();                modal.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' || e.key === 'Escape') {
                     closeModal();
                 }
-            });if (type === 'success') {
+            });
+            
+            if (type === 'success') {
                 // Only redirect to welcome page if we're not on the admin page
                 const isAdminPage = window.location.pathname.includes('/admin/');
                 if (!isAdminPage) {
@@ -128,11 +129,11 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                             window.location.href = "../welcome/";
                         }, FADE_DURATION);
                     }, 2000);
-                } else {
-                    // On admin pages, auto-hide success modal after 4 seconds
+                } else {                    // On admin pages, auto-hide success modal after 4 seconds
                     setTimeout(() => {
                         this.closeModal();
-                    }, 4000);                }
+                    }, 4000);
+                }
             }
   
             return true;
@@ -305,11 +306,11 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     const isAdmin = isUserAdmin(data.user);
                     updateAdminUI(isAdmin);
                     
-                    // Add a delay to ensure all data is persisted and session is initialized before navigation
-                    document.body.classList.add('fade-out');
+                    // Add a delay to ensure all data is persisted and session is initialized before navigation                    document.body.classList.add('fade-out');
                     setTimeout(() => {
                         window.location.href = "welcome/";
-                    }, FADE_DURATION + 200); // Extended delay for robust session persistence                } else {
+                    }, FADE_DURATION + 200); // Extended delay for robust session persistence
+                } else {
                     // Context-aware error messages
                     let message;
                     if (response.status === 401) {
@@ -317,17 +318,17 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                             message = data.error === 'Invalid 2FA code' ? 'Invalid 2FA code. Please try again.' : 'Invalid 2FA code. Please try again.';
                         } else {
                             message = 'Invalid username or password';
-                        }
-                    } else {
-                        message = data.error || 'Login failed';                    }
+                        }                    } else {
+                        message = data.error || 'Login failed';
+                    }
                     
                     try {
-                        const result = window.modalManager.showModal('error', message, true); // Force show error modal
-                          // Clear the 2FA code field when showing error modal
+                        const result = window.modalManager.showModal('error', message, true); // Force show error modal                        // Clear the 2FA code field when showing error modal
                         if (is2FAMode) {
                             document.getElementById('twofaCode').value = '';
                             document.getElementById('twofaCode').focus();
-                        }                    } catch (modalError) {
+                        }
+                    } catch (modalError) {
                         console.error('ERROR in showModal call:', modalError);
                     }
                 }
