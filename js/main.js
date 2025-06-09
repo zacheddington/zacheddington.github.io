@@ -54,11 +54,16 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
     // Unified modal management
     const modalManager = {
         isShowingModal: false,
-        
-        showModal: function(type, message) {
-            if (this.isShowingModal) return;
+          showModal: function(type, message, force = false) {
+            // For error messages, allow overriding existing modals
+            if (this.isShowingModal && !force && type !== 'error') return;
             
-            this.isShowingModal = true;            const modalHtml = `
+            // Close any existing modal first
+            if (this.isShowingModal) {
+                this.closeModal();
+            }
+            
+            this.isShowingModal = true;const modalHtml = `
                 <div class="modal" id="feedbackModal" tabindex="-1">
                     <div class="modal-content ${type}">
                         <h2>${type === 'success' ? '✓ Success!' : '⚠ Error'}</h2>
@@ -163,9 +168,9 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({ username, password, twofaToken: twofaCode })
-                });
-                  const data = await response.json();
-                  // Handle 2FA requirement - switch UI instead of showing modal
+                });                const data = await response.json();
+                
+                // Handle 2FA requirement - switch UI instead of showing modal
                 if (data.requires2FA && !is2FAMode) {
                     // Switch to 2FA mode
                     is2FAMode = true;
