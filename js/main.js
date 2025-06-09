@@ -1441,12 +1441,22 @@ function setupCreateUserForm() {
     
     // Character limit validation for create user form fields
     setupCreateUserFieldValidation();
-    
-    // Handle form submission
+      // Handle form submission
     createUserForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         await createUser();
     });
+    
+    // Initialize field state management for create user form
+    if (window.fieldStateManager) {
+        // Small delay to ensure form is fully rendered
+        setTimeout(() => {
+            const formFields = createUserForm.querySelectorAll('input, select, textarea');
+            formFields.forEach(field => {
+                window.fieldStateManager.updateFieldState(field);
+            });
+        }, 100);
+    }
 }
 
 async function createUser() {
@@ -1454,18 +1464,27 @@ async function createUser() {
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     
     const form = document.getElementById('createUserForm');
-    const formData = new FormData(form);
-    
-    const newUser = {
-        username: formData.get('newUsername'),
-        firstName: formData.get('newFirstName'),
-        lastName: formData.get('newLastName'),
-        password: formData.get('newPassword'),
+    const formData = new FormData(form);    const newUser = {
+        username: formData.get('username'),
+        firstName: formData.get('firstName'),
+        lastName: formData.get('lastName'),
+        password: formData.get('password'),
         confirmPassword: formData.get('confirmPassword')
     };
     
+    // Debug logging
+    console.log('Form data collected:', newUser);
+    console.log('FormData entries:', Array.from(formData.entries()));
+    
     // Validate required fields
     if (!newUser.username || !newUser.firstName || !newUser.lastName || !newUser.password || !newUser.confirmPassword) {
+        console.log('Validation failed - missing fields:', {
+            username: !!newUser.username,
+            firstName: !!newUser.firstName,
+            lastName: !!newUser.lastName,
+            password: !!newUser.password,
+            confirmPassword: !!newUser.confirmPassword
+        });
         window.modalManager.showModal('error', 'All fields are required.');
         return;
     }
