@@ -325,6 +325,239 @@ app.post('/api/eeg', authenticateToken, async (req, res) => {
         client.release();    }
 });
 
+// Patient management endpoints
+app.get('/api/patients', authenticateToken, async (req, res) => {
+    try {
+        // Check if we're in local test mode
+        const isLocalTest = process.env.NODE_ENV === 'development' && 
+                           process.env.DATABASE_URL?.includes('localhost');
+        
+        if (isLocalTest) {
+            // Return test patients for local development
+            return res.json([
+                {
+                    patient_key: 1,
+                    first_name: 'John',
+                    middle_name: 'A',
+                    last_name: 'Doe',
+                    address: '123 Main St',
+                    city: 'Anytown',
+                    state: 'ST',
+                    zip_code: '12345',
+                    phone: '555-1234',
+                    accepts_texts: true,
+                    date_when: '2024-01-01T00:00:00.000Z'
+                },
+                {
+                    patient_key: 2,
+                    first_name: 'Jane',
+                    middle_name: null,
+                    last_name: 'Smith',
+                    address: '456 Oak Ave',
+                    city: 'Somewhere',
+                    state: 'ST',
+                    zip_code: '67890',
+                    phone: '555-5678',
+                    accepts_texts: false,
+                    date_when: '2024-01-02T00:00:00.000Z'
+                }
+            ]);
+        }
+        
+        // Production database logic
+        const client = await pool.connect();
+        try {
+            const result = await client.query(`
+                SELECT 
+                    p.patient_key,
+                    n.first_name,
+                    n.middle_name,
+                    n.last_name,
+                    p.address,
+                    p.city,
+                    p.state,
+                    p.zip_code,
+                    p.phone,
+                    p.accepts_texts,
+                    p.date_when
+                FROM tbl_patient p
+                LEFT JOIN tbl_name_data n ON p.name_key = n.name_key
+                ORDER BY n.last_name, n.first_name
+            `);
+            
+            res.json(result.rows);
+            
+        } finally {
+            client.release();
+        }
+        
+    } catch (err) {
+        console.error('Get patients error:', err);
+        res.status(500).json({ 
+            error: 'Failed to fetch patients',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+});
+
+app.get('/api/patients/:patientKey', authenticateToken, async (req, res) => {
+    try {
+        const patientKey = req.params.patientKey;
+        
+        // Check if we're in local test mode
+        const isLocalTest = process.env.NODE_ENV === 'development' && 
+                           process.env.DATABASE_URL?.includes('localhost');
+        
+        if (isLocalTest) {
+            // Return test patient data
+            const testPatients = {
+                '1': {
+                    patient_key: 1,
+                    first_name: 'John',
+                    middle_name: 'A',
+                    last_name: 'Doe',
+                    address: '123 Main St',
+                    city: 'Anytown',
+                    state: 'ST',
+                    zip_code: '12345',
+                    phone: '555-1234',
+                    accepts_texts: true,
+                    date_when: '2024-01-01T00:00:00.000Z'
+                },
+                '2': {
+                    patient_key: 2,
+                    first_name: 'Jane',
+                    middle_name: null,
+                    last_name: 'Smith',
+                    address: '456 Oak Ave',
+                    city: 'Somewhere',
+                    state: 'ST',
+                    zip_code: '67890',
+                    phone: '555-5678',
+                    accepts_texts: false,
+                    date_when: '2024-01-02T00:00:00.000Z'
+                }
+            };
+            
+            const patient = testPatients[patientKey];
+            if (patient) {
+                return res.json(patient);
+            } else {
+                return res.status(404).json({ error: 'Patient not found' });
+            }
+        }
+        
+        // Production database logic
+        const client = await pool.connect();
+        try {
+            const result = await client.query(`
+                SELECT 
+                    p.patient_key,
+                    n.first_name,
+                    n.middle_name,
+                    n.last_name,
+                    p.address,
+                    p.city,
+                    p.state,
+                    p.zip_code,
+                    p.phone,
+                    p.accepts_texts,
+                    p.date_when
+                FROM tbl_patient p
+                LEFT JOIN tbl_name_data n ON p.name_key = n.name_key
+                WHERE p.patient_key = $1
+            `, [patientKey]);
+            
+            if (result.rows.length === 0) {
+                return res.status(404).json({ error: 'Patient not found' });
+            }
+            
+            res.json(result.rows[0]);
+            
+        } finally {
+            client.release();
+        }
+        
+    } catch (err) {
+        console.error('Get patient error:', err);
+        res.status(500).json({ 
+            error: 'Failed to fetch patient',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+});
+
+app.delete('/api/patients/:patientKey', authenticateToken, async (req, res) => {
+    try {
+        const patientKey = req.params.patientKey;
+        
+        // Check if we're in local test mode
+        const isLocalTest = process.env.NODE_ENV === 'development' && 
+                           process.env.DATABASE_URL?.includes('localhost');
+        
+        if (isLocalTest) {
+            // For local testing, just return success
+            return res.json({ 
+                message: 'Patient deleted successfully',
+                patientKey: patientKey
+            });
+        }
+        
+        // Production database logic
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            
+            // Get the name_key before deleting the patient
+            const patientResult = await client.query(
+                'SELECT name_key FROM tbl_patient WHERE patient_key = $1',
+                [patientKey]
+            );
+            
+            if (patientResult.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(404).json({ error: 'Patient not found' });
+            }
+            
+            const nameKey = patientResult.rows[0].name_key;
+            
+            // Delete patient record
+            await client.query(
+                'DELETE FROM tbl_patient WHERE patient_key = $1',
+                [patientKey]
+            );
+            
+            // Delete associated name data if it exists
+            if (nameKey) {
+                await client.query(
+                    'DELETE FROM tbl_name_data WHERE name_key = $1',
+                    [nameKey]
+                );
+            }
+            
+            await client.query('COMMIT');
+            
+            res.json({ 
+                message: 'Patient deleted successfully',
+                patientKey: patientKey
+            });
+            
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+        
+    } catch (err) {
+        console.error('Delete patient error:', err);
+        res.status(500).json({ 
+            error: 'Failed to delete patient',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+});
+
 // Profile management endpoints
 app.put('/api/profile', authenticateToken, async (req, res) => {
     try {

@@ -2567,3 +2567,254 @@ function showError(message) {
         errorDiv.style.display = 'block';
     }
 }
+
+// Patient Page Initialization
+function initializePatientPage() {
+    const createPatientBtn = document.getElementById('createPatientBtn');
+    const managePatientsBtn = document.getElementById('managePatientsBtn');
+    const createPatientSection = document.getElementById('createPatientSection');
+    const managePatientsSection = document.getElementById('managePatientsSection');
+    const patientChoice = document.getElementById('patientChoice');
+    const createPatientForm = document.getElementById('createPatientForm');
+    
+    // Handle create patient button
+    if (createPatientBtn) {
+        createPatientBtn.addEventListener('click', () => {
+            patientChoice.classList.add('hidden');
+            createPatientSection.classList.remove('hidden');
+            managePatientsSection.classList.add('hidden');
+        });
+    }
+    
+    // Handle manage patients button
+    if (managePatientsBtn) {
+        managePatientsBtn.addEventListener('click', () => {
+            patientChoice.classList.add('hidden');
+            createPatientSection.classList.add('hidden');
+            managePatientsSection.classList.remove('hidden');
+            loadPatients();
+        });
+    }
+    
+    // Handle create patient form submission
+    if (createPatientForm) {
+        createPatientForm.addEventListener('submit', handleCreatePatient);
+    }
+    
+    // Set up patient search/filter functionality
+    const patientFilter = document.getElementById('patientFilter');
+    if (patientFilter) {
+        patientFilter.addEventListener('input', filterPatients);
+    }
+    
+    // Add back buttons functionality
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('back-btn')) {
+            showPatientChoice();
+        }
+    });
+}
+
+function showPatientChoice() {
+    const patientChoice = document.getElementById('patientChoice');
+    const createPatientSection = document.getElementById('createPatientSection');
+    const managePatientsSection = document.getElementById('managePatientsSection');
+    
+    if (patientChoice) patientChoice.classList.remove('hidden');
+    if (createPatientSection) createPatientSection.classList.add('hidden');
+    if (managePatientsSection) managePatientsSection.classList.add('hidden');
+}
+
+async function handleCreatePatient(event) {
+    event.preventDefault();
+    
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        alert('Authentication required. Please log in again.');
+        return;
+    }
+    
+    // Get form data
+    const formData = new FormData(event.target);
+    const patientData = {
+        firstName: formData.get('firstName'),
+        middleName: formData.get('middleName') || '',
+        lastName: formData.get('lastName'),
+        address: formData.get('address') || '',
+        city: formData.get('city') || '',
+        state: formData.get('state') || '',
+        zipCode: formData.get('zipCode') || '',
+        phone: formData.get('phone') || '',
+        acceptsTexts: formData.get('acceptsTexts') === 'on',
+        who: 'patient', // Default value
+        datewhen: new Date().toISOString()
+    };
+    
+    try {
+        const response = await fetch(`${API_URL}/api/eeg`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(patientData)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            alert('Patient created successfully!');
+            event.target.reset(); // Clear the form
+            showPatientChoice(); // Return to main choice screen
+        } else {
+            const error = await response.json();
+            alert(`Failed to create patient: ${error.error || 'Unknown error'}`);
+        }
+    } catch (error) {
+        console.error('Error creating patient:', error);
+        alert('An error occurred while creating the patient. Please try again.');
+    }
+}
+
+async function loadPatients() {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        alert('Authentication required. Please log in again.');
+        return;
+    }
+    
+    const loadingDiv = document.getElementById('patientsLoading');
+    const tableBody = document.getElementById('patientsTableBody');
+    const noResultsDiv = document.getElementById('noPatientsFound');
+    
+    if (loadingDiv) loadingDiv.classList.remove('hidden');
+    if (noResultsDiv) noResultsDiv.classList.add('hidden');
+    
+    try {
+        const response = await fetch(`${API_URL}/api/patients`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const patients = await response.json();
+            displayPatients(patients);
+        } else {
+            console.error('Failed to load patients');
+            if (tableBody) {
+                tableBody.innerHTML = '<tr><td colspan="6">Failed to load patients</td></tr>';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading patients:', error);
+        if (tableBody) {
+            tableBody.innerHTML = '<tr><td colspan="6">Error loading patients</td></tr>';
+        }
+    } finally {
+        if (loadingDiv) loadingDiv.classList.add('hidden');
+    }
+}
+
+function displayPatients(patients) {
+    const tableBody = document.getElementById('patientsTableBody');
+    const noResultsDiv = document.getElementById('noPatientsFound');
+    
+    if (!tableBody) return;
+    
+    if (!patients || patients.length === 0) {
+        tableBody.innerHTML = '';
+        if (noResultsDiv) noResultsDiv.classList.remove('hidden');
+        return;
+    }
+    
+    if (noResultsDiv) noResultsDiv.classList.add('hidden');
+    
+    tableBody.innerHTML = patients.map(patient => `
+        <tr>
+            <td>${escapeHtml(patient.first_name)} ${escapeHtml(patient.middle_name || '')} ${escapeHtml(patient.last_name)}</td>
+            <td>${escapeHtml(patient.address || 'N/A')}</td>
+            <td>${escapeHtml(patient.phone || 'N/A')}</td>
+            <td>${patient.accepts_texts ? 'Yes' : 'No'}</td>
+            <td>${patient.date_when ? new Date(patient.date_when).toLocaleDateString() : 'N/A'}</td>
+            <td>
+                <button class="action-btn edit" onclick="editPatient(${patient.patient_key})">Edit</button>
+                <button class="action-btn delete" onclick="deletePatient(${patient.patient_key})">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function filterPatients() {
+    const filterValue = document.getElementById('patientFilter')?.value.toLowerCase() || '';
+    const table = document.getElementById('patientsTable');
+    const rows = table?.querySelectorAll('tbody tr') || [];
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const shouldShow = text.includes(filterValue);
+        row.style.display = shouldShow ? '' : 'none';
+    });
+    
+    // Show/hide no results message
+    const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
+    const noResultsDiv = document.getElementById('noPatientsFound');
+    if (noResultsDiv) {
+        noResultsDiv.classList.toggle('hidden', visibleRows.length > 0 || filterValue === '');
+    }
+}
+
+async function editPatient(patientKey) {
+    // TODO: Implement patient editing functionality
+    alert('Patient editing functionality coming soon!');
+}
+
+async function deletePatient(patientKey) {
+    if (!confirm('Are you sure you want to delete this patient? This action cannot be undone.')) {
+        return;
+    }
+    
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        alert('Authentication required. Please log in again.');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/patients/${patientKey}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            alert('Patient deleted successfully!');
+            loadPatients(); // Reload the patients list
+        } else {
+            const error = await response.json();
+            alert(`Failed to delete patient: ${error.error || 'Unknown error'}`);
+        }
+    } catch (error) {
+        console.error('Error deleting patient:', error);
+        alert('An error occurred while deleting the patient. Please try again.');
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
