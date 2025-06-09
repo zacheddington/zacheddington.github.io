@@ -1,3 +1,42 @@
+// Utility functions for extension-safe DOM operations
+function extensionSafeOperation(operation, fallback = null, retryDelay = 100) {
+    try {
+        return operation();
+    } catch (error) {
+        // Check if this might be extension interference
+        if (error.message && (
+            error.message.includes('focusedFieldRects') ||
+            error.message.includes('Cannot read properties of null') ||
+            error.message.includes('extension')
+        )) {
+            console.debug('Extension interference detected, using fallback:', error.message);
+            
+            // Try fallback if provided
+            if (fallback && typeof fallback === 'function') {
+                try {
+                    return fallback();
+                } catch (fallbackError) {
+                    console.debug('Fallback also failed:', fallbackError.message);
+                }
+            }
+            
+            // Retry after delay if this is a DOM operation
+            if (retryDelay > 0) {
+                setTimeout(() => {
+                    try {
+                        operation();
+                    } catch (retryError) {
+                        console.debug('Retry failed:', retryError.message);
+                    }
+                }, retryDelay);
+            }
+        } else {
+            // Re-throw non-extension errors
+            throw error;
+        }
+    }
+}
+
 // Utility functions for admin detection and menu management
 function isUserAdmin(userData) {
     if (!userData) return false;
@@ -37,8 +76,19 @@ function updateAdminMenuItem(isAdmin) {
     }
 }
 
+// Global error handler for browser extension interference
+window.addEventListener('error', function(event) {
+    // Check if error is from a browser extension
+    if (event.filename && event.filename.includes('chrome-extension://')) {
+        // Suppress extension errors from cluttering console
+        console.debug('Browser extension error suppressed:', event.error?.message || event.message);
+        event.preventDefault();
+        return false;
+    }
+});
+
 // Handle both normal page loads and back/forward cache restores
-function initializePage() {    // Detect if running locally or in production
+function initializePage() {// Detect if running locally or in production
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     const FADE_DURATION = 500;
@@ -728,8 +778,22 @@ function initializeProfilePage() {
           // Real-time password confirmation validation
         const newPassword = document.getElementById('newPassword');
         const confirmPassword = document.getElementById('confirmPassword');
-        const currentPassword = document.getElementById('currentPassword');
-          if (newPassword && confirmPassword && currentPassword) {
+        const currentPassword = document.getElementById('currentPassword');        if (newPassword && confirmPassword && currentPassword) {
+            // Add extension-friendly attributes to prevent interference
+            try {
+                [currentPassword, newPassword, confirmPassword].forEach(field => {
+                    field.setAttribute('data-extension-safe', 'true');
+                    // Ensure proper autocomplete attributes for password managers
+                    if (field === currentPassword) {
+                        field.setAttribute('autocomplete', 'current-password');
+                    } else {
+                        field.setAttribute('autocomplete', 'new-password');
+                    }
+                });
+            } catch (e) {
+                console.debug('Extension attribute setting interference:', e);
+            }
+            
             // Add password strength indicator for profile page
             addPasswordStrengthIndicator(newPassword);
             
@@ -1406,11 +1470,27 @@ async function loadRoles() {
 function setupCreateUserForm() {
     const createUserForm = document.getElementById('createUserForm');
     if (!createUserForm) return;
-    
-    // Get form elements
+      // Get form elements
     const newPassword = document.getElementById('newPassword');
     const confirmPassword = document.getElementById('confirmPassword');
     const newUsername = document.getElementById('newUsername');
+    
+    // Add extension-friendly attributes to prevent interference
+    if (newPassword && confirmPassword) {
+        try {
+            [newPassword, confirmPassword].forEach(field => {
+                field.setAttribute('data-extension-safe', 'true');
+                field.setAttribute('autocomplete', 'new-password');
+            });
+            
+            if (newUsername) {
+                newUsername.setAttribute('data-extension-safe', 'true');
+                newUsername.setAttribute('autocomplete', 'username');
+            }
+        } catch (e) {
+            console.debug('Extension attribute setting interference:', e);
+        }
+    }
     
     // Add password strength indicator for create user form
     if (newPassword) {
@@ -1680,6 +1760,15 @@ function addPasswordStrengthIndicator(passwordField) {
         return; // Already added or field doesn't exist
     }
     
+    // Add defensive attributes for browser extensions (like password managers)
+    try {
+        passwordField.setAttribute('data-bitwarden-watching', 'false');
+        passwordField.setAttribute('autocomplete', passwordField.getAttribute('autocomplete') || 'new-password');
+    } catch (e) {
+        // Ignore any errors from extension interference
+        console.debug('Extension interference detected, continuing...', e);
+    }
+    
     // Create strength indicator container
     const strengthContainer = document.createElement('div');
     strengthContainer.className = 'password-strength-container';
@@ -1758,17 +1847,33 @@ function addPasswordStrengthIndicator(passwordField) {
         item.appendChild(text);
         checklistContainer.appendChild(item);
     });
-    
-    strengthContainer.appendChild(strengthBar);
+      strengthContainer.appendChild(strengthBar);
     strengthContainer.appendChild(strengthText);
     strengthContainer.appendChild(checklistContainer);
     
-    // Insert after the password field
-    passwordField.parentNode.insertBefore(strengthContainer, passwordField.nextSibling);
+    // Insert after the password field with extension-friendly timing
+    try {
+        passwordField.parentNode.insertBefore(strengthContainer, passwordField.nextSibling);
+    } catch (e) {
+        // Fallback if DOM manipulation fails due to extension interference
+        console.debug('DOM insertion interference detected, retrying...', e);
+        setTimeout(() => {
+            try {
+                passwordField.parentNode.insertBefore(strengthContainer, passwordField.nextSibling);
+            } catch (retryError) {
+                console.warn('Could not add password strength indicator due to extension interference');
+            }
+        }, 100);
+    }
     
-    // Add event listener
+    // Add event listener with defensive error handling
     passwordField.addEventListener('input', function() {
-        updatePasswordStrengthAndChecklist(passwordField, strengthFill, strengthText, checklistContainer);
+        try {
+            updatePasswordStrengthAndChecklist(passwordField, strengthFill, strengthText, checklistContainer);
+        } catch (e) {
+            // Continue gracefully if extension interferes with our updates
+            console.debug('Password strength update interference:', e);
+        }
     });
     
     // Mark as added to prevent duplicates
@@ -1776,69 +1881,96 @@ function addPasswordStrengthIndicator(passwordField) {
 }
 
 function updatePasswordStrengthAndChecklist(passwordField, strengthFill, strengthText, checklistContainer) {
-    const password = passwordField.value;
-    const validation = validatePassword(password);
-    
-    // Update strength bar
-    strengthFill.style.width = validation.score + '%';
-    strengthFill.style.backgroundColor = validation.strength.color;
-    
-    // Update strength text
-    strengthText.textContent = validation.strength.message;
-    strengthText.style.color = validation.strength.color;
-    
-    // Update checklist
-    const requirementMap = {
-        'length': password.length >= PASSWORD_REQUIREMENTS.minLength,
-        'uppercase': /[A-Z]/.test(password),
-        'lowercase': /[a-z]/.test(password),
-        'number': /\d/.test(password),
-        'special': /[!@#$%^&*(),.?":{}|<>]/.test(password),
-        'noSpaces': !/\s/.test(password),
-        'notCommon': !COMMON_PASSWORDS.some(common => password.toLowerCase() === common.toLowerCase())
-    };
-    
-    Object.keys(requirementMap).forEach(key => {
-        const item = checklistContainer.querySelector(`.requirement-${key}`);
-        if (item) {
-            const icon = item.querySelector('.requirement-icon');
-            const text = item.querySelector('span:last-child');
-            
-            if (requirementMap[key]) {
-                icon.textContent = '✓';
-                icon.style.color = '#28a745';
-                text.style.color = '#28a745';
-                item.style.opacity = '1';
-            } else if (password.length > 0) {
-                icon.textContent = '✗';
-                icon.style.color = '#dc3545';
-                text.style.color = '#dc3545';
-                item.style.opacity = '1';
-            } else {
-                icon.textContent = '○';
-                icon.style.color = '#ccc';
-                text.style.color = '#666';
-                item.style.opacity = '0.7';
-            }
+    try {
+        const password = passwordField?.value || '';
+        const validation = validatePassword(password);
+        
+        // Update strength bar with null checks
+        if (strengthFill) {
+            strengthFill.style.width = validation.score + '%';
+            strengthFill.style.backgroundColor = validation.strength.color;
         }
-    });
+        
+        // Update strength text with null checks
+        if (strengthText) {
+            strengthText.textContent = validation.strength.message;
+            strengthText.style.color = validation.strength.color;
+        }
+        
+        // Update checklist with defensive checks
+        if (checklistContainer) {
+            const requirementMap = {
+                'length': password.length >= PASSWORD_REQUIREMENTS.minLength,
+                'uppercase': /[A-Z]/.test(password),
+                'lowercase': /[a-z]/.test(password),
+                'number': /\d/.test(password),
+                'special': /[!@#$%^&*(),.?":{}|<>]/.test(password),
+                'noSpaces': !/\s/.test(password),
+                'notCommon': !COMMON_PASSWORDS.some(common => password.toLowerCase() === common.toLowerCase())
+            };
+            
+            Object.keys(requirementMap).forEach(key => {
+                try {
+                    const item = checklistContainer.querySelector(`.requirement-${key}`);
+                    if (item) {
+                        const icon = item.querySelector('.requirement-icon');
+                        const text = item.querySelector('span:last-child');
+                        
+                        if (icon && text) {
+                            if (requirementMap[key]) {
+                                icon.textContent = '✓';
+                                icon.style.color = '#28a745';
+                                text.style.color = '#28a745';
+                                item.style.opacity = '1';
+                            } else if (password.length > 0) {
+                                icon.textContent = '✗';
+                                icon.style.color = '#dc3545';
+                                text.style.color = '#dc3545';
+                                item.style.opacity = '1';
+                            } else {
+                                icon.textContent = '○';
+                                icon.style.color = '#ccc';
+                                text.style.color = '#666';
+                                item.style.opacity = '0.7';
+                            }
+                        }
+                    }
+                } catch (itemError) {
+                    // Skip this requirement if there's an issue
+                    console.debug('Requirement item update interference:', itemError);
+                }
+            });
+        }
+    } catch (e) {
+        // Gracefully handle any extension interference
+        console.debug('Password strength checklist update interference:', e);
+    }
 }
 
 // Legacy function for backward compatibility
 function updatePasswordStrength(passwordField, strengthFill, strengthText) {
-    const checklistContainer = passwordField.parentNode.querySelector('.password-requirements-checklist');
-    if (checklistContainer) {
-        updatePasswordStrengthAndChecklist(passwordField, strengthFill, strengthText, checklistContainer);
-    } else {
-        // Fallback to old behavior
-        const password = passwordField.value;
-        const strength = calculatePasswordStrength(password);
-        
-        strengthFill.style.width = strength.percentage + '%';
-        strengthFill.style.backgroundColor = strength.color;
-        
-        strengthText.textContent = strength.message;
-        strengthText.style.color = strength.color;
+    try {
+        const checklistContainer = passwordField?.parentNode?.querySelector('.password-requirements-checklist');
+        if (checklistContainer) {
+            updatePasswordStrengthAndChecklist(passwordField, strengthFill, strengthText, checklistContainer);
+        } else {
+            // Fallback to old behavior
+            const password = passwordField?.value || '';
+            const strength = calculatePasswordStrength(password);
+            
+            if (strengthFill) {
+                strengthFill.style.width = strength.percentage + '%';
+                strengthFill.style.backgroundColor = strength.color;
+            }
+            
+            if (strengthText) {
+                strengthText.textContent = strength.message;
+                strengthText.style.color = strength.color;
+            }
+        }
+    } catch (e) {
+        // Gracefully handle any extension interference
+        console.debug('Password strength update interference detected:', e);
     }
 }
 
@@ -2614,8 +2746,22 @@ function initializeForcePasswordChangePage() {
     const newPassword = document.getElementById('newPassword');
     const confirmPassword = document.getElementById('confirmPassword');
     const changePasswordBtn = document.getElementById('changePasswordBtn');
-    
-    if (newPassword && confirmPassword && currentPassword) {
+      if (newPassword && confirmPassword && currentPassword) {
+        // Add extension-friendly attributes to prevent interference
+        try {
+            [currentPassword, newPassword, confirmPassword].forEach(field => {
+                field.setAttribute('data-extension-safe', 'true');
+                // Ensure proper autocomplete attributes for password managers
+                if (field === currentPassword) {
+                    field.setAttribute('autocomplete', 'current-password');
+                } else {
+                    field.setAttribute('autocomplete', 'new-password');
+                }
+            });
+        } catch (e) {
+            console.debug('Extension attribute setting interference:', e);
+        }
+        
         // Add password strength indicator for force password change page
         addPasswordStrengthIndicator(newPassword);
         
