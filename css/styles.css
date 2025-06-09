@@ -1407,27 +1407,21 @@ button[type="submit"]:disabled,
 
 /* Back to login button styles */
 .back-btn {
-    background: transparent;
-    border: 1px solid #00acc1;
-    color: #00acc1;
-    padding: 8px 16px;
     margin-top: 10px;
+    background: transparent;
+    border: 1px solid #6c757d;
+    color: #6c757d;
+    padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    align-self: flex-start;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    width: 100%;
 }
 
 .back-btn:hover {
-    background: #00acc1;
+    background-color: #6c757d;
     color: white;
-    transform: translateY(-1px);
-}
-
-.back-btn:active {
-    transform: translateY(0);
 }
 
 .eeg-form .form-group {
