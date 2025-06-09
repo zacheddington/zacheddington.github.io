@@ -40,7 +40,7 @@ function updateAdminMenuItem(isAdmin) {
 document.addEventListener('DOMContentLoaded', function() {    // Detect if running locally or in production
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-    const FADE_DURATION = 450;
+    const FADE_DURATION = 500;
     
     // Check if current page is login page
     const currentPath = window.location.pathname;
@@ -316,9 +316,9 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
             if (href && href !== '#') {
                 e.preventDefault();
                 // Simple fade navigation without custom function
-                document.body.classList.add('fade-out');
-                setTimeout(() => {
-                    window.location.href = href;                }, FADE_DURATION);
+                document.body.classList.add('fade-out');                setTimeout(() => {
+                    window.location.href = href;
+                }, FADE_DURATION);
             }
         });
     });
