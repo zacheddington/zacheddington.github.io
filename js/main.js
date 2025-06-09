@@ -3034,14 +3034,64 @@ function initializeForcePasswordChangePage() {
                 submitBtn.disabled = false;
             }
         });
-        
-        // Real-time password validation feedback
+          // Real-time password validation feedback with strength indicator
         const newPasswordField = document.getElementById('newPassword');
         const confirmPasswordField = document.getElementById('confirmPassword');
         
-        if (newPasswordField) {
+        if (newPasswordField && confirmPasswordField) {
+            // Add password strength indicator for forced password change page
+            addPasswordStrengthIndicator(newPasswordField);
+            
+            // Password match validation function for forced password change
+            function validateForcePasswordMatch() {
+                const newPassword = newPasswordField.value;
+                const confirmPasswordElement = confirmPasswordField;
+                const confirmPassword = confirmPasswordElement.value;
+                const confirmGroup = confirmPasswordElement.closest('.form-group');
+                
+                // Remove existing error/success classes and messages
+                confirmGroup.classList.remove('error', 'success');
+                confirmPasswordElement.classList.remove('password-match', 'password-mismatch');
+                const existingMessage = confirmGroup.querySelector('.error-message, .success-message');
+                if (existingMessage) {
+                    existingMessage.remove();
+                }
+                
+                if (confirmPassword && newPassword) {
+                    if (newPassword === confirmPassword) {
+                        confirmGroup.classList.add('success');
+                        confirmPasswordElement.classList.add('password-match');
+                        const successMsg = document.createElement('div');
+                        successMsg.className = 'success-message';
+                        successMsg.textContent = 'Passwords match';
+                        confirmGroup.appendChild(successMsg);
+                    } else {
+                        confirmGroup.classList.add('error');
+                        confirmPasswordElement.classList.add('password-mismatch');
+                        const errorMsg = document.createElement('div');
+                        errorMsg.className = 'error-message';
+                        errorMsg.textContent = 'Passwords do not match';
+                        confirmGroup.appendChild(errorMsg);
+                    }
+                }
+                
+                // Update field states using the field state manager
+                if (window.fieldStateManager) {
+                    window.fieldStateManager.updateFieldState(confirmPasswordElement);
+                    window.fieldStateManager.updateFieldState(newPasswordField);
+                }
+            }
+            
             newPasswordField.addEventListener('input', function() {
                 const password = this.value;
+                
+                // Update password strength indicator
+                updatePasswordStrength(password, this.id);
+                
+                // Validate password match
+                validateForcePasswordMatch();
+                
+                // Legacy validation for form submission
                 if (password.length > 0) {
                     const errors = validatePassword(password);
                     if (errors.length > 0) {
@@ -3050,11 +3100,18 @@ function initializeForcePasswordChangePage() {
                         this.setCustomValidity('');
                     }
                 }
+                
+                // Update field states
+                if (window.fieldStateManager) {
+                    window.fieldStateManager.updateFieldState(this);
+                }
             });
-        }
-        
-        if (confirmPasswordField) {
+            
             confirmPasswordField.addEventListener('input', function() {
+                // Validate password match with visual feedback
+                validateForcePasswordMatch();
+                
+                // Legacy validation for form submission
                 const newPassword = newPasswordField.value;
                 const confirmPassword = this.value;
                 
@@ -3062,6 +3119,11 @@ function initializeForcePasswordChangePage() {
                     this.setCustomValidity('Passwords do not match');
                 } else {
                     this.setCustomValidity('');
+                }
+                
+                // Update field states
+                if (window.fieldStateManager) {
+                    window.fieldStateManager.updateFieldState(this);
                 }
             });
         }
