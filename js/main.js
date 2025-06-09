@@ -1467,25 +1467,29 @@ async function createUser() {
     const formData = new FormData(form);    const newUser = {
         username: formData.get('username'),
         firstName: formData.get('firstName'),
+        middleName: formData.get('middleName'),
         lastName: formData.get('lastName'),
+        email: formData.get('email'),
         password: formData.get('password'),
-        confirmPassword: formData.get('confirmPassword')
+        confirmPassword: formData.get('confirmPassword'),
+        roleKey: formData.get('role')
     };
     
     // Debug logging
     console.log('Form data collected:', newUser);
     console.log('FormData entries:', Array.from(formData.entries()));
-    
-    // Validate required fields
-    if (!newUser.username || !newUser.firstName || !newUser.lastName || !newUser.password || !newUser.confirmPassword) {
+      // Validate required fields
+    if (!newUser.username || !newUser.firstName || !newUser.lastName || !newUser.email || !newUser.password || !newUser.confirmPassword || !newUser.roleKey) {
         console.log('Validation failed - missing fields:', {
             username: !!newUser.username,
             firstName: !!newUser.firstName,
             lastName: !!newUser.lastName,
+            email: !!newUser.email,
             password: !!newUser.password,
-            confirmPassword: !!newUser.confirmPassword
+            confirmPassword: !!newUser.confirmPassword,
+            roleKey: !!newUser.roleKey
         });
-        window.modalManager.showModal('error', 'All fields are required.');
+        window.modalManager.showModal('error', 'All fields except middle name are required.');
         return;
     }
     
@@ -1495,13 +1499,12 @@ async function createUser() {
         return;
     }
     
-    try {
-        const response = await fetch(`${API_URL}/api/admin/create-user`, {
+    try {        const response = await fetch(`${API_URL}/api/create-user`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
-            credentials: 'include',
             body: JSON.stringify(newUser)
         });
         
@@ -1870,7 +1873,7 @@ async function editUser(username) {
     }
 }
 
-async function deleteUser(username) {
+async function deleteUser(userId, username) {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     
@@ -1882,13 +1885,11 @@ async function deleteUser(username) {
     }
     
     try {
-        const response = await fetch(`${API_URL}/api/admin/delete-user`, {
+        const response = await fetch(`${API_URL}/api/users/${userId}`, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({ username })
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
         });
         
         const result = await response.json();
@@ -2235,10 +2236,11 @@ async function loadUsers() {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     
-    try {
-        const response = await fetch(`${API_URL}/api/admin/users`, {
+    try {        const response = await fetch(`${API_URL}/api/users`, {
             method: 'GET',
-            credentials: 'include'
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
         });
         
         if (response.ok) {
@@ -2260,16 +2262,15 @@ function displayUsers(users) {
         usersList.innerHTML = '<p>No users found.</p>';
         return;
     }
-    
-    usersList.innerHTML = users.map(user => `
+      usersList.innerHTML = users.map(user => `
         <div class="user-item">
             <div class="user-info">
                 <strong>${user.username}</strong>
-                <span>${user.firstName} ${user.lastName}</span>
+                <span>${user.first_name} ${user.last_name}</span>
             </div>
             <div class="user-actions">
                 <button onclick="editUser('${user.username}')" class="btn-secondary">Edit</button>
-                <button onclick="deleteUser('${user.username}')" class="btn-danger">Delete</button>
+                <button onclick="deleteUser(${user.user_key}, '${user.username}')" class="btn-danger">Delete</button>
             </div>
         </div>
     `).join('');
