@@ -2980,10 +2980,9 @@ function initializeForcePasswordChangePage() {
             // Show loading modal
             showModal('loadingModal');
             submitBtn.disabled = true;
-            
-            try {
+              try {
                 const response = await fetch(`${API_URL}/api/force-change-password`, {
-                    method: 'POST',
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
