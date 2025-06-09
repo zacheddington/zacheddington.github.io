@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Security: Prevent caching of sensitive data -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <!-- Security: Prevent page from being embedded in frames -->
+    <meta http-equiv="X-Frame-Options" content="DENY">
     <title>Required Password Change - Integris Neuro System</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="icon" type="image/png" href="../favicon.png">
@@ -12,10 +18,10 @@
         <div class="login-card">            <div class="login-header">
                 <h1>Password Change Required</h1>
                 <p class="login-subtitle">For security purposes, you must change your password before continuing</p>
-            </div>
-
-            <div class="login-form-container">
-                <form id="forcePasswordChangeForm" class="login-form">
+            </div>            <div class="login-form-container">
+                <form id="forcePasswordChangeForm" class="login-form" method="POST" autocomplete="off">
+                    <!-- Security: Prevent form data from appearing in URLs -->
+                    <input type="hidden" name="_token" id="csrfToken" value="">
                     <!-- Hidden username field for accessibility and password manager compatibility -->
                     <input type="text" id="forceChangeUsername" name="username" autocomplete="username" style="display: none;" tabindex="-1" aria-hidden="true">
                     
@@ -78,12 +84,25 @@
             <p id="modalErrorMessage">An error occurred while changing your password. Please try again.</p>
             <button class="modal-btn" onclick="closeErrorModal()">Try Again</button>
         </div>
-    </div>
-
-    <script src="../js/fieldStates.js"></script>
+    </div>    <script src="../js/fieldStates.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/main.js"></script>
     <script>
+        // Security: Clear any sensitive URL parameters immediately
+        (function() {
+            if (window.location.search || window.location.hash) {
+                console.warn('Removing sensitive URL parameters for security');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
+            // Prevent form data from being stored in browser history
+            if (window.history && window.history.replaceState) {
+                window.addEventListener('beforeunload', function() {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                });
+            }
+        })();
+        
         // Initialize force password change page
         document.addEventListener('DOMContentLoaded', function() {
             initializeForcePasswordChangePage();

@@ -390,7 +390,7 @@ function initializePage() {    // Detect if running locally or in production
 // Handle both normal page loads and bfcache restores
 document.addEventListener('DOMContentLoaded', initializePage);
 window.addEventListener('pageshow', function(event) {
-    // If page was restored from bfcache, reinitialize
+    // If page was restored from bfcache, reinitializing
     if (event.persisted) {
         console.log('Page restored from bfcache, reinitializing...');
         initializePage();
@@ -2374,5 +2374,203 @@ async function disable2FA() {
     } catch (error) {
         console.error('Error disabling 2FA:', error);
         window.modalManager.showModal('error', 'Network error. Please try again.');
+    }
+}
+
+// Force Password Change Page Functionality
+function initializeForcePasswordChangePage() {
+    console.log('Initializing force password change page...');
+    
+    // Clear any URL parameters that might contain sensitive data
+    if (window.location.search) {
+        console.warn('Removing sensitive URL parameters for security');
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    const form = document.getElementById('forcePasswordChangeForm');
+    const errorContainer = document.getElementById('errorContainer');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    if (!form) {
+        console.error('Force password change form not found');
+        return;
+    }
+
+    // Get form elements
+    const currentPassword = document.getElementById('currentPassword');
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    
+    if (newPassword && confirmPassword && currentPassword) {
+        // Add password strength indicator for force password change page
+        addPasswordStrengthIndicator(newPassword);
+        
+        // Add event listeners for real-time validation
+        newPassword.addEventListener('input', function() {
+            validatePasswordMatch();
+            updatePasswordStrength(newPassword, 
+                newPassword.parentNode.querySelector('.password-strength-fill'),
+                newPassword.parentNode.querySelector('.password-strength-text')
+            );
+            if (window.fieldStateManager) {
+                window.fieldStateManager.updateFieldState(newPassword);
+            }
+        });
+        
+        confirmPassword.addEventListener('input', function() {
+            validatePasswordMatch();
+            if (window.fieldStateManager) {
+                window.fieldStateManager.updateFieldState(confirmPassword);
+            }
+        });
+        
+        currentPassword.addEventListener('input', function() {
+            if (window.fieldStateManager) {
+                window.fieldStateManager.updateFieldState(currentPassword);
+            }
+        });
+    }
+
+    // Handle form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await handleForcePasswordChange();
+    });
+
+    // Populate username field from localStorage for password managers
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    const usernameField = document.getElementById('forceChangeUsername');
+    if (usernameField && userData.username) {
+        usernameField.value = userData.username;
+    }
+
+    console.log('Force password change page initialized successfully');
+}
+
+// Handle force password change form submission
+async function handleForcePasswordChange() {
+    const form = document.getElementById('forcePasswordChangeForm');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const errorContainer = document.getElementById('errorContainer');
+    const errorMessage = document.getElementById('errorMessage');
+    const loadingModal = document.getElementById('loadingModal');
+    const successModal = document.getElementById('successModal');
+    const errorModal = document.getElementById('errorModal');
+    
+    const originalText = changePasswordBtn.textContent;
+    
+    try {
+        // Show loading state
+        changePasswordBtn.disabled = true;
+        changePasswordBtn.textContent = 'Changing Password...';
+        errorContainer.style.display = 'none';
+        
+        // Show loading modal
+        if (loadingModal) {
+            loadingModal.style.display = 'flex';
+        }
+        
+        // Get form values
+        const currentPasswordValue = document.getElementById('currentPassword').value;
+        const newPasswordValue = document.getElementById('newPassword').value;
+        const confirmPasswordValue = document.getElementById('confirmPassword').value;
+        
+        // Validate inputs
+        if (!currentPasswordValue || !newPasswordValue || !confirmPasswordValue) {
+            throw new Error('All fields are required.');
+        }
+        
+        if (newPasswordValue !== confirmPasswordValue) {
+            throw new Error('New passwords do not match.');
+        }
+        
+        // Validate new password strength
+        const passwordValidation = validatePasswordWithCurrentCheck(newPasswordValue, currentPasswordValue);
+        if (!passwordValidation.isValid) {
+            const errorMessages = passwordValidation.failed.join('\n• ');
+            throw new Error(`New password does not meet security requirements:\n• ${errorMessages}`);
+        }
+        
+        // Make API request
+        const token = localStorage.getItem('token');
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        
+        const response = await fetch(`${API_URL}/api/force-change-password`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                currentPassword: currentPasswordValue,
+                newPassword: newPasswordValue
+            })
+        });
+        
+        const result = await response.json();
+        
+        // Hide loading modal
+        if (loadingModal) {
+            loadingModal.style.display = 'none';
+        }
+        
+        if (response.ok) {
+            // Clear form for security
+            form.reset();
+            
+            // Update user data to reflect password change is no longer required
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            userData.passwordChangeRequired = false;
+            localStorage.setItem('user', JSON.stringify(userData));
+            
+            // Show success modal
+            if (successModal) {
+                successModal.style.display = 'flex';
+                
+                // Redirect after success
+                setTimeout(() => {
+                    window.location.href = '/welcome/';
+                }, 3000);
+            } else {
+                // Fallback redirect if modal doesn't exist
+                setTimeout(() => {
+                    window.location.href = '/welcome/';
+                }, 1000);
+            }
+        } else {
+            throw new Error(result.error || 'Failed to change password');
+        }
+        
+    } catch (error) {
+        console.error('Force password change error:', error);
+        
+        // Hide loading modal
+        if (loadingModal) {
+            loadingModal.style.display = 'none';
+        }
+        
+        // Show error
+        if (errorModal && document.getElementById('modalErrorMessage')) {
+            document.getElementById('modalErrorMessage').textContent = error.message;
+            errorModal.style.display = 'flex';
+        } else {
+            // Fallback to inline error display
+            errorMessage.textContent = error.message;
+            errorContainer.style.display = 'block';
+        }
+        
+    } finally {
+        changePasswordBtn.disabled = false;
+        changePasswordBtn.textContent = originalText;
+    }
+}
+
+// Modal control functions for force password change page
+function closeErrorModal() {
+    const errorModal = document.getElementById('errorModal');
+    if (errorModal) {
+        errorModal.style.display = 'none';
     }
 }
