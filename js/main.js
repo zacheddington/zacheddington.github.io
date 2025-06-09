@@ -133,16 +133,23 @@ function initializePage() {// Detect if running locally or in production
                 if (e.key === 'Enter' || e.key === 'Escape') {
                     closeModal();
                 }
-            });if (type === 'success') {
-                // Only redirect to welcome page if we're not on the admin page
+            });            if (type === 'success') {
+                // Only redirect to welcome page if we're not on the admin page and not showing 2FA verification modal
                 const isAdminPage = window.location.pathname.includes('/admin/');
-                if (!isAdminPage) {
+                const is2FAMessage = message.includes('2FA verification required') || message.includes('authenticator code');
+                
+                if (!isAdminPage && !is2FAMessage) {
                     setTimeout(() => {
                         document.body.classList.add('fade-out');
                         setTimeout(() => {
                             window.location.href = "../welcome/";
                         }, FADE_DURATION);
                     }, 2000);
+                } else if (is2FAMessage) {
+                    // For 2FA messages, auto-hide modal after 3 seconds without redirecting
+                    setTimeout(() => {
+                        this.closeModal();
+                    }, 3000);
                 } else {
                     // On admin pages, auto-hide success modal after 4 seconds
                     setTimeout(() => {
@@ -271,9 +278,7 @@ function initializePage() {// Detect if running locally or in production
                     }
                       // Use utility function to check admin status and update UI
                     const isAdmin = isUserAdmin(data.user);
-                    updateAdminUI(isAdmin);
-
-                    // Check if user needs to change password on first login
+                    updateAdminUI(isAdmin);                    // Check if user needs to change password on first login
                     if (data.user.passwordChangeRequired) {
                         // Redirect to forced password change page
                         document.body.classList.add('fade-out');
@@ -281,11 +286,11 @@ function initializePage() {// Detect if running locally or in production
                             window.location.href = "force-password-change/";
                         }, FADE_DURATION + 200);
                     } else {
-                        // Normal login flow - redirect to welcome page
+                        // Normal login flow - redirect to welcome page with additional delay for session establishment
                         document.body.classList.add('fade-out');
                         setTimeout(() => {
                             window.location.href = "welcome/";
-                        }, FADE_DURATION + 200); // Extended delay for robust session persistence
+                        }, FADE_DURATION + 500); // Increased delay for robust session persistence and 2FA flow compatibility
                     }
                 } else {const message = response.status === 401 
                         ? 'Invalid username or password'

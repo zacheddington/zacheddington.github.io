@@ -582,12 +582,15 @@ const checkAuth = () => {
     
     // Also check localStorage for session data
     const sessionData = SessionManager.getSessionData();
-    
-    // Extended grace period for recent logins - if login was within last 3 minutes and we have session data,
-    // allow access even without sessionStorage tab ID (handles immediate post-login navigation)
+      // Extended grace period for recent logins - if login was within last 5 minutes and we have session data,
+    // allow access even without sessionStorage tab ID (handles immediate post-login navigation including 2FA flow)
     const now = Date.now();
     const loginTimestamp = parseInt(localStorage.getItem('loginTimestamp') || '0');
-    const isRecentLogin = (now - loginTimestamp) < 180000; // 3 minutes grace period for login flow
+    const isRecentLogin = (now - loginTimestamp) < 300000; // 5 minutes grace period for login flow (increased from 3 minutes)
+    
+    // Also check if we're in the middle of a 2FA login flow
+    const loginFlowActive = localStorage.getItem('loginFlowActive');
+    const isInLoginFlow = loginFlowActive && (now - parseInt(loginFlowActive)) < 10000; // 10 seconds for 2FA flow
     
     if (!currentTabId) {
         if (isRecentLogin && sessionData && sessionData.tabId) {
