@@ -56,23 +56,17 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
     // Unified modal management
     const modalManager = {
         isShowingModal: false,        showModal: function(type, message, force = false) {
-            console.log('=== MODAL MANAGER showModal CALLED ===');
-            console.log('showModal called with:', { type, message, force, currentlyShowing: this.isShowingModal });
-            
             // For error messages, allow overriding existing modals
             if (this.isShowingModal && !force && type !== 'error') {
-                console.log('Modal blocked - already showing and not forced');
                 return false;
             }
             
             // Close any existing modal first
             if (this.isShowingModal) {
-                console.log('Closing existing modal first...');
                 this.closeModal();
             }
             
-            console.log('Setting isShowingModal to true...');
-            this.isShowingModal = true;            console.log('Creating modal HTML for type:', type);
+            this.isShowingModal = true;
             
             const modalHtml = `
                 <div class="modal" id="feedbackModal" tabindex="-1" style="display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; background-color: rgba(0, 0, 0, 0.5) !important; z-index: 9999 !important; justify-content: center !important; align-items: center !important;">
@@ -81,36 +75,13 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                         <p>${message}</p>
                         <button class="modal-btn" onclick="closeModal()" style="margin-top: 1rem !important; padding: 0.5rem 1rem !important; border: none !important; border-radius: 4px !important; background: #f44336 !important; color: white !important; cursor: pointer !important;">Close</button>
                     </div>
-                </div>            `;            console.log('Inserting modal HTML into document.body...');
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
-            console.log('Modal HTML inserted. Checking if modal element exists:', !!document.getElementById('feedbackModal'));
+                </div>
+            `;            document.body.insertAdjacentHTML('beforeend', modalHtml);
             
             // Small timeout to ensure DOM is ready
-            setTimeout(() => {
-                // Verify the modal is in the DOM
+            setTimeout(() => {                // Verify the modal is in the DOM
                 const modalElement = document.getElementById('feedbackModal');
                 if (modalElement) {
-                    console.log('✓ Modal element found in DOM');
-                    const computedStyle = getComputedStyle(modalElement);
-                    console.log('Modal element styles:', {
-                        display: computedStyle.display,
-                        visibility: computedStyle.visibility,
-                        opacity: computedStyle.opacity,
-                        zIndex: computedStyle.zIndex,
-                        position: computedStyle.position,
-                        top: computedStyle.top,
-                        left: computedStyle.left,
-                        width: computedStyle.width,
-                        height: computedStyle.height
-                    });
-                    
-                    // Check if modal is actually visible in viewport
-                    const rect = modalElement.getBoundingClientRect();
-                    console.log('Modal bounding rect:', rect);
-                    console.log('Modal HTML content:', modalElement.outerHTML);
-                    
-                    // Ensure modal is visible and bring to front
-                    console.log('Ensuring modal visibility...');
                     modalElement.style.display = 'flex';
                     modalElement.style.position = 'fixed';
                     modalElement.style.top = '0';
@@ -121,8 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     modalElement.style.zIndex = '99999';
                     modalElement.style.justifyContent = 'center';
                     modalElement.style.alignItems = 'center';
-                    
-                    // Force styles on modal content too
+                      // Force styles on modal content too
                     const modalContent = modalElement.querySelector('.modal-content');
                     if (modalContent) {
                         modalContent.style.display = 'block';
@@ -133,19 +103,12 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                         modalContent.style.width = '400px';
                         modalContent.style.textAlign = 'center';
                         modalContent.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
-                        console.log('Modal content styles applied');
                     }
-                    
-                    // Final check after forcing styles
-                    const newRect = modalElement.getBoundingClientRect();
-                    console.log('Modal rect after forcing styles:', newRect);
-                    console.log('Is modal visible now?', newRect.width > 0 && newRect.height > 0);
                     
                     // Focus the modal for accessibility
                     modalElement.focus();
-                    
-                } else {
-                    console.error('✗ Modal element NOT found in DOM after insertion!');
+                      } else {
+                    // Error message would go here if needed
                 }
             }, 10);
               // Add keyboard event listener for all modals
@@ -171,21 +134,14 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                         this.closeModal();
                     }, 4000);                }
             }
-            
-            console.log('=== showModal function completed ===');
-            console.log('Final state - isShowingModal:', this.isShowingModal);
-            console.log('Modal exists in DOM:', !!document.getElementById('feedbackModal'));
+  
             return true;
         },
-        
-        closeModal: function() {
-            console.log('=== closeModal CALLED ===');
+          closeModal: function() {
             const modal = document.getElementById('feedbackModal');
-            console.log('Modal element found for closing:', !!modal);
             if (modal) {
                 modal.remove();
                 this.isShowingModal = false;
-                console.log('Modal removed and isShowingModal set to false');
                 
                 // Reset all input modal states for EEG form
                 const inputs = ['patientNumber', 'firstName', 'middleName', 'lastName', 'address'];
@@ -194,11 +150,9 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     if (input) input.dataset.showingModal = 'false';
                 });
             } else {
-                console.log('No modal found to close');
                 this.isShowingModal = false;
             }
-            console.log('=== closeModal COMPLETED ===');
-        }    };    // Make modal functions globally available
+        }};    // Make modal functions globally available
     window.showModal = modalManager.showModal.bind(modalManager);
     window.closeModal = modalManager.closeModal.bind(modalManager);
     window.modalManager = modalManager; // Make modalManager globally accessible
@@ -263,16 +217,14 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     body: JSON.stringify({ username, password, twofaToken: twofaCode })
                 });                // Parse JSON response with error handling
                 let data;
-                try {
-                    data = await response.json();
+                try {                data = await response.json();
                 } catch (jsonError) {
                     // If JSON parsing fails, create a fallback data object
                     console.error('JSON parsing error:', jsonError);
                     data = { error: response.status === 401 ? 'Authentication failed' : 'Server error' };
                 }
 
-                console.log('Response status:', response.status, 'Response ok:', response.ok, 'Data:', data, 'is2FAMode:', is2FAMode);
-                  // Handle 2FA requirement - switch UI instead of showing modal
+                // Handle 2FA requirement - switch UI instead of showing modal
                 if (data.requires2FA && !is2FAMode) {
                     // Switch to 2FA mode
                     is2FAMode = true;
@@ -305,9 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(data.user));                    // Initialize session management - ensure proper session creation
                     try {
-                        if (window.SessionManager && typeof window.SessionManager.initSession === 'function') {
-                            console.log('Initializing session with SessionManager');
-                            window.SessionManager.initSession();
+                        if (window.SessionManager && typeof window.SessionManager.initSession === 'function') {                            window.SessionManager.initSession();
                             
                             // Verify session was created and give time for persistence
                             await new Promise(resolve => setTimeout(resolve, 200));
@@ -315,13 +265,6 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                             // Double-check that session data persisted correctly
                             const sessionData = window.SessionManager.getSessionData();
                             const currentTabId = sessionStorage.getItem('currentTabId');
-                            
-                            console.log('Session verification after init:', {
-                                sessionData: sessionData,
-                                currentTabId: currentTabId,
-                                hasSessionData: !!sessionData,
-                                hasTabId: !!currentTabId
-                            });
                             
                             // If session didn't persist properly, try again
                             if (!sessionData || !currentTabId) {
@@ -345,13 +288,10 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                                 masterTabId: tabId,
                                 masterTabHeartbeat: loginTime
                             };
-                            
-                            localStorage.setItem('activeSession', JSON.stringify(sessionData));
+                              localStorage.setItem('activeSession', JSON.stringify(sessionData));
                             sessionStorage.setItem('currentTabId', tabId);
                             localStorage.setItem('lastTabId', tabId);
                             localStorage.setItem('loginTimestamp', loginTime.toString());
-                            
-                            console.log('Fallback session initialized:', tabId);
                         }
                     } catch (sessionError) {
                         console.error('Session initialization error:', sessionError);
@@ -369,78 +309,29 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
                         window.location.href = "welcome/";
-                    }, FADE_DURATION + 200); // Extended delay for robust session persistence
-                } else {
-                    console.log('=== ENTERING ERROR HANDLING SECTION ===');
-                    console.log('Response details:', {
-                        status: response.status,
-                        ok: response.ok,
-                        data: data,
-                        is2FAMode: is2FAMode,
-                        hasToken: !!data.token
-                    });
-                    
+                    }, FADE_DURATION + 200); // Extended delay for robust session persistence                } else {
                     // Context-aware error messages
                     let message;
                     if (response.status === 401) {
                         if (is2FAMode) {
                             message = data.error === 'Invalid 2FA code' ? 'Invalid 2FA code. Please try again.' : 'Invalid 2FA code. Please try again.';
-                            console.log('2FA error detected - message set to:', message);
                         } else {
                             message = 'Invalid username or password';
-                            console.log('Username/password error detected - message set to:', message);
                         }
                     } else {
-                        message = data.error || 'Login failed';
-                        console.log('Other error detected - message set to:', message);
-                    }
+                        message = data.error || 'Login failed';                    }
                     
-                    console.log('=== DEBUGGING 2FA ERROR MODAL ===');
-                    console.log('About to show error modal:', {
-                        status: response.status,
-                        is2FAMode: is2FAMode,
-                        message: message,
-                        dataError: data.error,
-                        modalManagerExists: !!window.modalManager,
-                        isShowingModal: window.modalManager?.isShowingModal,
-                        showModalFunction: typeof window.modalManager?.showModal
-                    });
-                      console.log('Calling modalManager.showModal with force=true...');
                     try {
                         const result = window.modalManager.showModal('error', message, true); // Force show error modal
-                        console.log('showModal returned:', result);
-                        
-                        // Clear the 2FA code field when showing error modal
+                          // Clear the 2FA code field when showing error modal
                         if (is2FAMode) {
                             document.getElementById('twofaCode').value = '';
                             document.getElementById('twofaCode').focus();
-                        }
-                    } catch (modalError) {
+                        }                    } catch (modalError) {
                         console.error('ERROR in showModal call:', modalError);
                     }
-                    
-                    console.log('Modal call completed. isShowingModal now:', window.modalManager?.isShowingModal);
-                    console.log('Checking if modal element exists in DOM:', !!document.getElementById('feedbackModal'));
-                    
-                    // Additional DOM debugging
-                    const modalElement = document.getElementById('feedbackModal');
-                    if (modalElement) {
-                        console.log('Modal element found! Details:', {
-                            display: getComputedStyle(modalElement).display,
-                            visibility: getComputedStyle(modalElement).visibility,
-                            zIndex: getComputedStyle(modalElement).zIndex,
-                            position: getComputedStyle(modalElement).position,
-                            top: getComputedStyle(modalElement).top,
-                            left: getComputedStyle(modalElement).left,
-                            width: getComputedStyle(modalElement).width,
-                            height: getComputedStyle(modalElement).height
-                        });
-                    } else {
-                        console.error('Modal element NOT found in DOM!');
-                    }
-                    
-                    console.log('=== END 2FA ERROR MODAL DEBUG ===');
-                }} catch (err) {
+                }
+            } catch (err) {
                 console.error('Login error:', err);
                 window.modalManager.showModal('error', 'Connection error. Please try again.', true); // Force show error modal
             } finally {
