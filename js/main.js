@@ -1718,4 +1718,381 @@ function calculatePasswordStrength(password) {
     };
 }
 
-// ...existing code...
+// Patient Page Functionality
+function initializePatientPage() {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    
+    // Setup navigation handlers
+    setupPatientNavigation();
+    
+    // Setup form handlers
+    setupCreatePatientForm();
+    
+    // Load hamburger menu
+    if (document.getElementById('hamburger-menu')) {
+        loadMenu();
+    }
+}
+
+function setupPatientNavigation() {
+    const patientChoice = document.getElementById('patientChoice');
+    const createPatientSection = document.getElementById('createPatientSection');
+    const managePatientsSection = document.getElementById('managePatientsSection');
+    
+    // Choice button handlers
+    document.getElementById('createPatientBtn')?.addEventListener('click', function() {
+        patientChoice.classList.add('hidden');
+        createPatientSection.classList.remove('hidden');
+    });
+      
+    document.getElementById('managePatientsBtn')?.addEventListener('click', function() {
+        patientChoice.classList.add('hidden');
+        managePatientsSection.classList.remove('hidden');
+        // Load patients for management
+        loadPatients();
+        setupPatientFilter();
+    });
+    
+    // Cancel button handler
+    document.getElementById('cancelCreatePatient')?.addEventListener('click', function() {
+        createPatientSection.classList.add('hidden');
+        patientChoice.classList.remove('hidden');
+        document.getElementById('createPatientForm')?.reset();
+        clearCreatePatientErrors();
+    });
+}
+
+function setupCreatePatientForm() {
+    const createPatientForm = document.getElementById('createPatientForm');
+    if (!createPatientForm) return;
+    
+    // Handle form submission
+    createPatientForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await handleCreatePatient();
+    });
+    
+    // Phone number formatting and validation
+    const phoneInput = document.getElementById('patientPhone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            // Remove all non-digits
+            let value = e.target.value.replace(/\D/g, '');
+            
+            // Format as (XXX) XXX-XXXX
+            if (value.length >= 6) {
+                value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
+            } else if (value.length >= 3) {
+                value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+            }
+            
+            e.target.value = value;
+        });
+    }
+}
+
+async function loadPatients() {
+    try {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const loadingDiv = document.getElementById('patientsLoading');
+        const tableBody = document.getElementById('patientsTableBody');
+        const noResults = document.getElementById('noPatientsFound');
+        
+        if (loadingDiv) loadingDiv.style.display = 'block';
+        if (noResults) noResults.classList.add('hidden');
+        
+        const response = await fetch(`${API_URL}/api/patients`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const patients = await response.json();
+            
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            
+            if (patients.length === 0) {
+                if (noResults) noResults.classList.remove('hidden');
+                return;
+            }
+            
+            // Populate table
+            if (tableBody) {
+                tableBody.innerHTML = patients.map(patient => `
+                    <tr data-patient-key="${patient.patient_key}">
+                        <td>${patient.first_name} ${patient.middle_name || ''} ${patient.last_name}</td>
+                        <td>${patient.address}, ${patient.city}, ${patient.state} ${patient.zip_code}</td>
+                        <td>${patient.phone}</td>
+                        <td>${patient.accepts_texts ? 'Yes' : 'No'}</td>
+                        <td>${new Date(patient.date_when).toLocaleDateString()}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deletePatient(${patient.patient_key})" title="Delete Patient">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        } else {
+            console.error('Failed to load patients');
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            if (noResults) {
+                noResults.textContent = 'Failed to load patients. Please try again.';
+                noResults.classList.remove('hidden');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading patients:', error);
+        const loadingDiv = document.getElementById('patientsLoading');
+        const noResults = document.getElementById('noPatientsFound');
+        
+        if (loadingDiv) loadingDiv.style.display = 'none';
+        if (noResults) {
+            noResults.textContent = 'Error loading patients. Please check your connection.';
+            noResults.classList.remove('hidden');
+        }
+    }
+}
+
+async function handleCreatePatient() {
+    const submitBtn = document.getElementById('createPatientSubmitBtn');
+    const originalText = submitBtn.textContent;
+    
+    try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating...';
+        
+        const formData = {
+            firstName: document.getElementById('patientFirstName').value.trim(),
+            middleName: document.getElementById('patientMiddleName').value.trim(),
+            lastName: document.getElementById('patientLastName').value.trim(),
+            address: document.getElementById('patientAddress').value.trim(),
+            city: document.getElementById('patientCity').value.trim(),
+            state: document.getElementById('patientState').value,
+            zipCode: document.getElementById('patientZipCode').value.trim(),
+            phone: document.getElementById('patientPhone').value.trim(),
+            acceptsTexts: document.getElementById('acceptsTexts').value === 'yes'
+        };
+        
+        // Basic validation
+        if (!formData.firstName || !formData.lastName || !formData.address || 
+            !formData.city || !formData.state || !formData.zipCode || !formData.phone) {
+            throw new Error('All required fields must be filled out.');
+        }
+        
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/patients`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            window.modalManager.showModal('success', 'Patient created successfully!');
+            document.getElementById('createPatientForm').reset();
+        } else {
+            throw new Error(result.error || 'Failed to create patient');
+        }
+        
+    } catch (error) {
+        console.error('Create patient error:', error);
+        window.modalManager.showModal('error', error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+}
+
+function setupPatientFilter() {
+    const filterInput = document.getElementById('patientFilter');
+    if (!filterInput) return;
+    
+    filterInput.addEventListener('input', function() {
+        filterPatients(this.value.trim().toLowerCase());
+    });
+}
+
+function filterPatients(searchTerm) {
+    const tableBody = document.getElementById('patientsTableBody');
+    const rows = tableBody.querySelectorAll('tr');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const isVisible = !searchTerm || text.includes(searchTerm);
+        row.style.display = isVisible ? '' : 'none';
+        if (isVisible) visibleCount++;
+    });
+    
+    // Show/hide no results message
+    const noResults = document.getElementById('noPatientsFound');
+    if (noResults) {
+        if (visibleCount === 0 && searchTerm) {
+            noResults.textContent = 'No patients found matching your search.';
+            noResults.classList.remove('hidden');
+        } else {
+            noResults.classList.add('hidden');
+        }
+    }
+}
+
+async function deletePatient(patientKey) {
+    if (!confirm('Are you sure you want to delete this patient? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/patients/${patientKey}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            // Remove row from table
+            const row = document.querySelector(`tr[data-patient-key="${patientKey}"]`);
+            if (row) {
+                row.remove();
+            }
+            window.modalManager.showModal('success', 'Patient deleted successfully.');
+        } else {
+            const result = await response.json();
+            throw new Error(result.error || 'Failed to delete patient');
+        }
+        
+    } catch (error) {
+        console.error('Delete patient error:', error);
+        window.modalManager.showModal('error', error.message);
+    }
+}
+
+function clearCreatePatientErrors() {
+    // Clear any error messages or states from the create patient form
+    const form = document.getElementById('createPatientForm');
+    if (form) {
+        const errorMessages = form.querySelectorAll('.error-message');
+        errorMessages.forEach(msg => msg.remove());
+        
+        const errorGroups = form.querySelectorAll('.form-group.error');
+        errorGroups.forEach(group => group.classList.remove('error'));
+    }
+}
+
+// 2FA Management Functions
+function initialize2FAManagement() {
+    // Check 2FA status and setup UI
+    check2FAStatus();
+}
+
+async function check2FAStatus() {
+    try {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/2fa/status`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            update2FAStatus(data.enabled, data.setupDate);
+        } else {
+            console.error('Failed to check 2FA status');
+            update2FAStatus(false);
+        }
+        
+    } catch (error) {
+        console.error('Error checking 2FA status:', error);
+        update2FAStatus(false);
+    }
+}
+
+function update2FAStatus(enabled, setupDate) {
+    const statusBadge = document.getElementById('twofaStatus');
+    const actionsContainer = document.getElementById('twofaActions');
+    
+    if (!statusBadge || !actionsContainer) return;
+    
+    if (enabled) {
+        statusBadge.textContent = 'Enabled';
+        statusBadge.className = 'status-badge enabled';
+        
+        let setupText = '';
+        if (setupDate) {
+            setupText = `<p class="setup-date">Enabled on: ${new Date(setupDate).toLocaleDateString()}</p>`;
+        }
+        
+        actionsContainer.innerHTML = `
+            ${setupText}
+            <button class="secondary-btn" onclick="disable2FA()">Disable 2FA</button>
+        `;
+    } else {
+        statusBadge.textContent = 'Disabled';
+        statusBadge.className = 'status-badge disabled';
+        
+        actionsContainer.innerHTML = `
+            <p class="security-note">Two-factor authentication is not enabled. Enable it to improve your account security.</p>
+            <button class="primary-btn" onclick="setup2FA()">Enable 2FA</button>
+        `;
+    }
+}
+
+function setup2FA() {
+    // Redirect to 2FA setup page
+    window.location.href = '../2fa-setup/';
+}
+
+async function disable2FA() {
+    const password = prompt('Enter your current password to disable 2FA:');
+    if (!password) return;
+    
+    try {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/2fa/disable`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ currentPassword: password })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            window.modalManager.showModal('success', '2FA has been disabled successfully.');
+            // Refresh 2FA status
+            check2FAStatus();
+        } else {
+            window.modalManager.showModal('error', result.error || 'Failed to disable 2FA');
+        }
+        
+    } catch (error) {
+        console.error('Error disabling 2FA:', error);
+        window.modalManager.showModal('error', 'Network error. Please try again.');
+    }
+}

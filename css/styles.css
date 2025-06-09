@@ -2506,123 +2506,78 @@ login-form input.password-mismatch {
 .security-header h3 {
     margin: 0;
     color: #003b49;
-    font-size: 1.1rem;
 }
 
 .status-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
     font-weight: 600;
     text-transform: uppercase;
 }
 
 .status-badge.enabled {
-    background: #d4edda;
+    background-color: #d4edda;
     color: #155724;
+    border: 1px solid #c3e6cb;
 }
 
 .status-badge.disabled {
-    background: #f8d7da;
+    background-color: #f8d7da;
     color: #721c24;
-}
-
-.status-badge.loading {
-    background: #e2e3e5;
-    color: #495057;
+    border: 1px solid #f5c6cb;
 }
 
 .security-description {
     color: #666;
     margin: 0.5rem 0 1rem 0;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 .security-actions {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    margin-top: 1rem;
 }
 
-.security-btn {
-    padding: 8px 16px;
+.security-note {
+    font-style: italic;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.setup-date {
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.primary-btn {
+    background-color: #2196F3;
+    color: white;
     border: none;
+    padding: 0.75rem 1.5rem;
     border-radius: 4px;
-    font-size: 0.9rem;
-    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-    display: inline-block;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
 }
 
-.security-btn.primary {
-    background: #2196F3;
+.primary-btn:hover {
+    background-color: #1976D2;
+}
+
+.secondary-btn {
+    background-color: #6c757d;
     color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
 }
 
-.security-btn.primary:hover {
-    background: #1976D2;
+.secondary-btn:hover {
+    background-color: #545b62;
 }
 
-.security-btn.danger {
-    background: #f44336;
-    color: white;
-}
-
-.security-btn.danger:hover {
-    background: #d32f2f;
-}
-
-.security-btn.secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.security-btn.secondary:hover {
-    background: #5a6268;
-}
-
-.security-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* 2FA Disable Modal */
-.twofa-disable-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-}
-
-.twofa-disable-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    max-width: 400px;
-    width: 90%;
-}
-
-.twofa-disable-content h3 {
-    margin-top: 0;
-    color: #dc3545;
-}
-
-.twofa-disable-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.twofa-disable-actions {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
-}
+/* ...existing code...
