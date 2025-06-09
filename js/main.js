@@ -361,13 +361,16 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                         sessionStorage.setItem('currentTabId', tabId);
                         localStorage.setItem('loginTimestamp', loginTime.toString());
                     }
-                    
-                    // Use utility function to check admin status and update UI
+                      // Use utility function to check admin status and update UI
                     const isAdmin = isUserAdmin(data.user);
-                    updateAdminUI(isAdmin);                    // Add a delay to ensure all data is persisted and session is initialized before navigation
-                    document.body.classList.add('fade-out');                    setTimeout(() => {
+                    updateAdminUI(isAdmin);
+                    
+                    // Add a delay to ensure all data is persisted and session is initialized before navigation
+                    document.body.classList.add('fade-out');
+                    setTimeout(() => {
                         window.location.href = "welcome/";
-                    }, FADE_DURATION + 200); // Extended delay for robust session persistence                } else {
+                    }, FADE_DURATION + 200); // Extended delay for robust session persistence
+                } else {
                     console.log('=== ENTERING ERROR HANDLING SECTION ===');
                     console.log('Response details:', {
                         status: response.status,
