@@ -2963,12 +2963,19 @@ function initializeForcePasswordChangePage() {
             const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            const submitBtn = document.getElementById('changePasswordBtn');
-              // Validate new password using consolidated validation with current password check
+            const submitBtn = document.getElementById('changePasswordBtn');            // Validate new password using consolidated validation with current password check
             const passwordValidation = validatePasswordWithCurrentCheck(newPassword, currentPassword);
             if (!passwordValidation.isValid) {
-                showError(passwordValidation.failed.join('. '));
-                return;
+                // Check if this is specifically the "same password" error and show as modal
+                if (passwordValidation.failed.some(error => error.includes('New password must be different from your current password'))) {
+                    document.getElementById('modalErrorMessage').textContent = 'New password must be different from your current password';
+                    showModal('errorModal');
+                    return;
+                } else {
+                    // Show other validation errors inline
+                    showError(passwordValidation.failed.join('. '));
+                    return;
+                }
             }
             
             // Check password confirmation
