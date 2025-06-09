@@ -1700,32 +1700,136 @@ function addPasswordStrengthIndicator(passwordField) {
     strengthText.style.color = '#666';
     strengthText.textContent = 'Password strength will appear here';
     
+    // Create requirements checklist
+    const checklistContainer = document.createElement('div');
+    checklistContainer.className = 'password-requirements-checklist';
+    checklistContainer.style.marginTop = '8px';
+    checklistContainer.style.fontSize = '12px';
+    checklistContainer.style.lineHeight = '1.4';
+    
+    const checklistTitle = document.createElement('div');
+    checklistTitle.textContent = 'Password Requirements:';
+    checklistTitle.style.fontWeight = '600';
+    checklistTitle.style.marginBottom = '4px';
+    checklistTitle.style.color = '#333';
+    checklistContainer.appendChild(checklistTitle);
+    
+    // Create checklist items
+    const requirements = [
+        { key: 'length', text: `At least ${PASSWORD_REQUIREMENTS.minLength} characters` },
+        { key: 'uppercase', text: 'One uppercase letter (A-Z)' },
+        { key: 'lowercase', text: 'One lowercase letter (a-z)' },
+        { key: 'number', text: 'One number (0-9)' },
+        { key: 'special', text: 'One special character (!@#$...)' },
+        { key: 'noSpaces', text: 'No spaces' },
+        { key: 'notCommon', text: 'Not a common password' }
+    ];
+    
+    requirements.forEach(req => {
+        const item = document.createElement('div');
+        item.className = `requirement-item requirement-${req.key}`;
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        item.style.marginBottom = '2px';
+        
+        const icon = document.createElement('span');
+        icon.className = 'requirement-icon';
+        icon.style.marginRight = '6px';
+        icon.style.fontSize = '10px';
+        icon.style.width = '12px';
+        icon.textContent = '○';
+        icon.style.color = '#ccc';
+        
+        const text = document.createElement('span');
+        text.textContent = req.text;
+        text.style.color = '#666';
+        
+        item.appendChild(icon);
+        item.appendChild(text);
+        checklistContainer.appendChild(item);
+    });
+    
     strengthContainer.appendChild(strengthBar);
     strengthContainer.appendChild(strengthText);
+    strengthContainer.appendChild(checklistContainer);
     
     // Insert after the password field
     passwordField.parentNode.insertBefore(strengthContainer, passwordField.nextSibling);
     
     // Add event listener
     passwordField.addEventListener('input', function() {
-        updatePasswordStrength(passwordField, strengthFill, strengthText);
+        updatePasswordStrengthAndChecklist(passwordField, strengthFill, strengthText, checklistContainer);
     });
     
     // Mark as added to prevent duplicates
     passwordField.dataset.strengthAdded = 'true';
 }
 
-function updatePasswordStrength(passwordField, strengthFill, strengthText) {
+function updatePasswordStrengthAndChecklist(passwordField, strengthFill, strengthText, checklistContainer) {
     const password = passwordField.value;
-    const strength = calculatePasswordStrength(password);
+    const validation = validatePassword(password);
     
     // Update strength bar
-    strengthFill.style.width = strength.percentage + '%';
-    strengthFill.style.backgroundColor = strength.color;
+    strengthFill.style.width = validation.score + '%';
+    strengthFill.style.backgroundColor = validation.strength.color;
     
     // Update strength text
-    strengthText.textContent = strength.message;
-    strengthText.style.color = strength.color;
+    strengthText.textContent = validation.strength.message;
+    strengthText.style.color = validation.strength.color;
+    
+    // Update checklist
+    const requirementMap = {
+        'length': password.length >= PASSWORD_REQUIREMENTS.minLength,
+        'uppercase': /[A-Z]/.test(password),
+        'lowercase': /[a-z]/.test(password),
+        'number': /\d/.test(password),
+        'special': /[!@#$%^&*(),.?":{}|<>]/.test(password),
+        'noSpaces': !/\s/.test(password),
+        'notCommon': !COMMON_PASSWORDS.some(common => password.toLowerCase() === common.toLowerCase())
+    };
+    
+    Object.keys(requirementMap).forEach(key => {
+        const item = checklistContainer.querySelector(`.requirement-${key}`);
+        if (item) {
+            const icon = item.querySelector('.requirement-icon');
+            const text = item.querySelector('span:last-child');
+            
+            if (requirementMap[key]) {
+                icon.textContent = '✓';
+                icon.style.color = '#28a745';
+                text.style.color = '#28a745';
+                item.style.opacity = '1';
+            } else if (password.length > 0) {
+                icon.textContent = '✗';
+                icon.style.color = '#dc3545';
+                text.style.color = '#dc3545';
+                item.style.opacity = '1';
+            } else {
+                icon.textContent = '○';
+                icon.style.color = '#ccc';
+                text.style.color = '#666';
+                item.style.opacity = '0.7';
+            }
+        }
+    });
+}
+
+// Legacy function for backward compatibility
+function updatePasswordStrength(passwordField, strengthFill, strengthText) {
+    const checklistContainer = passwordField.parentNode.querySelector('.password-requirements-checklist');
+    if (checklistContainer) {
+        updatePasswordStrengthAndChecklist(passwordField, strengthFill, strengthText, checklistContainer);
+    } else {
+        // Fallback to old behavior
+        const password = passwordField.value;
+        const strength = calculatePasswordStrength(password);
+        
+        strengthFill.style.width = strength.percentage + '%';
+        strengthFill.style.backgroundColor = strength.color;
+        
+        strengthText.textContent = strength.message;
+        strengthText.style.color = strength.color;
+    }
 }
 
 function calculatePasswordStrength(password) {
@@ -1804,50 +1908,149 @@ function calculatePasswordStrength(password) {
     };
 }
 
-// Password validation functions
-function validatePasswordWithCurrentCheck(newPassword, currentPassword) {
+// ============================================================================
+// UNIFIED PASSWORD VALIDATION SYSTEM
+// Used across all password forms: create user, profile change, force change
+// ============================================================================
+
+// Common password requirements - consistent across all forms
+const PASSWORD_REQUIREMENTS = {
+    minLength: 8,
+    requireUppercase: true,
+    requireLowercase: true,
+    requireNumber: true,
+    requireSpecialChar: true,
+    noSpaces: true,
+    preventCommon: true,
+    preventSequential: true,
+    preventRepeated: true
+};
+
+// Common passwords list - consistent across all validation
+const COMMON_PASSWORDS = [
+    'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
+    'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
+];
+
+// Main password validation function used everywhere
+function validatePassword(password, currentPassword = null) {
     const failed = [];
+    const passed = [];
     
-    // Check if new password is same as current password
-    if (newPassword === currentPassword) {
+    if (!password) {
+        return {
+            isValid: false,
+            failed: ['Password is required'],
+            passed: [],
+            score: 0
+        };
+    }
+    
+    // Check if new password is same as current password (for password changes)
+    if (currentPassword !== null && password === currentPassword) {
         failed.push('New password must be different from current password');
+    } else if (currentPassword !== null) {
+        passed.push('Different from current password');
     }
     
-    // Healthcare-grade password requirements
-    if (newPassword.length < 12) {
-        failed.push('At least 12 characters');
+    // Length requirement
+    if (password.length >= PASSWORD_REQUIREMENTS.minLength) {
+        passed.push(`At least ${PASSWORD_REQUIREMENTS.minLength} characters`);
+    } else {
+        failed.push(`At least ${PASSWORD_REQUIREMENTS.minLength} characters`);
     }
     
-    if (!/[a-z]/.test(newPassword)) {
-        failed.push('At least one lowercase letter');
+    // Uppercase requirement
+    if (PASSWORD_REQUIREMENTS.requireUppercase) {
+        if (/[A-Z]/.test(password)) {
+            passed.push('One uppercase letter');
+        } else {
+            failed.push('One uppercase letter');
+        }
     }
     
-    if (!/[A-Z]/.test(newPassword)) {
-        failed.push('At least one uppercase letter');
+    // Lowercase requirement
+    if (PASSWORD_REQUIREMENTS.requireLowercase) {
+        if (/[a-z]/.test(password)) {
+            passed.push('One lowercase letter');
+        } else {
+            failed.push('One lowercase letter');
+        }
     }
     
-    if (!/\d/.test(newPassword)) {
-        failed.push('At least one number');
+    // Number requirement
+    if (PASSWORD_REQUIREMENTS.requireNumber) {
+        if (/\d/.test(password)) {
+            passed.push('One number');
+        } else {
+            failed.push('One number');
+        }
     }
     
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
-        failed.push('At least one special character');
+    // Special character requirement
+    if (PASSWORD_REQUIREMENTS.requireSpecialChar) {
+        if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            passed.push('One special character');
+        } else {
+            failed.push('One special character (!@#$%^&*...)');
+        }
     }
     
-    // Check for common patterns (prevent sequential, repeated, etc.)
-    if (/(.)\1{2,}/.test(newPassword)) {
-        failed.push('No more than 2 consecutive identical characters');
+    // No spaces
+    if (PASSWORD_REQUIREMENTS.noSpaces) {
+        if (!/\s/.test(password)) {
+            passed.push('No spaces');
+        } else {
+            failed.push('No spaces allowed');
+        }
     }
     
-    if (/012|123|234|345|456|567|678|789|890|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/i.test(newPassword)) {
-        failed.push('No sequential characters (123, abc, etc.)');
+    // Common passwords check
+    if (PASSWORD_REQUIREMENTS.preventCommon) {
+        if (!COMMON_PASSWORDS.some(common => password.toLowerCase() === common.toLowerCase())) {
+            passed.push('Not a common password');
+        } else {
+            failed.push('Not a common password');
+        }
     }
+    
+    // Sequential characters check
+    if (PASSWORD_REQUIREMENTS.preventSequential) {
+        if (!/012|123|234|345|456|567|678|789|890|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/i.test(password)) {
+            passed.push('No sequential characters');
+        } else {
+            failed.push('No sequential characters (123, abc, etc.)');
+        }
+    }
+    
+    // Repeated characters check
+    if (PASSWORD_REQUIREMENTS.preventRepeated) {
+        if (!/(.)\1{2,}/.test(password)) {
+            passed.push('No repeated characters');
+        } else {
+            failed.push('No more than 2 consecutive identical characters');
+        }
+    }
+    
+    const strength = calculatePasswordStrength(password);
     
     return {
         isValid: failed.length === 0,
         failed: failed,
-        score: calculatePasswordStrength(newPassword).percentage
+        passed: passed,
+        score: strength.percentage,
+        strength: strength
     };
+}
+
+// Make validation function globally accessible for fieldStates.js
+window.validatePassword = validatePassword;
+window.PASSWORD_REQUIREMENTS = PASSWORD_REQUIREMENTS;
+window.COMMON_PASSWORDS = COMMON_PASSWORDS;
+
+// Legacy function for backward compatibility
+function validatePasswordWithCurrentCheck(newPassword, currentPassword) {
+    return validatePassword(newPassword, currentPassword);
 }
 
 // User management functions

@@ -47,6 +47,42 @@ const authenticateToken = (req, res, next) => {
     }
 };
 
+// Unified password validation function to ensure consistent requirements across all endpoints
+const validatePasswordSecurity = (password) => {
+    const errors = [];
+    
+    if (!password) {
+        errors.push('Password is required');
+        return { isValid: false, errors };
+    }
+    
+    // Healthcare security requirements
+    if (password.length < 8) {
+        errors.push('Password must be at least 8 characters long');
+    }
+    
+    if (!/[A-Z]/.test(password)) {
+        errors.push('Password must contain at least one uppercase letter');
+    }
+    
+    if (!/[a-z]/.test(password)) {
+        errors.push('Password must contain at least one lowercase letter');
+    }
+    
+    if (!/\d/.test(password)) {
+        errors.push('Password must contain at least one number');
+    }
+    
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+        errors.push('Password must contain at least one special character');
+    }
+    
+    return {
+        isValid: errors.length === 0,
+        errors: errors
+    };
+};
+
 // Login endpoint
 app.post('/api/login', async (req, res) => {
     // Check if we're in local development mode without proper database
@@ -706,38 +742,11 @@ app.put('/api/change-password', authenticateToken, async (req, res) => {
         if (!currentPassword || !newPassword) {
             return res.status(400).json({ error: 'Current password and new password are required' });
         }
-          // Validate new password strength for healthcare security (HIPAA-compliant)
-        if (newPassword.length < 8) {
-            return res.status(400).json({ error: 'New password must be at least 8 characters long' });
-        }
         
-        if (!/[A-Z]/.test(newPassword)) {
-            return res.status(400).json({ error: 'New password must contain at least one uppercase letter' });
-        }
-        
-        if (!/[a-z]/.test(newPassword)) {
-            return res.status(400).json({ error: 'New password must contain at least one lowercase letter' });
-        }
-        
-        if (!/[0-9]/.test(newPassword)) {
-            return res.status(400).json({ error: 'New password must contain at least one number' });
-        }
-        
-        if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
-            return res.status(400).json({ error: 'New password must contain at least one special character (!@#$%^&*...)' });
-        }
-        
-        if (/\s/.test(newPassword)) {
-            return res.status(400).json({ error: 'New password cannot contain spaces' });
-        }
-          // Check for common passwords
-        const commonPasswords = [
-            'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
-            'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
-        ];
-        
-        if (commonPasswords.some(common => newPassword.toLowerCase() === common.toLowerCase())) {
-            return res.status(400).json({ error: 'New password is too common - please choose a stronger password' });
+        // Validate password security
+        const passwordValidation = validatePasswordSecurity(newPassword);
+        if (!passwordValidation.isValid) {
+            return res.status(400).json({ error: 'New password does not meet security requirements', details: passwordValidation.errors });
         }
         
         // Check if we're in local test mode
@@ -833,41 +842,12 @@ app.put('/api/force-change-password', authenticateToken, async (req, res) => {
             return res.status(400).json({ error: 'Current password and new password are required' });
         }
 
-        // Validate new password strength for healthcare security (HIPAA-compliant)
-        if (newPassword.length < 8) {
-            return res.status(400).json({ error: 'New password must be at least 8 characters long' });
-        }
-        
-        if (!/[A-Z]/.test(newPassword)) {
-            return res.status(400).json({ error: 'New password must contain at least one uppercase letter' });
-        }
-        
-        if (!/[a-z]/.test(newPassword)) {
-            return res.status(400).json({ error: 'New password must contain at least one lowercase letter' });
-        }
-        
-        if (!/[0-9]/.test(newPassword)) {
-            return res.status(400).json({ error: 'New password must contain at least one number' });
-        }
-        
-        if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
-            return res.status(400).json({ error: 'New password must contain at least one special character (!@#$%^&*...)' });
-        }
-        
-        if (/\s/.test(newPassword)) {
-            return res.status(400).json({ error: 'New password cannot contain spaces' });
+        // Validate password security
+        const passwordValidation = validatePasswordSecurity(newPassword);
+        if (!passwordValidation.isValid) {
+            return res.status(400).json({ error: 'New password does not meet security requirements', details: passwordValidation.errors });
         }
 
-        // Check for common passwords
-        const commonPasswords = [
-            'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
-            'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
-        ];
-        
-        if (commonPasswords.some(common => newPassword.toLowerCase() === common.toLowerCase())) {
-            return res.status(400).json({ error: 'New password is too common - please choose a stronger password' });
-        }
-        
         // Check if we're in local test mode
         const isLocalTest = process.env.NODE_ENV === 'development' && 
                            process.env.DATABASE_URL?.includes('localhost');
@@ -1230,38 +1210,10 @@ app.post('/api/create-user', authenticateToken, async (req, res) => {
         if (!emailRegex.test(email)) {
             return res.status(400).json({ error: 'Please enter a valid email address' });
         }
-          // Validate password strength for healthcare security (HIPAA-compliant)
-        if (password.length < 8) {
-            return res.status(400).json({ error: 'Password must be at least 8 characters long' });
-        }
-        
-        if (!/[A-Z]/.test(password)) {
-            return res.status(400).json({ error: 'Password must contain at least one uppercase letter' });
-        }
-        
-        if (!/[a-z]/.test(password)) {
-            return res.status(400).json({ error: 'Password must contain at least one lowercase letter' });
-        }
-        
-        if (!/[0-9]/.test(password)) {
-            return res.status(400).json({ error: 'Password must contain at least one number' });
-        }
-        
-        if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-            return res.status(400).json({ error: 'Password must contain at least one special character (!@#$%^&*...)' });
-        }
-        
-        if (/\s/.test(password)) {
-            return res.status(400).json({ error: 'Password cannot contain spaces' });
-        }
-          // Check for common passwords
-        const commonPasswords = [
-            'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
-            'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
-        ];
-        
-        if (commonPasswords.some(common => password.toLowerCase() === common.toLowerCase())) {
-            return res.status(400).json({ error: 'Password is too common - please choose a stronger password' });
+          // Validate password security
+        const passwordValidation = validatePasswordSecurity(password);
+        if (!passwordValidation.isValid) {
+            return res.status(400).json({ error: 'Password does not meet security requirements', details: passwordValidation.errors });
         }
         
         // Check if we're in local test mode

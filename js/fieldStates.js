@@ -188,9 +188,15 @@ class FieldStateManager {
         if (!fieldId) return false;
 
         const value = field.value.trim();
-        if (!value) return false; // Empty fields are handled separately        // Password validation for all password fields - must meet ALL criteria
+        if (!value) return false; // Empty fields are handled separately        // Password validation for all password fields - use unified validation system
         if (field.type === 'password' && value) {
-            // Check each criterion - if any fails, field is incomplete
+            // Use the unified password validation from main.js if available
+            if (typeof window.validatePassword === 'function') {
+                const validation = window.validatePassword(value);
+                return !validation.isValid;
+            }
+            
+            // Fallback validation if main.js not loaded yet (should match main.js exactly)
             if (value.length < 8) return true;
             if (!/[A-Z]/.test(value)) return true;
             if (!/[a-z]/.test(value)) return true;
@@ -246,9 +252,15 @@ class FieldStateManager {
         if (field.type === 'email' && value) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(value)) return true;
-        }        // Password validation for all password fields (not just new passwords)
+        }        // Password validation for all password fields (not just new passwords) - use unified system
         if (field.type === 'password' && value) {
-            // Use comprehensive password validation (similar to main.js validatePasswordStrength)
+            // Use the unified password validation from main.js if available
+            if (typeof window.validatePassword === 'function') {
+                const validation = window.validatePassword(value);
+                return !validation.isValid;
+            }
+            
+            // Fallback validation if main.js not loaded yet (should match main.js exactly)
             if (value.length < 8) return true;
             if (!/[A-Z]/.test(value)) return true;
             if (!/[a-z]/.test(value)) return true;
