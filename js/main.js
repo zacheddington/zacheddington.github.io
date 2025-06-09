@@ -695,12 +695,21 @@ function categorizeError(error, response = null) {
             modal: false
         };
     }
-    
-    if (error.message.includes('Current password is incorrect')) {
+      if (error.message.includes('Current password is incorrect')) {
         return {
             type: 'validation',
             message: 'Current password is incorrect. Please verify your current password and try again.',
             modal: false
+        };
+    }
+    
+    // Password security requirement errors should show modal for visibility
+    if (error.message.includes('password does not meet security requirements') || 
+        error.message.includes('New password must be different from current password')) {
+        return {
+            type: 'password_security',
+            message: error.message,
+            modal: true
         };
     }
     
