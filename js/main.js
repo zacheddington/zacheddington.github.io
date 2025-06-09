@@ -1278,14 +1278,22 @@ function clearPasswordErrors() {
         passwordInputs.forEach(input => {
             window.fieldStateManager.updateFieldState(input);
         });
-    }
-      // Reset password strength indicators for empty password fields
+    }      // Reset password strength indicators for empty password fields
     const newPasswordField = passwordSection.querySelector('#newPassword');
     if (newPasswordField && !newPasswordField.value.trim()) {
         const strengthFill = newPasswordField.parentNode.querySelector('.password-strength-fill');
         const strengthText = newPasswordField.parentNode.querySelector('.password-strength-text');
         if (strengthFill && strengthText) {
-            updatePasswordStrength(newPasswordField, strengthFill, strengthText);
+            try {
+                updatePasswordStrength(newPasswordField, strengthFill, strengthText);
+            } catch (error) {
+                console.debug('Password strength reset error in clearPasswordErrors:', error);
+                // Reset to default state manually if the function fails
+                strengthFill.style.width = '0%';
+                strengthFill.style.backgroundColor = '#e0e0e0';
+                strengthText.textContent = 'Password strength will appear here';
+                strengthText.style.color = '#666';
+            }
         }
     }
     
@@ -1884,15 +1892,14 @@ function updatePasswordStrengthAndChecklist(passwordField, strengthFill, strengt
     try {
         const password = passwordField?.value || '';
         const validation = validatePassword(password);
-        
-        // Update strength bar with null checks
-        if (strengthFill) {
+          // Update strength bar with null checks
+        if (strengthFill && validation.strength) {
             strengthFill.style.width = validation.score + '%';
             strengthFill.style.backgroundColor = validation.strength.color;
         }
         
         // Update strength text with null checks
-        if (strengthText) {
+        if (strengthText && validation.strength) {
             strengthText.textContent = validation.strength.message;
             strengthText.style.color = validation.strength.color;
         }
@@ -2078,13 +2085,14 @@ const COMMON_PASSWORDS = [
 function validatePassword(password, currentPassword = null) {
     const failed = [];
     const passed = [];
-    
-    if (!password) {
+      if (!password) {
+        const emptyStrength = calculatePasswordStrength('');
         return {
             isValid: false,
             failed: ['Password is required'],
             passed: [],
-            score: 0
+            score: 0,
+            strength: emptyStrength
         };
     }
     
