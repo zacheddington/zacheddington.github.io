@@ -2392,9 +2392,8 @@ function validatePasswordRequirements(password) {
         failed.push('Password must contain at least one number');
         isValid = false;
     }
-    
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-        failed.push('Password must contain at least one special character');
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        failed.push('Password must contain at least one special character (!@#$%^&*...)');
         isValid = false;
     }
     
@@ -2402,11 +2401,13 @@ function validatePasswordRequirements(password) {
         failed.push('Password cannot contain spaces');
         isValid = false;
     }
-    
-    // Common weak passwords
-    const weakPasswords = ['password', '12345678', 'qwerty123', 'admin123', 'healthcare'];
-    if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
-        failed.push('Password is too common or predictable');
+      // Common weak passwords - use exact match like server validation
+    const commonPasswords = [
+        'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
+        'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
+    ];
+    if (commonPasswords.some(common => password.toLowerCase() === common.toLowerCase())) {
+        failed.push('Password is too common - please choose a stronger password');
         isValid = false;
     }
     
