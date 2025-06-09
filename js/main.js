@@ -991,9 +991,8 @@ async function updateUserPassword() {
         
         if (newPassword !== confirmPassword) {
             throw new Error('New passwords do not match.');
-        }
-          // Validate new password strength using healthcare standards
-        const passwordValidation = validatePasswordStrength(newPassword);
+        }          // Validate new password strength using healthcare standards and current password check
+        const passwordValidation = validatePasswordWithCurrentCheck(newPassword, currentPassword);
         if (!passwordValidation.isValid) {
             const errorMessages = passwordValidation.failed.join('\n• ');
             throw new Error(`New password does not meet security requirements:\n• ${errorMessages}`);
@@ -1653,7 +1652,7 @@ async function createUser() {
             
             // Show success modal with simple personalized message
             const userName = formData.middleName 
-                ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`
+                ? `${formData.firstName} ${formData.middleName} ${formData.lastName}` 
                 : `${formData.firstName} ${formData.lastName}`;
             const successMessage = `Success, new user for ${userName} created!`;
             window.modalManager.showModal('success', successMessage);
@@ -2365,6 +2364,67 @@ function showDeleteUserModal(username) {
     });
 }
 
+// Password validation functions - consolidated for consistency
+function validatePasswordRequirements(password) {
+    const failed = [];
+    let isValid = true;
+    
+    if (!password) {
+        return { isValid: false, failed: ['Password is required'] };
+    }
+    
+    if (password.length < 8) {
+        failed.push('Password must be at least 8 characters long');
+        isValid = false;
+    }
+    
+    if (!/[A-Z]/.test(password)) {
+        failed.push('Password must contain at least one uppercase letter');
+        isValid = false;
+    }
+    
+    if (!/[a-z]/.test(password)) {
+        failed.push('Password must contain at least one lowercase letter');
+        isValid = false;
+    }
+    
+    if (!/[0-9]/.test(password)) {
+        failed.push('Password must contain at least one number');
+        isValid = false;
+    }
+    
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+        failed.push('Password must contain at least one special character');
+        isValid = false;
+    }
+    
+    if (/\s/.test(password)) {
+        failed.push('Password cannot contain spaces');
+        isValid = false;
+    }
+    
+    // Common weak passwords
+    const weakPasswords = ['password', '12345678', 'qwerty123', 'admin123', 'healthcare'];
+    if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
+        failed.push('Password is too common or predictable');
+        isValid = false;
+    }
+    
+    return { isValid, failed };
+}
+
+function validatePasswordWithCurrentCheck(password, currentPassword) {
+    const basicValidation = validatePasswordRequirements(password);
+    
+    // Add check for same as current password
+    if (currentPassword && password === currentPassword) {
+        basicValidation.failed.push('New password must be different from your current password');
+        basicValidation.isValid = false;
+    }
+    
+    return basicValidation;
+}
+
 // Password Strength Functions
 function addPasswordStrengthIndicator(passwordElement) {
     if (!passwordElement) return;
@@ -2513,52 +2573,8 @@ function updatePasswordStrength(password, inputId) {
 }
 
 function validatePasswordStrength(password) {
-    const failed = [];
-    let isValid = true;
-    
-    if (!password) {
-        return { isValid: false, failed: ['Password is required'] };
-    }
-    
-    if (password.length < 8) {
-        failed.push('Password must be at least 8 characters long');
-        isValid = false;
-    }
-    
-    if (!/[A-Z]/.test(password)) {
-        failed.push('Password must contain at least one uppercase letter');
-        isValid = false;
-    }
-    
-    if (!/[a-z]/.test(password)) {
-        failed.push('Password must contain at least one lowercase letter');
-        isValid = false;
-    }
-    
-    if (!/[0-9]/.test(password)) {
-        failed.push('Password must contain at least one number');
-        isValid = false;
-    }
-    
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-        failed.push('Password must contain at least one special character');
-        isValid = false;
-    }
-    
-    // Healthcare-specific requirements
-    if (userData.username && password.toLowerCase().includes(userData.username.toLowerCase())) {
-        failed.push('Password cannot contain your username');
-        isValid = false;
-    }
-    
-    // Common weak passwords
-    const weakPasswords = ['password', '12345678', 'qwerty123', 'admin123', 'healthcare'];
-    if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
-        failed.push('Password is too common or predictable');
-        isValid = false;
-    }
-    
-    return { isValid, failed };
+    // Use the consolidated validation function
+    return validatePasswordRequirements(password);
 }
 
 function calculatePasswordScore(password) {
@@ -2888,43 +2904,11 @@ function initializeForcePasswordChangePage() {
     if (usernameField && userData.username) {
         usernameField.value = userData.username;
     }
-    
-    // Password strength validation
+      // Password strength validation
     function validatePassword(password) {
-        const errors = [];
-        
-        if (password.length < 8) {
-            errors.push('Password must be at least 8 characters long');
-        }
-        
-        if (!/[A-Z]/.test(password)) {
-            errors.push('Password must contain at least one uppercase letter');
-        }
-        
-        if (!/[a-z]/.test(password)) {
-            errors.push('Password must contain at least one lowercase letter');
-        }
-        
-        if (!/[0-9]/.test(password)) {
-            errors.push('Password must contain at least one number');
-        }
-        
-        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-            errors.push('Password must contain at least one special character');
-        }
-        
-        // Healthcare-specific requirements
-        if (userData.username && password.toLowerCase().includes(userData.username.toLowerCase())) {
-            errors.push('Password cannot contain your username');
-        }
-        
-        // Common weak passwords
-        const weakPasswords = ['password', '12345678', 'qwerty123', 'admin123', 'healthcare'];
-        if (weakPasswords.some(weak => password.toLowerCase().includes(weak))) {
-            errors.push('Password is too common or predictable');
-        }
-        
-        return errors;
+        // Use the consolidated validation function
+        const validation = validatePasswordRequirements(password);
+        return validation.failed; // Return array of error messages for backward compatibility
     }
     
     // Show error message
@@ -2979,23 +2963,16 @@ function initializeForcePasswordChangePage() {
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const submitBtn = document.getElementById('changePasswordBtn');
-            
-            // Validate new password
-            const passwordErrors = validatePassword(newPassword);
-            if (passwordErrors.length > 0) {
-                showError(passwordErrors.join('. '));
+              // Validate new password using consolidated validation with current password check
+            const passwordValidation = validatePasswordWithCurrentCheck(newPassword, currentPassword);
+            if (!passwordValidation.isValid) {
+                showError(passwordValidation.failed.join('. '));
                 return;
             }
             
             // Check password confirmation
             if (newPassword !== confirmPassword) {
                 showError('New password and confirmation password do not match');
-                return;
-            }
-            
-            // Check that new password is different from current
-            if (currentPassword === newPassword) {
-                showError('New password must be different from your current password');
                 return;
             }
             
