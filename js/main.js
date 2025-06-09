@@ -165,16 +165,24 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
             submitBtn.textContent = is2FAMode ? 'Verifying...' : 'Logging in...';            try {
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value;
-                const twofaCode = document.getElementById('twofaCode').value.trim();
-
-                const response = await fetch(`${API_URL}/api/login`, {
+                const twofaCode = document.getElementById('twofaCode').value.trim();                const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({ username, password, twofaToken: twofaCode })
-                });                const data = await response.json();
+                });
+
+                // Parse JSON response with error handling
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    // If JSON parsing fails, create a fallback data object
+                    console.error('JSON parsing error:', jsonError);
+                    data = { error: response.status === 401 ? 'Authentication failed' : 'Server error' };
+                }
                   // Handle 2FA requirement - switch UI instead of showing modal
                 if (data.requires2FA && !is2FAMode) {
                     // Switch to 2FA mode
@@ -276,18 +284,19 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     let message;
                     if (response.status === 401) {
                         if (is2FAMode) {
-                            message = 'Invalid 2FA code. Please try again.';
+                            message = data.error === 'Invalid 2FA code' ? 'Invalid 2FA code. Please try again.' : 'Invalid 2FA code. Please try again.';
                         } else {
                             message = 'Invalid username or password';
                         }
                     } else {
                         message = data.error || 'Login failed';
                     }
-                    
-                    window.modalManager.showModal('error', message);
-                }} catch (err) {
+                      console.log('Showing error modal for response status:', response.status, 'in 2FA mode:', is2FAMode, 'message:', message);
+                    window.modalManager.showModal('error', message, true); // Force show error modal
+                }            } catch (err) {
                 console.error('Login error:', err);
-                window.modalManager.showModal('error', 'Connection error. Please try again.');            } finally {
+                window.modalManager.showModal('error', 'Connection error. Please try again.', true); // Force show error modal
+            } finally {
                 submitBtn.disabled = false;
                 // Restore correct button text based on current mode
                 submitBtn.textContent = is2FAMode ? 'Verify Code' : 'Login';
