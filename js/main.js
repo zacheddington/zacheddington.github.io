@@ -55,17 +55,23 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
     
     // Unified modal management
     const modalManager = {
-        isShowingModal: false,
-          showModal: function(type, message, force = false) {
+        isShowingModal: false,        showModal: function(type, message, force = false) {
+            console.log('showModal called with:', { type, message, force, currentlyShowing: this.isShowingModal });
+            
             // For error messages, allow overriding existing modals
-            if (this.isShowingModal && !force && type !== 'error') return;
+            if (this.isShowingModal && !force && type !== 'error') {
+                console.log('Modal blocked - already showing and not forced');
+                return;
+            }
             
             // Close any existing modal first
             if (this.isShowingModal) {
+                console.log('Closing existing modal');
                 this.closeModal();
             }
             
-            this.isShowingModal = true;const modalHtml = `
+            this.isShowingModal = true;
+            console.log('Creating modal HTML for type:', type);const modalHtml = `
                 <div class="modal" id="feedbackModal" tabindex="-1">
                     <div class="modal-content ${type}">
                         <h2>${type === 'success' ? '✓ Success!' : '⚠ Error'}</h2>
@@ -73,8 +79,8 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                         <button class="modal-btn" onclick="closeModal()">Close</button>
                     </div>
                 </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            `;            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            console.log('Modal HTML inserted. Modal element exists:', !!document.getElementById('feedbackModal'));
               // Add keyboard event listener for all modals
             const modal = document.getElementById('feedbackModal');
             modal.focus();
@@ -162,21 +168,22 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
 
             const submitBtn = loginForm.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
+              // Update button text based on mode
+            submitBtn.textContent = is2FAMode ? 'Verifying...' : 'Logging in...';
             
-            // Update button text based on mode
-            submitBtn.textContent = is2FAMode ? 'Verifying...' : 'Logging in...';            try {
+            try {
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value;
-                const twofaCode = document.getElementById('twofaCode').value.trim();                const response = await fetch(`${API_URL}/api/login`, {
+                const twofaCode = document.getElementById('twofaCode').value.trim();
+                
+                const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({ username, password, twofaToken: twofaCode })
-                });
-
-                // Parse JSON response with error handling
+                });                // Parse JSON response with error handling
                 let data;
                 try {
                     data = await response.json();
@@ -185,6 +192,8 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     console.error('JSON parsing error:', jsonError);
                     data = { error: response.status === 401 ? 'Authentication failed' : 'Server error' };
                 }
+
+                console.log('Response status:', response.status, 'Response ok:', response.ok, 'Data:', data, 'is2FAMode:', is2FAMode);
                   // Handle 2FA requirement - switch UI instead of showing modal
                 if (data.requires2FA && !is2FAMode) {
                     // Switch to 2FA mode
@@ -293,9 +302,19 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     } else {
                         message = data.error || 'Login failed';
                     }
-                      console.log('Showing error modal for response status:', response.status, 'in 2FA mode:', is2FAMode, 'message:', message);
+                    
+                    console.log('About to show error modal:', {
+                        status: response.status,
+                        is2FAMode: is2FAMode,
+                        message: message,
+                        modalManagerExists: !!window.modalManager,
+                        isShowingModal: window.modalManager?.isShowingModal
+                    });
+                    
                     window.modalManager.showModal('error', message, true); // Force show error modal
-                }            } catch (err) {
+                    
+                    console.log('Modal call completed. isShowingModal now:', window.modalManager?.isShowingModal);
+                }} catch (err) {
                 console.error('Login error:', err);
                 window.modalManager.showModal('error', 'Connection error. Please try again.', true); // Force show error modal
             } finally {
