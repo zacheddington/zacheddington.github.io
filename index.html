@@ -10,23 +10,22 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="icon" type="image/png" href="/favicon.png">
 </head>
-<body class="login-page">
+<body>
     <div class="welcome-container">
         <div class="login-card">
             <h1>Welcome to Integris Neuro</h1>            <form id="loginForm">
-                <div class="form-group">
+                <div id="usernameGroup" class="form-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" required autocomplete="username">
                 </div>
-                <div class="form-group">
+                <div id="passwordGroup" class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required autocomplete="current-password">
                 </div>
-                <div class="form-group hidden" id="twofaGroup">
-                    <label for="twofaCode">Authenticator Code</label>
-                    <input type="text" id="twofaCode" name="twofaCode" maxlength="8" autocomplete="one-time-code" 
-                           placeholder="6-digit code or backup code">
-                    <small>Enter the 6-digit code from your authenticator app, or use a backup code</small>
+                <div id="twofaGroup" class="form-group hidden">
+                    <label for="twofaCode">2FA Authentication Code</label>
+                    <input type="text" id="twofaCode" name="twofaCode" placeholder="Enter 6-digit code" maxlength="6" autocomplete="one-time-code">
+                    <button type="button" id="backToLogin" class="back-btn">← Back to Login</button>
                 </div>
                 <button type="submit" class="submit-btn">Login</button>
             </form>
