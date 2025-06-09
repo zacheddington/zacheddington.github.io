@@ -32,8 +32,10 @@ function updateAdminMenuItem(isAdmin) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {    // Detect if running locally or in production
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const hostname = window.location.hostname;
+    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    
     const FADE_DURATION = 450;
       // Check if current page is login page
     const currentPath = window.location.pathname;
@@ -160,9 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
             submitBtn.disabled = true;
             
             // Update button text based on mode
-            submitBtn.textContent = is2FAMode ? 'Verifying...' : 'Logging in...';
-
-            try {
+            submitBtn.textContent = is2FAMode ? 'Verifying...' : 'Logging in...';            try {
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value;
                 const twofaCode = document.getElementById('twofaCode').value.trim();
