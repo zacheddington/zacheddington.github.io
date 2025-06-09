@@ -127,6 +127,12 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
         if (backToLoginBtn) {            backToLoginBtn.addEventListener('click', function() {
                 // Reset to username/password mode
                 is2FAMode = false;
+                
+                // Restore required attributes
+                document.getElementById('username').setAttribute('required', '');
+                document.getElementById('password').setAttribute('required', '');
+                
+                // Show username/password fields and hide 2FA field
                 document.getElementById('usernameGroup').classList.remove('hidden');
                 document.getElementById('passwordGroup').classList.remove('hidden');
                 document.getElementById('twofaGroup').classList.add('hidden');
@@ -169,14 +175,17 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     },
                     body: JSON.stringify({ username, password, twofaToken: twofaCode })
                 });                const data = await response.json();
-                
-                // Handle 2FA requirement - switch UI instead of showing modal
+                  // Handle 2FA requirement - switch UI instead of showing modal
                 if (data.requires2FA && !is2FAMode) {
                     // Switch to 2FA mode
                     is2FAMode = true;
                     
                     // Clear password for security (username/password were accepted)
                     document.getElementById('password').value = '';
+                    
+                    // Remove required attributes from hidden fields to prevent validation issues
+                    document.getElementById('username').removeAttribute('required');
+                    document.getElementById('password').removeAttribute('required');
                     
                     // Hide username/password fields and show 2FA field
                     document.getElementById('usernameGroup').classList.add('hidden');
