@@ -36,6 +36,15 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
     const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     
+    // Debug logging to diagnose the hostname detection issue
+    console.log('=== API URL Detection Debug ===');
+    console.log('window.location.href:', window.location.href);
+    console.log('window.location.hostname:', hostname);
+    console.log('window.location.port:', window.location.port);
+    console.log('isLocal:', isLocal);
+    console.log('API_URL:', API_URL);
+    console.log('===========================');
+    
     const FADE_DURATION = 450;
       // Check if current page is login page
     const currentPath = window.location.pathname;
@@ -166,6 +175,12 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value;
                 const twofaCode = document.getElementById('twofaCode').value.trim();
+
+                // Debug logging for the actual fetch request
+                console.log('=== Login Request Debug ===');
+                console.log('API_URL variable:', API_URL);
+                console.log('Full login URL:', `${API_URL}/api/login`);
+                console.log('========================');
 
                 const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
