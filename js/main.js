@@ -32,14 +32,6 @@ function updateAdminMenuItem(isAdmin) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🟣 DOM LOADED - Starting main.js initialization', {
-        currentPath: window.location.pathname,
-        token: localStorage.getItem('token') ? 'EXISTS' : 'MISSING',
-        user: localStorage.getItem('user') ? 'EXISTS' : 'MISSING',
-        authRedirect: sessionStorage.getItem('authRedirect'),
-        loginInProgress: sessionStorage.getItem('loginInProgress')
-    });
-    
     // Detect if running locally or in production
     const hostname = window.location.hostname;
     const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '';

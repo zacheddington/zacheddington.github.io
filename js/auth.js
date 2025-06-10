@@ -551,30 +551,17 @@ const startActivityMonitoring = () => {
 const checkAuth = () => {
     if (isPublicPage()) {
         return; // Public page, no auth required
-    }    const token = localStorage.getItem('token');
-      if (!token) {
-        console.log('🔴 NO TOKEN FOUND - Auth check failed', {
-            currentPath: window.location.pathname,
-            localStorage_keys: Object.keys(localStorage),
-            sessionStorage_keys: Object.keys(sessionStorage),
-            token: localStorage.getItem('token'),
-            user: localStorage.getItem('user'),
-            loginTimestamp: localStorage.getItem('loginTimestamp'),
-            authRedirect: sessionStorage.getItem('authRedirect'),
-            loginInProgress: sessionStorage.getItem('loginInProgress')
-        });
-        
+    }
+
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
         console.log('No token found, redirecting to login');
         // Set redirect flag to indicate this is an auth-initiated redirect
         sessionStorage.setItem('authRedirect', 'true');
         window.location.href = '/';
         return;
     }
-    
-    console.log('🟢 TOKEN FOUND - Auth check passed', {
-        token: token ? 'EXISTS' : 'MISSING',
-        user: localStorage.getItem('user') ? 'EXISTS' : 'MISSING'
-    });
     
     // Check for forced password change requirement
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
@@ -706,19 +693,11 @@ window.SessionManager = SessionManager;
 
 // Run auth check when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🟣 DOM LOADED - Starting auth.js check', {
-        currentPath: window.location.pathname,
-        isPublic: isPublicPage(),
-        token: localStorage.getItem('token') ? 'EXISTS' : 'MISSING',
-        user: localStorage.getItem('user') ? 'EXISTS' : 'MISSING',
-        authRedirect: sessionStorage.getItem('authRedirect'),
-        loginInProgress: sessionStorage.getItem('loginInProgress'),
-        successfulLoginNavigation: sessionStorage.getItem('successfulLoginNavigation')
-    });
-    
-    // Clear the successful login navigation flag since we've reached the destination
+    // Clear any navigation flags when arriving at a new page
     sessionStorage.removeItem('successfulLoginNavigation');
+    sessionStorage.removeItem('loginInProgress');
     
+    // Check authentication
     checkAuth();
 });
 
