@@ -36,21 +36,140 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
     const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
     
-    const FADE_DURATION = 450;
-      // Check if current page is login page
+    const FADE_DURATION = 450;    // Check if current page is login page
     const currentPath = window.location.pathname;
     const isLoginPage = currentPath === '/' || currentPath === '/index.html' || currentPath === '';
     
-    // Clear authentication data if on login page to ensure clean state
-    // BUT only if we don't have a valid session that was just created
+    // SECURITY FIX: Always clear authentication data when user visits login page
+    // This prevents users from using back button to bypass authentication
     if (isLoginPage && document.getElementById('loginForm')) {
-        const hasValidSession = sessionStorage.getItem('currentTabId') && localStorage.getItem('token');
+        // Check if this is a direct navigation to login page (not a redirect from auth.js)
+        const isDirectNavigation = !sessionStorage.getItem('authRedirect');
         
-        if (!hasValidSession) {
+        if (isDirectNavigation) {
+            // Clear all authentication data to force fresh login
             localStorage.removeItem('token');
             localStorage.removeItem('user');
+            localStorage.removeItem('loginTimestamp');
+            localStorage.removeItem('activeSession');
+            localStorage.removeItem('lastTabId');
             sessionStorage.clear();
+            
+            // Clear browser history state to prevent back button access
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, document.title, window.location.pathname);
+            }
+            
+            console.log('Direct navigation to login page detected - cleared all authentication data');
+        } else {
+            // Remove the redirect flag since we've handled it
+            sessionStorage.removeItem('authRedirect');
         }
+        
+        // Additional security: Prevent caching of authenticated pages
+        // This ensures browsers don't cache pages that should require authentication
+        if (isLoginPage && document.getElementById('loginForm')) {
+            // Clear any cached data that might allow back button access
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for(let registration of registrations) {
+                        registration.unregister();
+                    }
+                }).catch(function(error) {
+                    console.log('Service worker unregistration failed:', error);
+                });
+            }
+            
+            // Clear any cached data that might allow back button access
+            if (window.caches) {
+                caches.keys().then(function(names) {
+                    for (let name of names) {
+                        caches.delete(name);
+                    }
+                }).catch(function(error) {
+                    console.log('Cache clearing failed:', error);
+                });
+            }
+            
+            // Prevent browser from caching this page
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    // Page was loaded from cache, force reload to ensure fresh state
+                    window.location.reload();
+                }
+            });
+            
+            // Clear any lingering form data
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.reset();
+            }
+            
+            // Enhanced history management to prevent back button bypass
+            setupSecureHistoryManagement();
+        }
+    }
+    
+    // Function to set up secure history management
+    function setupSecureHistoryManagement() {
+        // Prevent back button from accessing authenticated content
+        let historyCleared = false;
+        
+        // Clear history when login page is loaded directly
+        if (!historyCleared && window.history && window.history.length > 1) {
+            // Replace all history entries with the current login page
+            window.history.replaceState(null, document.title, window.location.pathname);
+            historyCleared = true;
+            console.log('History cleared for security');
+        }
+        
+        // Monitor for back button attempts
+        window.addEventListener('popstate', function(event) {
+            // If someone tries to go back from login page, keep them on login page
+            event.preventDefault();
+            window.history.replaceState(null, document.title, window.location.pathname);
+            console.log('Back button blocked on login page');
+        });
+        
+        // Monitor for navigation attempts
+        window.addEventListener('beforeunload', function(event) {
+            // Clear any remaining authentication data when leaving login page
+            if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                localStorage.removeItem('activeSession');
+                sessionStorage.clear();
+            }
+        });
+        
+        // Prevent right-click context menu that might expose navigation options
+        document.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
+        
+        // Prevent common keyboard shortcuts that might bypass security
+        document.addEventListener('keydown', function(event) {
+            // Prevent Ctrl+Shift+I (Developer Tools)
+            if (event.ctrlKey && event.shiftKey && event.key === 'I') {
+                event.preventDefault();
+            }
+            // Prevent F12 (Developer Tools)
+            if (event.key === 'F12') {
+                event.preventDefault();
+            }
+            // Prevent Ctrl+U (View Source)
+            if (event.ctrlKey && event.key === 'u') {
+                event.preventDefault();
+            }
+            // Prevent Alt+Left/Right (Browser Back/Forward)
+            if (event.altKey && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+                event.preventDefault();
+            }
+            // Prevent Backspace navigation
+            if (event.key === 'Backspace' && !['INPUT', 'TEXTAREA'].includes(event.target.tagName)) {
+                event.preventDefault();
+            }
+        });
     }
     
     // Unified modal management
@@ -2729,7 +2848,7 @@ function showDeleteUserModal(username) {
                 </div>
                 <div class="modal-body">
                     <p><strong>Are you sure you want to delete the user "${username}"?</strong></p>
-                    <p style="color: #dc3545; margin-top: 1rem;">This action cannot be undone. The user account and all associated data will be permanently removed from the system.</p>
+                    <p style="color: #dc3545; margin-top: 1rem; font-size: 0.9rem;">This action cannot be undone. The user account and all associated data will be permanently removed from the system.</p>
                 </div>
                 <div class="modal-footer">
                     <button class="modal-btn secondary" id="cancelDeleteUser">Cancel</button>

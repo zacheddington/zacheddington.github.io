@@ -241,11 +241,11 @@ const SessionManager = {
             overlay.className = 'tab-modal-overlay';
             overlay.innerHTML = modalHtml;
             
-            document.body.appendChild(overlay);
-
-            // Handle "Go to Login" button
+            document.body.appendChild(overlay);            // Handle "Go to Login" button
             overlay.querySelector('#closeTabBtn').addEventListener('click', () => {
                 sessionStorage.clear();
+                // Set redirect flag to indicate this is an auth-initiated redirect
+                sessionStorage.setItem('authRedirect', 'true');
                 window.location.href = '/';
             });
 
@@ -519,10 +519,11 @@ const performLogout = async (reason = 'User initiated') => {
         }
     } catch (err) {
         console.log('Logout API call failed:', err);
-    }
-
-    // Clear all local data
+    }    // Clear all local data
     SessionManager.clearSession();
+    
+    // Set redirect flag to indicate this is an auth-initiated redirect
+    sessionStorage.setItem('authRedirect', 'true');
     
     // Redirect to login page
     window.location.href = '/';
@@ -551,9 +552,10 @@ const checkAuth = () => {
     if (isPublicPage()) {
         return; // Public page, no auth required
     }    const token = localStorage.getItem('token');
-    
-    if (!token) {
+      if (!token) {
         console.log('No token found, redirecting to login');
+        // Set redirect flag to indicate this is an auth-initiated redirect
+        sessionStorage.setItem('authRedirect', 'true');
         window.location.href = '/';
         return;
     }
@@ -562,17 +564,19 @@ const checkAuth = () => {
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     const currentPath = window.location.pathname;
     const isForcePasswordChangePage = currentPath.includes('/force-password-change/');
-    
-    // If user requires password change and is not on the force password change page, redirect
+      // If user requires password change and is not on the force password change page, redirect
     if (userData.passwordChangeRequired === true && !isForcePasswordChangePage) {
         console.log('User requires password change, redirecting to force-password-change page');
+        // Set redirect flag to indicate this is an auth-initiated redirect
+        sessionStorage.setItem('authRedirect', 'true');
         window.location.href = '/force-password-change/';
         return;
     }
-    
-    // If user is on force password change page but doesn't require it, redirect to welcome
+      // If user is on force password change page but doesn't require it, redirect to welcome
     if (isForcePasswordChangePage && userData.passwordChangeRequired !== true) {
         console.log('User does not require password change, redirecting to welcome page');
+        // Set redirect flag to indicate this is an auth-initiated redirect
+        sessionStorage.setItem('authRedirect', 'true');
         window.location.href = '/welcome/';
         return;
     }
@@ -622,9 +626,10 @@ const checkAuth = () => {
                     } catch (e) {
                         console.warn('Session re-initialization failed:', e);
                     }
-                }
-            } else {
+                }                } else {
                 console.log('No active session found - redirecting to login');
+                // Set redirect flag to indicate this is an auth-initiated redirect
+                sessionStorage.setItem('authRedirect', 'true');
                 window.location.href = '/';
                 return;
             }
@@ -641,10 +646,11 @@ const checkAuth = () => {
                     return;
                 } else {
                     console.log('Master tab appears inactive - allowing new tab access');
-                }
-            }
+                }            }
             
             console.log('No active session found - redirecting to login');
+            // Set redirect flag to indicate this is an auth-initiated redirect
+            sessionStorage.setItem('authRedirect', 'true');
             window.location.href = '/';
             return;
         }

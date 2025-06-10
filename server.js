@@ -16,6 +16,20 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Security middleware to prevent caching of authenticated content
+app.use((req, res, next) => {
+    // Set cache control headers to prevent caching
+    res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'X-Frame-Options': 'DENY',
+        'X-Content-Type-Options': 'nosniff',
+        'Referrer-Policy': 'strict-origin-when-cross-origin'
+    });
+    next();
+});
+
 // Serve static files from the current directory
 app.use(express.static('.'));
 
