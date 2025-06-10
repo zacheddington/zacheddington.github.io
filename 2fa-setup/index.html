@@ -9,7 +9,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    
+
     <link rel="stylesheet" href="../css/styles.css">
     <style>
         .setup-container {
@@ -197,18 +197,22 @@
             <p>Setting up 2FA...</p>
         </div>
         
-        <div id="errorMessage" class="error-message hidden"></div>
-    </div>
+        <div id="errorMessage" class="error-message hidden"></div>    </div>
 
-    <script src="../js/auth.js"></script>
-    <script>
-        let currentStep = 1;
+    <!-- Load shared modules first -->
+    <script src="../js/shared/api-client.js"></script>
+    <script src="../js/shared/modal-manager.js"></script>
+    <script src="../js/shared/password-utils.js"></script>
+    <script src="../js/shared/field-validation.js"></script>
+    <script src="../js/shared/auth-utils.js"></script>
+    <script src="../js/shared/navigation.js"></script>
+    
+    <!-- Load main controller -->
+    <script src="../js/main.js"></script>
+
+    <script>        let currentStep = 1;
         let setupData = null;
         let backupCodes = [];
-        
-        // Auto-detect environment
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
         
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize 2FA setup when moving to step 2
@@ -241,8 +245,7 @@
             
             currentStep = step;
         }
-        
-        async function initiate2FASetup() {
+          async function initiate2FASetup() {
             try {
                 const token = localStorage.getItem('token');
                 if (!token) {
@@ -250,6 +253,7 @@
                     return;
                 }
                 
+                const API_URL = window.apiClient.getAPIUrl();
                 const response = await fetch(`${API_URL}/api/2fa/setup`, {
                     method: 'POST',
                     headers: {
@@ -293,8 +297,8 @@
                 const verifyBtn = document.getElementById('verifyBtn');
                 verifyBtn.disabled = true;
                 verifyBtn.textContent = 'Verifying...';
-                
-                const token = localStorage.getItem('token');
+                  const token = localStorage.getItem('token');
+                const API_URL = window.apiClient.getAPIUrl();
                 const response = await fetch(`${API_URL}/api/2fa/verify`, {
                     method: 'POST',
                     headers: {

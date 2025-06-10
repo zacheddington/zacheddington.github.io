@@ -15,29 +15,38 @@
         <div class="login-card">            <div class="login-header">
                 <h1>Password Change Required</h1>
                 <p class="login-subtitle">For security purposes, you must change your password before continuing</p>
-            </div>            <div class="login-form-container">
-                <form id="forcePasswordChangeForm" class="login-form" autocomplete="off">
+            </div>            <div class="login-form-container">                <form id="forcePasswordChangeForm" class="login-form" autocomplete="off">
                     <!-- Security: Prevent form data from appearing in URLs -->
                     <input type="hidden" name="_token" id="csrfToken" value="">
                     <!-- Hidden username field for accessibility and password manager compatibility -->
                     <input type="text" id="forceChangeUsername" name="username" autocomplete="username" style="display: none;" tabindex="-1" aria-hidden="true">
                     
-                    <div class="form-group">
-                        <label for="currentPassword">Current Password</label>
-                        <input type="password" id="currentPassword" name="currentPassword" required autocomplete="current-password">
-                        <small class="field-note">Enter the password provided by your administrator</small>
+                    <!-- User Information Display -->
+                    <div class="user-info" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                        <div style="margin-bottom: 10px;"><strong>Account:</strong> <span id="userDisplayName">Loading...</span></div>
+                        <div><strong>Email:</strong> <span id="userDisplayEmail">Loading...</span></div>
                     </div>
-
+                    
                     <div class="form-group">
                         <label for="newPassword">New Password</label>
                         <input type="password" id="newPassword" name="newPassword" required minlength="8" autocomplete="new-password">
                         <small class="field-note">Must meet healthcare security requirements</small>
+                        
+                        <!-- Password Requirements -->
+                        <div class="password-requirements" style="margin-top: 10px; font-size: 12px;">
+                            <div class="requirement" id="lengthReq" style="color: #666;">✓ At least 8 characters</div>
+                            <div class="requirement" id="uppercaseReq" style="color: #666;">✓ One uppercase letter</div>
+                            <div class="requirement" id="lowercaseReq" style="color: #666;">✓ One lowercase letter</div>
+                            <div class="requirement" id="digitReq" style="color: #666;">✓ One number</div>
+                            <div class="requirement" id="specialReq" style="color: #666;">✓ One special character</div>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label for="confirmPassword">Confirm New Password</label>
                         <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8" autocomplete="new-password">
                         <small class="field-note">Re-enter your new password to confirm</small>
+                        <div id="passwordMatch" class="password-match" style="margin-top: 5px; font-size: 12px;"></div>
                     </div>
 
                     <div class="error-container" id="errorContainer" style="display: none;">
@@ -47,10 +56,12 @@
                     <button type="submit" class="login-btn" id="changePasswordBtn">
                         Change Password
                     </button>
-                </form>
-
-                <div class="login-footer">
+                </form>                <div class="login-footer">
                     <p>After changing your password, you will be redirected to the main system.</p>
+                    <button type="button" onclick="window.forcePasswordPage?.handleForcePasswordLogout()" 
+                            class="link-button" style="background: none; border: none; color: #007bff; text-decoration: underline; cursor: pointer; margin-top: 10px;">
+                        Logout Instead
+                    </button>
                 </div>
             </div>
         </div>
@@ -77,13 +88,24 @@
     <div id="errorModal" class="modal" style="display: none;">
         <div class="modal-content error-modal">
             <div class="error-icon">⚠</div>
-            <h3>Password Change Failed</h3>
-            <p id="modalErrorMessage">An error occurred while changing your password. Please try again.</p>
+            <h3>Password Change Failed</h3>            <p id="modalErrorMessage">An error occurred while changing your password. Please try again.</p>
             <button class="modal-btn" onclick="closeErrorModal()">Try Again</button>
         </div>
-    </div>    <script src="../js/fieldStates.js"></script>
-    <script src="../js/auth.js"></script>
+    </div>
+
+    <!-- Load shared modules first -->
+    <script src="../js/shared/api-client.js"></script>
+    <script src="../js/shared/modal-manager.js"></script>
+    <script src="../js/shared/password-utils.js"></script>
+    <script src="../js/shared/field-validation.js"></script>
+    <script src="../js/shared/auth-utils.js"></script>
+    <script src="../js/shared/navigation.js"></script>
+      <!-- Load page-specific module -->
+    <script src="../js/pages/force-password.js"></script>
+    
+    <!-- Load main controller -->
     <script src="../js/main.js"></script>
+    
     <script>
         // Security: Clear any sensitive URL parameters immediately
         (function() {

@@ -9,7 +9,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    
+
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="icon" type="image/x-icon" href="../favicon.ico">
@@ -133,15 +133,23 @@
                     <tbody id="patientsTableBody">
                         <!-- Patients will be loaded here dynamically -->
                     </tbody>
-                </table>
-                <div id="patientsLoading" class="loading-message">Loading patients...</div>
+                </table>                <div id="patientsLoading" class="loading-message">Loading patients...</div>
                 <div id="noPatientsFound" class="no-results hidden">No patients found matching your search.</div>
             </div>
         </div>
     </div>
 
-    <script src="../js/auth.js"></script>
-    <script src="../js/fieldStates.js"></script>
+    <!-- Load shared modules first -->
+    <script src="../js/shared/api-client.js"></script>
+    <script src="../js/shared/modal-manager.js"></script>
+    <script src="../js/shared/password-utils.js"></script>
+    <script src="../js/shared/field-validation.js"></script>
+    <script src="../js/shared/auth-utils.js"></script>
+    <script src="../js/shared/navigation.js"></script>
+      <!-- Load page-specific module -->
+    <script src="../js/pages/patients.js"></script>
+    
+    <!-- Load main controller -->
     <script src="../js/main.js"></script>
 </body>
 </html>
