@@ -669,10 +669,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname.includes('/profile/')) {
         initializeProfilePage();
     }
-    
-    // Initialize admin page if we're on it
+      // Initialize admin page if we're on it
     if (window.location.pathname.includes('/admin/')) {
         initializeAdminPage();
+    }
+    
+    // Initialize patients page if we're on it
+    if (window.location.pathname.includes('/patients/')) {
+        initializePatientsPage();
     }
     
     // Initialize force password change page if we're on it
@@ -1086,23 +1090,6 @@ function setupProfileFieldValidation() {
             });
         }
     });
-}
-
-function showCharacterLimitModal(fieldName, maxLength) {
-    // Check if modal is already showing to prevent duplicates
-    if (typeof window.modalManager !== 'undefined' && window.modalManager.isShowingModal) {
-        return;
-    }
-    
-    const message = `${fieldName} cannot exceed ${maxLength} characters. The text has been automatically trimmed.`;
-    
-    if (typeof showModal === 'function') {
-        showModal('error', message);
-    } else if (typeof window.modalManager !== 'undefined') {
-        window.modalManager.showModal('error', message);
-    } else {
-        alert(message); // Fallback
-    }
 }
 
 async function loadUserProfile() {
@@ -1745,6 +1732,20 @@ function initializeAdminPage() {
     }
 }
 
+// Patients Page Functionality
+function initializePatientsPage() {
+    // Navigation handlers
+    setupPatientsNavigation();
+    
+    // Form handlers
+    setupCreatePatientForm();
+    
+    // Load hamburger menu
+    if (document.getElementById('hamburger-menu')) {
+        loadMenu();
+    }
+}
+
 // Force Password Change Page Functionality
 function initializeForcePasswordChangePage() {
     const newPassword = document.getElementById('newPassword');
@@ -1902,7 +1903,6 @@ async function handleForcePasswordChange() {
         } else {
             throw new Error(result.error || 'Failed to change password');
         }
-        
     } catch (error) {
         console.error('Force password change error:', error);
         
@@ -1921,241 +1921,30 @@ async function handleForcePasswordChange() {
     }
 }
 
-function setupAdminNavigation() {
-    const adminChoice = document.getElementById('adminChoice');
-    const createUserSection = document.getElementById('createUserSection');
-    const manageUsersSection = document.getElementById('manageUsersSection');
+// Patients Page Functions
+function setupCreatePatientForm() {
+    const createPatientForm = document.getElementById('createPatientForm');
+    if (!createPatientForm) return;
     
-    // Choice button handlers
-    document.getElementById('createUserBtn')?.addEventListener('click', function() {
-        adminChoice.classList.add('hidden');
-        createUserSection.classList.remove('hidden');
-    });
-      document.getElementById('manageUsersBtn')?.addEventListener('click', function() {
-        adminChoice.classList.add('hidden');
-        manageUsersSection.classList.remove('hidden');
-        // Load users and setup user management
-        loadUsers();
-        loadRolesForUserManagement();
-        setupUserFilter();
-    });
-    
-    // Cancel button handler
-    document.getElementById('cancelCreateUser')?.addEventListener('click', function() {
-        createUserSection.classList.add('hidden');
-        adminChoice.classList.remove('hidden');
-        document.getElementById('createUserForm')?.reset();
-        clearCreateUserErrors();
-    });
-}
-
-async function loadRoles() {
-    try {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${API_URL}/api/roles`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.ok) {
-            const roles = await response.json();
-            const roleSelect = document.getElementById('userRole');
-            if (roleSelect) {
-                // Clear existing options except the placeholder
-                roleSelect.innerHTML = '<option value="">Select a role...</option>';
-                
-                // Add role options
-                roles.forEach(role => {
-                    const option = document.createElement('option');
-                    option.value = role.role_key;
-                    option.textContent = role.role_name;
-                    roleSelect.appendChild(option);
-                });
-            }
-        } else {
-            console.error('Failed to load roles');
-        }
-    } catch (error) {
-        console.error('Error loading roles:', error);
-    }
-}
-
-function setupCreateUserForm() {
-    const createUserForm = document.getElementById('createUserForm');
-    if (!createUserForm) return;
-    
-    // Get form elements
-    const newPassword = document.getElementById('newPassword');
-    const confirmPassword = document.getElementById('confirmPassword');
-    const newUsername = document.getElementById('newUsername');
-    
-    // Add password strength indicator for create user form
-    if (newPassword) {
-        addPasswordStrengthIndicator(newPassword);
-    }
-      // Real-time password confirmation validation
-    if (newPassword && confirmPassword) {
-        confirmPassword.addEventListener('input', function() {
-            validateCreateUserPasswordMatch();
-            // Update field states
-            if (window.fieldStateManager) {
-                window.fieldStateManager.updateFieldState(confirmPassword);
-            }
-        });
-        
-        newPassword.addEventListener('input', function() {
-            validateCreateUserPasswordMatch();
-            updatePasswordStrength(newPassword.value, newPassword.id);
-            // Update field states
-            if (window.fieldStateManager) {
-                window.fieldStateManager.updateFieldState(newPassword);
-            }
-        });
-    }
-    
-    // Username availability checking (debounced)
-    if (newUsername) {
-        let usernameTimeout;
-        newUsername.addEventListener('input', function() {
-            clearTimeout(usernameTimeout);
-            usernameTimeout = setTimeout(() => {
-                checkUsernameAvailability(newUsername.value.trim());
-            }, 500);
-            // Update field states
-            if (window.fieldStateManager) {
-                window.fieldStateManager.updateFieldState(newUsername);
-            }
-        });
-    }
-    
-    // Character limit validation for create user form fields
-    setupCreateUserFieldValidation();
+    // Character limit validation for create patient form fields
+    setupCreatePatientFieldValidation();
     
     // Handle form submission
-    createUserForm.addEventListener('submit', async function(e) {
+    createPatientForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        await createUser();
+        await createPatient();
     });
 }
 
-function validateCreateUserPasswordMatch() {
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPasswordElement = document.getElementById('confirmPassword');
-    const confirmPassword = confirmPasswordElement.value;
-    const confirmGroup = confirmPasswordElement.closest('.form-group');
-    
-    // Remove existing error/success classes and messages
-    confirmGroup.classList.remove('error', 'success');
-    confirmPasswordElement.classList.remove('password-match', 'password-mismatch');
-    const existingMessage = confirmGroup.querySelector('.error-message, .success-message');
-    if (existingMessage) {
-        existingMessage.remove();
-    }
-      if (confirmPassword && newPassword) {
-        if (newPassword === confirmPassword) {
-            confirmGroup.classList.add('success');
-            confirmPasswordElement.classList.add('password-match');
-            const successMsg = document.createElement('div');
-            successMsg.className = 'success-message';
-            successMsg.textContent = 'Passwords match';
-            confirmGroup.appendChild(successMsg);
-        } else {
-            confirmGroup.classList.add('error');
-            confirmPasswordElement.classList.add('password-mismatch');
-            const errorMsg = document.createElement('div');
-            errorMsg.className = 'error-message';
-            errorMsg.textContent = 'Passwords do not match';
-            confirmGroup.appendChild(errorMsg);
-        }
-    }
-    
-    // Update field states using the field state manager
-    if (window.fieldStateManager) {
-        window.fieldStateManager.updateFieldState(confirmPasswordElement);
-        const newPasswordElement = document.getElementById('newPassword');
-        if (newPasswordElement) {
-            window.fieldStateManager.updateFieldState(newPasswordElement);
-        }
-    }
-}
-
-async function checkUsernameAvailability(username) {
-    if (!username || username.length < 3) {
-        clearUsernameValidation();
-        return;
-    }
-    
-    try {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${API_URL}/api/check-username`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ username })
-        });
-        
-        const result = await response.json();
-        const usernameInput = document.getElementById('newUsername');
-        const usernameGroup = usernameInput.closest('.form-group');
-        
-        // Clear existing validation states
-        usernameGroup.classList.remove('error', 'success');
-        const existingMessage = usernameGroup.querySelector('.error-message, .success-message');
-        if (existingMessage) {
-            existingMessage.remove();
-        }
-        
-        if (response.ok) {
-            if (result.available) {
-                usernameGroup.classList.add('success');
-                const successMsg = document.createElement('div');
-                successMsg.className = 'success-message';
-                successMsg.textContent = 'Username is available';
-                usernameGroup.appendChild(successMsg);
-            } else {
-                usernameGroup.classList.add('error');
-                const errorMsg = document.createElement('div');
-                errorMsg.className = 'error-message';
-                errorMsg.textContent = 'Username is already taken';
-                usernameGroup.appendChild(errorMsg);
-            }
-        }
-    } catch (error) {
-        console.error('Error checking username availability:', error);
-    }
-}
-
-function clearUsernameValidation() {
-    const usernameInput = document.getElementById('newUsername');
-    if (usernameInput) {
-        const usernameGroup = usernameInput.closest('.form-group');
-        usernameGroup.classList.remove('error', 'success');
-        const existingMessage = usernameGroup.querySelector('.error-message, .success-message');
-        if (existingMessage) {
-            existingMessage.remove();
-        }
-    }
-}
-
-function setupCreateUserFieldValidation() {
-    const createUserFields = [
-        { id: 'firstName', maxLength: 50, label: 'First name' },
-        { id: 'middleName', maxLength: 50, label: 'Middle name' },
-        { id: 'lastName', maxLength: 50, label: 'Last name' },
-        { id: 'email', maxLength: 50, label: 'Email' },
-        { id: 'newUsername', maxLength: 50, label: 'Username' }
+function setupCreatePatientFieldValidation() {
+    const createPatientFields = [
+        { id: 'patientFirstName', maxLength: 50, label: 'First name' },
+        { id: 'patientMiddleName', maxLength: 50, label: 'Middle name' },
+        { id: 'patientLastName', maxLength: 50, label: 'Last name' },
+        { id: 'patientAddress', maxLength: 100, label: 'Address' }
     ];
     
-    createUserFields.forEach(field => {
+    createPatientFields.forEach(field => {
         const input = document.getElementById(field.id);
         if (input) {
             // Character count prevention
@@ -2179,14 +1968,14 @@ function setupCreateUserFieldValidation() {
     });
 }
 
-async function createUser() {
-    const submitBtn = document.getElementById('createUserSubmitBtn');
+async function createPatient() {
+    const submitBtn = document.getElementById('createPatientSubmitBtn');
     const originalText = submitBtn.textContent;
     let response = null;
     
     try {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Creating User...';
+        submitBtn.textContent = 'Creating Patient...';
         
         // Pre-flight connectivity check
         const connectivity = await checkConnectivity();
@@ -2196,24 +1985,17 @@ async function createUser() {
         
         // Get form data
         const formData = {
-            firstName: document.getElementById('firstName').value.trim(),
-            middleName: document.getElementById('middleName').value.trim(),
-            lastName: document.getElementById('lastName').value.trim(),
-            email: document.getElementById('email').value.trim(),
-            username: document.getElementById('newUsername').value.trim(),
-            password: document.getElementById('newPassword').value,
-            roleKey: document.getElementById('userRole').value
+            firstName: document.getElementById('patientFirstName').value.trim(),
+            middleName: document.getElementById('patientMiddleName').value.trim(),
+            lastName: document.getElementById('patientLastName').value.trim(),
+            address: document.getElementById('patientAddress').value.trim(),
+            phone: document.getElementById('patientPhone').value.trim(),
+            acceptsTexts: document.getElementById('acceptsTexts').value
         };
         
         // Validate required fields
-        if (!formData.firstName || !formData.lastName || !formData.email || !formData.username || !formData.password || !formData.roleKey) {
+        if (!formData.firstName || !formData.lastName || !formData.address || !formData.phone || !formData.acceptsTexts) {
             throw new Error('All fields except middle name are required.');
-        }
-        
-        // Validate password confirmation
-        const confirmPassword = document.getElementById('confirmPassword').value;
-        if (formData.password !== confirmPassword) {
-            throw new Error('Passwords do not match.');
         }
         
         // Validate character limits
@@ -2226,31 +2008,21 @@ async function createUser() {
         if (formData.lastName.length > 50) {
             throw new Error('Last name must be 50 characters or less.');
         }
-        if (formData.email.length > 50) {
-            throw new Error('Email must be 50 characters or less.');
-        }
-        if (formData.username.length > 50) {
-            throw new Error('Username must be 50 characters or less.');
+        if (formData.address.length > 100) {
+            throw new Error('Address must be 100 characters or less.');
         }
         
-        // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(formData.email)) {
-            throw new Error('Please enter a valid email address.');
-        }
-        
-        // Validate password strength using healthcare standards
-        const passwordValidation = validatePasswordStrength(formData.password);
-        if (!passwordValidation.isValid) {
-            const errorMessages = passwordValidation.failed.join('\n• ');
-            throw new Error(`Password does not meet security requirements:\n• ${errorMessages}`);
+        // Validate phone number (basic validation for 10 digits)
+        const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+        if (!phoneRegex.test(formData.phone)) {
+            throw new Error('Please enter a valid 10-digit phone number.');
         }
         
         const token = localStorage.getItem('token');
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
         
-        response = await fetch(`${API_URL}/api/create-user`, {
+        response = await fetch(`${API_URL}/api/patients`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -2260,38 +2032,39 @@ async function createUser() {
         });
         
         const result = await response.json();
-          if (response.ok) {
+        
+        if (response.ok) {
             // Clear the form
-            document.getElementById('createUserForm').reset();
-            clearCreateUserErrors();
+            document.getElementById('createPatientForm').reset();
+            clearCreatePatientErrors();
             
             // Show success modal with simple personalized message
-            const userName = formData.middleName 
+            const patientName = formData.middleName 
                 ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`
                 : `${formData.firstName} ${formData.lastName}`;
-            const successMessage = `Success, new user for ${userName} created!`;
+            const successMessage = `Success, new patient ${patientName} created!`;
             window.modalManager.showModal('success', successMessage);
             
-            // Redirect back to admin choice page after brief delay
+            // Redirect back to patient choice page after brief delay
             setTimeout(() => {
                 window.modalManager.closeModal();
-                // Navigate back to main admin page
-                document.getElementById('createUserSection').classList.add('hidden');
-                document.getElementById('adminChoice').classList.remove('hidden');
+                // Navigate back to main patient page
+                document.getElementById('createPatientSection').classList.add('hidden');
+                document.getElementById('patientChoice').classList.remove('hidden');
             }, 2500);
             
-            // Refresh users if we're on manage users section
-            if (typeof loadUsers === 'function' && !document.getElementById('manageUsersSection').classList.contains('hidden')) {
+            // Refresh patients if we're on manage patients section
+            if (typeof loadPatients === 'function' && !document.getElementById('managePatientsSection').classList.contains('hidden')) {
                 setTimeout(() => {
-                    loadUsers();
+                    loadPatients();
                 }, 1000);
             }
         } else {
-            throw new Error(result.error || 'Failed to create user');
+            throw new Error(result.error || 'Failed to create patient');
         }
         
     } catch (error) {
-        console.error('Create user error:', error);
+        console.error('Create patient error:', error);
         
         // Use enhanced error categorization
         const errorInfo = categorizeError(error, response);
@@ -2300,7 +2073,7 @@ async function createUser() {
         if (errorInfo.modal) {
             window.modalManager.showModal('error', errorInfo.message);
         } else {
-            showCreateUserError(errorInfo.message);
+            showCreatePatientError(errorInfo.message);
         }
     } finally {
         submitBtn.disabled = false;
@@ -2308,22 +2081,22 @@ async function createUser() {
     }
 }
 
-function showCreateUserError(message) {
-    const createUserSection = document.getElementById('createUserSection');
-    showSectionMessage(createUserSection, message, 'error');
+function showCreatePatientError(message) {
+    const createPatientSection = document.getElementById('createPatientSection');
+    showSectionMessage(createPatientSection, message, 'error');
 }
 
-function clearCreateUserErrors() {
-    const createUserSection = document.getElementById('createUserSection');
+function clearCreatePatientErrors() {
+    const createPatientSection = document.getElementById('createPatientSection');
     
     // Clear section-level error messages
-    const errorMessage = createUserSection.querySelector('.section-message.error-message');
+    const errorMessage = createPatientSection.querySelector('.section-message.error');
     if (errorMessage) {
         errorMessage.remove();
     }
     
     // Clear field-level errors
-    const errorGroups = createUserSection.querySelectorAll('.form-group.error');
+    const errorGroups = createPatientSection.querySelectorAll('.form-group.error');
     errorGroups.forEach(group => {
         group.classList.remove('error');
         const errorMsg = group.querySelector('.error-message');
@@ -2333,291 +2106,217 @@ function clearCreateUserErrors() {
     });
     
     // Clear success states
-    const successGroups = createUserSection.querySelectorAll('.form-group.success');
+    const successGroups = createPatientSection.querySelectorAll('.form-group.success');
     successGroups.forEach(group => {
         group.classList.remove('success');
         const successMsg = group.querySelector('.success-message');
         if (successMsg) {
             successMsg.remove();
         }
-    });      // Clear password matching classes
-    const passwordInputs = createUserSection.querySelectorAll('input[type="password"]');
-    passwordInputs.forEach(input => {
-        input.classList.remove('password-match', 'password-mismatch');
     });
     
     // Update field states using the field state manager
     if (window.fieldStateManager) {
-        const allFields = createUserSection.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], select');
+        const allFields = createPatientSection.querySelectorAll('input[type="text"], input[type="tel"], select');
         allFields.forEach(field => {
             window.fieldStateManager.updateFieldState(field);
         });
     }
 }
 
-// User Management Functions
-let allUsers = [];
-let currentRoles = [];
-let currentSort = { column: null, direction: null }; // 'asc', 'desc', or null
+// Patient Management Functions
+let allPatients = [];
+let currentPatientSort = { column: null, direction: null };
 
-async function loadUsers() {
+async function loadPatients() {
     try {
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
         const token = localStorage.getItem('token');
         
-        const usersLoading = document.getElementById('usersLoading');
-        const usersTableBody = document.getElementById('usersTableBody');
+        const patientsLoading = document.getElementById('patientsLoading');
+        const patientsTableBody = document.getElementById('patientsTableBody');
         
-        if (usersLoading) usersLoading.style.display = 'block';
-        if (usersTableBody) usersTableBody.innerHTML = '';
+        if (patientsLoading) patientsLoading.style.display = 'block';
+        if (patientsTableBody) patientsTableBody.innerHTML = '';
         
-        const response = await fetch(`${API_URL}/api/users`, {
+        const response = await fetch(`${API_URL}/api/patients`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
         
         if (response.ok) {
-            allUsers = await response.json();
-            await loadRolesForUserManagement();
-            setupTableSorting();
-            displayUsers(allUsers);
+            allPatients = await response.json();
+            setupPatientTableSorting();
+            const sortedPatients = getSortedPatients();
+            displayPatients(sortedPatients);
         } else {
-            console.error('Failed to load users');
-            if (usersTableBody) {
-                usersTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #dc3545;">Failed to load users. Please refresh the page.</td></tr>';
-            }
+            throw new Error('Failed to load patients');
         }
     } catch (error) {
-        console.error('Error loading users:', error);
-        const usersTableBody = document.getElementById('usersTableBody');
-        if (usersTableBody) {
-            usersTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #dc3545;">Error loading users. Please check your connection.</td></tr>';
+        console.error('Error loading patients:', error);
+        const patientsTableBody = document.getElementById('patientsTableBody');
+        if (patientsTableBody) {
+            patientsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #dc3545;">Error loading patients. Please try again.</td></tr>';
         }
     } finally {
-        const usersLoading = document.getElementById('usersLoading');
-        if (usersLoading) usersLoading.style.display = 'none';
+        const patientsLoading = document.getElementById('patientsLoading');
+        if (patientsLoading) patientsLoading.style.display = 'none';
     }
 }
 
-async function loadRolesForUserManagement() {
-    try {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${API_URL}/api/roles`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.ok) {
-            currentRoles = await response.json();
-        } else {
-            console.error('Failed to load roles for user management');
-        }
-    } catch (error) {
-        console.error('Error loading roles for user management:', error);
-    }
-}
-
-function setupTableSorting() {
-    const table = document.getElementById('usersTable');
+function setupPatientTableSorting() {
+    const table = document.getElementById('patientsTable');
     if (!table) return;
     
     const headers = table.querySelectorAll('thead th');
     
-    // Define sortable columns (exclude Actions column)
+    // Define sortable columns
     const sortableColumns = [
-        { index: 0, key: 'username', label: 'Username' },
-        { index: 1, key: 'fullName', label: 'Full Name' },
-        { index: 2, key: 'email', label: 'Email' },
-        { index: 3, key: 'role', label: 'Role' },
+        { index: 0, key: 'fullName', label: 'Name' },
+        { index: 1, key: 'address', label: 'Address' },
+        { index: 2, key: 'phone', label: 'Phone' },
+        { index: 3, key: 'acceptsTexts', label: 'Accepts Texts' },
         { index: 4, key: 'created', label: 'Created' }
-    ];    sortableColumns.forEach(column => {
+    ];
+    
+    sortableColumns.forEach(column => {
         const header = headers[column.index];
         if (header) {
-            // Make header clickable and add styling
             header.style.cursor = 'pointer';
-            header.style.userSelect = 'none';
-            header.classList.add('sortable-column');
-            header.setAttribute('title', `Click to sort by ${column.label}`);
-            
-            // Add sort indicator container with sortable wrapper
-            const originalText = header.textContent;
-            header.innerHTML = `
-                <div class="sortable-header">
-                    <span class="header-text">${originalText}</span>
-                    <span class="sort-indicator" data-column="${column.key}"></span>
-                </div>
-            `;
-            
-            // Add click event listener
-            header.addEventListener('click', () => handleSort(column.key));
+            header.innerHTML = `${column.label} <span class="sort-indicator" data-column="${column.key}"></span>`;
+            header.addEventListener('click', () => handlePatientSort(column.key));
         }
     });
 }
 
-function handleSort(columnKey) {
+function handlePatientSort(columnKey) {
     // Determine new sort direction
-    if (currentSort.column === columnKey) {
-        // Same column clicked
-        if (currentSort.direction === null) {
-            currentSort.direction = 'asc';
-        } else if (currentSort.direction === 'asc') {
-            currentSort.direction = 'desc';
+    if (currentPatientSort.column === columnKey) {
+        if (currentPatientSort.direction === null) {
+            currentPatientSort.direction = 'asc';
+        } else if (currentPatientSort.direction === 'asc') {
+            currentPatientSort.direction = 'desc';
         } else {
-            // Remove sort
-            currentSort.column = null;
-            currentSort.direction = null;
+            currentPatientSort.direction = null;
         }
     } else {
-        // Different column clicked
-        currentSort.column = columnKey;
-        currentSort.direction = 'asc';
+        currentPatientSort.column = columnKey;
+        currentPatientSort.direction = 'asc';
     }
-      // Update sort indicators
-    updateSortIndicators();
     
-    // Update reset sort button visibility
-    updateResetSortButton();
+    // Update sort indicators
+    updatePatientSortIndicators();
     
-    // Sort and display users
-    const sortedUsers = getSortedUsers();
-    displayUsers(sortedUsers);
+    // Sort and display patients
+    const sortedPatients = getSortedPatients();
+    displayPatients(sortedPatients);
 }
 
-function updateSortIndicators() {
+function updatePatientSortIndicators() {
     const indicators = document.querySelectorAll('.sort-indicator');
     
     indicators.forEach(indicator => {
         const column = indicator.dataset.column;
-        const header = indicator.closest('th');
-        
-        if (column === currentSort.column) {
-            if (currentSort.direction === 'asc') {
-                indicator.innerHTML = ' ▲';
-                indicator.className = 'sort-indicator sort-asc';
-                header.setAttribute('title', `Sorted ascending. Click to sort descending.`);
-            } else if (currentSort.direction === 'desc') {
-                indicator.innerHTML = ' ▼';
-                indicator.className = 'sort-indicator sort-desc';
-                header.setAttribute('title', `Sorted descending. Click to remove sort.`);
+        if (column === currentPatientSort.column) {
+            if (currentPatientSort.direction === 'asc') {
+                indicator.textContent = ' ↑';
+            } else if (currentPatientSort.direction === 'desc') {
+                indicator.textContent = ' ↓';
+            } else {
+                indicator.textContent = '';
             }
         } else {
-            indicator.innerHTML = '';
-            indicator.className = 'sort-indicator';
-            const columnLabel = header.querySelector('.header-text').textContent;
-            header.setAttribute('title', `Click to sort by ${columnLabel}`);
+            indicator.textContent = '';
         }
     });
 }
 
-function getSortedUsers() {
-    if (!currentSort.column || !currentSort.direction) {
-        return [...allUsers];
+function getSortedPatients() {
+    if (!currentPatientSort.column || !currentPatientSort.direction) {
+        return allPatients;
     }
     
-    return [...allUsers].sort((a, b) => {
-        let valueA, valueB;
+    return [...allPatients].sort((a, b) => {
+        let aValue, bValue;
         
-        switch (currentSort.column) {
-            case 'username':
-                valueA = a.username || '';
-                valueB = b.username || '';
-                break;
+        switch (currentPatientSort.column) {
             case 'fullName':
-                valueA = [a.first_name, a.middle_name, a.last_name]
-                    .filter(name => name && name.trim())
-                    .join(' ') || '';
-                valueB = [b.first_name, b.middle_name, b.last_name]
-                    .filter(name => name && name.trim())
-                    .join(' ') || '';
+                aValue = `${a.first_name} ${a.last_name}`.toLowerCase();
+                bValue = `${b.first_name} ${b.last_name}`.toLowerCase();
                 break;
-            case 'email':
-                valueA = a.email || '';
-                valueB = b.email || '';
+            case 'address':
+                aValue = a.address?.toLowerCase() || '';
+                bValue = b.address?.toLowerCase() || '';
                 break;
-            case 'role':
-                valueA = (a.roles && a.roles.length > 0) ? a.roles[0] : 'User';
-                valueB = (b.roles && b.roles.length > 0) ? b.roles[0] : 'User';
+            case 'phone':
+                aValue = a.phone || '';
+                bValue = b.phone || '';
+                break;
+            case 'acceptsTexts':
+                aValue = a.accepts_texts ? 'yes' : 'no';
+                bValue = b.accepts_texts ? 'yes' : 'no';
                 break;
             case 'created':
-                valueA = new Date(a.date_created);
-                valueB = new Date(b.date_created);
+                aValue = new Date(a.created_at);
+                bValue = new Date(b.created_at);
                 break;
             default:
                 return 0;
         }
         
-        // Handle date sorting
-        if (currentSort.column === 'created') {
-            return currentSort.direction === 'asc' ? valueA - valueB : valueB - valueA;
-        }
-        
-        // Handle string sorting (case insensitive)
-        const comparison = valueA.toString().toLowerCase().localeCompare(valueB.toString().toLowerCase());
-        return currentSort.direction === 'asc' ? comparison : -comparison;
+        if (aValue < bValue) return currentPatientSort.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return currentPatientSort.direction === 'asc' ? 1 : -1;
+        return 0;
     });
 }
 
-function displayUsers(users) {
-    const usersTableBody = document.getElementById('usersTableBody');
-    const noUsersFound = document.getElementById('noUsersFound');
+function displayPatients(patients) {
+    const patientsTableBody = document.getElementById('patientsTableBody');
+    const noPatientsFound = document.getElementById('noPatientsFound');
     
-    if (!usersTableBody) return;
+    if (!patientsTableBody) return;
     
-    if (users.length === 0) {
-        usersTableBody.innerHTML = '';
-        if (noUsersFound) noUsersFound.classList.remove('hidden');
+    if (patients.length === 0) {
+        patientsTableBody.innerHTML = '';
+        if (noPatientsFound) noPatientsFound.classList.remove('hidden');
         return;
     }
     
-    if (noUsersFound) noUsersFound.classList.add('hidden');
+    if (noPatientsFound) noPatientsFound.classList.add('hidden');
     
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    usersTableBody.innerHTML = users.map(user => {
-        const fullName = [user.first_name, user.middle_name, user.last_name]
-            .filter(name => name && name.trim())
-            .join(' ');
+    patientsTableBody.innerHTML = patients.map(patient => {
+        const fullName = patient.middle_name 
+            ? `${patient.first_name} ${patient.middle_name} ${patient.last_name}`
+            : `${patient.first_name} ${patient.last_name}`;
         
-        const primaryRole = user.roles && user.roles.length > 0 ? user.roles[0] : 'User';
-        const primaryRoleKey = user.role_keys && user.role_keys.length > 0 ? user.role_keys[0] : 2;
+        const acceptsTexts = patient.accepts_texts ? 'Yes' : 'No';
+        const acceptsTextsClass = patient.accepts_texts ? 'yes' : 'no';
         
-        const createdDate = new Date(user.date_created).toLocaleDateString();
-        
-        const isCurrentUser = currentUser.username === user.username;
-        const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, '');
+        const createdDate = new Date(patient.created_at).toLocaleDateString();
         
         return `
-            <tr data-user-id="${user.user_key}">
+            <tr data-patient-id="${patient.patient_key}">
                 <td>
-                    <strong>${user.username}</strong>
-                    ${isCurrentUser ? '<span style="color: #009688; font-size: 0.8rem;">(You)</span>' : ''}
-                </td>
-                <td>
-                    <div class="user-name">
-                        <span class="user-full-name">${fullName || 'N/A'}</span>
+                    <div class="patient-name">
+                        <div class="patient-full-name">${fullName}</div>
                     </div>
                 </td>
-                <td>${user.email || 'N/A'}</td>
+                <td>${patient.address || ''}</td>
+                <td>${patient.phone || ''}</td>
                 <td>
-                    <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}">
-                        ${primaryRole}
+                    <span class="accepts-texts ${acceptsTextsClass}">
+                        ${acceptsTexts}
                     </span>
                 </td>
+                <td class="patient-created">${createdDate}</td>
                 <td>
-                    <span class="user-created">${createdDate}</span>
-                </td>
-                <td>
-                    <div class="user-actions">
-                        <button class="btn-icon btn-edit" onclick="editUserRole(${user.user_key})" title="Edit Role" ${isCurrentUser ? 'disabled' : ''}>
+                    <div class="patient-actions">
+                        <button class="btn-icon btn-edit" onclick="editPatient(${patient.patient_key})" title="Edit Patient">
                             ✏️
                         </button>
-                        <button class="btn-icon btn-delete" onclick="deleteUser(${user.user_key}, '${user.username}')" title="Delete User" ${isCurrentUser ? 'disabled' : ''}>
+                        <button class="btn-icon btn-delete" onclick="deletePatient(${patient.patient_key}, '${fullName}')" title="Delete Patient">
                             🗑️
                         </button>
                     </div>
@@ -2627,594 +2326,42 @@ function displayUsers(users) {
     }).join('');
 }
 
-function filterUsers() {
-    const filterValue = document.getElementById('userFilter').value.toLowerCase();
+function filterPatients() {
+    const filterValue = document.getElementById('patientFilter').value.toLowerCase();
     
     if (!filterValue.trim()) {
-        const sortedUsers = getSortedUsers();
-        displayUsers(sortedUsers);
+        const sortedPatients = getSortedPatients();
+        displayPatients(sortedPatients);
         return;
     }
     
-    const filteredUsers = allUsers.filter(user => {
-        const fullName = [user.first_name, user.middle_name, user.last_name]
-            .filter(name => name && name.trim())
-            .join(' ').toLowerCase();
+    const filteredPatients = allPatients.filter(patient => {
+        const fullName = patient.middle_name 
+            ? `${patient.first_name} ${patient.middle_name} ${patient.last_name}`
+            : `${patient.first_name} ${patient.last_name}`;
         
-        return user.username.toLowerCase().includes(filterValue) ||
-               fullName.includes(filterValue) ||
-               (user.email && user.email.toLowerCase().includes(filterValue)) ||
-               (user.roles && user.roles.some(role => role.toLowerCase().includes(filterValue)));
+        return fullName.toLowerCase().includes(filterValue) ||
+               (patient.phone && patient.phone.includes(filterValue)) ||
+               (patient.address && patient.address.toLowerCase().includes(filterValue));
     });
     
-    // Apply current sorting to filtered results
-    const sortedFilteredUsers = currentSort.column && currentSort.direction 
-        ? filteredUsers.sort((a, b) => {
-            // Same sorting logic as getSortedUsers but for filtered array
-            let valueA, valueB;
-            
-            switch (currentSort.column) {
-                case 'username':
-                    valueA = a.username || '';
-                    valueB = b.username || '';
-                    break;
-                case 'fullName':
-                    valueA = [a.first_name, a.middle_name, a.last_name]
-                        .filter(name => name && name.trim())
-                        .join(' ') || '';
-                    valueB = [b.first_name, b.middle_name, b.last_name]
-                        .filter(name => name && name.trim())
-                        .join(' ') || '';
-                    break;
-                case 'email':
-                    valueA = a.email || '';
-                    valueB = b.email || '';
-                    break;
-                case 'role':
-                    valueA = (a.roles && a.roles.length > 0) ? a.roles[0] : 'User';
-                    valueB = (b.roles && b.roles.length > 0) ? b.roles[0] : 'User';
-                    break;
-                case 'created':
-                    valueA = new Date(a.date_created);
-                    valueB = new Date(b.date_created);
-                    break;
-                default:
-                return 0;
-            }
-            
-            if (currentSort.column === 'created') {
-                return currentSort.direction === 'asc' ? valueA - valueB : valueB - valueA;
-            }
-            
-            const comparison = valueA.toString().toLowerCase().localeCompare(valueB.toString().toLowerCase());
-            return currentSort.direction === 'asc' ? comparison : -comparison;
-        })
-        : filteredUsers;
-    
-    displayUsers(sortedFilteredUsers);
+    displayPatients(filteredPatients);
 }
 
-function setupUserFilter() {
-    const userFilter = document.getElementById('userFilter');
-    if (userFilter) {
-        userFilter.addEventListener('input', filterUsers);
-    }
-    
-    // Setup reset sort button
-    const resetSortBtn = document.getElementById('resetSort');
-    if (resetSortBtn) {
-        resetSortBtn.addEventListener('click', function() {
-            currentSort.column = null;
-            currentSort.direction = null;
-            updateSortIndicators();
-            updateResetSortButton();
-            
-            // Re-apply current filter with no sorting
-            filterUsers();
-        });
+function setupPatientFilter() {
+    const patientFilter = document.getElementById('patientFilter');
+    if (patientFilter) {
+        patientFilter.addEventListener('input', filterPatients);
     }
 }
 
-function updateResetSortButton() {
-    const resetSortBtn = document.getElementById('resetSort');
-    if (resetSortBtn) {
-        if (currentSort.column && currentSort.direction) {
-            resetSortBtn.style.display = 'inline-block';
-            resetSortBtn.textContent = `Clear Sort (${currentSort.column} ${currentSort.direction})`;
-        } else {
-            resetSortBtn.style.display = 'none';
-        }
-    }
+// Placeholder functions for patient editing and deletion
+function editPatient(patientId) {
+    console.log('Edit patient functionality not yet implemented for ID:', patientId);
+    window.modalManager.showModal('info', 'Patient editing functionality will be implemented in a future update.');
 }
 
-function editUserRole(userId) {
-    const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-    if (!row) return;
-    
-    const roleCell = row.querySelector('td:nth-child(4)');
-    const actionsCell = row.querySelector('td:nth-child(6)');
-    
-    const currentRoleSpan = roleCell.querySelector('.user-role');
-    const currentRoleKey = currentRoleSpan.dataset.roleKey;
-    
-    // Create role select dropdown
-    const roleSelect = document.createElement('select');
-    roleSelect.className = 'role-select';
-    roleSelect.innerHTML = currentRoles.map(role => 
-        `<option value="${role.role_key}" ${role.role_key == currentRoleKey ? 'selected' : ''}>
-            ${role.role_name}
-        </option>`
-    ).join('');
-    
-    // Replace role display with select
-    roleCell.innerHTML = '';
-    roleCell.appendChild(roleSelect);
-    
-    // Update actions to show save/cancel
-    actionsCell.innerHTML = `
-        <div class="user-actions">
-            <button class="btn-icon btn-save" onclick="saveUserRole(${userId})" title="Save Changes">
-                ✓
-            </button>
-            <button class="btn-icon btn-cancel" onclick="cancelEditUserRole(${userId})" title="Cancel">
-                ✕
-            </button>
-        </div>
-    `;
-    
-    roleSelect.focus();
-}
-
-function cancelEditUserRole(userId) {
-    // Reload the users to reset the UI
-    const user = allUsers.find(u => u.user_key == userId);
-    if (user) {
-        const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-        if (row) {
-            const primaryRole = user.roles && user.roles.length > 0 ? user.roles[0] : 'User';
-            const primaryRoleKey = user.role_keys && user.role_keys.length > 0 ? user.role_keys[0] : 2;
-            const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, '');
-            
-            const roleCell = row.querySelector('td:nth-child(4)');
-            const actionsCell = row.querySelector('td:nth-child(6)');
-            
-            roleCell.innerHTML = `
-                <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}">
-                    ${primaryRole}
-                </span>
-            `;
-            
-            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-            const isCurrentUser = currentUser.username === user.username;
-            
-            actionsCell.innerHTML = `
-                <div class="user-actions">
-                    <button class="btn-icon btn-edit" onclick="editUserRole(${userId})" title="Edit Role" ${isCurrentUser ? 'disabled' : ''}>
-                        ✏️
-                    </button>
-                    <button class="btn-icon btn-delete" onclick="deleteUser(${userId}, '${user.username}')" title="Delete User" ${isCurrentUser ? 'disabled' : ''}>
-                        🗑️
-                    </button>
-                </div>
-            `;
-        }
-    }
-}
-
-async function saveUserRole(userId) {
-    try {
-        const row = document.querySelector(`tr[data-user-id="${userId}"]`);
-        if (!row) return;
-        
-        const roleSelect = row.querySelector('.role-select');
-        const newRoleKey = roleSelect.value;
-        
-        if (!newRoleKey) {
-            window.modalManager.showModal('error', 'Please select a role.');
-            return;
-        }
-        
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${API_URL}/api/users/${userId}/role`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ roleKey: newRoleKey })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            // Update the user in allUsers array
-            const userIndex = allUsers.findIndex(u => u.user_key == userId);
-            if (userIndex !== -1) {
-                const selectedRole = currentRoles.find(r => r.role_key == newRoleKey);
-                if (selectedRole) {
-                    allUsers[userIndex].roles = [selectedRole.role_name];
-                    allUsers[userIndex].role_keys = [selectedRole.role_key];
-                }
-            }
-            
-            // Refresh the display with current sort maintained
-            const sortedUsers = getSortedUsers();
-            displayUsers(sortedUsers);
-            
-            window.modalManager.showModal('success', `User role updated successfully to ${currentRoles.find(r => r.role_key == newRoleKey)?.role_name || 'Unknown'}.`);
-        } else {
-            throw new Error(result.error || 'Failed to update user role');
-        }
-        
-    } catch (error) {
-        console.error('Error updating user role:', error);
-        cancelEditUserRole(userId);
-        
-        const errorMessage = error.message.includes('admin privileges') 
-            ? 'You cannot remove admin privileges from your own account.' 
-            : error.message || 'Failed to update user role. Please try again.';
-            
-        window.modalManager.showModal('error', errorMessage);
-    }
-}
-
-async function deleteUser(userId, username) {
-    // Prevent multiple simultaneous delete operations
-    if (deleteUser.isDeleting) {
-        return;
-    }
-    
-    try {
-        deleteUser.isDeleting = true;
-        
-        // Show confirmation modal
-        const confirmDelete = await showDeleteUserModal(username);
-        if (!confirmDelete) {
-            deleteUser.isDeleting = false;
-            return;
-        }
-        
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${API_URL}/api/users/${userId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok) {
-            // Remove user from allUsers array
-            allUsers = allUsers.filter(u => u.user_key != userId);
-            
-            // Refresh the display with current sort maintained
-            const sortedUsers = getSortedUsers();
-            displayUsers(sortedUsers);
-            
-            window.modalManager.showModal('success', `User "${username}" has been successfully deleted from the system.`);
-        } else {
-            throw new Error(result.error || 'Failed to delete user');
-        }
-          } catch (error) {
-        console.error('Error deleting user:', error);
-        
-        const errorMessage = error.message.includes('your own account') 
-            ? 'You cannot delete your own account.' 
-            : error.message || 'Failed to delete user. Please try again.';
-            
-        window.modalManager.showModal('error', errorMessage);
-    } finally {
-        deleteUser.isDeleting = false;
-    }
-}
-
-function showDeleteUserModal(username) {
-    return new Promise((resolve) => {
-        // Prevent duplicate modals
-        const existingModal = document.querySelector('.modal-overlay');
-        if (existingModal) {
-            return resolve(null);
-        }
-        
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>⚠️ Delete User Account</h3>
-                </div>
-                <div class="modal-body">
-                    <p><strong>Are you sure you want to delete the user "${username}"?</strong></p>
-                    <p style="color: #dc3545; margin-top: 1rem; font-size: 0.9rem;">This action cannot be undone. The user account and all associated data will be permanently removed from the system.</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="modal-btn secondary" id="cancelDeleteUser">Cancel</button>
-                    <button class="modal-btn danger" id="confirmDeleteUser">Delete User</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        // Focus on the modal for accessibility
-        modal.focus();
-        
-        // Set up event handlers
-        const cancelHandler = () => {
-            document.body.removeChild(modal);
-            resolve(false);
-        };
-        
-        const confirmHandler = () => {
-            document.body.removeChild(modal);
-            resolve(true);
-        };
-        
-        document.getElementById('cancelDeleteUser').addEventListener('click', cancelHandler);
-        document.getElementById('confirmDeleteUser').addEventListener('click', confirmHandler);
-        
-        // Keyboard support
-        modal.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                cancelHandler();
-            } else if (e.key === 'Enter') {
-                confirmHandler();
-            }
-        });
-        
-        // Close on background click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                cancelHandler();
-            }
-        });
-    });
-}
-
-// Password Strength Functions
-function addPasswordStrengthIndicator(passwordElement) {
-    if (!passwordElement) return;
-    
-    const formGroup = passwordElement.closest('.form-group');
-    if (!formGroup) return;
-    
-    // Check if indicator already exists
-    if (formGroup.querySelector('.password-strength-container')) return;
-    
-    // Create password strength container
-    const strengthContainer = document.createElement('div');
-    strengthContainer.className = 'password-strength-container';
-    
-    // Create strength bar
-    const strengthBar = document.createElement('div');
-    strengthBar.className = 'password-strength-bar';
-    
-    const strengthFill = document.createElement('div');
-    strengthFill.className = 'password-strength-fill';
-    strengthBar.appendChild(strengthFill);
-    
-    // Create strength text
-    const strengthText = document.createElement('div');
-    strengthText.className = 'password-strength-text';
-    strengthText.textContent = 'Password Strength: ';
-    
-    // Create requirements list
-    const requirementsContainer = document.createElement('div');
-    requirementsContainer.className = 'password-requirements';
-    
-    const requirementTitle = document.createElement('div');
-    requirementTitle.className = 'requirement-title';
-    requirementTitle.textContent = 'Password Requirements:';
-    
-    const requirements = [
-        'At least 8 characters long',
-        'At least one uppercase letter (A-Z)',
-        'At least one lowercase letter (a-z)', 
-        'At least one number (0-9)',
-        'At least one special character (!@#$%...)',
-        'No spaces allowed'
-    ];
-    
-    requirementsContainer.appendChild(requirementTitle);
-    requirements.forEach(req => {
-        const reqElement = document.createElement('div');
-        reqElement.className = 'requirement';
-        reqElement.textContent = `• ${req}`;
-        requirementsContainer.appendChild(reqElement);
-    });
-    
-    // Assemble the strength indicator
-    strengthContainer.appendChild(strengthText);
-    strengthContainer.appendChild(strengthBar);
-    strengthContainer.appendChild(requirementsContainer);
-    
-    // Insert after the password field
-    const fieldNote = formGroup.querySelector('.field-note');
-    if (fieldNote) {
-        formGroup.insertBefore(strengthContainer, fieldNote.nextSibling);
-    } else {
-        formGroup.appendChild(strengthContainer);
-    }
-}
-
-function updatePasswordStrength(password, inputId) {
-    const passwordElement = document.getElementById(inputId);
-    if (!passwordElement) return;
-    
-    const formGroup = passwordElement.closest('.form-group');
-    const strengthContainer = formGroup.querySelector('.password-strength-container');
-    
-    if (!strengthContainer) return;
-    
-    const strengthFill = strengthContainer.querySelector('.password-strength-fill');
-    const strengthText = strengthContainer.querySelector('.password-strength-text');
-    const requirements = strengthContainer.querySelectorAll('.requirement');
-    
-    if (!password) {
-        // Reset when password is empty
-        strengthFill.style.width = '0%';
-        strengthFill.style.backgroundColor = '#e9ecef';
-        strengthText.textContent = 'Password Strength: ';
-        passwordElement.classList.remove('password-strong', 'password-weak', 'password-invalid');
-        
-        requirements.forEach(req => {
-            req.style.color = '#495057';
-        });
-        return;
-    }
-    
-    const validation = validatePasswordStrength(password);
-    const score = calculatePasswordScore(password);
-    
-    // Update strength bar
-    let strength = 'Very Weak';
-    let color = '#dc3545';
-    let width = '20%';
-    
-    if (score >= 80) {
-        strength = 'Very Strong';
-        color = '#28a745';
-        width = '100%';
-        passwordElement.classList.remove('password-weak', 'password-invalid');
-        passwordElement.classList.add('password-strong');
-    } else if (score >= 60) {
-        strength = 'Strong';
-        color = '#20c997';
-        width = '80%';
-        passwordElement.classList.remove('password-weak', 'password-invalid');
-        passwordElement.classList.add('password-strong');
-    } else if (score >= 40) {
-        strength = 'Medium';
-        color = '#ffc107';
-        width = '60%';
-        passwordElement.classList.remove('password-strong', 'password-invalid');
-        passwordElement.classList.add('password-weak');
-    } else if (score >= 20) {
-        strength = 'Weak';
-        color = '#fd7e14';
-        width = '40%';
-        passwordElement.classList.remove('password-strong', 'password-invalid');
-        passwordElement.classList.add('password-weak');
-    } else {
-        strength = 'Very Weak';
-        color = '#dc3545';
-        width = '20%';
-        passwordElement.classList.remove('password-strong', 'password-weak');
-        passwordElement.classList.add('password-invalid');
-    }
-    
-    strengthFill.style.width = width;
-    strengthFill.style.backgroundColor = color;
-    strengthText.textContent = `Password Strength: ${strength}`;
-    
-    // Update individual requirements
-    if (requirements.length >= 6) {
-        requirements[0].style.color = password.length >= 8 ? '#28a745' : '#dc3545';
-        requirements[1].style.color = /[A-Z]/.test(password) ? '#28a745' : '#dc3545';
-        requirements[2].style.color = /[a-z]/.test(password) ? '#28a745' : '#dc3545';
-        requirements[3].style.color = /[0-9]/.test(password) ? '#28a745' : '#dc3545';
-        requirements[4].style.color = /[!@#$%^&*(),.?":{}|<>]/.test(password) ? '#28a745' : '#dc3545';
-        requirements[5].style.color = !/\s/.test(password) ? '#28a745' : '#dc3545';
-    }
-}
-
-function validatePasswordStrength(password) {
-    const failed = [];
-    let isValid = true;
-    
-    if (!password) {
-        return { isValid: false, failed: ['Password is required'] };
-    }
-    
-    if (password.length < 8) {
-        failed.push('Password must be at least 8 characters long');
-        isValid = false;
-    }
-    
-    if (!/[A-Z]/.test(password)) {
-        failed.push('Password must contain at least one uppercase letter');
-        isValid = false;
-    }
-    
-    if (!/[a-z]/.test(password)) {
-        failed.push('Password must contain at least one lowercase letter');
-        isValid = false;
-    }
-    
-    if (!/[0-9]/.test(password)) {
-        failed.push('Password must contain at least one number');
-        isValid = false;
-    }
-    
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-        failed.push('Password must contain at least one special character (!@#$%^&*...)');
-        isValid = false;
-    }
-    
-    if (/\s/.test(password)) {
-        failed.push('Password cannot contain spaces');
-        isValid = false;
-    }
-    
-    // Check for common passwords
-    const commonPasswords = [
-        'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
-        'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
-    ];
-    
-    if (commonPasswords.some(common => password.toLowerCase() === common.toLowerCase())) {
-        failed.push('Password is too common - please choose a stronger password');
-        isValid = false;
-    }
-    
-    return { isValid, failed };
-}
-
-function calculatePasswordScore(password) {
-    let score = 0;
-    
-    // Length scoring
-    if (password.length >= 8) score += 20;
-    if (password.length >= 12) score += 10;
-    if (password.length >= 16) score += 10;
-    
-    // Character type scoring
-    if (/[a-z]/.test(password)) score += 10;
-    if (/[A-Z]/.test(password)) score += 10;
-    if (/[0-9]/.test(password)) score += 10;
-    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 15;
-    
-    // Complexity bonus
-    const charTypes = [
-        /[a-z]/.test(password),
-        /[A-Z]/.test(password),
-        /[0-9]/.test(password),
-        /[!@#$%^&*(),.?":{}|<>]/.test(password)
-    ].filter(Boolean).length;
-    
-    if (charTypes >= 3) score += 10;
-    if (charTypes === 4) score += 5;
-    
-    // Penalties
-    if (/\s/.test(password)) score -= 20;
-    if (password.length < 8) score -= 30;
-    
-    // Common password penalty
-    const commonPasswords = [
-        'password', 'password123', '123456', '123456789', 'qwerty', 'abc123',
-        'Password1', 'password1', 'admin', 'administrator', 'welcome', 'login'
-    ];
-    
-    if (commonPasswords.some(common => password.toLowerCase() === common.toLowerCase())) {
-        score -= 50;
-    }
-    
-    return Math.max(0, Math.min(100, score));
+function deletePatient(patientId, patientName) {
+    console.log('Delete patient functionality not yet implemented for ID:', patientId);
+    window.modalManager.showModal('info', 'Patient deletion functionality will be implemented in a future update.');
 }
