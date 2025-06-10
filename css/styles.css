@@ -2557,6 +2557,12 @@ login-form input.password-mismatch {
     border: 1px solid #f5c6cb;
 }
 
+.status-badge.error {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
 .security-description {
     color: #666;
     margin: 0.5rem 0 1rem 0;
@@ -2571,6 +2577,15 @@ login-form input.password-mismatch {
     font-style: italic;
     color: #666;
     margin-bottom: 1rem;
+}
+
+.security-note.error {
+    color: #856404;
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    padding: 0.75rem;
+    font-style: normal;
 }
 
 .setup-date {

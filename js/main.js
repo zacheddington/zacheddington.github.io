@@ -752,6 +752,9 @@ function initializeProfilePage() {
     // Load user data into form
     loadUserProfile();
     
+    // Load 2FA status
+    load2FAStatus();
+    
     // Set initial profile editing state
     setProfileEditingState(false);
     
@@ -1321,6 +1324,202 @@ function cancelProfileEditing() {
     
     // Clear stored original data
     delete window.originalProfileData;
+}
+
+// 2FA Profile Page Functions
+async function load2FAStatus() {
+    try {
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        // Check if user is logged in
+        if (!token) {
+            console.error('No authentication token found');
+            update2FAStatus(false, null, 'Please log in to view 2FA settings');
+            return;
+        }
+        
+        const response = await fetch(`${API_URL}/api/2fa/status`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            update2FAStatus(data.enabled, data.setupDate);
+        } else {
+            console.error('Failed to load 2FA status:', response.status, response.statusText);
+            if (response.status === 401) {
+                update2FAStatus(false, null, 'Authentication expired. Please log in again.');
+            } else {
+                update2FAStatus(false);
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error loading 2FA status:', error);
+        update2FAStatus(false, null, 'Unable to load 2FA status. Please check your connection.');
+    }
+}
+
+function update2FAStatus(enabled, setupDate = null, errorMessage = null) {
+    const statusBadge = document.getElementById('twofaStatus');
+    const actionsContainer = document.getElementById('twofaActions');
+    
+    if (!statusBadge || !actionsContainer) {
+        console.error('2FA elements not found on page');
+        return;
+    }
+    
+    if (errorMessage) {
+        statusBadge.textContent = 'Error';
+        statusBadge.className = 'status-badge error';
+        
+        actionsContainer.innerHTML = `
+            <p class="security-note error">${errorMessage}</p>
+        `;
+        return;
+    }
+    
+    if (enabled) {
+        statusBadge.textContent = 'Enabled';
+        statusBadge.className = 'status-badge enabled';
+        
+        let setupInfo = '';
+        if (setupDate) {
+            const date = new Date(setupDate);
+            setupInfo = `<p class="setup-date">Enabled on: ${date.toLocaleDateString()}</p>`;
+        }
+        
+        actionsContainer.innerHTML = `
+            ${setupInfo}
+            <button class="secondary-btn" onclick="disable2FA()" id="disable2FABtn">Disable 2FA</button>
+        `;
+    } else {
+        statusBadge.textContent = 'Disabled';
+        statusBadge.className = 'status-badge disabled';
+        
+        actionsContainer.innerHTML = `
+            <p class="security-note">2FA is not currently enabled for your account.</p>
+            <button class="primary-btn" onclick="setup2FA()" id="setup2FABtn">Enable 2FA</button>
+        `;
+    }
+}
+
+function setup2FA() {
+    // Redirect to the 2FA setup page
+    window.location.href = '../2fa-setup/';
+}
+
+async function disable2FA() {
+    try {
+        // Show password confirmation modal
+        const password = await show2FAPasswordModal();
+        if (!password) {
+            return; // User cancelled
+        }
+        
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/2fa/disable`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ currentPassword: password })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Update the UI to reflect disabled status
+            update2FAStatus(false);
+            window.modalManager.showModal('success', '2FA has been successfully disabled for your account.');
+        } else {
+            throw new Error(result.error || 'Failed to disable 2FA');
+        }
+        
+    } catch (error) {
+        console.error('Error disabling 2FA:', error);
+        window.modalManager.showModal('error', error.message || 'Failed to disable 2FA. Please try again.');
+    }
+}
+
+function show2FAPasswordModal() {
+    return new Promise((resolve) => {
+        // Prevent duplicate modals
+        const existingModal = document.querySelector('.modal-overlay');
+        if (existingModal) {
+            return resolve(null);
+        }
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🔒 Disable Two-Factor Authentication</h3>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Enter your current password to disable 2FA:</strong></p>
+                    <div class="form-group">
+                        <input type="password" id="disable2FAPassword" placeholder="Current Password" style="width: 100%; padding: 12px; border: 2px solid #b2dfdb; border-radius: 6px; font-size: 1rem;">
+                    </div>
+                    <p style="color: #dc3545; margin-top: 1rem; font-size: 0.9rem;">⚠️ Warning: Disabling 2FA will reduce your account security. You will only need your password to log in.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn secondary" id="cancel2FADisable">Cancel</button>
+                    <button class="modal-btn danger" id="confirm2FADisable">Disable 2FA</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const passwordInput = document.getElementById('disable2FAPassword');
+        passwordInput.focus();
+        
+        // Set up event handlers
+        const cancelHandler = () => {
+            document.body.removeChild(modal);
+            resolve(null);
+        };
+        
+        const confirmHandler = () => {
+            const password = passwordInput.value.trim();
+            if (!password) {
+                passwordInput.style.borderColor = '#dc3545';
+                passwordInput.focus();
+                return;
+            }
+            document.body.removeChild(modal);
+            resolve(password);
+        };
+        
+        document.getElementById('cancel2FADisable').addEventListener('click', cancelHandler);
+        document.getElementById('confirm2FADisable').addEventListener('click', confirmHandler);
+        
+        // Keyboard support
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                cancelHandler();
+            } else if (e.key === 'Enter') {
+                confirmHandler();
+            }
+        });
+        
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                cancelHandler();
+            }
+        });
+    });
 }
 
 // Admin Page Functionality
@@ -2518,7 +2717,7 @@ function showDeleteUserModal(username) {
         // Prevent duplicate modals
         const existingModal = document.querySelector('.modal-overlay');
         if (existingModal) {
-            return resolve(false);
+            return resolve(null);
         }
         
         const modal = document.createElement('div');
