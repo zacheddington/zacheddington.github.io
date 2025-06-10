@@ -1528,6 +1528,11 @@ button[type="submit"]:disabled,
     background: #d32f2f;
 }
 
+/* Hide Close button in success modals */
+.modal-content.success .modal-btn {
+    display: none !important;
+}
+
 /* Logout Modal Styles */
 .logout-modal {
     position: fixed;
