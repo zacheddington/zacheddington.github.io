@@ -31,7 +31,16 @@ function updateAdminMenuItem(isAdmin) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {    // Detect if running locally or in production
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🟣 DOM LOADED - Starting main.js initialization', {
+        currentPath: window.location.pathname,
+        token: localStorage.getItem('token') ? 'EXISTS' : 'MISSING',
+        user: localStorage.getItem('user') ? 'EXISTS' : 'MISSING',
+        authRedirect: sessionStorage.getItem('authRedirect'),
+        loginInProgress: sessionStorage.getItem('loginInProgress')
+    });
+    
+    // Detect if running locally or in production
     const hostname = window.location.hostname;
     const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '';
     const API_URL = isLocal ? 'http://localhost:3000' : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
@@ -40,17 +49,38 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
     const currentPath = window.location.pathname;
     const isLoginPage = currentPath === '/' || currentPath === '/index.html' || currentPath === '';
     
-    // SECURITY FIX: Always clear authentication data when user visits login page
+    console.log('🟣 PAGE CHECK', {
+        currentPath,
+        isLoginPage,
+        hasLoginForm: !!document.getElementById('loginForm')
+    });
+      // SECURITY FIX: Always clear authentication data when user visits login page
     // This prevents users from using back button to bypass authentication
-    if (isLoginPage && document.getElementById('loginForm')) {    // Check if this is a direct navigation to login page (not a redirect from auth.js)
+    if (isLoginPage && document.getElementById('loginForm')) {
+        console.log('🟣 ENTERING LOGIN PAGE LOGIC', {
+            isLoginPage,
+            hasLoginForm: !!document.getElementById('loginForm'),
+            authRedirect: sessionStorage.getItem('authRedirect'),
+            loginInProgress: sessionStorage.getItem('loginInProgress'),
+            token: localStorage.getItem('token') ? 'EXISTS' : 'MISSING'
+        });// Check if this is a direct navigation to login page (not a redirect from auth.js)
         const isDirectNavigation = !sessionStorage.getItem('authRedirect');
         
         // Only clear auth data if this is direct navigation AND there's existing auth data
         // BUT NOT if a login is currently in progress
         const hasExistingAuthData = localStorage.getItem('token') || localStorage.getItem('user');
         const isLoginInProgress = sessionStorage.getItem('loginInProgress');
-        
-        if (isDirectNavigation && hasExistingAuthData && !isLoginInProgress) {
+          if (isDirectNavigation && hasExistingAuthData && !isLoginInProgress) {
+            console.log('🔴 CLEARING AUTH DATA - Direct navigation detected', {
+                isDirectNavigation,
+                hasExistingAuthData,
+                isLoginInProgress,
+                token: localStorage.getItem('token') ? 'EXISTS' : 'MISSING',
+                user: localStorage.getItem('user') ? 'EXISTS' : 'MISSING',
+                authRedirect: sessionStorage.getItem('authRedirect'),
+                loginInProgress: sessionStorage.getItem('loginInProgress')
+            });
+            
             // Clear all authentication data to force fresh login
             localStorage.removeItem('token');
             localStorage.removeItem('user');
@@ -68,10 +98,20 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                 window.history.replaceState(null, document.title, window.location.pathname);
             }
             
-            console.log('Direct navigation to login page detected with existing auth data - cleared authentication data');        } else {
+            console.log('🔴 AUTH DATA CLEARED - Direct navigation to login page detected');        } else {
+            console.log('🟢 PRESERVING AUTH STATE', {
+                isDirectNavigation,
+                hasExistingAuthData,
+                isLoginInProgress,
+                token: localStorage.getItem('token') ? 'EXISTS' : 'MISSING',
+                user: localStorage.getItem('user') ? 'EXISTS' : 'MISSING',
+                authRedirect: sessionStorage.getItem('authRedirect'),
+                loginInProgress: sessionStorage.getItem('loginInProgress')
+            });
+            
             // Remove the redirect flag since we've handled it
             sessionStorage.removeItem('authRedirect');
-            console.log('Legitimate auth redirect detected - preserving auth state');
+            console.log('🟢 Legitimate auth redirect detected - preserving auth state');
         }
         
         // Additional security: Prevent caching of authenticated pages
@@ -137,16 +177,28 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
             event.preventDefault();
             window.history.replaceState(null, document.title, window.location.pathname);
             console.log('Back button blocked on login page');
-        });
-        
-        // Monitor for navigation attempts
+        });        // Monitor for navigation attempts
         window.addEventListener('beforeunload', function(event) {
-            // Clear any remaining authentication data when leaving login page
-            if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+            console.log('🟠 BEFOREUNLOAD EVENT', {
+                currentPath: window.location.pathname,
+                loginInProgress: sessionStorage.getItem('loginInProgress'),
+                successfulLoginNavigation: sessionStorage.getItem('successfulLoginNavigation'),
+                token: localStorage.getItem('token') ? 'EXISTS' : 'MISSING'
+            });
+            
+            // Only clear auth data if:
+            // 1. We're on the login page AND
+            // 2. No successful login navigation is in progress
+            if ((window.location.pathname === '/' || window.location.pathname === '/index.html') && 
+                !sessionStorage.getItem('successfulLoginNavigation')) {
+                
+                console.log('🟠 CLEARING AUTH DATA ON BEFOREUNLOAD - User leaving login page');
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 localStorage.removeItem('activeSession');
                 sessionStorage.clear();
+            } else {
+                console.log('🟠 PRESERVING AUTH DATA ON BEFOREUNLOAD - Successful login navigation in progress');
             }
         });
         
@@ -384,11 +436,20 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     
                     return; // Exit early, don't process as login success or error
                 }
-                
-                if (response.ok && data.token) {
+                  if (response.ok && data.token) {
+                    console.log('🟢 LOGIN SUCCESS - Storing auth data', {
+                        token: data.token ? 'RECEIVED' : 'MISSING',
+                        user: data.user ? 'RECEIVED' : 'MISSING'
+                    });
+                    
                     // Store authentication data
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));                    // Initialize session management - ensure proper session creation
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    console.log('🟢 AUTH DATA STORED', {
+                        token: localStorage.getItem('token') ? 'STORED' : 'FAILED',
+                        user: localStorage.getItem('user') ? 'STORED' : 'FAILED'
+                    });// Initialize session management - ensure proper session creation
                     try {
                         if (window.SessionManager && typeof window.SessionManager.initSession === 'function') {                            window.SessionManager.initSession();
                             
@@ -436,9 +497,24 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                     }
                       // Use utility function to check admin status and update UI
                     const isAdmin = isUserAdmin(data.user);
-                    updateAdminUI(isAdmin);
-                      // Add a delay to ensure all data is persisted and session is initialized before navigation                    document.body.classList.add('fade-out');
-                    setTimeout(() => {
+                    updateAdminUI(isAdmin);                    // Add a delay to ensure all data is persisted and session is initialized before navigation
+                    console.log('🟢 PREPARING NAVIGATION', {
+                        token: localStorage.getItem('token') ? 'EXISTS' : 'MISSING',
+                        user: localStorage.getItem('user') ? 'EXISTS' : 'MISSING',
+                        sessionData: window.SessionManager ? window.SessionManager.getSessionData() : 'NO_SESSION_MANAGER',
+                        currentTabId: sessionStorage.getItem('currentTabId')
+                    });
+                    
+                    document.body.classList.add('fade-out');
+                    setTimeout(() => {                        console.log('🟢 NAVIGATING TO WELCOME - Final auth check', {
+                            token: localStorage.getItem('token') ? 'EXISTS' : 'MISSING',
+                            user: localStorage.getItem('user') ? 'EXISTS' : 'MISSING',
+                            loginInProgress: sessionStorage.getItem('loginInProgress')
+                        });
+                        
+                        // Set flag to indicate successful login navigation in progress
+                        sessionStorage.setItem('successfulLoginNavigation', 'true');
+                        
                         // Clear login in progress flag before navigation
                         sessionStorage.removeItem('loginInProgress');
                         window.location.href = "welcome/";
