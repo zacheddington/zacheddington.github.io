@@ -462,8 +462,7 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
         patientNumberInput.addEventListener('focus', function() {
             tooltip.classList.remove('show');
         });
-    }
-      // Initialize profile page if we're on it
+    }    // Initialize profile page if we're on it
     if (window.location.pathname.includes('/profile/')) {
         initializeProfilePage();
     }
@@ -471,6 +470,11 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
     // Initialize admin page if we're on it
     if (window.location.pathname.includes('/admin/')) {
         initializeAdminPage();
+    }
+    
+    // Initialize force password change page if we're on it
+    if (window.location.pathname.includes('/force-password-change/')) {
+        initializeForcePasswordChangePage();
     }
 });
 
@@ -1336,6 +1340,77 @@ function initializeAdminPage() {
     // Load hamburger menu
     if (document.getElementById('hamburger-menu')) {
         loadMenu();
+    }
+}
+
+// Force Password Change Page Functionality
+function initializeForcePasswordChangePage() {
+    const newPassword = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmPassword');
+    
+    if (newPassword && confirmPassword) {
+        // Add password strength indicator for new password field
+        addPasswordStrengthIndicator(newPassword);
+        
+        // Real-time password confirmation validation
+        confirmPassword.addEventListener('input', function() {
+            validateForcePasswordMatch();
+            // Update field states
+            if (window.fieldStateManager) {
+                window.fieldStateManager.updateFieldState(confirmPassword);
+            }
+        });
+        
+        newPassword.addEventListener('input', function() {
+            validateForcePasswordMatch();
+            updatePasswordStrength(newPassword.value, newPassword.id);
+            // Update field states
+            if (window.fieldStateManager) {
+                window.fieldStateManager.updateFieldState(newPassword);
+            }
+        });
+    }
+}
+
+function validateForcePasswordMatch() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPasswordElement = document.getElementById('confirmPassword');
+    const confirmPassword = confirmPasswordElement.value;
+    const confirmGroup = confirmPasswordElement.closest('.form-group');
+    
+    // Remove existing error/success classes and messages
+    confirmGroup.classList.remove('error', 'success');
+    confirmPasswordElement.classList.remove('password-match', 'password-mismatch');
+    const existingMessage = confirmGroup.querySelector('.error-message, .success-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    if (confirmPassword && newPassword) {
+        if (newPassword === confirmPassword) {
+            confirmGroup.classList.add('success');
+            confirmPasswordElement.classList.add('password-match');
+            const successMsg = document.createElement('div');
+            successMsg.className = 'success-message';
+            successMsg.textContent = 'Passwords match';
+            confirmGroup.appendChild(successMsg);
+        } else {
+            confirmGroup.classList.add('error');
+            confirmPasswordElement.classList.add('password-mismatch');
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message';
+            errorMsg.textContent = 'Passwords do not match';
+            confirmGroup.appendChild(errorMsg);
+        }
+    }
+    
+    // Update field states using the field state manager
+    if (window.fieldStateManager) {
+        window.fieldStateManager.updateFieldState(confirmPasswordElement);
+        const newPasswordElement = document.getElementById('newPassword');
+        if (newPasswordElement) {
+            window.fieldStateManager.updateFieldState(newPasswordElement);
+        }
     }
 }
 
@@ -2212,7 +2287,6 @@ function cancelEditUserRole(userId) {
                     </button>
                     <button class="btn-icon btn-delete" onclick="deleteUser(${userId}, '${user.username}')" title="Delete User" ${isCurrentUser ? 'disabled' : ''}>
                         🗑️
-                   
                     </button>
                 </div>
             `;
