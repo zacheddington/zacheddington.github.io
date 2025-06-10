@@ -42,28 +42,36 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
     
     // SECURITY FIX: Always clear authentication data when user visits login page
     // This prevents users from using back button to bypass authentication
-    if (isLoginPage && document.getElementById('loginForm')) {
-        // Check if this is a direct navigation to login page (not a redirect from auth.js)
+    if (isLoginPage && document.getElementById('loginForm')) {    // Check if this is a direct navigation to login page (not a redirect from auth.js)
         const isDirectNavigation = !sessionStorage.getItem('authRedirect');
         
-        if (isDirectNavigation) {
+        // Only clear auth data if this is direct navigation AND there's existing auth data
+        // BUT NOT if a login is currently in progress
+        const hasExistingAuthData = localStorage.getItem('token') || localStorage.getItem('user');
+        const isLoginInProgress = sessionStorage.getItem('loginInProgress');
+        
+        if (isDirectNavigation && hasExistingAuthData && !isLoginInProgress) {
             // Clear all authentication data to force fresh login
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             localStorage.removeItem('loginTimestamp');
             localStorage.removeItem('activeSession');
             localStorage.removeItem('lastTabId');
-            sessionStorage.clear();
+            
+            // Clear specific sessionStorage items that could allow bypassing auth
+            sessionStorage.removeItem('currentTabId');
+            sessionStorage.removeItem('tabCloseTime');
+            sessionStorage.removeItem('loginFlowActive');
             
             // Clear browser history state to prevent back button access
             if (window.history && window.history.replaceState) {
                 window.history.replaceState(null, document.title, window.location.pathname);
             }
             
-            console.log('Direct navigation to login page detected - cleared all authentication data');
-        } else {
+            console.log('Direct navigation to login page detected with existing auth data - cleared authentication data');        } else {
             // Remove the redirect flag since we've handled it
             sessionStorage.removeItem('authRedirect');
+            console.log('Legitimate auth redirect detected - preserving auth state');
         }
         
         // Additional security: Prevent caching of authenticated pages
@@ -285,6 +293,9 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
         // Handle "Back to Login" button
         const backToLoginBtn = document.getElementById('backToLogin');
         if (backToLoginBtn) {            backToLoginBtn.addEventListener('click', function() {
+                // Clear login in progress flag when going back to login
+                sessionStorage.removeItem('loginInProgress');
+                
                 // Reset to username/password mode
                 is2FAMode = false;
                 
@@ -309,9 +320,11 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                 // Focus back to username field
                 document.getElementById('username').focus();
             });
-        }
-          loginForm.addEventListener('submit', async function(e) {
+        }        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            // Set login in progress flag to prevent auth clearing during login
+            sessionStorage.setItem('loginInProgress', 'true');
 
             // Close any existing modal before processing new submission
             if (modalManager.isShowingModal) {
@@ -424,9 +437,10 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                       // Use utility function to check admin status and update UI
                     const isAdmin = isUserAdmin(data.user);
                     updateAdminUI(isAdmin);
-                    
-                    // Add a delay to ensure all data is persisted and session is initialized before navigation                    document.body.classList.add('fade-out');
+                      // Add a delay to ensure all data is persisted and session is initialized before navigation                    document.body.classList.add('fade-out');
                     setTimeout(() => {
+                        // Clear login in progress flag before navigation
+                        sessionStorage.removeItem('loginInProgress');
                         window.location.href = "welcome/";
                     }, FADE_DURATION + 200); // Extended delay for robust session persistence
                 } else {
@@ -453,8 +467,10 @@ document.addEventListener('DOMContentLoaded', function() {    // Detect if runni
                 }
             } catch (err) {
                 console.error('Login error:', err);
-                window.modalManager.showModal('error', 'Connection error. Please try again.', true); // Force show error modal
-            } finally {
+                window.modalManager.showModal('error', 'Connection error. Please try again.', true); // Force show error modal            } finally {
+                // Clear login in progress flag
+                sessionStorage.removeItem('loginInProgress');
+                
                 submitBtn.disabled = false;
                 // Restore correct button text based on current mode
                 submitBtn.textContent = is2FAMode ? 'Verify Code' : 'Login';
