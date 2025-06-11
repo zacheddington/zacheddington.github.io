@@ -11,7 +11,8 @@
     "start:monolithic": "node server.js",
     "dev": "nodemon server.js",
     "dev:modular": "nodemon server/index.js",
-    "test:modules": "node server/test-modules.js"
+    "verify:modules": "node verify-modules.js",
+    "test:backend": "node test-complete-backend.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
