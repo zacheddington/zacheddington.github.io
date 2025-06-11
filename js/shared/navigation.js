@@ -27,6 +27,19 @@ async function loadMenu() {
         document.body.appendChild(menuOverlay);
         
         if (hamburgerBtn && sideMenu) {
+            // Close menu function
+            function closeMenu() {
+                sideMenu.classList.remove('open');
+                hamburgerBtn.classList.remove('active');
+                menuOverlay.classList.remove('active');
+                document.body.classList.remove('menu-active');
+            }
+            
+            // Add browser navigation handlers to close menu
+            window.addEventListener('popstate', closeMenu);
+            window.addEventListener('beforeunload', closeMenu);
+            window.addEventListener('pagehide', closeMenu);
+            
             hamburgerBtn.addEventListener('click', function() {
                 const isOpening = !sideMenu.classList.contains('open');
                 sideMenu.classList.toggle('open');
@@ -36,13 +49,6 @@ async function loadMenu() {
             });
 
             // Close menu when clicking outside or on overlay
-            function closeMenu() {
-                sideMenu.classList.remove('open');
-                hamburgerBtn.classList.remove('active');
-                menuOverlay.classList.remove('active');
-                document.body.classList.remove('menu-active');
-            }
-            
             menuOverlay.addEventListener('click', closeMenu);
             
             document.addEventListener('click', function(e) {

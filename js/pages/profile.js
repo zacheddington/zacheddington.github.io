@@ -26,27 +26,79 @@ async function loadUserProfile() {
         
         if (response.ok) {
             const profile = await response.json();
-            
-            // Display user information
-            const userNameElement = document.getElementById('userName');
-            const userEmailElement = document.getElementById('userEmail');
-            const userRoleElement = document.getElementById('userRole');
-            
-            if (userNameElement) {
-                userNameElement.textContent = `${profile.first_name} ${profile.last_name}`;
-            }
-            if (userEmailElement) {
-                userEmailElement.textContent = profile.email;
-            }
-            if (userRoleElement) {
-                userRoleElement.textContent = profile.role || 'User';
-            }
+            displayUserProfile(profile);
         } else {
-            console.error('Failed to load user profile');
+            console.error('Failed to load user profile from API, trying localStorage fallback');
+            loadProfileFromLocalStorage();
         }
     } catch (error) {
-        console.error('Error loading user profile:', error);
+        console.error('Error loading user profile from API, trying localStorage fallback:', error);
+        loadProfileFromLocalStorage();
     }
+}
+
+// Fallback function to load profile from localStorage
+function loadProfileFromLocalStorage() {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        if (userData && (userData.firstName || userData.first_name || userData.username)) {
+            const profile = {
+                first_name: userData.firstName || userData.first_name || 'User',
+                middle_name: userData.middleName || userData.middle_name || '',
+                last_name: userData.lastName || userData.last_name || '',
+                email: userData.email || 'Not available',
+                role: userData.role || 'User',
+                username: userData.username || userData.email || 'Unknown'
+            };
+            
+            displayUserProfile(profile);
+        } else {
+            console.error('No user data available in localStorage');
+            displayProfileError();
+        }
+    } catch (error) {
+        console.error('Error loading user data from localStorage:', error);
+        displayProfileError();
+    }
+}
+
+// Display user profile information
+function displayUserProfile(profile) {
+    const userNameElement = document.getElementById('userName');
+    const userEmailElement = document.getElementById('userEmail');
+    const userRoleElement = document.getElementById('userRole');
+    
+    if (userNameElement) {
+        const fullName = `${profile.first_name || ''} ${profile.middle_name || ''} ${profile.last_name || ''}`.trim();
+        userNameElement.textContent = fullName || profile.username || 'User';
+    }
+    if (userEmailElement) {
+        userEmailElement.textContent = profile.email || 'Not available';
+    }
+    if (userRoleElement) {
+        userRoleElement.textContent = profile.role || 'User';
+    }
+    
+    // Hide loading indicators
+    const loadingElements = document.querySelectorAll('.loading');
+    loadingElements.forEach(el => el.style.display = 'none');
+}
+
+// Display error state when profile cannot be loaded
+function displayProfileError() {
+    const userNameElement = document.getElementById('userName');
+    const userEmailElement = document.getElementById('userEmail');
+    const userRoleElement = document.getElementById('userRole');
+    
+    if (userNameElement) userNameElement.textContent = 'Unable to load';
+    if (userEmailElement) userEmailElement.textContent = 'Unable to load';
+    if (userRoleElement) userRoleElement.textContent = 'Unable to load';
+    
+    // Hide loading indicators
+    const loadingElements = document.querySelectorAll('.loading');
+    loadingElements.forEach(el => el.style.display = 'none');
+}
 }
 
 // Set up password change form functionality
