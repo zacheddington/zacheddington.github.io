@@ -18,19 +18,16 @@
 </head>
 <body>    <div class="welcome-container">
         <div class="login-card">
-            <h1>Welcome to Integris Neuro</h1>            <form id="loginForm">
+            <h1>Welcome to Integris Neuro</h1>            <form id="loginForm" method="post" action="#">
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required autocomplete="email">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required autocomplete="current-password">
                 </div>
                 <button type="submit" id="loginBtn" class="submit-btn">Login</button>
-                <div class="forgot-password">
-                    <a href="#" onclick="window.loginPage.handleForgotPassword()">Forgot your password?</a>
-                </div>
             </form>
         </div>    </div>
 
@@ -46,6 +43,6 @@
     <script src="js/pages/login.js"></script>
     
     <!-- Load main controller -->
-    <script src="js/main-new.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

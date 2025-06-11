@@ -54,19 +54,9 @@ function initializeApp() {
 // Get current page name from URL
 function getCurrentPage() {
     const path = window.location.pathname;
-      // Handle folder-based routing
-    if (path.includes('/admin')) return 'admin.html';
-    if (path.includes('/patients')) return 'patients.html';
-    if (path.includes('/profile')) return 'profile.html';
-    if (path.includes('/force-password')) return 'force-password.html';
-    if (path.includes('/welcome')) return 'welcome.html';
-    if (path.includes('/2fa-setup')) return '2fa-setup.html';
-    if (path.includes('/enter_eeg')) return 'enter_eeg.html';
-    if (path.includes('/view_eeg')) return 'view_eeg.html';
-    
-    // Handle root and direct file access
     const page = path.split('/').pop() || 'index.html';
-    return page === '' ? 'index.html' : page;
+    console.log('🔍 Current path:', path, '→ Page detected:', page);
+    return page;
 }
 
 // Check if page requires authentication
@@ -80,10 +70,14 @@ function initializePage(page) {
     console.log('Initializing page functionality for:', page);
     
     switch(page) {
-        case 'index.html':
         case 'login.html':
+        case 'index.html':
+        case '':
+            console.log('🔐 Detected login page, initializing...');
             if (window.loginPage) {
                 window.loginPage.initializeLoginPage();
+            } else {
+                console.error('❌ window.loginPage not available!');
             }
             break;
             
@@ -104,19 +98,10 @@ function initializePage(page) {
                 window.patientsPage.initializePatientsPage();
             }
             break;
-              case 'profile.html':
+            
+        case 'profile.html':
             if (window.profilePage) {
                 window.profilePage.initializeProfilePage();
-            }
-            break;
-            
-        case 'welcome.html':
-        case '2fa-setup.html':
-        case 'enter_eeg.html':
-        case 'view_eeg.html':
-            // These pages use basic functionality - just load menu
-            if (document.getElementById('hamburger-menu') && window.navigation) {
-                window.navigation.loadMenu();
             }
             break;
             

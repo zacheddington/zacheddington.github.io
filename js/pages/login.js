@@ -3,14 +3,16 @@
 
 // Initialize login page functionality
 function initializeLoginPage() {
+    console.log('🔐 Initializing login page...');
     setupLoginForm();
     clearStoredCredentials();
     
-    // Focus on email field if empty
-    const emailField = document.getElementById('email');
-    if (emailField && !emailField.value) {
-        setTimeout(() => emailField.focus(), 100);
+    // Focus on username field if empty
+    const usernameField = document.getElementById('username');
+    if (usernameField && !usernameField.value) {
+        setTimeout(() => usernameField.focus(), 100);
     }
+    console.log('✅ Login page initialization complete');
 }
 
 // Clear any stored credentials on login page load
@@ -22,14 +24,19 @@ function clearStoredCredentials() {
 
 // Set up login form functionality
 function setupLoginForm() {
+    console.log('📝 Setting up login form...');
     const loginForm = document.getElementById('loginForm');
-    if (!loginForm) return;
+    if (!loginForm) {
+        console.error('❌ Login form not found!');
+        return;
+    }
     
     // Set up field validation
     setupLoginFieldValidation();
     
     // Handle form submission
     loginForm.addEventListener('submit', async function(e) {
+        console.log('🚀 Form submitted, preventing default...');
         e.preventDefault();
         await performLogin();
     });
@@ -39,26 +46,28 @@ function setupLoginForm() {
     if (passwordField) {
         passwordField.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
+                console.log('⏎ Enter key pressed, preventing default...');
                 e.preventDefault();
                 performLogin();
             }
         });
     }
+    console.log('✅ Login form setup complete');
 }
 
 // Set up login form field validation
 function setupLoginFieldValidation() {
-    const emailField = document.getElementById('email');
+    const usernameField = document.getElementById('username');
     const passwordField = document.getElementById('password');
     
-    if (emailField) {
-        emailField.addEventListener('input', function() {
-            window.fieldValidation.updateFieldState(emailField);
+    if (usernameField) {
+        usernameField.addEventListener('input', function() {
+            window.fieldValidation.updateFieldState(usernameField);
             clearLoginErrors();
         });
         
-        emailField.addEventListener('blur', function() {
-            validateEmailField();
+        usernameField.addEventListener('blur', function() {
+            validateUsernameField();
         });
     }
     
@@ -70,15 +79,16 @@ function setupLoginFieldValidation() {
     }
 }
 
-// Validate email field format
-function validateEmailField() {
-    const emailField = document.getElementById('email');
-    if (!emailField || !emailField.value) return;
+// Validate username field format
+function validateUsernameField() {
+    const usernameField = document.getElementById('username');
+    if (!usernameField || !usernameField.value) return;
     
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const isValid = emailRegex.test(emailField.value);
+    // Username validation: should be alphanumeric, underscore, or dash, 3-50 characters
+    const usernameRegex = /^[a-zA-Z0-9_-]{3,50}$/;
+    const isValid = usernameRegex.test(usernameField.value);
     
-    const formGroup = emailField.closest('.form-group');
+    const formGroup = usernameField.closest('.form-group');
     if (!isValid) {
         formGroup.classList.add('error');
         formGroup.classList.remove('success');
@@ -90,7 +100,7 @@ function validateEmailField() {
         // Add error message
         const errorMessage = document.createElement('div');
         errorMessage.className = 'error-message';
-        errorMessage.textContent = 'Please enter a valid email address';
+        errorMessage.textContent = 'Username must be 3-50 characters and contain only letters, numbers, underscore, or dash';
         formGroup.appendChild(errorMessage);
     } else {
         formGroup.classList.remove('error');
@@ -114,20 +124,19 @@ async function performLogin() {
         if (!connectivity.connected) {
             throw new Error(`Connection failed: ${connectivity.error}`);
         }
-        
-        // Get form data
-        const email = document.getElementById('email').value.trim();
+          // Get form data
+        const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
         
         // Validate input
-        if (!email || !password) {
-            throw new Error('Email and password are required.');
+        if (!username || !password) {
+            throw new Error('Username and password are required.');
         }
         
-        // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            throw new Error('Please enter a valid email address.');
+        // Validate username format
+        const usernameRegex = /^[a-zA-Z0-9_-]{3,50}$/;
+        if (!usernameRegex.test(username)) {
+            throw new Error('Please enter a valid username.');
         }
         
         const API_URL = window.apiClient.getAPIUrl();
@@ -137,7 +146,7 @@ async function performLogin() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ username, password })
         });
         
         const result = await response.json();
@@ -238,14 +247,40 @@ function clearLoginErrors() {
     });
 }
 
-// Handle forgot password (placeholder for future implementation)
-function handleForgotPassword() {
-    window.modalManager.showModal('info', 'Password reset functionality will be implemented in a future update. Please contact your administrator for assistance.');
-}
-
 // Expose functions to global scope
 window.loginPage = {
     initializeLoginPage,
-    performLogin,
-    handleForgotPassword
+    performLogin
 };
+
+// Auto-initialize if we're on the login page and DOM is ready
+(function() {
+    console.log('🔄 Login script loaded, setting up immediate initialization...');
+    
+    function immediateInit() {
+        const currentPath = window.location.pathname;
+        const isLoginPage = currentPath === '/' || currentPath.endsWith('index.html') || currentPath.endsWith('login.html');
+        
+        if (isLoginPage && document.getElementById('loginForm')) {
+            console.log('🔐 Immediate login page initialization...');
+            initializeLoginPage();
+            return true;
+        }
+        return false;
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔄 Login page: DOM loaded for immediate init...');
+            if (!immediateInit()) {
+                // Retry after a short delay
+                setTimeout(immediateInit, 50);
+            }
+        });
+    } else {
+        console.log('🔄 Login page: DOM already loaded for immediate init...');
+        if (!immediateInit()) {
+            setTimeout(immediateInit, 50);
+        }
+    }
+})();

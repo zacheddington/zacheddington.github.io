@@ -55,6 +55,7 @@ function initializeApp() {
 function getCurrentPage() {
     const path = window.location.pathname;
     const page = path.split('/').pop() || 'index.html';
+    console.log('🔍 Current path:', path, '→ Page detected:', page);
     return page;
 }
 
@@ -70,8 +71,13 @@ function initializePage(page) {
     
     switch(page) {
         case 'login.html':
+        case 'index.html':
+        case '':
+            console.log('🔐 Detected login page, initializing...');
             if (window.loginPage) {
                 window.loginPage.initializeLoginPage();
+            } else {
+                console.error('❌ window.loginPage not available!');
             }
             break;
             
