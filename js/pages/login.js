@@ -129,16 +129,20 @@ async function performLogin() {
             },
             body: JSON.stringify({ username, password })
         });
-        
-        const result = await response.json();
+          const result = await response.json();
         
         if (response.ok) {
+            // Handle both old and new response formats
+            const responseData = result.data || result; // Support both formats
+            const token = responseData.token;
+            const user = responseData.user;
+            
             // Store authentication data
-            localStorage.setItem('token', result.token);
-            localStorage.setItem('user', JSON.stringify(result.user));
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(user));
             
             // Check if user needs to change password
-            if (result.user.force_password_change) {
+            if (user && user.force_password_change) {
                 // Redirect to force password change page
                 window.location.href = '/force-password.html';
                 return;
