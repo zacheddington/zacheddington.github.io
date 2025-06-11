@@ -9,12 +9,14 @@
     width: 100%;
     height: var(--header-height);
     background: var(--color-white);
-    box-shadow: var(--shadow-md);
+    background-image: linear-gradient(180deg, var(--color-white) 0%, rgba(248, 249, 250, 0.95) 100%);
+    box-shadow: var(--shadow-lg);
     display: flex;
     align-items: center;
     padding: 0 var(--space-lg);
     z-index: var(--z-fixed);
-    border-bottom: var(--border-thin) solid var(--color-border);
+    border-bottom: var(--border-medium) solid var(--color-border-dark);
+    backdrop-filter: blur(10px);
 }
 
 .page-title {

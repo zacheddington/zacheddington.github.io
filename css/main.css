@@ -32,6 +32,7 @@
 @import 'pages/admin.css';
 @import 'pages/patients.css';
 @import 'pages/profile.css';
+@import 'pages/2fa-setup.css';
 
 /* ================================
    5. UTILITIES & RESPONSIVE

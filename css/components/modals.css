@@ -41,6 +41,8 @@
     box-shadow: var(--shadow-xl);
     box-sizing: border-box;
     animation: modalSlideIn var(--transition-normal) var(--ease-out);
+    border: var(--border-medium) solid var(--color-border-dark);
+    backdrop-filter: blur(10px);
 }
 
 /* Modal Type Styling */

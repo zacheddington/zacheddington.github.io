@@ -6,9 +6,10 @@
 .user-filter {
     margin-bottom: var(--space-lg);
     padding: var(--space-md);
-    background: #f8fdff;
+    background: var(--color-white);
     border-radius: var(--radius-lg);
-    border: var(--border-thin) solid var(--color-input-border);
+    border: var(--border-medium) solid var(--color-border-dark);
+    box-shadow: var(--shadow-md);
 }
 
 .user-filter .form-group {
@@ -37,10 +38,11 @@
 .users-table-container {
     background: var(--color-white);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     overflow: hidden;
     width: 100%;
     position: relative;
+    border: var(--border-medium) solid var(--color-border-dark);
 }
 
 /* Table Responsive Wrapper */

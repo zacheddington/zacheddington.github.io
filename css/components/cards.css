@@ -14,7 +14,7 @@
 .option-card {
     background: var(--color-white);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     padding: var(--padding-card);
     text-align: center;
     width: 100%;
@@ -22,13 +22,13 @@
     box-sizing: border-box;
     margin: 0 auto;
     transition: var(--transition-all);
-    border: var(--border-medium) solid var(--color-border);
+    border: var(--border-medium) solid var(--color-border-dark);
 }
 
 .option-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--color-secondary);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary);
 }
 
 .option-card h2 {
@@ -74,17 +74,27 @@
 .admin-choice {
     background: var(--color-white);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     padding: var(--space-xl);
     margin-bottom: var(--space-xl);
+    border: var(--border-medium) solid var(--color-border-dark);
+    transition: var(--transition-all);
+}
+
+.admin-choice:hover {
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary-light);
+    transform: translateY(-1px);
 }
 
 .admin-section {
     background: var(--color-white);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     padding: var(--space-xl);
     margin-top: var(--space-xl);
+    border: var(--border-medium) solid var(--color-border-dark);
+    transition: var(--transition-all);
 }
 
 .admin-section.hidden {
@@ -112,9 +122,16 @@
 .profile-section {
     background: var(--color-white);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
     padding: var(--space-xl);
     margin-bottom: var(--space-xl);
+    border: var(--border-medium) solid var(--color-border-dark);
+    transition: var(--transition-all);
+}
+
+.profile-section:hover {
+    box-shadow: var(--shadow-xl);
+    border-color: var(--color-primary-light);
 }
 
 .profile-section:last-child {
