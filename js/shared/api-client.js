@@ -115,3 +115,10 @@ function categorizeError(error, response = null) {
 window.getAPIUrl = getAPIUrl;
 window.checkConnectivity = checkConnectivity;
 window.categorizeError = categorizeError;
+
+// Create apiClient object for easier access
+window.apiClient = {
+    getAPIUrl: getAPIUrl,
+    checkConnectivity: checkConnectivity,
+    categorizeError: categorizeError
+};
