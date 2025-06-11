@@ -9,9 +9,7 @@
     "start": "node server/index.js",
     "start:modular": "node server/index.js",
     "dev": "nodemon server/index.js",
-    "dev:modular": "nodemon server/index.js",
-    "verify:modules": "node verify-modules.js",
-    "test:backend": "node test-complete-backend.js"
+    "dev:modular": "nodemon server/index.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
