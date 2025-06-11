@@ -244,35 +244,3 @@ window.loginPage = {
     initializeLoginPage,
     performLogin
 };
-
-// Auto-initialize if we're on the login page and DOM is ready
-(function() {
-    console.log('🔄 Login script loaded, setting up immediate initialization...');
-    
-    function immediateInit() {
-        const currentPath = window.location.pathname;
-        const isLoginPage = currentPath === '/' || currentPath.endsWith('index.html') || currentPath.endsWith('login.html');
-        
-        if (isLoginPage && document.getElementById('loginForm')) {
-            console.log('🔐 Immediate login page initialization...');
-            initializeLoginPage();
-            return true;
-        }
-        return false;
-    }
-    
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔄 Login page: DOM loaded for immediate init...');
-            if (!immediateInit()) {
-                // Retry after a short delay
-                setTimeout(immediateInit, 50);
-            }
-        });
-    } else {
-        console.log('🔄 Login page: DOM already loaded for immediate init...');
-        if (!immediateInit()) {
-            setTimeout(immediateInit, 50);
-        }
-    }
-})();
