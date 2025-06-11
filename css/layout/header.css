@@ -23,8 +23,9 @@
     margin: 0;
     font-size: var(--font-size-xl);
     color: var(--color-primary);
-    margin-left: calc(var(--hamburger-size) + var(--space-sm)); /* Space for hamburger menu */
+    margin-left: 70px; /* Fixed spacing to prevent overlap with hamburger */
     font-weight: var(--font-weight-semibold);
+    flex: 1; /* Take remaining space */
 }
 
 /* ================================
@@ -35,7 +36,7 @@
 @media screen and (max-width: 768px) {
     .page-title {
         font-size: var(--font-size-lg);
-        margin-left: calc(var(--hamburger-size) - 5px); /* Adjust for smaller hamburger on mobile */
+        margin-left: 60px; /* Adjust for mobile */
     }
 }
 
@@ -46,6 +47,6 @@
     
     .page-title {
         font-size: var(--font-size-base);
-        margin-left: calc(var(--hamburger-size) - 10px); /* Further adjust for mobile */
+        margin-left: 55px; /* Ensure no overlap on small screens */
     }
 }

@@ -88,15 +88,14 @@
    MENU OVERLAY
    ================================ */
 
-/* Add overlay when menu is open - covers the entire screen for consistent dimming */
-body::after {
-    content: '';
+/* Overlay for dimming content when menu is open - excludes header and sidebar */
+.menu-overlay {
     position: fixed;
-    top: 0;
+    top: var(--header-height); /* Start below header */
     left: 0;
     width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    height: calc(100vh - var(--header-height)); /* Exclude header height */
+    background: rgba(0, 0, 0, 0.3);
     opacity: 0;
     visibility: hidden;
     transition: var(--transition-all);
@@ -104,10 +103,20 @@ body::after {
     pointer-events: none;
 }
 
-body.menu-open::after,
-body.menu-active::after {
+.menu-overlay.active {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
+}
+
+/* Remove the global body overlay */
+body::after {
+    display: none;
+}
+
+body.menu-open::after,
+body.menu-active::after {
+    display: none;
 }
 
 /* ================================

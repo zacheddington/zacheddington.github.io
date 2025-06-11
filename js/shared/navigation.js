@@ -16,24 +16,38 @@ async function loadMenu() {
         }
         
         const menuHTML = await response.text();
-        hamburgerContainer.innerHTML = menuHTML;
-
-        // Add hamburger menu functionality
+        hamburgerContainer.innerHTML = menuHTML;        // Add hamburger menu functionality
         const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const sideMenu = document.getElementById('sideMenu');        if (hamburgerBtn && sideMenu) {
+        const sideMenu = document.getElementById('sideMenu');
+        
+        // Create overlay element for better menu interaction
+        const menuOverlay = document.createElement('div');
+        menuOverlay.className = 'menu-overlay';
+        menuOverlay.id = 'menuOverlay';
+        document.body.appendChild(menuOverlay);
+        
+        if (hamburgerBtn && sideMenu) {
             hamburgerBtn.addEventListener('click', function() {
                 const isOpening = !sideMenu.classList.contains('open');
                 sideMenu.classList.toggle('open');
                 hamburgerBtn.classList.toggle('active');
+                menuOverlay.classList.toggle('active', isOpening);
                 document.body.classList.toggle('menu-active', isOpening);
             });
 
-            // Close menu when clicking outside
+            // Close menu when clicking outside or on overlay
+            function closeMenu() {
+                sideMenu.classList.remove('open');
+                hamburgerBtn.classList.remove('active');
+                menuOverlay.classList.remove('active');
+                document.body.classList.remove('menu-active');
+            }
+            
+            menuOverlay.addEventListener('click', closeMenu);
+            
             document.addEventListener('click', function(e) {
                 if (!hamburgerBtn.contains(e.target) && !sideMenu.contains(e.target)) {
-                    sideMenu.classList.remove('open');
-                    hamburgerBtn.classList.remove('active');
-                    document.body.classList.remove('menu-active');
+                    closeMenu();
                 }
             });
 
