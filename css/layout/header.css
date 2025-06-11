@@ -22,7 +22,7 @@
 
 .page-title {
     margin: 0;
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-2xl);
     color: var(--color-primary);
     font-weight: var(--font-weight-semibold);
     text-align: right; /* Right-align the text */

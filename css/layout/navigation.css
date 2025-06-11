@@ -5,8 +5,8 @@
 /* Hamburger Button */
 .hamburger-btn {
     position: fixed;
-    top: 8px;
-    left: 8px;
+    top: 12px;
+    left: 12px;
     z-index: var(--z-hamburger);
     cursor: pointer;
     padding: 12px;
@@ -23,8 +23,13 @@
 }
 
 .hamburger-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
     transform: translateY(-1px);
+}
+
+.hamburger-btn:hover span {
+    height: 3px;
+    background: var(--color-primary-dark);
 }
 
 .hamburger-btn span {
@@ -69,7 +74,7 @@
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     transition: left var(--transition-normal) var(--ease-out);
     z-index: var(--z-modal); /* Below hamburger button */
-    padding: 80px 20px 20px;
+    padding: 90px 20px 20px;
 }
 
 .side-menu.active,
@@ -114,7 +119,7 @@
     opacity: 0;
     visibility: hidden;
     transition: var(--transition-all);
-    z-index: var(--z-overlay); /* Below sidebar and hamburger */
+    z-index: 500; /* Below sidebar (1000) and hamburger (1002) but above main content */
     pointer-events: none;
 }
 
@@ -141,8 +146,8 @@ body.menu-active::after {
 /* TABLET PORTRAIT (576px - 767px) */
 @media screen and (min-width: 576px) and (max-width: 767px) {
     .hamburger-btn {
-        top: 10px;
-        left: 10px;
+        top: 14px;
+        left: 14px;
         min-width: var(--hamburger-size);
         min-height: var(--hamburger-size);
         padding: 12px;
@@ -150,15 +155,15 @@ body.menu-active::after {
     
     .side-menu {
         width: 280px;
-        padding: 70px 15px 15px;
+        padding: 80px 15px 15px;
     }
 }
 
 /* MOBILE LANDSCAPE (480px - 575px) */
 @media screen and (min-width: 480px) and (max-width: 575px) {
     .hamburger-btn {
-        top: 8px;
-        left: 8px;
+        top: 12px;
+        left: 12px;
         min-width: var(--hamburger-size);
         min-height: var(--hamburger-size);
         padding: 10px;
@@ -170,7 +175,7 @@ body.menu-active::after {
     
     .side-menu {
         width: 260px;
-        padding: 65px 12px 12px;
+        padding: 75px 12px 12px;
     }
     
     .side-menu ul li a {
@@ -181,8 +186,8 @@ body.menu-active::after {
 /* MOBILE PORTRAIT (320px - 479px) */
 @media screen and (max-width: 479px) {
     .hamburger-btn {
-        top: 5px;
-        left: 5px;
+        top: 9px;
+        left: 9px;
         min-width: var(--hamburger-size);
         min-height: var(--hamburger-size);
         padding: 8px;
@@ -195,7 +200,7 @@ body.menu-active::after {
     
     .side-menu {
         width: 240px;
-        padding: 60px 10px 10px;
+        padding: 70px 10px 10px;
     }
     
     .side-menu ul li {
@@ -210,11 +215,11 @@ body.menu-active::after {
 /* Landscape orientation adjustments for mobile */
 @media screen and (max-height: 500px) and (orientation: landscape) {
     .hamburger-btn {
-        top: 5px;
-        left: 5px;
+        top: 9px;
+        left: 9px;
     }
     
     .side-menu {
-        padding-top: 50px;
+        padding-top: 60px;
     }
 }
