@@ -70,7 +70,7 @@
     background: var(--color-white);
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     transition: left var(--transition-normal) var(--ease-out);
-    z-index: 1001; /* Below hamburger button */
+    z-index: var(--z-modal); /* Below hamburger button */
     padding: 80px 20px 20px;
 }
 
