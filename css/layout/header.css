@@ -13,6 +13,7 @@
     box-shadow: var(--shadow-lg);
     display: flex;
     align-items: center;
+    justify-content: space-between; /* Space between hamburger and title */
     padding: 0 var(--space-lg);
     z-index: var(--z-fixed);
     border-bottom: var(--border-medium) solid var(--color-border-dark);
@@ -23,9 +24,8 @@
     margin: 0;
     font-size: var(--font-size-xl);
     color: var(--color-primary);
-    margin-left: 70px; /* Fixed spacing to prevent overlap with hamburger */
     font-weight: var(--font-weight-semibold);
-    flex: 1; /* Take remaining space */
+    text-align: right; /* Right-align the text */
 }
 
 /* ================================
@@ -36,7 +36,6 @@
 @media screen and (max-width: 768px) {
     .page-title {
         font-size: var(--font-size-lg);
-        margin-left: 60px; /* Adjust for mobile */
     }
 }
 
@@ -47,6 +46,5 @@
     
     .page-title {
         font-size: var(--font-size-base);
-        margin-left: 55px; /* Ensure no overlap on small screens */
     }
 }
