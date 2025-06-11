@@ -10,8 +10,8 @@
     z-index: var(--z-hamburger);
     cursor: pointer;
     padding: 12px;
-    background: rgba(255, 255, 255, 0.9);
-    border: var(--border-thin) solid var(--color-border);
+    background: transparent;
+    border: none;
     border-radius: var(--radius-md);
     min-width: var(--hamburger-size);
     min-height: var(--hamburger-size);
@@ -20,12 +20,10 @@
     align-items: center;
     justify-content: center;
     transition: var(--transition-all);
-    box-shadow: var(--shadow-md);
 }
 
 .hamburger-btn:hover {
-    background: var(--color-white);
-    box-shadow: var(--shadow-lg);
+    background: rgba(255, 255, 255, 0.1);
     transform: translateY(-1px);
 }
 
@@ -41,7 +39,7 @@
 
 /* Hamburger Animation States */
 .hamburger-btn.active {
-    background: var(--color-white);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .hamburger-btn.active span:nth-child(1) {
@@ -105,18 +103,18 @@
    MENU OVERLAY
    ================================ */
 
-/* Overlay for dimming content when menu is open - excludes header and sidebar */
+/* Overlay for dimming content when menu is open - covers entire viewport */
 .menu-overlay {
     position: fixed;
-    top: var(--header-height); /* Start below header */
-    left: 300px; /* Start after sidebar width when open */
-    width: calc(100% - 300px); /* Don't cover sidebar */
-    height: calc(100vh - var(--header-height)); /* Exclude header height */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background: rgba(0, 0, 0, 0.3);
     opacity: 0;
     visibility: hidden;
     transition: var(--transition-all);
-    z-index: var(--z-overlay); /* Below sidebar */
+    z-index: var(--z-overlay); /* Below sidebar and hamburger */
     pointer-events: none;
 }
 
@@ -139,21 +137,6 @@ body.menu-active::after {
 /* ================================
    RESPONSIVE NAVIGATION
    ================================ */
-
-/* Responsive overlay adjustments */
-@media screen and (max-width: 768px) {
-    .menu-overlay {
-        left: 280px; /* Adjust for smaller sidebar on tablet */
-        width: calc(100% - 280px);
-    }
-}
-
-@media screen and (max-width: 575px) {
-    .menu-overlay {
-        left: 260px; /* Adjust for smaller sidebar on mobile */
-        width: calc(100% - 260px);
-    }
-}
 
 /* TABLET PORTRAIT (576px - 767px) */
 @media screen and (min-width: 576px) and (max-width: 767px) {
