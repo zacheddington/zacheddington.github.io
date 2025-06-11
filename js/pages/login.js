@@ -135,8 +135,7 @@ async function performLogin() {
             // Handle both old and new response formats
             const responseData = result.data || result; // Support both formats
             const token = responseData.token;
-            const user = responseData.user;
-              // Store authentication data
+            const user = responseData.user;            // Store authentication data
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
             
@@ -147,21 +146,16 @@ async function performLogin() {
                 return;
             }
             
-            // Show success message with user feedback (don't clear form yet)
+            // Show immediate success message without clearing anything
             clearLoginErrors();
             showLoginSuccess();
             
-            // Redirect based on user role after brief delay for user feedback
-            setTimeout(() => {
-                // Clear form only right before redirect
-                document.getElementById('loginForm').reset();
-                
-                if (window.authUtils.isAdmin()) {
-                    window.location.href = '/admin/';
-                } else {
-                    window.location.href = '/welcome/';
-                }
-            }, 800); // Reduced from 1000ms to 800ms
+            // Immediate redirect - no delay, no form clearing
+            if (window.authUtils.isAdmin()) {
+                window.location.href = '/admin/';
+            } else {
+                window.location.href = '/welcome/';
+            }
             
         } else {
             throw new Error(result.error || 'Login failed');
@@ -188,8 +182,16 @@ async function performLogin() {
 // Show login success message
 function showLoginSuccess() {
     const loginSection = document.querySelector('.login-container');
+    const submitBtn = document.getElementById('loginBtn');
+    
     if (loginSection && window.showSectionMessage) {
-        window.showSectionMessage(loginSection, '✅ Login successful! Redirecting...', 'success');
+        window.showSectionMessage(loginSection, '✅ Success! Redirecting...', 'success');
+    }
+    
+    // Also update the button to show success
+    if (submitBtn) {
+        submitBtn.textContent = '✅ Success!';
+        submitBtn.style.backgroundColor = '#28a745';
     }
 }
 
