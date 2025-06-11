@@ -1,5 +1,15 @@
-/* Typography Styles */
-/* Consistent text styling across the application */
+/* ================================
+   IMPROVED TYPOGRAPHY SETTINGS
+   ================================ */
+
+/* Enhanced font rendering for Inter */
+html {
+    font-family: var(--font-primary);
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1, 'pnum' 1, 'tnum' 0, 'onum' 0, 'lnum' 1, 'dlig' 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
 
 /* ================================
    HEADINGS
@@ -7,8 +17,8 @@
 
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-primary);
-    font-weight: var(--font-weight-bold);
-    letter-spacing: 0.5px;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.025em;
     color: var(--color-secondary);
     line-height: var(--line-height-tight);
     margin: 0 0 var(--space-md) 0;
@@ -47,6 +57,7 @@ p {
     font-weight: var(--font-weight-normal);
     line-height: var(--line-height-relaxed);
     margin: 0 0 var(--space-md) 0;
+    color: var(--color-gray-700);
 }
 
 /* Text size utilities */

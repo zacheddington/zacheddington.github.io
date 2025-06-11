@@ -14,7 +14,7 @@ body {
         linear-gradient(135deg, var(--color-background) 0%, var(--color-background-dark) 100%),
         radial-gradient(circle at 20% 50%, rgba(0, 150, 136, 0.02) 0%, transparent 50%),
         radial-gradient(circle at 80% 20%, rgba(0, 59, 73, 0.02) 0%, transparent 50%);
-    font-family: var(--font-family-primary);
+    font-family: var(--font-primary);
     display: flex;
     flex-direction: column;
     align-items: center;

@@ -8,7 +8,7 @@ button,
     min-height: 44px; /* Touch-friendly size */
     min-width: 44px;
     box-sizing: border-box;
-    font-family: var(--font-family-primary);
+    font-family: var(--font-primary);
     font-weight: var(--font-weight-medium);
     cursor: pointer;
     border: none;

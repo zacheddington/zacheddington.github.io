@@ -10,6 +10,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: var(--font-primary);
 }
 
 /* Remove default list styles */
@@ -57,6 +58,9 @@ body {
     overflow-x: hidden; /* Prevent horizontal scroll */
     padding-top: var(--header-height); /* Account for fixed header */
     transition: var(--transition-all);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 /* Login page has no header, so remove the top padding */
