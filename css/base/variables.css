@@ -27,8 +27,7 @@
     --color-error-bg: #fee;
     --color-info: #17a2b8;
     --color-info-dark: #138496;
-    
-    /* Neutral Colors */
+      /* Neutral Colors */
     --color-white: #ffffff;
     --color-gray-50: #f8f9fa;
     --color-gray-100: #f7fafc;
@@ -40,6 +39,15 @@
     --color-gray-700: #495057;
     --color-gray-800: #343a40;
     --color-gray-900: #212529;
+    
+    /* Background Colors */
+    --color-background: #f0f2f5;        /* Light gray background for better contrast */
+    --color-background-dark: #e9ecef;   /* Slightly darker background variant */
+    
+    /* Border Colors */
+    --color-border: #dee2e6;
+    --color-border-dark: #adb5bd;
+    --color-border-light: #e9ecef;
     
     /* ================================
        TYPOGRAPHY

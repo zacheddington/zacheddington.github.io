@@ -45,10 +45,26 @@
     background: var(--color-white);
     padding: var(--space-xl);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    max-width: 400px;
+    box-shadow: var(--shadow-xl);
+    max-width: 420px;
     width: 90%;
     margin: 0.5rem auto; /* Reduced from 2rem to bring login form higher */
+    border: 3px solid var(--color-border-dark);
+    position: relative;
+    backdrop-filter: blur(10px);
+}
+
+/* Add a subtle inner shadow for more depth */
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: var(--radius-lg);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    pointer-events: none;
 }
 
 /* ================================
