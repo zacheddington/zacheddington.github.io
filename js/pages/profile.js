@@ -18,21 +18,35 @@ async function loadUserProfile() {
         const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
         
+        console.log('🔍 Loading user profile from API:', API_URL);
+        console.log('🔑 Token available:', !!token);
+        
         const response = await fetch(`${API_URL}/api/user/profile`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
         
+        console.log('📡 API Response status:', response.status);
+        
         if (response.ok) {
-            const profile = await response.json();
+            const result = await response.json();
+            console.log('✅ API Response data:', result);
+            
+            // Extract profile data from response
+            const profile = result.data || result; // Handle both response formats
+            console.log('👤 Profile data:', profile);
+            
             displayUserProfile(profile);
         } else {
-            console.error('Failed to load user profile from API, trying localStorage fallback');
+            const errorText = await response.text();
+            console.error('❌ API Error:', response.status, errorText);
+            console.log('🔄 Falling back to localStorage');
             loadProfileFromLocalStorage();
         }
     } catch (error) {
-        console.error('Error loading user profile from API, trying localStorage fallback:', error);
+        console.error('🚨 Error loading user profile from API:', error);
+        console.log('🔄 Falling back to localStorage');
         loadProfileFromLocalStorage();
     }
 }
@@ -41,16 +55,20 @@ async function loadUserProfile() {
 function loadProfileFromLocalStorage() {
     try {
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        console.log('📦 localStorage user data:', userData);
         
         if (userData && (userData.firstName || userData.first_name || userData.username)) {
             // Determine role display - use the first role from the roles array, or fallback
             let roleDisplay = 'User'; // Default fallback
             if (userData.roles && Array.isArray(userData.roles) && userData.roles.length > 0) {
                 roleDisplay = userData.roles[0]; // Use first role from array
+                console.log('🎭 Using role from roles array:', roleDisplay);
             } else if (userData.role) {
                 roleDisplay = userData.role; // Fallback to single role property
+                console.log('🎭 Using single role property:', roleDisplay);
             } else if (userData.isAdmin) {
                 roleDisplay = 'Administrator'; // Admin fallback
+                console.log('🎭 Using admin fallback:', roleDisplay);
             }
             
             const profile = {
@@ -62,13 +80,14 @@ function loadProfileFromLocalStorage() {
                 username: userData.username || userData.email || 'Unknown'
             };
             
+            console.log('👤 Constructed profile from localStorage:', profile);
             displayUserProfile(profile);
         } else {
-            console.error('No user data available in localStorage');
+            console.error('❌ No user data available in localStorage');
             displayProfileError();
         }
     } catch (error) {
-        console.error('Error loading user data from localStorage:', error);
+        console.error('🚨 Error loading user data from localStorage:', error);
         displayProfileError();
     }
 }
