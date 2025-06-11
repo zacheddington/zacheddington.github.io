@@ -54,9 +54,41 @@ function initializeApp() {
 // Get current page name from URL
 function getCurrentPage() {
     const path = window.location.pathname;
-    const page = path.split('/').pop() || 'index.html';
-    console.log('🔍 Current path:', path, '→ Page detected:', page);
-    return page;
+    
+    // Handle directory-based paths (all pages are index.html in named folders)
+    if (path === '/' || path === '/index.html') {
+        console.log('🔍 Current path:', path, '→ Page detected: index.html (login)');
+        return 'index.html'; // Root login page
+    } else if (path.startsWith('/welcome/')) {
+        console.log('🔍 Current path:', path, '→ Page detected: welcome.html');
+        return 'welcome.html';
+    } else if (path.startsWith('/admin/')) {
+        console.log('🔍 Current path:', path, '→ Page detected: admin.html');
+        return 'admin.html';
+    } else if (path.startsWith('/patients/')) {
+        console.log('🔍 Current path:', path, '→ Page detected: patients.html');
+        return 'patients.html';
+    } else if (path.startsWith('/profile/')) {
+        console.log('🔍 Current path:', path, '→ Page detected: profile.html');
+        return 'profile.html';
+    } else if (path.startsWith('/force-password-change/')) {
+        console.log('🔍 Current path:', path, '→ Page detected: force-password.html');
+        return 'force-password.html';
+    } else if (path.startsWith('/2fa-setup/')) {
+        console.log('🔍 Current path:', path, '→ Page detected: 2fa-setup.html');
+        return '2fa-setup.html';
+    } else if (path.startsWith('/enter_eeg/')) {
+        console.log('🔍 Current path:', path, '→ Page detected: enter_eeg.html');
+        return 'enter_eeg.html';
+    } else if (path.startsWith('/view_eeg/')) {
+        console.log('🔍 Current path:', path, '→ Page detected: view_eeg.html');
+        return 'view_eeg.html';
+    } else {
+        // Fallback to filename for other cases
+        const page = path.split('/').pop() || 'index.html';
+        console.log('🔍 Current path:', path, '→ Page detected:', page, '(fallback)');
+        return page;
+    }
 }
 
 // Check if page requires authentication
@@ -68,8 +100,7 @@ function shouldCheckAuth(page) {
 // Initialize page-specific functionality
 function initializePage(page) {
     console.log('Initializing page functionality for:', page);
-    
-    switch(page) {
+      switch(page) {
         case 'login.html':
         case 'index.html':
         case '':
@@ -78,6 +109,14 @@ function initializePage(page) {
                 window.loginPage.initializeLoginPage();
             } else {
                 console.error('❌ window.loginPage not available!');
+            }
+            break;
+            
+        case 'welcome.html':
+            console.log('🏠 Detected welcome page, initializing...');
+            // Welcome page initialization can go here if needed
+            if (document.getElementById('hamburger-menu') && window.navigation) {
+                window.navigation.initializeNavigation();
             }
             break;
             
