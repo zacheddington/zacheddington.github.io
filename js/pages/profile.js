@@ -94,11 +94,9 @@ function displayProfileError() {
     if (userNameElement) userNameElement.textContent = 'Unable to load';
     if (userEmailElement) userEmailElement.textContent = 'Unable to load';
     if (userRoleElement) userRoleElement.textContent = 'Unable to load';
-    
-    // Hide loading indicators
+      // Hide loading indicators
     const loadingElements = document.querySelectorAll('.loading');
     loadingElements.forEach(el => el.style.display = 'none');
-}
 }
 
 // Set up password change form functionality
