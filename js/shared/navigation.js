@@ -7,7 +7,7 @@ async function loadMenu() {
         const hamburgerContainer = document.getElementById('hamburger-menu');
         if (!hamburgerContainer) return;
 
-        const response = await fetch('../html/menu.html');
+        const response = await fetch('/html/menu.html');
         if (!response.ok) {
             throw new Error('Failed to load menu');
         }

@@ -136,8 +136,7 @@ async function performLogin() {
             const responseData = result.data || result; // Support both formats
             const token = responseData.token;
             const user = responseData.user;
-            
-            // Store authentication data
+              // Store authentication data
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
             
@@ -148,20 +147,21 @@ async function performLogin() {
                 return;
             }
             
-            // Clear form
-            document.getElementById('loginForm').reset();
+            // Show success message with user feedback (don't clear form yet)
             clearLoginErrors();
-            
-            // Show success message briefly before redirect
             showLoginSuccess();
-              // Redirect based on user role after short delay
+            
+            // Redirect based on user role after brief delay for user feedback
             setTimeout(() => {
+                // Clear form only right before redirect
+                document.getElementById('loginForm').reset();
+                
                 if (window.authUtils.isAdmin()) {
                     window.location.href = '/admin/';
                 } else {
                     window.location.href = '/welcome/';
                 }
-            }, 1000);
+            }, 800); // Reduced from 1000ms to 800ms
             
         } else {
             throw new Error(result.error || 'Login failed');
@@ -189,7 +189,7 @@ async function performLogin() {
 function showLoginSuccess() {
     const loginSection = document.querySelector('.login-container');
     if (loginSection && window.showSectionMessage) {
-        window.showSectionMessage(loginSection, 'Login successful! Redirecting...', 'success');
+        window.showSectionMessage(loginSection, '✅ Login successful! Redirecting...', 'success');
     }
 }
 
