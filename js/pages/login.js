@@ -95,6 +95,7 @@ async function performLogin() {
     const submitBtn = document.getElementById('loginBtn');
     const originalText = submitBtn.textContent;
     let response = null;
+    let loginSuccessful = false;
     
     try {
         submitBtn.disabled = true;
@@ -135,10 +136,16 @@ async function performLogin() {
             // Handle both old and new response formats
             const responseData = result.data || result; // Support both formats
             const token = responseData.token;
-            const user = responseData.user;            // Store authentication data
+            const user = responseData.user;
+            
+            // Store authentication data
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
-              // Check if user needs to change password
+            
+            // Mark login as successful to prevent button re-enabling
+            loginSuccessful = true;
+            
+            // Check if user needs to change password
             if (user && user.force_password_change) {
                 // Redirect to force password change page
                 window.location.href = '/force-password-change/';
@@ -173,8 +180,12 @@ async function performLogin() {
             showLoginError(errorInfo.message);
         }
     } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
+        // Only re-enable button if login was not successful
+        if (!loginSuccessful) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+        // If login was successful, keep the button in success state until redirect
     }
 }
 
