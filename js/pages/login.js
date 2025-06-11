@@ -62,51 +62,32 @@ function setupLoginFieldValidation() {
     
     if (usernameField) {
         usernameField.addEventListener('input', function() {
-            window.fieldValidation.updateFieldState(usernameField);
+            // Simple clear errors on input for login page
             clearLoginErrors();
         });
         
+        // No blur validation for login - just clear errors
         usernameField.addEventListener('blur', function() {
-            validateUsernameField();
+            clearLoginErrors();
         });
     }
     
     if (passwordField) {
         passwordField.addEventListener('input', function() {
-            window.fieldValidation.updateFieldState(passwordField);
+            // Simple clear errors on input for login page
             clearLoginErrors();
         });
     }
 }
 
-// Validate username field format
+// Validate username field format (only for actual validation during submit)
 function validateUsernameField() {
     const usernameField = document.getElementById('username');
-    if (!usernameField || !usernameField.value) return;
+    if (!usernameField || !usernameField.value) return false;
     
-    // Username validation: should be alphanumeric, underscore, or dash, 3-50 characters
-    const usernameRegex = /^[a-zA-Z0-9_-]{3,50}$/;
-    const isValid = usernameRegex.test(usernameField.value);
-    
-    const formGroup = usernameField.closest('.form-group');
-    if (!isValid) {
-        formGroup.classList.add('error');
-        formGroup.classList.remove('success');
-        
-        // Remove existing error message
-        const existingError = formGroup.querySelector('.error-message');
-        if (existingError) existingError.remove();
-        
-        // Add error message
-        const errorMessage = document.createElement('div');
-        errorMessage.className = 'error-message';
-        errorMessage.textContent = 'Username must be 3-50 characters and contain only letters, numbers, underscore, or dash';
-        formGroup.appendChild(errorMessage);
-    } else {
-        formGroup.classList.remove('error');
-        const errorMessage = formGroup.querySelector('.error-message');
-        if (errorMessage) errorMessage.remove();
-    }
+    // Simple username validation for login - just check it's not empty and reasonable length
+    const username = usernameField.value.trim();
+    return username.length >= 1 && username.length <= 100; // More lenient for login
 }
 
 // Perform user login
@@ -204,16 +185,16 @@ async function performLogin() {
 // Show login success message
 function showLoginSuccess() {
     const loginSection = document.querySelector('.login-container');
-    if (loginSection) {
-        window.fieldValidation.showSectionMessage(loginSection, 'Login successful! Redirecting...', 'success');
+    if (loginSection && window.showSectionMessage) {
+        window.showSectionMessage(loginSection, 'Login successful! Redirecting...', 'success');
     }
 }
 
 // Show login error message
 function showLoginError(message) {
     const loginSection = document.querySelector('.login-container');
-    if (loginSection) {
-        window.fieldValidation.showSectionMessage(loginSection, message, 'error');
+    if (loginSection && window.showSectionMessage) {
+        window.showSectionMessage(loginSection, message, 'error');
     }
 }
 

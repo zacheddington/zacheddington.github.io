@@ -186,3 +186,17 @@ window.validateEmail = validateEmail;
 window.validatePhoneNumber = validatePhoneNumber;
 window.validateRequiredFields = validateRequiredFields;
 window.validateCharacterLimits = validateCharacterLimits;
+
+// Create a fieldValidation object for backwards compatibility
+window.fieldValidation = {
+    showSectionMessage: showSectionMessage,
+    clearFormErrors: clearFormErrors,
+    validateEmail: validateEmail,
+    validatePhoneNumber: validatePhoneNumber,
+    validateRequiredFields: validateRequiredFields,
+    validateCharacterLimits: validateCharacterLimits,
+    // Add empty updateFieldState function to prevent errors
+    updateFieldState: function() {
+        // This function is deprecated - no-op for compatibility
+    }
+};
