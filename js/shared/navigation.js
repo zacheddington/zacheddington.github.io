@@ -20,17 +20,20 @@ async function loadMenu() {
 
         // Add hamburger menu functionality
         const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const sideMenu = document.getElementById('sideMenu');
-        
-        if (hamburgerBtn && sideMenu) {
+        const sideMenu = document.getElementById('sideMenu');        if (hamburgerBtn && sideMenu) {
             hamburgerBtn.addEventListener('click', function() {
+                const isOpening = !sideMenu.classList.contains('open');
                 sideMenu.classList.toggle('open');
+                hamburgerBtn.classList.toggle('active');
+                document.body.classList.toggle('menu-active', isOpening);
             });
 
             // Close menu when clicking outside
             document.addEventListener('click', function(e) {
                 if (!hamburgerBtn.contains(e.target) && !sideMenu.contains(e.target)) {
                     sideMenu.classList.remove('open');
+                    hamburgerBtn.classList.remove('active');
+                    document.body.classList.remove('menu-active');
                 }
             });
 

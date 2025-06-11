@@ -455,8 +455,9 @@ label, p, input, button, a {
         --container-padding: 1rem;
         --hamburger-size: 45px;
     }
-    
-    .hamburger-btn {
+      .hamburger-btn {
+        top: 10px;
+        left: 10px;
         min-width: var(--hamburger-size);
         min-height: var(--hamburger-size);
         padding: 12px;
@@ -563,10 +564,9 @@ label, p, input, button, a {
     
     .show-mobile { display: block; }
     .hide-mobile { display: none; }
-    
-    .hamburger-btn {
-        top: 15px;
-        left: 15px;
+      .hamburger-btn {
+        top: 8px;
+        left: 8px;
         min-width: var(--hamburger-size);
         min-height: var(--hamburger-size);
         padding: 10px;
@@ -694,10 +694,9 @@ label, p, input, button, a {
     body {
         font-size: 0.9rem;
     }
-    
-    .hamburger-btn {
-        top: 12px;
-        left: 12px;
+      .hamburger-btn {
+        top: 5px;
+        left: 5px;
         min-width: var(--hamburger-size);
         min-height: var(--hamburger-size);
         padding: 8px;
@@ -1008,9 +1007,9 @@ iframe {
     .profile-container {
         margin-top: 15px; /* Further reduced to bring content higher on landscape */
     }
-    
-    .hamburger-btn {
-        top: 10px;
+      .hamburger-btn {
+        top: 5px;
+        left: 5px;
     }
     
     .side-menu {
@@ -1051,7 +1050,8 @@ iframe {
     padding: 80px 20px 20px;
 }
 
-.side-menu.active {
+.side-menu.active,
+.side-menu.open {
     left: 0; /* Changed from right to left */
 }
 
@@ -1078,9 +1078,9 @@ iframe {
 }
 
 .hamburger-btn {
-    position: relative;
-    top: 0;
-    left: 0;
+    position: fixed;
+    top: 5px;
+    left: 5px;
     z-index: 1001;
     cursor: pointer;
     padding: 15px;
@@ -1131,6 +1131,19 @@ body::after {
 }
 
 body.menu-open::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Add overlay when menu is open */
+.side-menu.open ~ body::after,
+.side-menu.open + * + * + * + * + body::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Alternative approach - add a class to body when menu is open */
+body.menu-active::after {
     opacity: 1;
     visibility: visible;
 }
