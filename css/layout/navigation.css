@@ -119,7 +119,7 @@
     opacity: 0;
     visibility: hidden;
     transition: var(--transition-all);
-    z-index: 500; /* Below sidebar (1000) and hamburger (1002) but above main content */
+    z-index: 100; /* Below header (500) and sidebar (1000) - only above main content */
     pointer-events: none;
 }
 
