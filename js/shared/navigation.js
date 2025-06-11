@@ -3,42 +3,28 @@
 
 // Load hamburger menu
 async function loadMenu() {
-    console.log('🍔 Starting to load hamburger menu...');
     try {
         const hamburgerContainer = document.getElementById('hamburger-menu');
         if (!hamburgerContainer) {
-            console.error('❌ Hamburger container not found!');
+            console.warn('Hamburger container not found');
             return;
         }
-        console.log('✅ Hamburger container found:', hamburgerContainer);
 
-        console.log('📡 Fetching menu from /html/menu.html...');
         const response = await fetch('/html/menu.html');
         if (!response.ok) {
-            console.error('❌ Failed to fetch menu:', response.status, response.statusText);
-            throw new Error('Failed to load menu');
+            throw new Error(`Failed to load menu: ${response.status}`);
         }
-        console.log('✅ Menu fetched successfully');
         
         const menuHTML = await response.text();
-        console.log('📄 Menu HTML loaded:', menuHTML.substring(0, 100) + '...');
         hamburgerContainer.innerHTML = menuHTML;
 
         // Add hamburger menu functionality
         const hamburgerBtn = document.getElementById('hamburgerBtn');
         const sideMenu = document.getElementById('sideMenu');
         
-        console.log('🔍 Looking for hamburger elements:', {
-            hamburgerBtn: hamburgerBtn ? 'found' : 'NOT FOUND',
-            sideMenu: sideMenu ? 'found' : 'NOT FOUND'
-        });
-        
         if (hamburgerBtn && sideMenu) {
-            console.log('✅ Setting up hamburger menu functionality...');
             hamburgerBtn.addEventListener('click', function() {
-                console.log('🍔 Hamburger button clicked!');
                 sideMenu.classList.toggle('open');
-                console.log('📱 Menu open state:', sideMenu.classList.contains('open'));
             });
 
             // Close menu when clicking outside
@@ -95,11 +81,9 @@ async function loadMenu() {
                     }                });
             });
         }
-        
-        console.log('✅ Hamburger menu setup complete!');
 
     } catch (err) {
-        console.error('❌ Error loading menu:', err);
+        console.error('Error loading menu:', err);
     }
 }
 

@@ -138,11 +138,10 @@ async function performLogin() {
             const user = responseData.user;            // Store authentication data
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
-            
-            // Check if user needs to change password
+              // Check if user needs to change password
             if (user && user.force_password_change) {
                 // Redirect to force password change page
-                window.location.href = '/force-password.html';
+                window.location.href = '/force-password-change/';
                 return;
             }
             

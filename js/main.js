@@ -37,12 +37,11 @@ function initializeApp() {
     // Determine current page
     currentPage = getCurrentPage();
     console.log('Initializing app for page:', currentPage);
-    
-    // Check authentication for protected pages
+      // Check authentication for protected pages
     if (shouldCheckAuth(currentPage)) {
         if (!window.authUtils.isAuthenticated()) {
             console.log('User not authenticated, redirecting to login');
-            window.location.href = '/login.html';
+            window.location.href = '/';
             return;
         }
     }
@@ -195,7 +194,7 @@ function setupPageVisibilityHandling() {
         if (document.visibilityState === 'visible') {
             // Page became visible - could check authentication status
             if (shouldCheckAuth(currentPage) && !window.authUtils.isAuthenticated()) {
-                window.location.href = '/login.html';
+                window.location.href = '/';
             }
         }
     });

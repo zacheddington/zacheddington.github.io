@@ -20,27 +20,24 @@ function initializeForcePasswordPage() {
 function validateForcePasswordAccess() {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
-    
-    if (!token || !userStr) {
+      if (!token || !userStr) {
         // No authentication, redirect to login
-        window.location.href = '/login.html';
+        window.location.href = '/';
         return;
     }
     
     try {
-        const user = JSON.parse(userStr);
-        if (!user.force_password_change) {
+        const user = JSON.parse(userStr);        if (!user.force_password_change) {
             // User doesn't need to change password, redirect based on role
             if (window.authUtils.isAdmin()) {
-                window.location.href = '/admin.html';
+                window.location.href = '/admin/';
             } else {
-                window.location.href = '/patients.html';
+                window.location.href = '/welcome/';
             }
             return;
-        }
-    } catch (error) {
+        }    } catch (error) {
         console.error('Error parsing user data:', error);
-        window.location.href = '/login.html';
+        window.location.href = '/';
         return;
     }
 }
@@ -241,13 +238,12 @@ async function changeForcePassword() {
             
             // Show success message and redirect
             showForcePasswordSuccess();
-            
-            // Redirect based on user role after delay
+              // Redirect based on user role after delay
             setTimeout(() => {
                 if (window.authUtils.isAdmin()) {
-                    window.location.href = '/admin.html';
+                    window.location.href = '/admin/';
                 } else {
-                    window.location.href = '/patients.html';
+                    window.location.href = '/welcome/';
                 }
             }, 2000);
             
@@ -348,7 +344,7 @@ function handleForcePasswordLogout() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         sessionStorage.clear();
-        window.location.href = '/login.html';
+        window.location.href = '/';
     });
 }
 
