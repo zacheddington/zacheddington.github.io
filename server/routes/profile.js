@@ -14,7 +14,7 @@ const { FIELD_LIMITS } = require('../utils/constants');
 const config = require('../config/environment');
 
 // Get user profile endpoint
-router.get('/profile', 
+router.get('/user/profile',
     authenticateToken,
     async (req, res) => {
         try {
@@ -87,7 +87,7 @@ router.get('/profile',
 );
 
 // Update user profile endpoint
-router.put('/profile', 
+router.put('/user/profile',
     authenticateToken,
     sanitizeInput,
     validateRequiredFields(['firstName', 'lastName', 'email']),
@@ -179,7 +179,7 @@ router.put('/profile',
 );
 
 // Change password endpoint
-router.put('/change-password',
+router.put('/user/change-password',
     authenticateToken,
     sanitizeInput,
     validateRequiredFields(['currentPassword', 'newPassword']),
