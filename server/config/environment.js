@@ -5,7 +5,11 @@ require('dotenv').config();
 
 // Detect if running locally or in production
 const isProduction = process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('herokuapp');
-const isLocalTest = process.env.NODE_ENV === 'development' && process.env.DATABASE_URL?.includes('localhost');
+const isLocalTest = process.env.NODE_ENV === 'development' && (
+    process.env.DATABASE_URL?.includes('localhost') || 
+    !process.env.DATABASE_URL || 
+    process.env.FORCE_LOCAL_TEST === 'true'
+);
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 const config = {
@@ -44,5 +48,13 @@ if (!config.JWT_SECRET) {
         console.warn('WARNING: Using default JWT_SECRET for development. Set JWT_SECRET environment variable for production.');
     }
 }
+
+// Debug logging for environment detection
+console.log('🔧 Environment Configuration:');
+console.log(`   NODE_ENV: ${config.NODE_ENV}`);
+console.log(`   isProduction: ${config.isProduction}`);
+console.log(`   isLocalTest: ${config.isLocalTest}`);
+console.log(`   DATABASE_URL: ${config.DATABASE_URL ? '[CONFIGURED]' : '[NOT SET]'}`);
+console.log(`   Port: ${config.PORT}`);
 
 module.exports = config;
