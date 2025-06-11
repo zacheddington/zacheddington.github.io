@@ -154,13 +154,12 @@ async function performLogin() {
             
             // Show success message briefly before redirect
             showLoginSuccess();
-            
-            // Redirect based on user role after short delay
+              // Redirect based on user role after short delay
             setTimeout(() => {
                 if (window.authUtils.isAdmin()) {
-                    window.location.href = '/admin.html';
+                    window.location.href = '/admin/';
                 } else {
-                    window.location.href = '/patients.html';
+                    window.location.href = '/welcome/';
                 }
             }, 1000);
             
