@@ -2,6 +2,11 @@
 /* Imports all CSS modules in the correct order */
 
 /* ================================
+   0. EXTERNAL FONTS & RESOURCES
+   ================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ================================
    1. BASE STYLES (Variables, Reset, Typography)
    ================================ */
 @import 'base/variables.css';
