@@ -22,8 +22,7 @@ router.post('/login', sanitizeInput, validateRequiredFields(['username', 'passwo
         // Check if we're in local development mode without proper database
         if (config.isLocalTest) {
             const { username, password } = req.body;
-            
-            if (username === 'admin' && password === 'admin') {
+              if (username === 'admin' && password === 'admin') {
                 const token = jwt.sign(
                     { 
                         id: 1,
@@ -31,7 +30,9 @@ router.post('/login', sanitizeInput, validateRequiredFields(['username', 'passwo
                         firstName: 'Test',
                         middleName: 'Local',
                         lastName: 'Admin',
-                        email: 'admin@test.com'
+                        email: 'admin@test.com',
+                        roles: ['admin'],
+                        roleKeys: [1]
                     },
                     config.JWT_SECRET,
                     { expiresIn: JWT_CONFIG.EXPIRES_IN }

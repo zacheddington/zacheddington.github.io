@@ -9,7 +9,7 @@ const { authenticateToken, requireAdmin, preventSelfModification } = require('..
 const { validateRequiredFields, validateFieldLengths, validateEmail, sanitizeInput } = require('../middleware/validation');
 const { pool } = require('../config/database');
 const { validatePasswordSecurity } = require('../utils/passwordValidator');
-const { successResponse, errorResponse, createdResponse, updatedResponse, deletedResponse, conflictResponse } = require('../utils/responseHelpers');
+const { successResponse, errorResponse, createdResponse, updatedResponse, deletedResponse, conflictResponse, notFoundResponse } = require('../utils/responseHelpers');
 const { FIELD_LIMITS } = require('../utils/constants');
 const config = require('../config/environment');
 
@@ -260,11 +260,90 @@ router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
         `);
         
         return successResponse(res, usersResult.rows, 'Users retrieved successfully');
-        
-    } catch (err) {
+          } catch (err) {
         console.error('Get users error:', err);
         return errorResponse(res, 'Failed to fetch users', 500);
     }
 });
+
+// Update user role endpoint
+router.put('/users/:userId/role', 
+    authenticateToken, 
+    requireAdmin, 
+    preventSelfModification,
+    sanitizeInput,
+    validateRequiredFields(['roleKey']),
+    async (req, res) => {
+        try {
+            const userId = req.params.userId;
+            const { roleKey } = req.body;
+            
+            if (config.isLocalTest) {
+                // For local testing, just return success
+                return updatedResponse(res, {
+                    userId: userId,
+                    roleKey: roleKey
+                }, 'User role updated successfully');
+            }
+            
+            // Production database logic
+            const client = await pool.connect();
+            try {
+                await client.query('BEGIN');
+                
+                // Verify user exists
+                const userCheck = await client.query(
+                    'SELECT user_key FROM tbl_user WHERE user_key = $1',
+                    [userId]
+                );
+                
+                if (userCheck.rows.length === 0) {
+                    await client.query('ROLLBACK');
+                    return notFoundResponse(res, 'User');
+                }
+                
+                // Verify role exists
+                const roleCheck = await client.query(
+                    'SELECT role_key FROM tbl_role WHERE role_key = $1',
+                    [roleKey]
+                );
+                
+                if (roleCheck.rows.length === 0) {
+                    await client.query('ROLLBACK');
+                    return errorResponse(res, 'Invalid role selected', 400);
+                }
+                
+                // Remove existing role assignments for this user
+                await client.query(
+                    'DELETE FROM tbl_user_role WHERE user_key = $1',
+                    [userId]
+                );
+                
+                // Add new role assignment
+                await client.query(
+                    'INSERT INTO tbl_user_role (user_key, role_key, date_created, date_when) VALUES ($1, $2, NOW(), NOW())',
+                    [userId, roleKey]
+                );
+                
+                await client.query('COMMIT');
+                
+                return updatedResponse(res, {
+                    userId: userId,
+                    roleKey: roleKey
+                }, 'User role updated successfully');
+                
+            } catch (err) {
+                await client.query('ROLLBACK');
+                throw err;
+            } finally {
+                client.release();
+            }
+            
+        } catch (err) {
+            console.error('Update user role error:', err);
+            return errorResponse(res, 'Failed to update user role', 500);
+        }
+    }
+);
 
 module.exports = router;

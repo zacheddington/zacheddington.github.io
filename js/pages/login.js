@@ -141,7 +141,7 @@ async function performLogin() {
         
         const API_URL = window.apiClient.getAPIUrl();
         
-        response = await fetch(`${API_URL}/api/auth/login`, {
+        response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

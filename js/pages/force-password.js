@@ -206,7 +206,7 @@ async function changeForcePassword() {
         const token = localStorage.getItem('token');
         const API_URL = window.apiClient.getAPIUrl();
         
-        response = await fetch(`${API_URL}/api/auth/force-password-change`, {
+        response = await fetch(`${API_URL}/api/force-change-password`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

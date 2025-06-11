@@ -164,7 +164,7 @@ async function logout(reason = 'User logout') {
         if (token) {
             try {
                 const API_URL = window.apiClient.getAPIUrl();
-                await fetch(`${API_URL}/api/auth/logout`, {
+                await fetch(`${API_URL}/api/logout`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
