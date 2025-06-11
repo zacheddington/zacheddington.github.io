@@ -19,8 +19,7 @@ router.get('/profile',
     async (req, res) => {
         try {
             const userId = req.user.id;
-            
-            if (config.isLocalTest) {
+              if (config.isLocalTest) {
                 // For local testing, return mock data
                 return successResponse(res, {
                     id: userId,
@@ -28,16 +27,21 @@ router.get('/profile',
                     middle_name: 'M',
                     last_name: 'Doe',
                     email: 'john.doe@example.com',
-                    role: 'User',
-                    username: 'johndoe'
+                    role: 'Administrator',
+                    roles: ['Administrator'],
+                    username: 'admin'
                 }, 'Profile retrieved successfully');
             }
-            
-            // Production database logic
+              // Production database logic
             const client = await pool.connect();
             try {
+                // Query user data with roles
                 const result = await client.query(
-                    'SELECT user_key as id, first_name, middle_name, last_name, email, role, username FROM tbl_user WHERE user_key = $1',
+                    `SELECT u.user_key as id, n.first_name, n.middle_name, n.last_name, 
+                            u.email, u.username
+                     FROM tbl_user u 
+                     LEFT JOIN tbl_name_data n ON u.name_key = n.name_key 
+                     WHERE u.user_key = $1`,
                     [userId]
                 );
                 
@@ -46,7 +50,31 @@ router.get('/profile',
                 }
                 
                 const user = result.rows[0];
-                return successResponse(res, user, 'Profile retrieved successfully');
+                
+                // Query user roles
+                const roleResult = await client.query(
+                    `SELECT r.role_name 
+                     FROM tbl_user_role ur 
+                     JOIN tbl_role r ON ur.role_key = r.role_key 
+                     WHERE ur.user_key = $1`,
+                    [userId]
+                );
+                
+                const roles = roleResult.rows.map(row => row.role_name);
+                const primaryRole = roles.length > 0 ? roles[0] : 'User';
+                
+                const profileData = {
+                    id: user.id,
+                    first_name: user.first_name,
+                    middle_name: user.middle_name,
+                    last_name: user.last_name,
+                    email: user.email,
+                    username: user.username,
+                    role: primaryRole,
+                    roles: roles
+                };
+                
+                return successResponse(res, profileData, 'Profile retrieved successfully');
                 
             } finally {
                 client.release();

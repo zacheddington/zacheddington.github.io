@@ -43,12 +43,22 @@ function loadProfileFromLocalStorage() {
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         
         if (userData && (userData.firstName || userData.first_name || userData.username)) {
+            // Determine role display - use the first role from the roles array, or fallback
+            let roleDisplay = 'User'; // Default fallback
+            if (userData.roles && Array.isArray(userData.roles) && userData.roles.length > 0) {
+                roleDisplay = userData.roles[0]; // Use first role from array
+            } else if (userData.role) {
+                roleDisplay = userData.role; // Fallback to single role property
+            } else if (userData.isAdmin) {
+                roleDisplay = 'Administrator'; // Admin fallback
+            }
+            
             const profile = {
                 first_name: userData.firstName || userData.first_name || 'User',
                 middle_name: userData.middleName || userData.middle_name || '',
                 last_name: userData.lastName || userData.last_name || '',
                 email: userData.email || 'Not available',
-                role: userData.role || 'User',
+                role: roleDisplay,
                 username: userData.username || userData.email || 'Unknown'
             };
             
