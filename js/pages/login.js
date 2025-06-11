@@ -169,11 +169,13 @@ async function performLogin() {
         } else {
             throw new Error(result.error || 'Login failed');
         }
-          } catch (error) {
+      } catch (error) {
         console.error('Login error:', error);
         
         // For authentication errors (401) or validation errors, always show modal
         if (response && response.status === 401) {
+            // Clear password field for security
+            passwordField.value = '';
             window.modalManager.showModal('error', 'Invalid username or password. Please try again.');
         } else {
             // Use enhanced error categorization for other errors
