@@ -169,13 +169,12 @@
     /* ================================
        Z-INDEX SCALE
        ================================ */
-    
-    --z-dropdown: 100;
+      --z-dropdown: 100;
     --z-sticky: 200;
     --z-fixed: 500;
     --z-overlay: 998;
     --z-modal: 1000;
-    --z-hamburger: 1001;
+    --z-hamburger: 1002; /* Above sidebar */
     --z-tooltip: 1200;
 }
 

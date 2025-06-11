@@ -5,30 +5,47 @@
 /* Hamburger Button */
 .hamburger-btn {
     position: fixed;
-    top: 5px;
-    left: 5px;
+    top: 8px;
+    left: 8px;
     z-index: var(--z-hamburger);
     cursor: pointer;
-    padding: 15px;
-    background: none;
-    border: none;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border: var(--border-thin) solid var(--color-border);
+    border-radius: var(--radius-md);
     min-width: var(--hamburger-size);
     min-height: var(--hamburger-size);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-all);
+    box-shadow: var(--shadow-md);
+}
+
+.hamburger-btn:hover {
+    background: var(--color-white);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
 }
 
 .hamburger-btn span {
     display: block;
-    width: 25px;
-    height: 3px;
-    margin: 5px 0; /* Increased spacing between lines */
+    width: 22px;
+    height: 2px;
+    margin: 3px 0;
     background: var(--color-primary);
     transition: var(--transition-all);
     border-radius: var(--radius-sm);
 }
 
 /* Hamburger Animation States */
+.hamburger-btn.active {
+    background: var(--color-white);
+}
+
 .hamburger-btn.active span:nth-child(1) {
-    transform: rotate(45deg) translate(6px, 6px);
+    transform: rotate(45deg) translate(5px, 5px);
 }
 
 .hamburger-btn.active span:nth-child(2) {
@@ -36,7 +53,7 @@
 }
 
 .hamburger-btn.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(6px, -6px);
+    transform: rotate(-45deg) translate(5px, -5px);
 }
 
 /* ================================
@@ -53,7 +70,7 @@
     background: var(--color-white);
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     transition: left var(--transition-normal) var(--ease-out);
-    z-index: var(--z-hamburger); /* Higher than overlay */
+    z-index: 1001; /* Below hamburger button */
     padding: 80px 20px 20px;
 }
 
