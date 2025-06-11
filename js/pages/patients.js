@@ -23,7 +23,7 @@ function initializePatientsPage() {
 function setupPatientsNavigation() {
     // Main patient choice buttons
     const createPatientBtn = document.getElementById('createPatientBtn');
-    const managePatientBtn = document.getElementById('managePatientBtn');
+    const managePatientsBtn = document.getElementById('managePatientsBtn');
     
     // Back buttons
     const backToChoiceFromCreate = document.getElementById('backToChoiceFromCreate');
@@ -41,9 +41,8 @@ function setupPatientsNavigation() {
             clearCreatePatientErrors();
         });
     }
-    
-    if (managePatientBtn) {
-        managePatientBtn.addEventListener('click', function() {
+      if (managePatientsBtn) {
+        managePatientsBtn.addEventListener('click', function() {
             patientChoice.classList.add('hidden');
             managePatientsSection.classList.remove('hidden');
             loadPatients();

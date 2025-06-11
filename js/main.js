@@ -111,12 +111,11 @@ function initializePage(page) {
                 console.error('❌ window.loginPage not available!');
             }
             break;
-            
-        case 'welcome.html':
+              case 'welcome.html':
             console.log('🏠 Detected welcome page, initializing...');
             // Welcome page initialization can go here if needed
             if (document.getElementById('hamburger-menu') && window.navigation) {
-                window.navigation.initializeNavigation();
+                window.navigation.loadMenu();
             }
             break;
             
