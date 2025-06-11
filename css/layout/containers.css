@@ -1,0 +1,249 @@
+/* ================================
+   CONTAINER & GRID SYSTEMS
+   ================================ */
+
+/* Global box-sizing for maintainability */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Body Layout */
+body {
+    background: var(--color-background);
+    font-family: var(--font-family-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    padding-top: var(--header-height); /* Account for fixed header */
+    transition: var(--transition-all);
+}
+
+/* Login page has no header, so remove the top padding */
+body.login-page {
+    padding-top: 0;
+}
+
+/* ================================
+   CONTAINER SYSTEM
+   ================================ */
+
+/* Container system for consistent layout */
+.container {
+    width: 100%;
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
+    box-sizing: border-box;
+}
+
+/* Welcome page container */
+.welcome-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 5px; /* Reduced to bring content higher */
+}
+
+/* Main admin container */
+.admin-container {
+    max-width: 1000px;
+    width: 100%;
+    margin: 2rem auto;
+    padding: 2rem;
+    margin-top: 10px; /* Reduced to bring content higher */
+    box-sizing: border-box;
+}
+
+/* Profile container */
+.profile-container {
+    max-width: 1000px;
+    width: 100%;
+    margin: 2rem auto;
+    padding: 2rem;
+    margin-top: 10px; /* Reduced to bring content higher */
+    box-sizing: border-box;
+}
+
+/* ================================
+   GRID SYSTEM
+   ================================ */
+
+/* Responsive grid system */
+.grid {
+    display: grid;
+    gap: var(--grid-gap);
+}
+
+.grid-1 { grid-template-columns: 1fr; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* ================================
+   FLEXBOX UTILITIES
+   ================================ */
+
+/* Responsive flexbox utilities */
+.flex {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.flex-center {
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    justify-content: space-between;
+}
+
+.flex-start {
+    justify-content: flex-start;
+}
+
+.flex-end {
+    justify-content: flex-end;
+}
+
+/* ================================
+   RESPONSIVE BREAKPOINTS
+   ================================ */
+
+/* ULTRAWIDE MONITORS (1400px and up) */
+@media screen and (min-width: 1400px) {
+    .welcome-container {
+        margin-top: 10px; /* Reduced to bring content higher */
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 1200px;
+        padding: 3rem;
+    }
+}
+
+/* LARGE DESKTOP (1200px - 1399px) */
+@media screen and (min-width: 1200px) and (max-width: 1399px) {
+    .welcome-container {
+        margin-top: 20px; /* Reduced to bring content higher */
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 1000px;
+        padding: 2.5rem;
+    }
+}
+
+/* STANDARD DESKTOP (992px - 1199px) */
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+    .welcome-container {
+        margin-top: 15px; /* Reduced to bring content higher */
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 900px;
+    }
+}
+
+/* TABLET LANDSCAPE (768px - 991px) */
+@media screen and (min-width: 768px) and (max-width: 991px) {
+    .welcome-container {
+        margin-top: 25px; /* Reduced to bring content higher */
+        padding: 1.5rem;
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 700px;
+        padding: 1.5rem;
+        margin-top: 50px; /* Reduced to bring content higher */
+    }
+}
+
+/* TABLET PORTRAIT (576px - 767px) */
+@media screen and (min-width: 576px) and (max-width: 767px) {
+    .welcome-container {
+        margin-top: 30px; /* Reduced to bring content higher */
+        padding: 1rem;
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 550px;
+        padding: 1rem;
+        margin-top: 60px; /* Reduced to bring content higher */
+    }
+}
+
+/* MOBILE LANDSCAPE (480px - 575px) */
+@media screen and (min-width: 480px) and (max-width: 575px) {
+    .welcome-container {
+        margin-top: 35px; /* Reduced to bring content higher */
+        padding: 0.75rem;
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 450px;
+        padding: 0.75rem;
+        margin-top: 70px; /* Reduced to bring content higher */
+    }
+}
+
+/* MOBILE PORTRAIT (320px - 479px) */
+@media screen and (max-width: 479px) {
+    .welcome-container {
+        margin-top: 30px; /* Reduced to bring content higher */
+        padding: 1rem;
+    }
+    
+    .admin-container,
+    .profile-container {
+        max-width: 400px;
+        width: 100%;
+        padding: 24px 28px;
+    }
+}
+
+/* VERY SMALL MOBILE (320px and below) */
+@media screen and (max-width: 320px) {
+    .admin-container,
+    .profile-container {
+        max-width: 380px;
+        padding: 0.5rem;
+        margin-top: 80px; /* Reduced to bring content higher */
+    }
+}
+
+/* Landscape orientation adjustments for mobile */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .welcome-container,
+    .admin-container,
+    .profile-container {
+        margin-top: 15px; /* Reduced to bring content higher on landscape */
+    }
+}
+
+/* Fix for very narrow screens */
+@media screen and (max-width: 320px) {
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+}

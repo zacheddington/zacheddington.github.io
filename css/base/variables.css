@@ -1,0 +1,231 @@
+/* CSS Custom Properties (Variables) */
+/* Design tokens for consistent theming across the application */
+
+:root {
+    /* ================================
+       COLOR PALETTE
+       ================================ */
+    
+    /* Primary Colors */
+    --color-primary: #009688;           /* Teal - primary brand color */
+    --color-primary-dark: #00796b;      /* Dark teal for gradients/hover */
+    --color-primary-light: #b2dfdb;     /* Light teal for borders */
+    --color-primary-bg: #e0f7fa;        /* Very light teal for backgrounds */
+    
+    /* Secondary Colors */
+    --color-secondary: #003b49;         /* Dark blue-green - text and headers */
+    --color-secondary-light: #004d40;   /* Slightly lighter secondary */
+    
+    /* Status Colors */
+    --color-success: #28a745;
+    --color-success-dark: #238e3c;
+    --color-warning: #ffc107;
+    --color-warning-dark: #856404;
+    --color-warning-bg: #fff3cd;
+    --color-error: #dc3545;
+    --color-error-dark: #c82333;
+    --color-error-bg: #fee;
+    --color-info: #17a2b8;
+    --color-info-dark: #138496;
+    
+    /* Neutral Colors */
+    --color-white: #ffffff;
+    --color-gray-50: #f8f9fa;
+    --color-gray-100: #f7fafc;
+    --color-gray-200: #e0e0e0;
+    --color-gray-300: #cccccc;
+    --color-gray-400: #9e9e9e;
+    --color-gray-500: #6c757d;
+    --color-gray-600: #666666;
+    --color-gray-700: #495057;
+    --color-gray-800: #343a40;
+    --color-gray-900: #212529;
+    
+    /* ================================
+       TYPOGRAPHY
+       ================================ */
+    
+    /* Font Families */
+    --font-primary: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+    --font-mono: 'Courier New', monospace;
+    
+    /* Font Weights */
+    --font-weight-normal: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    /* Font Sizes */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.75rem;
+    --font-size-4xl: 2rem;
+    
+    /* Line Heights */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.4;
+    --line-height-relaxed: 1.5;
+    
+    /* ================================
+       SPACING & SIZING
+       ================================ */
+    
+    /* Spacing Scale */
+    --space-xs: 0.25rem;    /* 4px */
+    --space-sm: 0.5rem;     /* 8px */
+    --space-md: 1rem;       /* 16px */
+    --space-lg: 1.5rem;     /* 24px */
+    --space-xl: 2rem;       /* 32px */
+    --space-2xl: 3rem;      /* 48px */
+    --space-3xl: 4rem;      /* 64px */
+    
+    /* Component Specific Spacing */
+    --padding-input: 10px;
+    --padding-button: 0.75rem 1.5rem;
+    --padding-card: 32px 40px;
+    --padding-section: 2rem;
+    
+    /* ================================
+       LAYOUT & CONTAINERS
+       ================================ */
+    
+    /* Container Sizes */
+    --container-max-width: 1200px;
+    --container-padding: 2rem;
+    
+    /* Grid System */
+    --grid-gap: 1rem;
+    --grid-gap-sm: 0.5rem;
+    --grid-gap-lg: 1.5rem;
+    
+    /* Component Dimensions */
+    --header-height: 60px;
+    --hamburger-size: 50px;
+    --sidebar-width: 300px;
+    --modal-max-width: 500px;
+    
+    /* ================================
+       BORDERS & RADII
+       ================================ */
+    
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 10px;
+    --radius-2xl: 12px;
+    --radius-full: 50%;
+    
+    /* Border Widths */
+    --border-thin: 1px;
+    --border-medium: 2px;
+    --border-thick: 3px;
+    
+    /* ================================
+       SHADOWS & EFFECTS
+       ================================ */
+    
+    /* Box Shadows */
+    --shadow-sm: 0 1px 2px rgba(0,59,73,0.04);
+    --shadow-md: 0 2px 8px rgba(0,59,73,0.10);
+    --shadow-lg: 0 2px 12px rgba(0,59,73,0.10);
+    --shadow-xl: 0 4px 20px rgba(0,0,0,0.2);
+    --shadow-button: 0 2px 8px rgba(0, 150, 136, 0.3);
+    --shadow-button-hover: 0 4px 12px rgba(0, 150, 136, 0.4);
+    
+    /* ================================
+       TRANSITIONS & ANIMATIONS
+       ================================ */
+    
+    /* Transition Durations */
+    --transition-fast: 0.15s;
+    --transition-normal: 0.3s;
+    --transition-slow: 0.45s;
+    
+    /* Transition Easing */
+    --ease-out: ease-out;
+    --ease-in-out: ease-in-out;
+    --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Common Transitions */
+    --transition-all: all var(--transition-normal) var(--ease-in-out);
+    --transition-color: color var(--transition-fast) var(--ease-out);
+    --transition-background: background var(--transition-normal) var(--ease-out);
+    --transition-border: border var(--transition-fast) var(--ease-out);
+    --transition-transform: transform var(--transition-normal) var(--ease-out);
+    
+    /* ================================
+       Z-INDEX SCALE
+       ================================ */
+    
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-fixed: 500;
+    --z-overlay: 998;
+    --z-modal: 1000;
+    --z-hamburger: 1001;
+    --z-tooltip: 1200;
+}
+
+/* ================================
+   RESPONSIVE BREAKPOINT VARIABLES
+   ================================ */
+
+/* Mobile First Breakpoints */
+:root {
+    --breakpoint-xs: 320px;   /* Small mobile */
+    --breakpoint-sm: 480px;   /* Mobile */
+    --breakpoint-md: 768px;   /* Tablet */
+    --breakpoint-lg: 992px;   /* Desktop */
+    --breakpoint-xl: 1200px;  /* Large Desktop */
+    --breakpoint-2xl: 1400px; /* Ultrawide */
+}
+
+/* Responsive Container Adjustments */
+@media screen and (min-width: 1400px) {
+    :root {
+        --container-max-width: 1400px;
+        --container-padding: 3rem;
+        --grid-gap: 1.5rem;
+    }
+}
+
+@media screen and (min-width: 992px) and (max-width: 1199px) {
+    :root {
+        --container-max-width: 960px;
+        --container-padding: 2rem;
+    }
+}
+
+@media screen and (min-width: 768px) and (max-width: 991px) {
+    :root {
+        --container-padding: 1.5rem;
+        --hamburger-size: 45px;
+    }
+}
+
+@media screen and (min-width: 576px) and (max-width: 767px) {
+    :root {
+        --container-padding: 1rem;
+        --hamburger-size: 42px;
+    }
+}
+
+@media screen and (max-width: 575px) {
+    :root {
+        --container-padding: 0.75rem;
+        --hamburger-size: 40px;
+        --padding-card: 20px 16px;
+    }
+}
+
+@media screen and (max-width: 479px) {
+    :root {
+        --container-padding: 0.5rem;
+        --hamburger-size: 40px;
+        --padding-card: 16px 20px;
+    }
+}

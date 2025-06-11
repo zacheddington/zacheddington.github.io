@@ -1,0 +1,49 @@
+/* ================================
+   APP HEADER BAR
+   ================================ */
+
+.app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--header-height);
+    background: var(--color-white);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--space-lg);
+    z-index: var(--z-fixed);
+    border-bottom: var(--border-thin) solid var(--color-border);
+}
+
+.page-title {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    color: var(--color-primary);
+    margin-left: calc(var(--hamburger-size) + var(--space-sm)); /* Space for hamburger menu */
+    font-weight: var(--font-weight-semibold);
+}
+
+/* ================================
+   RESPONSIVE HEADER STYLES
+   ================================ */
+
+/* Mobile responsive adjustments for header */
+@media screen and (max-width: 768px) {
+    .page-title {
+        font-size: var(--font-size-lg);
+        margin-left: calc(var(--hamburger-size) - 5px); /* Adjust for smaller hamburger on mobile */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .app-header {
+        padding: 0 15px;
+    }
+    
+    .page-title {
+        font-size: var(--font-size-base);
+        margin-left: calc(var(--hamburger-size) - 10px); /* Further adjust for mobile */
+    }
+}

@@ -1,0 +1,57 @@
+/* ================================
+   PATIENTS PAGE STYLES
+   ================================ */
+
+/* Patients page styles are primarily handled by:
+   - forms.css for eeg-form and patient form styles
+   - containers.css for general layout
+   - buttons.css for choice-btn and form buttons
+*/
+
+/* This file is reserved for patients-page specific styles that don't fit elsewhere */
+
+/* ================================
+   PATIENT SPECIFIC STYLES
+   ================================ */
+
+/* Patient Table Styles */
+.patient-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.patient-full-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+}
+
+.patient-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.accepts-texts {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: var(--font-weight-semibold);
+    text-align: center;
+    min-width: 40px;
+}
+
+.accepts-texts.yes {
+    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+    color: var(--color-white);
+}
+
+.accepts-texts.no {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: var(--color-white);
+}
+
+.patient-created {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+}

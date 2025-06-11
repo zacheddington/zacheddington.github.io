@@ -1,0 +1,125 @@
+/* CSS Reset and Base Styles */
+/* Establishes consistent base styling across browsers */
+
+/* ================================
+   CSS RESET
+   ================================ */
+
+/* Modern CSS Reset */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Remove default list styles */
+ul, ol {
+    list-style: none;
+}
+
+/* Remove default button styles */
+button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+}
+
+/* Remove default input styles */
+input, textarea, select {
+    font: inherit;
+    background: transparent;
+    border: none;
+    outline: none;
+}
+
+/* Remove default link styles */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ================================
+   BASE BODY STYLES
+   ================================ */
+
+body {
+    background: var(--color-primary-bg);
+    font-family: var(--font-primary);
+    font-weight: var(--font-weight-normal);
+    color: var(--color-secondary);
+    line-height: var(--line-height-normal);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    padding-top: var(--header-height); /* Account for fixed header */
+    transition: var(--transition-all);
+}
+
+/* Login page has no header, so remove the top padding */
+body.login-page {
+    padding-top: 0;
+}
+
+/* ================================
+   ANIMATIONS
+   ================================ */
+
+/* Body fade animations */
+body {
+    animation: fadeInBody 0.7s ease;
+    animation-fill-mode: forwards;
+}
+
+.fade-out {
+    animation: fadeOutBody var(--transition-slow) forwards;
+}
+
+@keyframes fadeInBody {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOutBody {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* Fade transition utility class */
+.fade-transition {
+    transition: opacity var(--transition-slow) var(--ease-out);
+}
+
+/* ================================
+   ACCESSIBILITY
+   ================================ */
+
+/* Focus styles for accessibility */
+*:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --shadow-sm: none;
+        --shadow-md: none;
+        --shadow-lg: none;
+        --shadow-xl: none;
+    }
+}

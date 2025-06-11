@@ -1,0 +1,8 @@
+/* ================================
+   LOGIN PAGE STYLES
+   ================================ */
+
+/* Login specific body styles */
+body.login-page {
+    padding-top: 0; /* No header on login page */
+}

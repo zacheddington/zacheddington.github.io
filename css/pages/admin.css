@@ -1,0 +1,16 @@
+/* ================================
+   ADMIN PAGE STYLES
+   ================================ */
+
+/* Admin specific styles are primarily handled by:
+   - containers.css for admin-container layout
+   - cards.css for admin-section and admin-choice styles
+   - forms.css for admin-form styles
+   - tables.css for users-table styles
+   - buttons.css for choice-btn styles
+*/
+
+/* Hidden utility class for admin sections */
+.hidden {
+    display: none !important;
+}
