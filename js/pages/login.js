@@ -93,13 +93,18 @@ function validateUsernameField() {
 // Perform user login
 async function performLogin() {
     const submitBtn = document.getElementById('loginBtn');
+    const usernameField = document.getElementById('username');
+    const passwordField = document.getElementById('password');
     const originalText = submitBtn.textContent;
     let response = null;
     let loginSuccessful = false;
     
     try {
+        // Disable form controls during login
         submitBtn.disabled = true;
         submitBtn.textContent = 'Logging in...';
+        usernameField.disabled = true;
+        passwordField.disabled = true;
         
         // Pre-flight connectivity check
         const connectivity = await window.apiClient.checkConnectivity();
@@ -107,8 +112,8 @@ async function performLogin() {
             throw new Error(`Connection failed: ${connectivity.error}`);
         }
           // Get form data
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
+        const username = usernameField.value.trim();
+        const password = passwordField.value;
         
         // Validate input
         if (!username || !password) {
@@ -144,19 +149,17 @@ async function performLogin() {
             
             // Mark login as successful to prevent button re-enabling
             loginSuccessful = true;
-            
-            // Check if user needs to change password
+              // Check if user needs to change password
             if (user && user.force_password_change) {
                 // Redirect to force password change page
                 window.location.href = '/force-password-change/';
                 return;
             }
             
-            // Show immediate success message without clearing anything
+            // Clear any error messages
             clearLoginErrors();
-            showLoginSuccess();
             
-            // Immediate redirect - no delay, no form clearing
+            // Immediate redirect - no success message, no delays
             if (window.authUtils.isAdmin()) {
                 window.location.href = '/admin/';
             } else {
@@ -166,42 +169,33 @@ async function performLogin() {
         } else {
             throw new Error(result.error || 'Login failed');
         }
-        
-    } catch (error) {
+          } catch (error) {
         console.error('Login error:', error);
         
-        // Use enhanced error categorization
-        const errorInfo = window.apiClient.categorizeError(error, response);
-        
-        // Show appropriate feedback based on error type
-        if (errorInfo.modal) {
-            window.modalManager.showModal('error', errorInfo.message);
+        // For authentication errors (401) or validation errors, always show modal
+        if (response && response.status === 401) {
+            window.modalManager.showModal('error', 'Invalid username or password. Please try again.');
         } else {
-            showLoginError(errorInfo.message);
+            // Use enhanced error categorization for other errors
+            const errorInfo = window.apiClient.categorizeError(error, response);
+            
+            // For network/connectivity issues, show modal
+            if (errorInfo.modal) {
+                window.modalManager.showModal('error', errorInfo.message);
+            } else {
+                // For validation errors, show inline
+                showLoginError(errorInfo.message);
+            }
         }
     } finally {
-        // Only re-enable button if login was not successful
+        // Only re-enable form controls if login was not successful
         if (!loginSuccessful) {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
+            usernameField.disabled = false;
+            passwordField.disabled = false;
         }
-        // If login was successful, keep the button in success state until redirect
-    }
-}
-
-// Show login success message
-function showLoginSuccess() {
-    const loginSection = document.querySelector('.login-container');
-    const submitBtn = document.getElementById('loginBtn');
-    
-    if (loginSection && window.showSectionMessage) {
-        window.showSectionMessage(loginSection, '✅ Success! Redirecting...', 'success');
-    }
-    
-    // Also update the button to show success
-    if (submitBtn) {
-        submitBtn.textContent = '✅ Success!';
-        submitBtn.style.backgroundColor = '#28a745';
+        // If login was successful, keep form disabled until redirect
     }
 }
 
