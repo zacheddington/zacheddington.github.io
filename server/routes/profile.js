@@ -253,7 +253,7 @@ router.put('/user/change-password',
 );
 
 // Forced password change endpoint for first-time users
-router.put('/force-change-password',
+router.put('/user/force-change-password',
     authenticateToken,
     sanitizeInput,
     validateRequiredFields(['currentPassword', 'newPassword']),
