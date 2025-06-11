@@ -35,10 +35,32 @@ async function loadMenu() {
                 document.body.classList.remove('menu-active');
             }
             
-            // Add browser navigation handlers to close menu
+            // Ensure menu is closed on page load (handles any cached state)
+            closeMenu();
+            
+            // Add comprehensive browser navigation handlers to close menu
             window.addEventListener('popstate', closeMenu);
             window.addEventListener('beforeunload', closeMenu);
             window.addEventListener('pagehide', closeMenu);
+            
+            // Add page visibility change handler (for back/forward navigation)
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible') {
+                    // Page became visible again (user returned from back/forward)
+                    closeMenu();
+                }
+            });
+            
+            // Add window focus handler (additional safety net)
+            window.addEventListener('focus', closeMenu);
+            
+            // Add pageshow event (fires when page is loaded from cache)
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    // Page was loaded from cache (back/forward navigation)
+                    closeMenu();
+                }
+            });
             
             hamburgerBtn.addEventListener('click', function() {
                 const isOpening = !sideMenu.classList.contains('open');
