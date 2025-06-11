@@ -13,6 +13,51 @@ const { successResponse, errorResponse, updatedResponse, notFoundResponse } = re
 const { FIELD_LIMITS } = require('../utils/constants');
 const config = require('../config/environment');
 
+// Get user profile endpoint
+router.get('/profile', 
+    authenticateToken,
+    async (req, res) => {
+        try {
+            const userId = req.user.id;
+            
+            if (config.isLocalTest) {
+                // For local testing, return mock data
+                return successResponse(res, {
+                    id: userId,
+                    first_name: 'John',
+                    middle_name: 'M',
+                    last_name: 'Doe',
+                    email: 'john.doe@example.com',
+                    role: 'User',
+                    username: 'johndoe'
+                }, 'Profile retrieved successfully');
+            }
+            
+            // Production database logic
+            const client = await pool.connect();
+            try {
+                const result = await client.query(
+                    'SELECT user_key as id, first_name, middle_name, last_name, email, role, username FROM tbl_user WHERE user_key = $1',
+                    [userId]
+                );
+                
+                if (result.rows.length === 0) {
+                    return notFoundResponse(res, 'User not found');
+                }
+                
+                const user = result.rows[0];
+                return successResponse(res, user, 'Profile retrieved successfully');
+                
+            } finally {
+                client.release();
+            }
+        } catch (error) {
+            console.error('Profile retrieval error:', error);
+            return errorResponse(res, 'Failed to retrieve profile');
+        }
+    }
+);
+
 // Update user profile endpoint
 router.put('/profile', 
     authenticateToken,
