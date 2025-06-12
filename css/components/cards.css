@@ -390,3 +390,27 @@
         padding: 10px 8px;
     }
 }
+
+/* ================================
+   MOBILE POSITIONING FIXES FOR WELCOME SCREEN
+   ================================ */
+
+/* Adjust option cards positioning for tall mobile screens (iPhone 16 Pro Max, etc.) */
+@media screen and (min-height: 800px) and (max-width: 480px) {
+    .options {
+        margin-top: -10px; /* Bring cards closer to top */
+        gap: var(--space-lg); /* Reduce gap between cards */
+    }
+
+    .option-card {
+        margin-bottom: var(--space-md); /* Reduce bottom margin */
+    }
+}
+
+@media screen and (min-height: 900px) and (max-width: 480px) {
+    /* Extra tall mobile screens - even closer to top */
+    .options {
+        margin-top: -20px;
+        gap: var(--space-md);
+    }
+}

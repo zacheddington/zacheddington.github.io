@@ -66,6 +66,23 @@ body.login-page {
     margin-top: 2px; /* Further reduced to match options positioning */
 }
 
+/* Mobile responsive adjustments for welcome screen */
+@media screen and (min-height: 800px) and (max-width: 480px) {
+    /* Larger mobile screens (like iPhone 16 Pro Max) - bring cards closer to top */
+    .welcome-container {
+        margin-top: -20px;
+        padding-top: 10px;
+    }
+}
+
+@media screen and (min-height: 900px) and (max-width: 480px) {
+    /* Extra tall mobile screens - bring cards even closer to top */
+    .welcome-container {
+        margin-top: -40px;
+        padding-top: 20px;
+    }
+}
+
 /* Main admin container */
 .admin-container {
     max-width: 1000px;
