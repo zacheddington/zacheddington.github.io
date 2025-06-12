@@ -6,3 +6,45 @@
 /* and containers.css for welcome-container layout */
 
 /* This file is reserved for welcome-page specific styles that don't fit elsewhere */
+
+/* Force welcome container to follow same rules as admin-container */
+.welcome-container.admin-container {
+    max-width: 1000px;
+    width: 100%;
+    margin: 1rem auto;
+    padding: 1rem;
+    margin-top: 5px !important; /* Match admin-container */
+    box-sizing: border-box;
+}
+
+/* Extra rules for iPhone Pro Max and other tall devices */
+@media screen and (min-height: 900px) and (max-width: 480px) {
+    .welcome-container.admin-container {
+        margin-top: -5px !important; /* Match admin-container on tall screens */
+    }
+}
+
+@media screen and (min-height: 800px) and (max-width: 480px) {
+    .welcome-container.admin-container {
+        margin-top: 0px !important; /* Match admin-container on medium-tall screens */
+    }
+}
+
+/* iPhone Pro Max specific fixes */
+@media screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3),
+    screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3),
+    screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) {
+    .welcome-container.admin-container {
+        margin-top: -5px !important;
+    }
+
+    .welcome-page .options {
+        margin-top: 40px;
+    }
+}
+
+/* Ensure no transform is accidentally applied */
+.welcome-container,
+.welcome-container.admin-container {
+    transform: none !important;
+}

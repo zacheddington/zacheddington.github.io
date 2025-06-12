@@ -6,7 +6,7 @@
 .options {
     display: flex;
     gap: var(--space-xl);
-    margin-top: 0; /* Removed margin to prevent additional spacing */
+    margin-top: 40px; /* Match the choice-buttons top margin */
     justify-content: center;
     flex-wrap: wrap;
 }

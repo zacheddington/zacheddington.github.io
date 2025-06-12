@@ -46,10 +46,21 @@ body {
         justify-content: flex-start !important;
         align-items: center !important; /* Keep horizontal centering */
     }
+
+    /* Ensure welcome-page gets same treatment as content-page */
+    body.welcome-page {
+        justify-content: flex-start !important;
+        align-items: center !important;
+    }
 }
 
-/* Welcome page specific body layout - don't center vertically */
+/* Welcome page specific body layout - same as content pages */
 body.welcome-page {
+    justify-content: flex-start;
+}
+
+/* For when welcome-page & content-page classes are used together */
+body.content-page.welcome-page {
     justify-content: flex-start;
 }
 
@@ -81,7 +92,7 @@ body.login-page {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 0; /* Removed margin to allow media query adjustments to take full effect */
+    margin-top: 0 !important; /* Removed margin and made important to override any other settings */
 }
 
 /* Mobile responsive adjustments for welcome screen - handled by aggressive positioning below */
@@ -139,17 +150,12 @@ body.login-page {
         padding-top: calc(var(--header-height) - 15px) !important;
     }
 
-    /* Welcome container positioned higher to match management pages visual position */
-    .welcome-container {
-        margin-top: -10px !important; /* Move up more than admin containers */
-        transform: translateY(-10px); /* Stronger upward push for alignment */
-    }
-
-    /* Management page containers get minimal positioning to stay below header */
+    /* All containers get consistent top positioning */
+    .welcome-container,
     .admin-container,
     .profile-container {
-        margin-top: 5px !important; /* Keep below header */
-        transform: translateY(0px); /* No upward push */
+        margin-top: 5px !important; /* Consistent spacing for all containers */
+        transform: translateY(0); /* No transform */
     }
 }
 
@@ -159,13 +165,8 @@ body.login-page {
         padding-top: calc(var(--header-height) - 30px) !important;
     }
 
-    /* Welcome pages aligned with management pages */
-    .welcome-container {
-        margin-top: -15px !important;
-        transform: translateY(-15px);
-    }
-
-    /* Management pages stay conservative */
+    /* All containers get consistent top positioning */
+    .welcome-container,
     .admin-container,
     .profile-container {
         margin-top: 0px !important;
@@ -179,17 +180,12 @@ body.login-page {
         padding-top: calc(var(--header-height) - 45px) !important;
     }
 
-    /* Welcome pages aligned with management pages at same level */
-    .welcome-container {
-        margin-top: -25px !important;
-        transform: translateY(-20px);
-    }
-
-    /* Management pages get slight upward positioning but stay safe */
+    /* All containers get identical positioning for consistency */
+    .welcome-container,
     .admin-container,
     .profile-container {
         margin-top: -5px !important;
-        transform: translateY(0px);
+        transform: translateY(0);
     }
 }
 
