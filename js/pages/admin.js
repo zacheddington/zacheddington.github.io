@@ -64,8 +64,61 @@ function initializeManageUsersPage() {
     loadUsers();
     loadRolesForUserManagement();
     setupUserFilter();
+    
+    // Add event listener for window resize to adjust column widths
+    window.addEventListener('resize', debounce(adjustColumnWidths, 250));
 
     console.log('Manage users page initialized');
+}
+
+// Function to adjust column widths based on content
+function adjustColumnWidths() {
+    const table = document.querySelector('.users-table');
+    if (!table) return;
+    
+    // Allow table to determine natural column widths first
+    table.style.tableLayout = 'auto';
+    
+    // Get all table headers
+    const headers = Array.from(table.querySelectorAll('th'));
+    
+    // Calculate optimal widths based on content
+    headers.forEach((header, index) => {
+        const cells = Array.from(table.querySelectorAll(`tbody tr td:nth-child(${index + 1})`));
+        
+        // Get maximum content width in this column
+        let maxWidth = header.textContent.length;
+        cells.forEach(cell => {
+            if (cell.textContent.length > maxWidth) {
+                maxWidth = Math.min(cell.textContent.length, 50); // Cap at 50 chars to prevent super wide columns
+            }
+        });
+        
+        // Set min-width based on content (rough approximation of character width)
+        const charWidth = 8; // Estimated average character width in pixels
+        const minWidth = Math.max(maxWidth * charWidth, parseInt(window.getComputedStyle(header).minWidth));
+        
+        // Apply the calculated width if it's larger than the minimum
+        header.style.width = `${minWidth}px`;
+    });
+    
+    // Reapply fixed table layout for better performance after widths are set
+    setTimeout(() => {
+        table.style.tableLayout = 'fixed';
+    }, 100);
+}
+
+// Simple debounce function to limit how often a function is called
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }
 
 // Setup admin navigation
@@ -442,10 +495,11 @@ async function createUser() {
 
         response = await fetch(`${API_URL}/api/create-user`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
+            headers:
+                {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
             body: JSON.stringify(formData),
         });
 
@@ -688,6 +742,7 @@ function getSortedUsers() {
 function displayUsers(users) {
     const usersTableBody = document.getElementById('usersTableBody');
     const noUsersFound = document.getElementById('noUsersFound');
+    const tableContainer = document.querySelector('.table-responsive');
 
     if (!usersTableBody) return;
 
@@ -698,7 +753,12 @@ function displayUsers(users) {
     }
 
     if (noUsersFound) noUsersFound.classList.add('hidden');
-
+    
+    // Reset scroll position when displaying new data
+    if (tableContainer) {
+        tableContainer.scrollLeft = 0;
+    }
+    
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
     usersTableBody.innerHTML = users
@@ -752,6 +812,9 @@ function displayUsers(users) {
         `;
         })
         .join('');
+    
+    // Adjust column widths after rendering
+    setTimeout(adjustColumnWidths, 100);
 }
 
 // Filter users
@@ -783,6 +846,9 @@ function filterUsers() {
     });
 
     displayUsers(filteredUsers);
+    
+    // Adjust column widths based on content after filtering
+    setTimeout(adjustColumnWidths, 100);
 }
 
 // Setup user filter

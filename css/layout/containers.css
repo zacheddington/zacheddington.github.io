@@ -82,15 +82,20 @@ body.login-page {
     box-sizing: border-box;
 }
 
-/* Welcome page container */
-.welcome-container {
+/* Admin container styles - consistent across admin, patients, and welcome pages */
+.admin-container {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    margin-top: 0 !important; /* Removed margin and made important to override any other settings */
+    width: 100%;
+    max-width: 1200px;
+    margin: 2rem auto 0;
+    padding: 0 1rem;
 }
 
-/* Mobile responsive adjustments for welcome screen - handled by aggressive positioning below */
+/* Welcome page container - inherits from admin-container */
+.welcome-page .admin-container {
+    margin: 2rem auto 0;
+}
 
 /* ================================
    RESPONSIVE FIXES FOR ALL CONTENT PAGES

@@ -40,6 +40,8 @@
     -webkit-overflow-scrolling: touch;
     margin-bottom: 1rem;
     border-radius: var(--radius-lg);
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: var(--color-primary) #f1f1f1; /* For Firefox */
 }
 
 .table-responsive table {
@@ -51,10 +53,10 @@
    ================================ */
 
 .users-table {
-    width: 100%;
+    width: 100%; /* Full width but can expand beyond container */
     border-collapse: collapse;
     font-size: 0.9rem;
-    table-layout: auto; /* Changed back to auto for content-based column widths */
+    table-layout: auto; /* Auto layout allows content to determine column width */
     display: table;
     min-width: 800px; /* Minimum width for better content display */
 }
@@ -84,20 +86,27 @@
     height: 2.5rem;
     display: table-cell;
     white-space: nowrap; /* Prevent text wrapping in headers */
+    position: sticky; /* Keep headers visible when scrolling */
+    top: 0;
+    z-index: 2;
 }
 
 /* Column widths - min-width instead of fixed width for responsive behavior */
 .users-table th:nth-child(1) {
     min-width: 120px;
+    width: 15%;
 } /* Username */
 .users-table th:nth-child(2) {
     min-width: 150px;
+    width: 20%;
 } /* Full Name */
 .users-table th:nth-child(3) {
     min-width: 200px;
+    width: 30%;
 } /* Email - larger for potentially long emails */
 .users-table th:nth-child(4) {
     min-width: 100px;
+    width: 15%;
 } /* Role */
 .users-table th:nth-child(5) {
     min-width: 100px;
@@ -161,17 +170,18 @@
     border-right: var(--border-thin) solid #f0f0f0;
     vertical-align: middle;
     display: table-cell;
-    max-width: 0; /* Required for text overflow ellipsis to work */
-    overflow: hidden; /* Hide overflowing content */
-    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
     white-space: nowrap; /* Prevent text from wrapping */
+    text-overflow: ellipsis; /* Show ... when text overflows */
+    overflow: hidden; /* Hide overflow content */
+    max-width: 0; /* Required for text-overflow to work with table cells */
 }
 
 /* Specific column behavior */
 .users-table td.user-email {
-    max-width: 200px; /* Limit width but allow it to expand as needed */
+    max-width: none; /* Remove the max-width limit to allow full expansion */
     text-align: left; /* Left-align email text */
     padding-left: 10px; /* Add some left padding */
+    position: relative; /* For potential overflow indicator */
 }
 
 /* Specific cell styling */
@@ -302,6 +312,17 @@
 
     .table-responsive::-webkit-scrollbar-track {
         background: #f1f1f1;
+    }
+
+    /* Cell hover effect to show full content on mobile */
+    .users-table td:hover {
+        white-space: normal;
+        overflow: visible;
+        max-width: none;
+        z-index: 10;
+        position: relative;
+        background-color: #f8fdff;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     }
 
     @keyframes pulse {

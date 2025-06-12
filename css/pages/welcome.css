@@ -19,6 +19,22 @@
 /* Adjust choice buttons layout for welcome page */
 #welcomeChoice .choice-buttons {
     justify-content: center;
+    margin-top: 1rem; /* Match spacing with admin pages */
+}
+
+/* Consistent admin choice box styles */
+.admin-choice {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: var(--space-xl);
+}
+
+.choice-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xl);
+    margin-top: 1.5rem;
 }
 
 /* Adjust choice buttons layout for the welcome page (3-column) */
@@ -52,7 +68,7 @@
 /* Mobile screens (vertical stack) */
 @media screen and (max-width: 480px) {
     .welcome-page .admin-container {
-        margin-top: -5px !important;
+        margin-top: 1rem !important; /* Consistent with admin pages */
     }
 }
 
@@ -61,6 +77,6 @@
     screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3),
     screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) {
     .welcome-page .admin-container {
-        margin-top: -5px !important;
+        margin-top: 1rem !important;
     }
 }
