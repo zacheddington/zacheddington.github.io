@@ -12,5 +12,26 @@
 
 /* Hidden utility class for admin sections */
 .hidden {
-  display: none !important;
+    display: none !important;
+}
+
+/* ================================
+   ADMIN BUTTON COLOR OVERRIDES
+   ================================ */
+
+/* Make admin back and cancel buttons match the teal color of submit buttons */
+#backToChoiceFromCreateUser,
+#backToChoiceFromManageUsers,
+#cancelCreateUser {
+    background: linear-gradient(
+        135deg,
+        var(--color-secondary) 0%,
+        #00796b 100%
+    ) !important;
+}
+
+#backToChoiceFromCreateUser:hover,
+#backToChoiceFromManageUsers:hover,
+#cancelCreateUser:hover {
+    background: linear-gradient(135deg, #00796b 0%, #004d40 100%) !important;
 }
