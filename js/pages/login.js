@@ -218,10 +218,11 @@ async function performLogin() {
                 response.status === 400 &&
                 result.error === '2FA token required'
             ) {
+                // Reset the guard flag since we're returning early
+                performLogin.isRunning = false;
                 show2FAField();
-                throw new Error(
-                    'Please enter your two-factor authentication code.'
-                );
+                // Don't throw an error - just show the 2FA field and return
+                return;
             } else {
                 throw new Error(result.error || 'Login failed');
             }
@@ -261,20 +262,31 @@ async function performLogin() {
 function show2FAField() {
     const twofaGroup = document.getElementById('twofaGroup');
     const twofaField = document.getElementById('twofaToken');
+    const submitBtn = document.getElementById('loginBtn');
+    const usernameField = document.getElementById('username');
+    const passwordField = document.getElementById('password');
 
     if (twofaGroup && twofaField) {
-        twofaGroup.classList.remove('hidden');
+        twofaGroup.classList.remove('hidden'); // Re-enable form controls for 2FA entry
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Complete Login';
+        usernameField.disabled = false;
+        passwordField.disabled = false;
+        twofaField.disabled = false;
 
-        // Set up 2FA field formatting
-        twofaField.addEventListener('input', function (e) {
-            // Only allow numbers and limit to 6 digits
-            e.target.value = e.target.value
-                .replace(/[^0-9]/g, '')
-                .substring(0, 6);
+        // Set up 2FA field formatting (avoid duplicate event listeners)
+        if (!twofaField.hasAttribute('data-setup')) {
+            twofaField.addEventListener('input', function (e) {
+                // Only allow numbers and limit to 6 digits
+                e.target.value = e.target.value
+                    .replace(/[^0-9]/g, '')
+                    .substring(0, 6);
 
-            // Clear errors when user types
-            clearLoginErrors();
-        });
+                // Clear errors when user types
+                clearLoginErrors();
+            });
+            twofaField.setAttribute('data-setup', 'true');
+        }
 
         // Focus on 2FA field
         setTimeout(() => twofaField.focus(), 100);
