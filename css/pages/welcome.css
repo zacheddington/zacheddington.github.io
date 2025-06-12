@@ -68,7 +68,7 @@
 /* Mobile screens (vertical stack) */
 @media screen and (max-width: 480px) {
     .welcome-page .admin-container {
-        margin-top: 1rem !important; /* Consistent with admin pages */
+        margin-top: 2rem !important; /* Consistent with admin pages */
     }
 }
 
@@ -77,6 +77,6 @@
     screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3),
     screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) {
     .welcome-page .admin-container {
-        margin-top: 1rem !important;
+        margin-top: 2rem !important;
     }
 }

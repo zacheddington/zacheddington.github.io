@@ -52,6 +52,11 @@ body {
         justify-content: flex-start !important;
         align-items: center !important;
     }
+
+    /* Keep consistent spacing for .admin-container on mobile */
+    .admin-container {
+        margin: 2rem auto 0;
+    }
 }
 
 /* Welcome page specific body layout - same as content pages */
@@ -92,7 +97,7 @@ body.login-page {
     padding: 0 1rem;
 }
 
-/* Welcome page container - inherits from admin-container */
+/* Welcome page container - inherits from admin-container but explicitly set for consistency */
 .welcome-page .admin-container {
     margin: 2rem auto 0;
 }

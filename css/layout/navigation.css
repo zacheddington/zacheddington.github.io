@@ -2,6 +2,13 @@
    HAMBURGER MENU & NAVIGATION
    ================================ */
 
+/* Hamburger container for alignment */
+.hamburger-container {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
 /* Hamburger Button */
 .hamburger-btn {
     position: relative; /* Changed from fixed for proper flex alignment */
@@ -18,6 +25,7 @@
     align-items: center;
     justify-content: center;
     transition: var(--transition-all);
+    align-self: center; /* Ensure vertical centering */
 }
 
 .hamburger-btn:hover {

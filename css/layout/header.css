@@ -16,7 +16,7 @@
     );
     box-shadow: var(--shadow-lg);
     display: flex;
-    align-items: center;
+    align-items: center; /* Center items vertically */
     justify-content: space-between; /* Space between hamburger and title */
     padding: 0 var(--space-lg);
     z-index: var(--z-fixed);
