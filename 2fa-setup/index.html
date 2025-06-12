@@ -92,13 +92,16 @@
         border: 1px solid #ddd;
         border-radius: 3px;
         text-align: center;
-      }
-
-      .verification-input {
+      }      .verification-input {
         font-size: 18px;
         text-align: center;
         letter-spacing: 2px;
         font-family: monospace;
+      }
+
+      /* Extra spacing for authenticator app button */
+      .authenticator-button {
+        margin-top: 2rem;
       }
 
       .hidden {
@@ -133,14 +136,13 @@
       <!-- Step 1: Download App -->
       <div class="step active" id="step1">
         <h3><span class="step-number">1</span>Download Authenticator App</h3>
-        <p>If you don't already have one, download a TOTP authenticator app:</p>
-        <ul>
+        <p>If you don't already have one, download a TOTP authenticator app:</p>        <ul>
           <li><strong>Google Authenticator</strong> (iOS/Android)</li>
           <li><strong>Microsoft Authenticator</strong> (iOS/Android)</li>
           <li><strong>Authy</strong> (iOS/Android/Desktop)</li>
           <li><strong>1Password</strong> (if you have a subscription)</li>
         </ul>
-        <button onclick="nextStep(2)" class="btn btn-primary">
+        <button onclick="nextStep(2)" class="btn btn-primary authenticator-button">
           I have an authenticator app
         </button>
       </div>
