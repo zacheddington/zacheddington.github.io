@@ -4,7 +4,10 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Manage Patients - Integris Neuro</title>
-        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta
+            http-equiv="Cache-Control"
+            content="no-cache, no-store, must-revalidate"
+        />
         <meta http-equiv="Pragma" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
         <link rel="stylesheet" href="../../css/main.css" />
@@ -20,17 +23,35 @@
         <div class="admin-container">
             <div class="admin-section" id="managePatientsSection">
                 <div class="section-header">
-                    <a href="../index.html" class="secondary-btn ml-auto fade-nav">← Back to Patient Management</a>
+                    <a
+                        href="../index.html"
+                        class="secondary-btn ml-auto fade-nav"
+                        >← Back to Patient Management</a
+                    >
                     <h2>Manage Existing Patients</h2>
                 </div>
                 <div class="user-filter">
                     <div class="form-group">
                         <label for="patientFilter">Search Patients</label>
-                        <input type="text" id="patientFilter" placeholder="Search by name, phone, or address..." autocomplete="off" />
-                        <small class="field-note">Filter patients to quickly find specific records</small>
+                        <input
+                            type="text"
+                            id="patientFilter"
+                            placeholder="Search by name, phone, or address..."
+                            autocomplete="off"
+                        />
+                        <small class="field-note"
+                            >Filter patients to quickly find specific
+                            records</small
+                        >
                     </div>
                     <div class="filter-actions">
-                        <button type="button" class="secondary-btn hidden" id="resetPatientSort">Clear Sort</button>
+                        <button
+                            type="button"
+                            class="secondary-btn hidden"
+                            id="resetPatientSort"
+                        >
+                            Clear Sort
+                        </button>
                     </div>
                 </div>
                 <div class="users-table-container">
@@ -47,8 +68,12 @@
                         </thead>
                         <tbody id="patientsTableBody"></tbody>
                     </table>
-                    <div id="patientsLoading" class="loading-message">Loading patients...</div>
-                    <div id="noPatientsFound" class="no-results hidden">No patients found matching your search.</div>
+                    <div id="patientsLoading" class="loading-message">
+                        Loading patients...
+                    </div>
+                    <div id="noPatientsFound" class="no-results hidden">
+                        No patients found matching your search.
+                    </div>
                 </div>
             </div>
         </div>

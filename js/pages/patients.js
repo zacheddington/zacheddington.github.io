@@ -9,7 +9,7 @@ let currentPatientSort = { column: null, direction: null };
 function initializePatientsPage() {
     // Determine which page we're on and initialize accordingly
     const currentPage = getCurrentPageType();
-    
+
     switch (currentPage) {
         case 'create-patient':
             initializeCreatePatientPage();
@@ -52,7 +52,7 @@ function initializePatientsIndexPage() {
 function initializeCreatePatientPage() {
     // Setup create patient form
     setupCreatePatientForm();
-    
+
     console.log('Create patient page initialized');
 }
 
@@ -61,7 +61,7 @@ function initializeManagePatientsPage() {
     // Load patients and setup patient management
     loadPatients();
     setupPatientFilter();
-    
+
     console.log('Manage patients page initialized');
 }
 
@@ -340,7 +340,7 @@ async function createPatient() {
                 ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`
                 : `${formData.firstName} ${formData.lastName}`;
             const successMessage = `Success, new patient ${patientName} created!`;
-            window.modalManager.showModal('success', successMessage);            // Redirect back to patient choice page after brief delay
+            window.modalManager.showModal('success', successMessage); // Redirect back to patient choice page after brief delay
             setTimeout(() => {
                 window.modalManager.closeModal();
                 // Navigate back to main patient page using page transitions

@@ -4,7 +4,10 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Manage Users - Integris Neuro</title>
-        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta
+            http-equiv="Cache-Control"
+            content="no-cache, no-store, must-revalidate"
+        />
         <meta http-equiv="Pragma" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
         <link rel="stylesheet" href="../../css/main.css" />
@@ -20,17 +23,35 @@
         <div class="admin-container">
             <div class="admin-section" id="manageUsersSection">
                 <div class="section-header">
-                    <a href="../index.html" class="secondary-btn ml-auto fade-nav">← Back to User Management</a>
+                    <a
+                        href="../index.html"
+                        class="secondary-btn ml-auto fade-nav"
+                        >← Back to User Management</a
+                    >
                     <h2>Manage Existing Users</h2>
                 </div>
                 <div class="user-filter">
                     <div class="form-group">
                         <label for="userFilter">Search Users</label>
-                        <input type="text" id="userFilter" placeholder="Search by username, name, or email..." autocomplete="off" />
-                        <small class="field-note">Filter users to quickly find specific accounts</small>
+                        <input
+                            type="text"
+                            id="userFilter"
+                            placeholder="Search by username, name, or email..."
+                            autocomplete="off"
+                        />
+                        <small class="field-note"
+                            >Filter users to quickly find specific
+                            accounts</small
+                        >
                     </div>
                     <div class="filter-actions">
-                        <button type="button" class="secondary-btn hidden" id="resetSort">Clear Sort</button>
+                        <button
+                            type="button"
+                            class="secondary-btn hidden"
+                            id="resetSort"
+                        >
+                            Clear Sort
+                        </button>
                     </div>
                 </div>
                 <div class="users-table-container">
@@ -47,8 +68,12 @@
                         </thead>
                         <tbody id="usersTableBody"></tbody>
                     </table>
-                    <div id="usersLoading" class="loading-message">Loading users...</div>
-                    <div id="noUsersFound" class="no-results hidden">No users found matching your search.</div>
+                    <div id="usersLoading" class="loading-message">
+                        Loading users...
+                    </div>
+                    <div id="noUsersFound" class="no-results hidden">
+                        No users found matching your search.
+                    </div>
                 </div>
             </div>
         </div>

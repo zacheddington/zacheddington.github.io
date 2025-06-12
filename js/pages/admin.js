@@ -10,7 +10,7 @@ let currentSort = { column: null, direction: null };
 function initializeAdminPage() {
     // Determine which page we're on and initialize accordingly
     const currentPage = getCurrentPageType();
-    
+
     switch (currentPage) {
         case 'create-user':
             initializeCreateUserPage();
@@ -53,10 +53,10 @@ function initializeAdminIndexPage() {
 function initializeCreateUserPage() {
     // Load roles for dropdown
     loadRoles();
-    
+
     // Setup create user form
     setupCreateUserForm();
-    
+
     console.log('Create user page initialized');
 }
 
@@ -66,7 +66,7 @@ function initializeManageUsersPage() {
     loadUsers();
     loadRolesForUserManagement();
     setupUserFilter();
-    
+
     console.log('Manage users page initialized');
 }
 
@@ -399,7 +399,7 @@ async function createUser() {
                 ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`
                 : `${formData.firstName} ${formData.lastName}`;
             const successMessage = `Success, new user for ${userName} created!`;
-            window.modalManager.showModal('success', successMessage);            // Redirect back to admin choice page after brief delay
+            window.modalManager.showModal('success', successMessage); // Redirect back to admin choice page after brief delay
             setTimeout(() => {
                 window.modalManager.closeModal();
                 // Navigate back to main admin page using page transitions

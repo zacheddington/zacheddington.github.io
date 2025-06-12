@@ -4,7 +4,10 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Create User - Integris Neuro</title>
-        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta
+            http-equiv="Cache-Control"
+            content="no-cache, no-store, must-revalidate"
+        />
         <meta http-equiv="Pragma" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
         <link rel="stylesheet" href="../../css/main.css" />
@@ -20,35 +23,78 @@
         <div class="admin-container">
             <div class="admin-section" id="createUserSection">
                 <div class="section-header">
-                    <a href="../index.html" class="secondary-btn ml-auto fade-nav">← Back to User Management</a>
+                    <a
+                        href="../index.html"
+                        class="secondary-btn ml-auto fade-nav"
+                        >← Back to User Management</a
+                    >
                     <h2>Create New User</h2>
                 </div>
-                <form id="createUserForm" class="admin-form" data-form-type="user-registration">
+                <form
+                    id="createUserForm"
+                    class="admin-form"
+                    data-form-type="user-registration"
+                >
                     <!-- Personal Information -->
                     <div class="form-section">
                         <h3>Personal Information</h3>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="firstName">First Name</label>
-                                <input type="text" id="firstName" name="firstName" required maxlength="50" autocomplete="given-name" />
-                                <small class="field-note">Maximum 50 characters</small>
+                                <input
+                                    type="text"
+                                    id="firstName"
+                                    name="firstName"
+                                    required
+                                    maxlength="50"
+                                    autocomplete="given-name"
+                                />
+                                <small class="field-note"
+                                    >Maximum 50 characters</small
+                                >
                             </div>
                             <div class="form-group">
                                 <label for="middleName">Middle Name</label>
-                                <input type="text" id="middleName" name="middleName" maxlength="50" autocomplete="additional-name" />
-                                <small class="field-note">Maximum 50 characters (optional)</small>
+                                <input
+                                    type="text"
+                                    id="middleName"
+                                    name="middleName"
+                                    maxlength="50"
+                                    autocomplete="additional-name"
+                                />
+                                <small class="field-note"
+                                    >Maximum 50 characters (optional)</small
+                                >
                             </div>
                             <div class="form-group">
                                 <label for="lastName">Last Name</label>
-                                <input type="text" id="lastName" name="lastName" required maxlength="50" autocomplete="family-name" />
-                                <small class="field-note">Maximum 50 characters</small>
+                                <input
+                                    type="text"
+                                    id="lastName"
+                                    name="lastName"
+                                    required
+                                    maxlength="50"
+                                    autocomplete="family-name"
+                                />
+                                <small class="field-note"
+                                    >Maximum 50 characters</small
+                                >
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="email">Email Address</label>
-                                <input type="email" id="email" name="email" required maxlength="50" autocomplete="email" />
-                                <small class="field-note">Maximum 50 characters</small>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    required
+                                    maxlength="50"
+                                    autocomplete="email"
+                                />
+                                <small class="field-note"
+                                    >Maximum 50 characters</small
+                                >
                             </div>
                         </div>
                     </div>
@@ -58,33 +104,78 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="newUsername">Username</label>
-                                <input type="text" id="newUsername" name="username" required maxlength="50" autocomplete="username" />
-                                <small class="field-note">Maximum 50 characters</small>
+                                <input
+                                    type="text"
+                                    id="newUsername"
+                                    name="username"
+                                    required
+                                    maxlength="50"
+                                    autocomplete="username"
+                                />
+                                <small class="field-note"
+                                    >Maximum 50 characters</small
+                                >
                             </div>
                             <div class="form-group">
                                 <label for="userRole">Role</label>
-                                <select id="userRole" name="role" required autocomplete="off">
+                                <select
+                                    id="userRole"
+                                    name="role"
+                                    required
+                                    autocomplete="off"
+                                >
                                     <option value="">Select a role...</option>
                                 </select>
-                                <small class="field-note">Determines user permissions</small>
+                                <small class="field-note"
+                                    >Determines user permissions</small
+                                >
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="newPassword">Password</label>
-                                <input type="password" id="newPassword" name="password" required minlength="8" autocomplete="new-password" />
-                                <small class="field-note">Must meet healthcare security requirements</small>
+                                <input
+                                    type="password"
+                                    id="newPassword"
+                                    name="password"
+                                    required
+                                    minlength="8"
+                                    autocomplete="new-password"
+                                />
+                                <small class="field-note"
+                                    >Must meet healthcare security
+                                    requirements</small
+                                >
                             </div>
                             <div class="form-group">
-                                <label for="confirmPassword">Confirm Password</label>
-                                <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8" autocomplete="new-password" />
-                                <small class="field-note">Must match password exactly</small>
+                                <label for="confirmPassword"
+                                    >Confirm Password</label
+                                >
+                                <input
+                                    type="password"
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    required
+                                    minlength="8"
+                                    autocomplete="new-password"
+                                />
+                                <small class="field-note"
+                                    >Must match password exactly</small
+                                >
                             </div>
                         </div>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="submit-btn" id="createUserSubmitBtn">Create User</button>
-                        <a href="../index.html" class="secondary-btn fade-nav">Cancel</a>
+                        <button
+                            type="submit"
+                            class="submit-btn"
+                            id="createUserSubmitBtn"
+                        >
+                            Create User
+                        </button>
+                        <a href="../index.html" class="secondary-btn fade-nav"
+                            >Cancel</a
+                        >
                     </div>
                 </form>
             </div>
