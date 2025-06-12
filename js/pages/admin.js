@@ -43,13 +43,25 @@ function setupAdminNavigation() {
         loadRolesForUserManagement();
         setupUserFilter();
     });
-    
-    // Cancel button handler
+      // Cancel button handler
     document.getElementById('cancelCreateUser')?.addEventListener('click', function() {
         createUserSection.classList.add('hidden');
         adminChoice.classList.remove('hidden');
         document.getElementById('createUserForm')?.reset();
         clearCreateUserErrors();
+    });
+
+    // Back button handlers
+    document.getElementById('backToChoiceFromCreateUser')?.addEventListener('click', function() {
+        createUserSection.classList.add('hidden');
+        adminChoice.classList.remove('hidden');
+        document.getElementById('createUserForm')?.reset();
+        clearCreateUserErrors();
+    });
+
+    document.getElementById('backToChoiceFromManageUsers')?.addEventListener('click', function() {
+        manageUsersSection.classList.add('hidden');
+        adminChoice.classList.remove('hidden');
     });
 }
 

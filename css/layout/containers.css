@@ -57,9 +57,9 @@ body.login-page {
 .admin-container {
     max-width: 1000px;
     width: 100%;
-    margin: 2rem auto;
-    padding: 2rem;
-    margin-top: 10px; /* Reduced to bring content higher */
+    margin: 1rem auto;
+    padding: 1rem;
+    margin-top: 5px; /* Further reduced padding */
     box-sizing: border-box;
 }
 
@@ -67,9 +67,9 @@ body.login-page {
 .profile-container {
     max-width: 1000px;
     width: 100%;
-    margin: 2rem auto;
-    padding: 2rem;
-    margin-top: 10px; /* Reduced to bring content higher */
+    margin: 1rem auto;
+    padding: 1rem;
+    margin-top: 5px; /* Further reduced padding */
     box-sizing: border-box;
 }
 
@@ -249,5 +249,24 @@ body.login-page {
     .grid-3,
     .grid-4 {
         grid-template-columns: 1fr;
+    }
+}
+
+/* Additional mobile padding fixes for better UX */
+@media screen and (max-width: 768px) {
+    body {
+        padding-top: var(--header-height);
+    }
+    
+    .admin-container,
+    .profile-container {
+        margin: 0.5rem auto;
+        padding: 0.75rem;
+        margin-top: 0;
+    }
+    
+    .welcome-container {
+        margin-top: 0;
+        padding: 0.5rem;
     }
 }

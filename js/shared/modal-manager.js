@@ -3,8 +3,7 @@
 
 const modalManager = {
     isShowingModal: false,
-    
-    showModal: function(type, message, forceShow = false) {
+      showModal: function(type, message, forceShow = false) {
         if (this.isShowingModal && !forceShow) {
             console.log('Modal already showing, skipping new modal');
             return false;
@@ -216,15 +215,16 @@ const modalManager = {
     }
 };
 
-// Enhanced logout modal
-function showLogoutModal() {
+// Enhanced logout confirmation modal - unified function
+function showLogoutModal(confirmCallback) {
     return new Promise((resolve) => {
         // Prevent duplicate modals
-        const existingModal = document.querySelector('.modal-overlay');
+        const existingModal = document.querySelector('.modal-overlay, .logout-modal');
         if (existingModal) {
             return resolve(false);
         }
-          const logoutModal = document.createElement('div');
+        
+        const logoutModal = document.createElement('div');
         logoutModal.className = 'modal-overlay';
         logoutModal.innerHTML = `
             <div class="modal-content logout-modal">
@@ -239,7 +239,8 @@ function showLogoutModal() {
                     <button class="logout-modal-btn cancel" id="cancelLogout">Cancel</button>
                     <button class="logout-modal-btn confirm" id="confirmLogout">Logout</button>
                 </div>
-            </div>        `;
+            </div>
+        `;
         
         document.body.appendChild(logoutModal);
         
@@ -254,12 +255,14 @@ function showLogoutModal() {
         
         const confirmHandler = () => {
             document.body.removeChild(logoutModal);
+            if (confirmCallback) confirmCallback();
             resolve(true);
         };
         
         document.getElementById('cancelLogout').addEventListener('click', cancelHandler);
         document.getElementById('confirmLogout').addEventListener('click', confirmHandler);
-          // Keyboard support
+        
+        // Keyboard support
         logoutModal.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 cancelHandler();
@@ -282,3 +285,6 @@ window.showModal = modalManager.showModal.bind(modalManager);
 window.closeModal = modalManager.closeModal.bind(modalManager);
 window.modalManager = modalManager;
 window.showLogoutModal = showLogoutModal;
+
+// Add the enhanced logout confirmation to modalManager (unified function)
+modalManager.showLogoutModal = showLogoutModal;

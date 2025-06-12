@@ -238,9 +238,32 @@ function validatePasswordMatch(newPasswordId = 'newPassword', confirmPasswordId 
     }
 }
 
+// Check if two passwords match
+function passwordsMatch(password1, password2) {
+    return password1 === password2;
+}
+
+// Simple password validation wrapper for consistency
+function validatePassword(password) {
+    return validatePasswordStrength(password);
+}
+
 // Make password utilities available globally
 window.validatePasswordStrength = validatePasswordStrength;
 window.calculatePasswordScore = calculatePasswordScore;
 window.updatePasswordStrength = updatePasswordStrength;
 window.addPasswordStrengthIndicator = addPasswordStrengthIndicator;
 window.validatePasswordMatch = validatePasswordMatch;
+window.passwordsMatch = passwordsMatch;
+window.validatePassword = validatePassword;
+
+// Create a passwordUtils object for more organized access
+window.passwordUtils = {
+    validatePasswordStrength,
+    calculatePasswordScore,
+    updatePasswordStrength,
+    addPasswordStrengthIndicator,
+    validatePasswordMatch,
+    passwordsMatch,
+    validatePassword
+};

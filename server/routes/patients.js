@@ -159,6 +159,87 @@ router.get('/patients/:patientKey', authenticateToken, async (req, res) => {
     }
 });
 
+// Create patient endpoint
+router.post('/patients', 
+    authenticateToken,
+    sanitizeInput,
+    validateRequiredFields(['firstName', 'lastName', 'address', 'phone', 'acceptsTexts']),
+    async (req, res) => {
+        try {
+            const { firstName, middleName, lastName, address, phone, acceptsTexts } = req.body;
+            
+            if (config.isLocalTest) {
+                // For local testing, just return success
+                return successResponse(res, {
+                    patient_key: Math.floor(Math.random() * 1000),
+                    firstName,
+                    middleName,
+                    lastName,
+                    address,
+                    phone,
+                    acceptsTexts: acceptsTexts === 'yes'
+                }, 'Patient created successfully');
+            }
+            
+            // Production database logic
+            const client = await pool.connect();
+            try {
+                await client.query('BEGIN');
+                
+                // Get the creator's username for the 'who' field
+                const creatorUsername = req.user.username;
+                
+                // Insert into tbl_name_data
+                const nameResult = await client.query(
+                    'INSERT INTO tbl_name_data (first_name, middle_name, last_name, who, date_when) VALUES ($1, $2, $3, $4, NOW()) RETURNING name_key',
+                    [firstName, middleName || null, lastName, creatorUsername]
+                );
+                
+                if (nameResult.rows.length === 0) {
+                    throw new Error('Failed to create name record');
+                }
+                
+                const nameKey = nameResult.rows[0].name_key;
+                
+                // Insert into tbl_patient
+                const patientResult = await client.query(
+                    'INSERT INTO tbl_patient (name_key, address, phone, accepts_texts, who, date_when) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING patient_key',
+                    [nameKey, address, phone, acceptsTexts === 'yes', creatorUsername]
+                );
+                
+                if (patientResult.rows.length === 0) {
+                    throw new Error('Failed to create patient record');
+                }
+                
+                const patientKey = patientResult.rows[0].patient_key;
+                
+                await client.query('COMMIT');
+                
+                return successResponse(res, {
+                    patient_key: patientKey,
+                    firstName,
+                    middleName,
+                    lastName,
+                    address,
+                    phone,
+                    acceptsTexts: acceptsTexts === 'yes',
+                    nameKey
+                }, 'Patient created successfully');
+                
+            } catch (err) {
+                await client.query('ROLLBACK');
+                throw err;
+            } finally {
+                client.release();
+            }
+            
+        } catch (err) {
+            console.error('Patient creation error:', err);
+            return errorResponse(res, err.message || 'Failed to create patient. Please try again later.', 500);
+        }
+    }
+);
+
 // Delete patient endpoint
 router.delete('/patients/:patientKey', authenticateToken, async (req, res) => {
     try {

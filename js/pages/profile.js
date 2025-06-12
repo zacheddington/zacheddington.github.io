@@ -5,6 +5,7 @@
 function initializeProfilePage() {
     setupPasswordChangeForm();
     loadUserProfile();
+    load2FAStatus(); // Add 2FA status loading
     
     // Load hamburger menu
     if (document.getElementById('hamburger-menu')) {
@@ -125,6 +126,15 @@ function setupPasswordChangeForm() {
         e.preventDefault();
         await changePassword();
     });
+    
+    // Set up profile update form
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await updateProfile();
+        });
+    }
 }
 
 // Set up profile form field validation
@@ -139,16 +149,19 @@ function setupProfileFieldValidation() {
             window.fieldValidation.updateFieldState(currentPasswordField);
         });
     }
-    
-    if (newPasswordField) {
+      if (newPasswordField) {
         newPasswordField.addEventListener('input', function() {
-            const validation = window.passwordUtils.validatePassword(newPasswordField.value);
-            
-            // Update validation indicators
-            updatePasswordValidationIndicators(validation);
+            if (window.passwordUtils && window.passwordUtils.validatePassword) {
+                const validation = window.passwordUtils.validatePassword(newPasswordField.value);
+                
+                // Update validation indicators
+                updatePasswordValidationIndicators(validation);
+            }
             
             // Update field state
-            window.fieldValidation.updateFieldState(newPasswordField);
+            if (window.fieldValidation && window.fieldValidation.updateFieldState) {
+                window.fieldValidation.updateFieldState(newPasswordField);
+            }
             
             // Check password match if confirm password has value
             if (confirmPasswordField && confirmPasswordField.value) {
@@ -160,7 +173,9 @@ function setupProfileFieldValidation() {
     if (confirmPasswordField) {
         confirmPasswordField.addEventListener('input', function() {
             validatePasswordMatch();
-            window.fieldValidation.updateFieldState(confirmPasswordField);
+            if (window.fieldValidation && window.fieldValidation.updateFieldState) {
+                window.fieldValidation.updateFieldState(confirmPasswordField);
+            }
         });
     }
 }
@@ -362,8 +377,7 @@ function resetPasswordValidationIndicators() {
             element.classList.remove('valid', 'invalid');
         }
     });
-    
-    // Clear password match indicator
+      // Clear password match indicator
     const matchIndicator = document.getElementById('passwordMatch');
     if (matchIndicator) {
         matchIndicator.textContent = '';
@@ -371,9 +385,179 @@ function resetPasswordValidationIndicators() {
     }
 }
 
+// Update user profile information
+async function updateProfile() {
+    const submitBtn = document.getElementById('updateProfileBtn');
+    const originalText = submitBtn.textContent;
+    let response = null;
+    
+    try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Updating Profile...';
+        
+        // Get form data
+        const firstName = document.getElementById('firstName').value.trim();
+        const middleName = document.getElementById('middleName').value.trim();
+        const lastName = document.getElementById('lastName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        
+        // Validate required fields
+        if (!firstName || !lastName || !email) {
+            throw new Error('First name, last name, and email are required.');
+        }
+        
+        const token = localStorage.getItem('token');
+        const API_URL = window.apiClient.getAPIUrl();
+        
+        response = await fetch(`${API_URL}/api/user/profile`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                firstName,
+                middleName,
+                lastName,
+                email
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Update the display sections with new data
+            const profile = result.data || result;
+            displayUserProfile(profile);
+            
+            // Show success message
+            window.modalManager.showModal('success', 'Profile updated successfully!');
+        } else {
+            throw new Error(result.error || 'Failed to update profile');
+        }
+        
+    } catch (error) {
+        console.error('Update profile error:', error);
+        
+        // Use enhanced error categorization
+        const errorInfo = window.apiClient.categorizeError(error, response);
+        
+        // Show appropriate feedback
+        window.modalManager.showModal('error', errorInfo.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+}
+
+// Load 2FA status and setup UI
+async function load2FAStatus() {
+    try {
+        const twofaStatus = document.getElementById('twofaStatus');
+        const twofaActions = document.getElementById('twofaActions');
+        
+        if (!twofaStatus || !twofaActions) return;
+        
+        const API_URL = window.apiClient.getAPIUrl();
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/2fa/status`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            const isEnabled = result.data?.enabled || false;
+            
+            // Update status badge
+            twofaStatus.textContent = isEnabled ? 'Enabled' : 'Disabled';
+            twofaStatus.className = `status-badge ${isEnabled ? 'enabled' : 'disabled'}`;
+            
+            // Setup action buttons
+            if (isEnabled) {
+                twofaActions.innerHTML = `
+                    <button type="button" class="secondary-btn" onclick="disable2FA()">
+                        Disable 2FA
+                    </button>
+                `;
+            } else {
+                twofaActions.innerHTML = `
+                    <button type="button" class="submit-btn" onclick="enable2FA()">
+                        Enable 2FA
+                    </button>
+                `;
+            }
+        } else {
+            throw new Error('Failed to load 2FA status');
+        }
+    } catch (error) {
+        console.error('Error loading 2FA status:', error);
+        const twofaStatus = document.getElementById('twofaStatus');
+        const twofaActions = document.getElementById('twofaActions');
+        
+        if (twofaStatus) {
+            twofaStatus.textContent = 'Error';
+            twofaStatus.className = 'status-badge error';
+        }
+        
+        if (twofaActions) {
+            twofaActions.innerHTML = `
+                <button type="button" class="secondary-btn" onclick="load2FAStatus()">
+                    Retry Loading
+                </button>
+            `;
+        }
+    }
+}
+
+// Enable 2FA function
+function enable2FA() {
+    window.location.href = '../2fa-setup/';
+}
+
+// Disable 2FA function
+async function disable2FA() {
+    const password = prompt('Please enter your current password to disable 2FA:');
+    if (!password) return;
+    
+    try {
+        const API_URL = window.apiClient.getAPIUrl();
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/api/2fa/disable`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ password })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            window.modalManager.showModal('success', '2FA has been disabled successfully.');
+            load2FAStatus(); // Refresh status
+        } else {
+            window.modalManager.showModal('error', result.error || 'Failed to disable 2FA.');
+        }
+    } catch (error) {
+        console.error('Error disabling 2FA:', error);
+        window.modalManager.showModal('error', 'Network error. Please try again.');
+    }
+}
+
 // Expose functions to global scope
 window.profilePage = {
     initializeProfilePage,
     loadUserProfile,
-    changePassword
+    changePassword,
+    updateProfile
 };
+
+// Make 2FA functions globally available
+window.load2FAStatus = load2FAStatus;
+window.enable2FA = enable2FA;
+window.disable2FA = disable2FA;

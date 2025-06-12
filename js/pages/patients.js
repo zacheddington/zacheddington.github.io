@@ -76,12 +76,23 @@ function setupCreatePatientForm() {
     
     // Character limit validation for create patient form fields
     setupCreatePatientFieldValidation();
-    
-    // Handle form submission
+      // Handle form submission
     createPatientForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         await createPatient();
     });
+    
+    // Handle cancel button
+    const cancelBtn = document.getElementById('cancelCreatePatient');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            // Clear form and go back to patient choice
+            document.getElementById('createPatientForm').reset();
+            clearCreatePatientErrors();
+            document.getElementById('createPatientSection').classList.add('hidden');
+            document.getElementById('patientChoice').classList.remove('hidden');
+        });
+    }
 }
 
 // Set up field validation for patient creation form
