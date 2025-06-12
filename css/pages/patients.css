@@ -11,49 +11,63 @@
 /* This file is reserved for patients-page specific styles that don't fit elsewhere */
 
 /* ================================
+   UTILITY CLASSES
+   ================================ */
+
+/* Hidden utility class */
+.hidden {
+    display: none !important;
+}
+
+/* Utility class for margin-right auto */
+.ml-auto {
+    margin-right: auto !important;
+}
+
+/* ================================
    PATIENT SPECIFIC STYLES
    ================================ */
 
 /* Patient Table Styles */
 .patient-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .patient-full-name {
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
 }
 
 .patient-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 .accepts-texts {
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: var(--font-weight-semibold);
-  text-align: center;
-  min-width: 40px;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: var(--font-weight-semibold);
+    text-align: center;
+    min-width: 40px;
 }
 
 .accepts-texts.yes {
-  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
-  color: var(--color-white);
+    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+    color: var(--color-white);
 }
 
 .accepts-texts.no {
-  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-  color: var(--color-white);
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: var(--color-white);
 }
 
 .patient-created {
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
 }
 
 /* ================================
@@ -64,20 +78,20 @@
 #backToChoiceFromCreate,
 #backToChoiceFromManage,
 #cancelCreatePatient {
-  background: linear-gradient(
-    135deg,
-    var(--color-secondary) 0%,
-    #00796b 100%
-  ) !important;
-  color: var(--color-white) !important;
-  border: var(--border-thin) solid transparent !important;
-  box-shadow: var(--shadow-button) !important;
+    background: linear-gradient(
+        135deg,
+        var(--color-secondary) 0%,
+        #00796b 100%
+    ) !important;
+    color: var(--color-white) !important;
+    border: var(--border-thin) solid transparent !important;
+    box-shadow: var(--shadow-button) !important;
 }
 
 #backToChoiceFromCreate:hover,
 #backToChoiceFromManage:hover,
 #cancelCreatePatient:hover {
-  background: linear-gradient(135deg, #00796b 0%, #004d40 100%) !important;
-  transform: translateY(-2px) !important;
-  box-shadow: var(--shadow-button-hover) !important;
+    background: linear-gradient(135deg, #00796b 0%, #004d40 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-button-hover) !important;
 }

@@ -15,6 +15,11 @@
     display: none !important;
 }
 
+/* Utility class for margin-right auto */
+.ml-auto {
+    margin-right: auto !important;
+}
+
 /* ================================
    ADMIN BUTTON COLOR OVERRIDES
    ================================ */

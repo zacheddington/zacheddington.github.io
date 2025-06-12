@@ -1,237 +1,268 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Profile - Integris Neuro</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>My Profile - Integris Neuro</title>
 
-    <!-- Security: Prevent caching of authenticated pages -->
-    <meta
-      http-equiv="Cache-Control"
-      content="no-cache, no-store, must-revalidate"
-    />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <link rel="stylesheet" href="../css/main.css" />
-    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
-    <link rel="icon" type="image/png" href="../favicon.png" />
-    <script src="../js/shared/auth-utils.js"></script>
-  </head>
-  <body>
-    <!-- Header Bar -->
-    <header class="app-header">
-      <div id="hamburger-menu"></div>
-      <h1 class="page-title">My Profile</h1>
-    </header>
-    <div class="profile-container">
-      <!-- Profile Information Display Section -->
-      <div class="profile-section">
-        <h2>Account Information</h2>
-        <div class="profile-info">
-          <div class="info-row">
-            <label>Name:</label>
-            <span id="userName">Loading...</span>
-          </div>
-          <div class="info-row">
-            <label>Email:</label>
-            <span id="userEmail">Loading...</span>
-          </div>
-          <div class="info-row">
-            <label>Role:</label>
-            <span id="userRole">Loading...</span>
-          </div>
+        <!-- Security: Prevent caching of authenticated pages -->
+        <meta
+            http-equiv="Cache-Control"
+            content="no-cache, no-store, must-revalidate"
+        />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <link rel="stylesheet" href="../css/main.css" />
+        <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+        <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+        <link rel="icon" type="image/png" href="../favicon.png" />
+        <script src="../js/shared/auth-utils.js"></script>
+    </head>
+    <body>
+        <!-- Header Bar -->
+        <header class="app-header">
+            <div id="hamburger-menu"></div>
+            <h1 class="page-title">My Profile</h1>
+        </header>
+        <div class="profile-container">
+            <!-- Profile Information Display Section -->
+            <div class="profile-section">
+                <h2>Account Information</h2>
+                <div class="profile-info">
+                    <div class="info-row">
+                        <label>Name:</label>
+                        <span id="userName">Loading...</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Email:</label>
+                        <span id="userEmail">Loading...</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Role:</label>
+                        <span id="userRole">Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Information Section -->
+            <div class="profile-section">
+                <h2>Personal Information</h2>
+                <form id="profileForm" class="profile-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name</label>
+                            <input
+                                type="text"
+                                id="firstName"
+                                name="firstName"
+                                required
+                                maxlength="50"
+                            />
+                            <small class="field-note"
+                                >Maximum 50 characters</small
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="middleName">Middle Name</label>
+                            <input
+                                type="text"
+                                id="middleName"
+                                name="middleName"
+                                maxlength="50"
+                            />
+                            <small class="field-note"
+                                >Maximum 50 characters</small
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <input
+                                type="text"
+                                id="lastName"
+                                name="lastName"
+                                required
+                                maxlength="50"
+                            />
+                            <small class="field-note"
+                                >Maximum 50 characters</small
+                            >
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                required
+                                maxlength="50"
+                            />
+                            <small class="field-note"
+                                >Maximum 50 characters</small
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button
+                            type="submit"
+                            class="submit-btn"
+                            id="updateProfileBtn"
+                        >
+                            Update Profile
+                        </button>
+                        <button
+                            type="button"
+                            class="secondary-btn"
+                            id="cancelProfileBtn"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <!-- Password Change Section -->
+            <div class="profile-section" id="passwordChangeSection">
+                <h2>Change Password</h2>
+                <form id="passwordChangeForm" class="profile-form">
+                    <!-- Hidden username field for accessibility and password manager compatibility -->
+                    <input
+                        type="text"
+                        id="passwordFormUsername"
+                        name="username"
+                        autocomplete="username"
+                        class="hidden"
+                        tabindex="-1"
+                        aria-hidden="true"
+                    />
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="currentPassword"
+                                >Current Password</label
+                            >
+                            <input
+                                type="password"
+                                id="currentPassword"
+                                name="currentPassword"
+                                required
+                                autocomplete="current-password"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <input
+                                type="password"
+                                id="newPassword"
+                                name="newPassword"
+                                required
+                                minlength="8"
+                                autocomplete="new-password"
+                            />
+                            <small class="field-note"
+                                >Must meet healthcare security
+                                requirements</small
+                            >
+
+                            <!-- Password Requirements -->
+                            <div class="password-requirements">
+                                <div class="requirement" id="lengthReq">
+                                    ✓ At least 8 characters
+                                </div>
+                                <div class="requirement" id="uppercaseReq">
+                                    ✓ One uppercase letter
+                                </div>
+                                <div class="requirement" id="lowercaseReq">
+                                    ✓ One lowercase letter
+                                </div>
+                                <div class="requirement" id="digitReq">
+                                    ✓ One number
+                                </div>
+                                <div class="requirement" id="specialReq">
+                                    ✓ One special character
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword"
+                                >Confirm New Password</label
+                            >
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                required
+                                minlength="8"
+                                autocomplete="new-password"
+                            />
+                            <small class="field-note"
+                                >Re-enter your new password to confirm</small
+                            >
+                            <div
+                                id="passwordMatch"
+                                class="password-match"
+                            ></div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button
+                            type="submit"
+                            class="submit-btn"
+                            id="changePasswordBtn"
+                        >
+                            Change Password
+                        </button>
+                        <button
+                            type="button"
+                            class="secondary-btn hidden"
+                            id="cancelPasswordBtn"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Security Settings Section -->
+            <div class="profile-section">
+                <h2>Security Settings</h2>
+                <div class="security-option">
+                    <div class="security-header">
+                        <h3>Two-Factor Authentication</h3>
+                        <span class="status-badge" id="twofaStatus"
+                            >Loading...</span
+                        >
+                    </div>
+                    <p class="security-description">
+                        Add an extra layer of security to your account with
+                        two-factor authentication. This requires a code from
+                        your mobile device in addition to your password.
+                    </p>
+                    <div class="security-actions" id="twofaActions">
+                        <!-- Actions will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <!-- Profile Information Section -->
-      <div class="profile-section">
-        <h2>Personal Information</h2>
-        <form id="profileForm" class="profile-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="firstName">First Name</label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                required
-                maxlength="50"
-              />
-              <small class="field-note">Maximum 50 characters</small>
-            </div>
-            <div class="form-group">
-              <label for="middleName">Middle Name</label>
-              <input
-                type="text"
-                id="middleName"
-                name="middleName"
-                maxlength="50"
-              />
-              <small class="field-note">Maximum 50 characters</small>
-            </div>
-            <div class="form-group">
-              <label for="lastName">Last Name</label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                required
-                maxlength="50"
-              />
-              <small class="field-note">Maximum 50 characters</small>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="email">Email Address</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                required
-                maxlength="50"
-              />
-              <small class="field-note">Maximum 50 characters</small>
-            </div>
-          </div>
+        <!-- Load shared modules first -->
+        <script src="../js/shared/api-client.js"></script>
+        <script src="../js/shared/modal-manager.js"></script>
+        <script src="../js/shared/password-utils.js"></script>
+        <script src="../js/shared/field-validation.js"></script>
+        <script src="../js/shared/auth-utils.js"></script>
+        <script src="../js/shared/navigation.js"></script>
 
-          <div class="form-actions">
-            <button type="submit" class="submit-btn" id="updateProfileBtn">
-              Update Profile
-            </button>
-            <button type="button" class="secondary-btn" id="cancelProfileBtn">
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-      <!-- Password Change Section -->
-      <div class="profile-section" id="passwordChangeSection">
-        <h2>Change Password</h2>
-        <form id="passwordChangeForm" class="profile-form">
-          <!-- Hidden username field for accessibility and password manager compatibility -->
-          <input
-            type="text"
-            id="passwordFormUsername"
-            name="username"
-            autocomplete="username"
-            style="display: none"
-            tabindex="-1"
-            aria-hidden="true"
-          />
+        <!-- Load page-specific module -->
+        <script src="../js/pages/profile.js"></script>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="currentPassword">Current Password</label>
-              <input
-                type="password"
-                id="currentPassword"
-                name="currentPassword"
-                required
-                autocomplete="current-password"
-              />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="newPassword">New Password</label>
-              <input
-                type="password"
-                id="newPassword"
-                name="newPassword"
-                required
-                minlength="8"
-                autocomplete="new-password"
-              />
-              <small class="field-note"
-                >Must meet healthcare security requirements</small
-              >
-
-              <!-- Password Requirements -->
-              <div class="password-requirements">
-                <div class="requirement" id="lengthReq">
-                  ✓ At least 8 characters
-                </div>
-                <div class="requirement" id="uppercaseReq">
-                  ✓ One uppercase letter
-                </div>
-                <div class="requirement" id="lowercaseReq">
-                  ✓ One lowercase letter
-                </div>
-                <div class="requirement" id="digitReq">✓ One number</div>
-                <div class="requirement" id="specialReq">
-                  ✓ One special character
-                </div>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="confirmPassword">Confirm New Password</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                required
-                minlength="8"
-                autocomplete="new-password"
-              />
-              <small class="field-note"
-                >Re-enter your new password to confirm</small
-              >
-              <div id="passwordMatch" class="password-match"></div>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" class="submit-btn" id="changePasswordBtn">
-              Change Password
-            </button>
-            <button
-              type="button"
-              class="secondary-btn"
-              id="cancelPasswordBtn"
-              style="display: none"
-            >
-              Clear
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Security Settings Section -->
-      <div class="profile-section">
-        <h2>Security Settings</h2>
-        <div class="security-option">
-          <div class="security-header">
-            <h3>Two-Factor Authentication</h3>
-            <span class="status-badge" id="twofaStatus">Loading...</span>
-          </div>
-          <p class="security-description">
-            Add an extra layer of security to your account with two-factor
-            authentication. This requires a code from your mobile device in
-            addition to your password.
-          </p>
-          <div class="security-actions" id="twofaActions">
-            <!-- Actions will be populated by JavaScript -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Load shared modules first -->
-    <script src="../js/shared/api-client.js"></script>
-    <script src="../js/shared/modal-manager.js"></script>
-    <script src="../js/shared/password-utils.js"></script>
-    <script src="../js/shared/field-validation.js"></script>
-    <script src="../js/shared/auth-utils.js"></script>
-    <script src="../js/shared/navigation.js"></script>
-
-    <!-- Load page-specific module -->
-    <script src="../js/pages/profile.js"></script>
-
-    <!-- Load main controller -->
-    <script src="../js/main.js"></script>
-  </body>
+        <!-- Load main controller -->
+        <script src="../js/main.js"></script>
+    </body>
 </html>
