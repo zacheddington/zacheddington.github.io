@@ -22,11 +22,9 @@ function initializeAdminPage() {
         default:
             initializeAdminIndexPage();
             break;
-    }
-
-    // Load hamburger menu for all admin pages
-    if (document.getElementById('hamburger-menu')) {
-        loadMenu();
+    } // Load hamburger menu for all admin pages
+    if (document.getElementById('hamburger-menu') && window.navigation) {
+        window.navigation.loadMenu();
     }
 }
 

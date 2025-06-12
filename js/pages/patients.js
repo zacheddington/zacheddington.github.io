@@ -21,11 +21,9 @@ function initializePatientsPage() {
         default:
             initializePatientsIndexPage();
             break;
-    }
-
-    // Load hamburger menu for all patient pages
-    if (document.getElementById('hamburger-menu')) {
-        loadMenu();
+    } // Load hamburger menu for all patient pages
+    if (document.getElementById('hamburger-menu') && window.navigation) {
+        window.navigation.loadMenu();
     }
 }
 

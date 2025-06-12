@@ -55,5 +55,13 @@
         <script src="../js/pages/admin.js"></script>
         <!-- Load main controller -->
         <script src="../js/main.js"></script>
+        <script>
+            // Ensure hamburger menu is loaded on page load
+            document.addEventListener('DOMContentLoaded', function () {
+                if (window.navigation) {
+                    window.navigation.loadMenu();
+                }
+            });
+        </script>
     </body>
 </html>
