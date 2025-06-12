@@ -20,7 +20,7 @@ body.login-body {
     align-items: flex-start; /* Changed from center to flex-start */
     justify-content: center;
     padding: var(--space-lg);
-    padding-top: 15vh; /* Add top padding to position form higher but not at the very top */
+    padding-top: 8vh; /* Reduced from 15vh to 8vh for better positioning on large screens */
 }
 
 /* Additional styling for login-container (used in force-password-change) */
@@ -112,6 +112,20 @@ body.login-body {
 /* ================================
    RESPONSIVE LOGIN POSITIONING
    ================================ */
+
+/* LARGE DESKTOP SCREENS (1400px and up) */
+@media screen and (min-width: 1400px) {
+    .welcome-container {
+        padding-top: 5vh; /* Even less top padding on large desktop screens */
+    }
+}
+
+/* STANDARD DESKTOP SCREENS (992px - 1399px) */
+@media screen and (min-width: 992px) and (max-width: 1399px) {
+    .welcome-container {
+        padding-top: 6vh; /* Slightly less top padding on standard desktop */
+    }
+}
 
 /* TABLET LANDSCAPE AND SMALLER */
 @media screen and (max-width: 991px) {
