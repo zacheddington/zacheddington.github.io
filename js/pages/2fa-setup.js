@@ -119,21 +119,19 @@ async function initiate2FASetup() {
             },
         });
 
-        const data = await response.json();
-
-        if (response.ok) {
-            setupData = data;
+        const data = await response.json();        if (response.ok) {
+            setupData = data.data; // Access the nested data object
 
             // Display QR code
             document.getElementById(
                 'qrCodeContainer'
-            ).innerHTML = `<img src="${data.qrCode}" alt="2FA QR Code">`;
+            ).innerHTML = `<img src="${data.data.qrCode}" alt="2FA QR Code">`;
 
             // Display manual entry key
             document.getElementById('manualKey').textContent =
-                data.manualEntryKey;
+                data.data.manualEntryKey;
             document.getElementById('accountName').textContent =
-                data.accountName;
+                data.data.accountName || 'Your Account';
         } else {
             showError(data.error || 'Failed to setup 2FA');
         }

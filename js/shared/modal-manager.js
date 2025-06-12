@@ -172,7 +172,7 @@ const modalManager = {
       const logoutModal = document.createElement("div");
       logoutModal.className = "modal-overlay";
       logoutModal.innerHTML = `
-                <div class="modal-content logout-modal">
+                <div class="modal-content">
                     <div class="modal-header">
                         <h3>🚪 Confirm Logout</h3>
                     </div>
@@ -246,7 +246,7 @@ function showLogoutModal(confirmCallback) {
     const logoutModal = document.createElement("div");
     logoutModal.className = "modal-overlay";
     logoutModal.innerHTML = `
-            <div class="modal-content logout-modal">
+            <div class="modal-content">
                 <div class="modal-header">
                     <h3>🚪 Confirm Logout</h3>
                 </div>
