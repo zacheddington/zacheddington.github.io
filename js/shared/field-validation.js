@@ -143,7 +143,8 @@ function validateEmail(email) {
 
 // Validate phone number (basic US phone number validation)
 function validatePhoneNumber(phone) {
-  const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
+  // Accept both formatted (XXX) XXX-XXXX and unformatted XXXXXXXXXX
+  const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$|^\d{10}$/;
   return phoneRegex.test(phone);
 }
 

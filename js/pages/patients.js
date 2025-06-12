@@ -138,6 +138,59 @@ function setupCreatePatientFieldValidation() {
       });
     }
   });
+
+  // Set up phone number formatting
+  setupPatientPhoneFormatting();
+}
+
+// Set up phone number formatting for patient phone field
+function setupPatientPhoneFormatting() {
+  const phoneInput = document.getElementById("patientPhone");
+  if (!phoneInput) return;
+
+  // Format phone number as user types
+  phoneInput.addEventListener("input", function (e) {
+    let value = e.target.value.replace(/\D/g, ""); // Remove all non-digits
+    
+    // Limit to 10 digits
+    if (value.length > 10) {
+      value = value.slice(0, 10);
+    }
+    
+    // Format as (XXX) XXX-XXXX
+    if (value.length >= 6) {
+      e.target.value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6)}`;
+    } else if (value.length >= 3) {
+      e.target.value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+    } else if (value.length > 0) {
+      e.target.value = value;
+    }
+  });
+
+  // Handle paste events
+  phoneInput.addEventListener("paste", function (e) {
+    setTimeout(() => {
+      let value = e.target.value.replace(/\D/g, "");
+      if (value.length > 10) {
+        value = value.slice(0, 10);
+      }
+      if (value.length >= 6) {
+        e.target.value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6)}`;
+      } else if (value.length >= 3) {
+        e.target.value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+      }
+    }, 0);
+  });
+
+  // Prevent non-numeric keypress except backspace, delete, tab, escape, enter
+  phoneInput.addEventListener("keypress", function (e) {
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter'];
+    if (allowedKeys.includes(e.key)) return;
+    
+    if (!/[0-9]/.test(e.key)) {
+      e.preventDefault();
+    }
+  });
 }
 
 // Create new patient
@@ -186,16 +239,17 @@ async function createPatient() {
     }
     if (formData.lastName.length > 50) {
       throw new Error("Last name must be 50 characters or less.");
-    }
-    if (formData.address.length > 100) {
+    }    if (formData.address.length > 100) {
       throw new Error("Address must be 100 characters or less.");
     }
 
-    // Validate phone number (basic validation for 10 digits)
-    const phoneRegex = /^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
-    if (!phoneRegex.test(formData.phone)) {
+    // Validate phone number using shared validation function
+    if (!window.fieldValidation.validatePhoneNumber(formData.phone)) {
       throw new Error("Please enter a valid 10-digit phone number.");
     }
+
+    // Clean the phone number for submission (keep only digits)
+    formData.phone = formData.phone.replace(/\D/g, "");
 
     const token = localStorage.getItem("token");
     const API_URL = window.apiClient.getAPIUrl();

@@ -58,12 +58,10 @@ router.post(
           throw new Error("Failed to create name record");
         }
 
-        const nameKey = nameResult.rows[0].name_key;
-
-        // Insert into tbl_patient
+        const nameKey = nameResult.rows[0].name_key;        // Insert into tbl_patient
         await client.query(
-          "INSERT INTO tbl_patient (name_key, who, date_when) VALUES ($1, $2, $3)",
-          [nameKey, who, datewhen]
+          "INSERT INTO tbl_patient (name_key, address, phone, accepts_texts, who, date_when) VALUES ($1, $2, $3, $4, $5, $6)",
+          [nameKey, null, null, false, who, datewhen]
         );
 
         await client.query("COMMIT");

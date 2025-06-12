@@ -24,6 +24,9 @@ const runDatabaseMigrations = async () => {
       // Add 2FA columns
       await add2FAColumns(client);
 
+      // Add patient table columns
+      await addPatientTableColumns(client);
+
       console.log("Database migration completed successfully");
     } finally {
       client.release();
@@ -124,6 +127,58 @@ const add2FAColumns = async (client) => {
     `);
 };
 
+// Add patient table columns
+const addPatientTableColumns = async (client) => {
+  const patientColumns = [
+    {
+      name: "address",
+      type: "VARCHAR(100)",
+      description: "Patient address",
+    },
+    {
+      name: "phone",
+      type: "VARCHAR(20)",
+      description: "Patient phone number",
+    },
+    {
+      name: "accepts_texts",
+      type: "BOOLEAN DEFAULT FALSE",
+      description: "Patient accepts text messages",
+    },
+  ];
+
+  for (const column of patientColumns) {
+    const columnCheck = await client.query(
+      `
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'tbl_patient' 
+            AND column_name = $1
+        `,
+      [column.name]
+    );
+
+    if (columnCheck.rows.length === 0) {
+      console.log(
+        `Adding ${column.name} column to tbl_patient table (${column.description})...`
+      );
+
+      await client.query(`
+                ALTER TABLE tbl_patient ADD COLUMN ${column.name} ${column.type}
+            `);
+
+      console.log(`Successfully added ${column.name} column`);
+    } else {
+      console.log(`${column.name} column already exists`);
+    }
+  }
+
+  // Ensure accepts_texts has default value for existing patients
+  await client.query(`
+        UPDATE tbl_patient SET accepts_texts = FALSE WHERE accepts_texts IS NULL
+    `);
+};
+
 // Future migration placeholder
 const runFutureMigrations = async () => {
   // Add new migrations here as needed
@@ -134,5 +189,6 @@ module.exports = {
   runDatabaseMigrations,
   addPasswordChangeRequiredColumn,
   add2FAColumns,
+  addPatientTableColumns,
   runFutureMigrations,
 };
