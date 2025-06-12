@@ -32,13 +32,6 @@ body.login-body {
     padding: var(--space-lg);
 }
 
-/* Login card hover effect for better interactivity */
-.login-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-xl);
-    border-color: var(--color-primary-light);
-}
-
 /* Enhanced login form styling */
 .login-card h1 {
     color: var(--color-secondary);
