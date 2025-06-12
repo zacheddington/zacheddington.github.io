@@ -92,6 +92,14 @@ function validateUsernameField() {
 
 // Perform user login
 async function performLogin() {
+  // Prevent multiple simultaneous login attempts
+  if (performLogin.isRunning) {
+    console.log("🚫 Login already in progress, ignoring duplicate request");
+    return;
+  }
+  
+  performLogin.isRunning = true;
+  
   const submitBtn = document.getElementById("loginBtn");
   const usernameField = document.getElementById("username");
   const passwordField = document.getElementById("password");
@@ -190,8 +198,10 @@ async function performLogin() {
         // For validation errors, show inline
         showLoginError(errorInfo.message);
       }
-    }
-  } finally {
+    }  } finally {
+    // Reset the guard flag
+    performLogin.isRunning = false;
+    
     // Only re-enable form controls if login was not successful
     if (!loginSuccessful) {
       submitBtn.disabled = false;
