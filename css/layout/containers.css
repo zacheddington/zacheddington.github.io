@@ -59,11 +59,6 @@ body.welcome-page {
     justify-content: flex-start;
 }
 
-/* For when welcome-page & content-page classes are used together */
-body.content-page.welcome-page {
-    justify-content: flex-start;
-}
-
 /* Content pages that should flow from top, not center vertically */
 body.content-page {
     justify-content: flex-start;
@@ -181,7 +176,6 @@ body.login-page {
     }
 
     /* All containers get identical positioning for consistency */
-    .welcome-container,
     .admin-container,
     .profile-container {
         margin-top: -5px !important;

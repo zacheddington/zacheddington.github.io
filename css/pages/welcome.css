@@ -2,31 +2,57 @@
    WELCOME PAGE STYLES
    ================================ */
 
-/* Welcome page content is handled by cards.css for option cards */
-/* and containers.css for welcome-container layout */
+/* Welcome page content is handled by buttons.css for choice buttons */
+/* and containers.css for admin-container layout */
 
 /* This file is reserved for welcome-page specific styles that don't fit elsewhere */
 
-/* Force welcome container to follow same rules as admin-container */
-.welcome-container.admin-container {
-    max-width: 1000px;
-    width: 100%;
-    margin: 1rem auto;
-    padding: 1rem;
-    margin-top: 5px !important; /* Match admin-container */
-    box-sizing: border-box;
+/* Style welcome page choice buttons */
+.welcome-page .choice-btn {
+    text-align: center;
 }
 
-/* Extra rules for iPhone Pro Max and other tall devices */
-@media screen and (min-height: 900px) and (max-width: 480px) {
-    .welcome-container.admin-container {
-        margin-top: -5px !important; /* Match admin-container on tall screens */
+.welcome-page .choice-btn h3 {
+    margin-bottom: 0.75rem;
+}
+
+/* Adjust choice buttons layout for welcome page */
+#welcomeChoice .choice-buttons {
+    justify-content: center;
+}
+
+/* Adjust choice buttons layout for the welcome page (3-column) */
+@media screen and (min-width: 992px) {
+    #welcomeChoice .choice-buttons {
+        flex-wrap: nowrap;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .welcome-page .choice-btn {
+        min-width: 260px;
+        width: calc(33.33% - 1.5rem);
     }
 }
 
-@media screen and (min-height: 800px) and (max-width: 480px) {
-    .welcome-container.admin-container {
-        margin-top: 0px !important; /* Match admin-container on medium-tall screens */
+/* Medium screens (2 buttons per row) */
+@media screen and (min-width: 768px) and (max-width: 991px) {
+    #welcomeChoice .choice-buttons {
+        max-width: 650px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .welcome-page .choice-btn {
+        width: calc(50% - 1rem);
+        min-width: 220px;
+    }
+}
+
+/* Mobile screens (vertical stack) */
+@media screen and (max-width: 480px) {
+    .welcome-page .admin-container {
+        margin-top: -5px !important;
     }
 }
 
@@ -34,17 +60,7 @@
 @media screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3),
     screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3),
     screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) {
-    .welcome-container.admin-container {
+    .welcome-page .admin-container {
         margin-top: -5px !important;
     }
-
-    .welcome-page .options {
-        margin-top: 40px;
-    }
-}
-
-/* Ensure no transform is accidentally applied */
-.welcome-container,
-.welcome-container.admin-container {
-    transform: none !important;
 }

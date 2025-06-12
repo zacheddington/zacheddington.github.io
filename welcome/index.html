@@ -27,22 +27,22 @@
             <div id="hamburger-menu"></div>
             <h1 class="page-title">Welcome</h1>
         </header>
-
-        <div class="admin-container welcome-container">
-            <div class="admin-choice">
-                <div class="options">
-                    <div class="option-card">
-                        <h2>Patients</h2>
-                        <a class="fade-nav option-link" href="/patients/">Go</a>
-                    </div>
-                    <div class="option-card">
-                        <h2>View Entered EEG Information</h2>
-                        <a class="fade-nav option-link" href="/view_eeg/">Go</a>
-                    </div>
-                    <div class="option-card">
-                        <h2>Access Profile</h2>
-                        <a class="fade-nav option-link" href="/profile/">Go</a>
-                    </div>
+        <div class="admin-container">
+            <!-- Welcome Page Choice Buttons -->
+            <div class="admin-choice" id="welcomeChoice">
+                <div class="choice-buttons">
+                    <a href="/patients/" class="choice-btn primary fade-nav">
+                        <h3>Patients</h3>
+                        <p>Manage patient records</p>
+                    </a>
+                    <a href="/view_eeg/" class="choice-btn primary fade-nav">
+                        <h3>View Entered EEG Information</h3>
+                        <p>Access EEG data records</p>
+                    </a>
+                    <a href="/profile/" class="choice-btn primary fade-nav">
+                        <h3>Access Profile</h3>
+                        <p>View and edit your profile</p>
+                    </a>
                 </div>
             </div>
         </div>
