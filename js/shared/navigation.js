@@ -10,7 +10,30 @@ async function loadMenu() {
             return;
         }
 
-        const response = await fetch('/html/menu.html');
+        // Determine the correct path to menu.html based on current location
+        const path = window.location.pathname;
+        let menuPath = '/html/menu.html';
+
+        // If we're in a subfolder, adjust the path
+        if (
+            path.includes('/admin/') ||
+            path.includes('/patients/') ||
+            path.includes('/profile/') ||
+            path.includes('/welcome/') ||
+            path.includes('/view_eeg/') ||
+            path.includes('/enter_eeg/') ||
+            path.includes('/force-password-change/') ||
+            path.includes('/2fa-setup/')
+        ) {
+            const depth = (path.match(/\//g) || []).length - 1;
+            if (depth > 1) {
+                menuPath = '../../html/menu.html';
+            } else {
+                menuPath = '../html/menu.html';
+            }
+        }
+
+        const response = await fetch(menuPath);
         if (!response.ok) {
             throw new Error(`Failed to load menu: ${response.status}`);
         }
@@ -142,27 +165,11 @@ async function loadMenu() {
 
 // Setup navigation with fade effects
 function setupFadeNavigation() {
-    const FADE_DURATION = 450;
-
-    // Setup general navigation links with .fade-nav class
-    document.querySelectorAll('.fade-nav').forEach((link) => {
-        link.addEventListener('click', function (e) {
-            const href = link.getAttribute('href');
-            if (href && href !== '#') {
-                e.preventDefault();
-                // Use new page transitions system if available, otherwise fallback to old system
-                if (window.pageTransitions) {
-                    window.pageTransitions.navigateTo(href);
-                } else {
-                    // Legacy fade navigation
-                    document.body.classList.add('fade-out');
-                    setTimeout(() => {
-                        window.location.href = href;
-                    }, FADE_DURATION);
-                }
-            }
-        });
-    });
+    // No longer needed - page-transitions.js handles all navigation automatically
+    // This function is kept for backward compatibility but does nothing
+    console.log(
+        'setupFadeNavigation called - transitions now handled by page-transitions.js'
+    );
 }
 
 // Setup patient number validation (specific utility)

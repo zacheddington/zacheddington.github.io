@@ -94,6 +94,9 @@ class PageTransitions {
 
             // Skip if link has fade-nav class (handled by existing navigation.js)
             if (link.classList.contains('fade-nav')) {
+                // Actually, let's handle fade-nav links too for consistency
+                e.preventDefault();
+                this.fadeOut(href);
                 return;
             }
 

@@ -343,8 +343,8 @@ async function createPatient() {
             window.modalManager.showModal('success', successMessage); // Redirect back to patient choice page after brief delay
             setTimeout(() => {
                 window.modalManager.closeModal();
-                // Navigate back to main patient page using page transitions
-                window.location.href = 'index.html';
+                // Navigate back to main patient page using clean URL
+                window.location.href = '../';
             }, 2500);
         } else {
             throw new Error(result.error || 'Failed to create patient');
