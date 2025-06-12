@@ -188,7 +188,6 @@ async function performLogin() {
         if (twofaToken) {
             loginData.twofaToken = twofaToken;
         }
-
         response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
             headers: {
@@ -196,8 +195,25 @@ async function performLogin() {
             },
             body: JSON.stringify(loginData),
         });
-
         const result = await response.json();
+
+        // Handle 2FA required case first, before checking response.ok
+        if (response.status === 400 && result.error === '2FA token required') {
+            console.log('🔐 Server requesting 2FA token (expected response)');
+            // Only show 2FA step if we're currently on credentials step
+            if (!isOnTwofaStep) {
+                console.log('🔐 2FA required, transitioning to 2FA step...');
+                show2FAStep();
+                // Reset the guard flag since we're transitioning steps
+                performLogin.isRunning = false;
+                return;
+            } else {
+                // If we're already on 2FA step, this means invalid token
+                throw new Error(
+                    'Invalid authentication code. Please try again.'
+                );
+            }
+        }
 
         if (response.ok) {
             // Handle both old and new response formats
@@ -228,29 +244,8 @@ async function performLogin() {
                 window.location.href = '/welcome/';
             }
         } else {
-            // Handle 2FA required case
-            if (
-                response.status === 400 &&
-                result.error === '2FA token required'
-            ) {
-                // Only show 2FA step if we're currently on credentials step
-                if (!isOnTwofaStep) {
-                    console.log(
-                        '🔐 2FA required, transitioning to 2FA step...'
-                    );
-                    show2FAStep();
-                    // Reset the guard flag since we're transitioning steps
-                    performLogin.isRunning = false;
-                    return;
-                } else {
-                    // If we're already on 2FA step, this means invalid token
-                    throw new Error(
-                        'Invalid authentication code. Please try again.'
-                    );
-                }
-            } else {
-                throw new Error(result.error || 'Login failed');
-            }
+            // Handle other error cases (not 2FA)
+            throw new Error(result.error || 'Login failed');
         }
     } catch (error) {
         console.error('Login error:', error);
