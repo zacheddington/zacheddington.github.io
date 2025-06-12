@@ -72,19 +72,8 @@
    ================================ */
 
 .admin-choice {
-    background: var(--color-white);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    padding: var(--space-xl);
+    /* Removed card styling - no background, border, shadow, or padding */
     margin-bottom: var(--space-xl);
-    border: var(--border-medium) solid var(--color-border-dark);
-    transition: var(--transition-all);
-}
-
-.admin-choice:hover {
-    box-shadow: var(--shadow-xl);
-    border-color: var(--color-primary-light);
-    transform: translateY(-1px);
 }
 
 .admin-section {
