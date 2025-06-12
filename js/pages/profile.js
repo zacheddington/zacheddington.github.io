@@ -544,45 +544,113 @@ function enable2FA() {
 
 // Disable 2FA function
 async function disable2FA() {
-    const password = prompt(
-        'Please enter your current password to disable 2FA:'
-    );
-    if (!password) return;
+    // Create a custom modal for password input
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.innerHTML = `
+        <div class="modal-content">
+            <h2>Disable Two-Factor Authentication</h2>
+            <p>Please enter your current password to disable 2FA:</p>
+            <form id="disable2faForm">
+                <div class="form-group">
+                    <label for="disable2faPassword">Current Password</label>
+                    <input type="password" id="disable2faPassword" class="modal-input" required autocomplete="current-password">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="secondary-btn" id="cancel2faDisable">Cancel</button>
+                    <button type="submit" class="primary-btn" id="confirm2faDisable">Disable 2FA</button>
+                </div>
+            </form>
+            <div class="modal-hint">Press Escape to cancel</div>
+        </div>
+    `;
 
-    try {
-        const API_URL = window.apiClient.getAPIUrl();
-        const token = localStorage.getItem('token');
+    // Add keyboard and event handling
+    modalOverlay.tabIndex = '-1';
+    modalOverlay.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
 
-        const response = await fetch(`${API_URL}/api/2fa/disable`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ password }),
-        });
+    modalOverlay.addEventListener('click', function (e) {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
 
-        const result = await response.json();
+    function closeModal() {
+        document.body.removeChild(modalOverlay);
+    }
 
-        if (response.ok) {
-            window.modalManager.showModal(
-                'success',
-                '2FA has been disabled successfully.'
-            );
-            load2FAStatus(); // Refresh status
-        } else {
+    // Handle form submission
+    const form = modalOverlay.querySelector('#disable2faForm');
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const password = document.getElementById('disable2faPassword').value;
+        const submitBtn = document.getElementById('confirm2faDisable');
+        const originalText = submitBtn.textContent;
+
+        if (!password) return;
+
+        try {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Disabling...';
+
+            const API_URL = window.apiClient.getAPIUrl();
+            const token = localStorage.getItem('token');
+
+            const response = await fetch(`${API_URL}/api/2fa/disable`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ password }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                closeModal();
+                window.modalManager.showModal(
+                    'success',
+                    '2FA has been disabled successfully.'
+                );
+                load2FAStatus(); // Refresh status
+            } else {
+                window.modalManager.showModal(
+                    'error',
+                    result.error || 'Failed to disable 2FA.'
+                );
+                closeModal();
+            }
+        } catch (error) {
+            console.error('Error disabling 2FA:', error);
             window.modalManager.showModal(
                 'error',
-                result.error || 'Failed to disable 2FA.'
+                'Network error. Please try again.'
             );
+            closeModal();
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
         }
-    } catch (error) {
-        console.error('Error disabling 2FA:', error);
-        window.modalManager.showModal(
-            'error',
-            'Network error. Please try again.'
-        );
-    }
+    });
+
+    // Handle cancel button
+    const cancelBtn = modalOverlay.querySelector('#cancel2faDisable');
+    cancelBtn.addEventListener('click', closeModal);
+
+    // Add modal to page and focus
+    document.body.appendChild(modalOverlay);
+    modalOverlay.focus();
+
+    // Focus the password input
+    setTimeout(() => {
+        document.getElementById('disable2faPassword').focus();
+    }, 100);
 }
 
 // Expose functions to global scope
