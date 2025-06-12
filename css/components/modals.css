@@ -4,83 +4,83 @@
 
 /* Base Modal Styles */
 .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: var(--z-modal);
-    backdrop-filter: blur(2px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(2px);
 }
 
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: var(--z-modal);
-    backdrop-filter: blur(2px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(2px);
 }
 
 /* Modal Content */
 .modal-content {
-    background: var(--color-white);
-    padding: var(--space-xl);
-    border-radius: var(--radius-xl);
-    max-width: 90%;
-    width: 420px;
-    min-width: 320px;
-    text-align: center;
-    box-shadow: var(--shadow-xl);
-    box-sizing: border-box;
-    animation: modalSlideIn var(--transition-normal) var(--ease-out);
-    border: var(--border-medium) solid var(--color-border-dark);
-    position: relative;
-    transform: translateY(-20px); /* Slightly higher positioning */
+  background: var(--color-white);
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl);
+  max-width: 90%;
+  width: 420px;
+  min-width: 320px;
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+  box-sizing: border-box;
+  animation: modalSlideIn var(--transition-normal) var(--ease-out);
+  border: var(--border-medium) solid var(--color-border-dark);
+  position: relative;
+  transform: translateY(-20px); /* Slightly higher positioning */
 }
 
 /* Modal Type Styling */
 .modal-content.success {
-    border-top: 5px solid #4CAF50;
+  border-top: 5px solid #4caf50;
 }
 
 .modal-content.error {
-    border-top: 5px solid #f44336;
+  border-top: 5px solid #f44336;
 }
 
 .modal-content h2 {
-    margin-top: 0;
-    color: var(--color-text);
+  margin-top: 0;
+  color: var(--color-text);
 }
 
 /* Modal Button */
 .modal-btn {
-    margin-top: var(--space-md);
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: var(--radius-md);
-    background: #f44336;
-    color: var(--color-white);
-    cursor: pointer;
-    transition: var(--transition-background);
+  margin-top: var(--space-md);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: #f44336;
+  color: var(--color-white);
+  cursor: pointer;
+  transition: var(--transition-background);
 }
 
 .modal-btn:hover {
-    background: #d32f2f;
+  background: #d32f2f;
 }
 
 /* Hide Close button in success modals */
 .modal-content.success .modal-btn {
-    display: none !important;
+  display: none !important;
 }
 
 /* ================================
@@ -88,77 +88,77 @@
    ================================ */
 
 .logout-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: var(--z-modal);
-    backdrop-filter: blur(3px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(3px);
 }
 
 .logout-modal-content {
-    background: var(--color-white);
-    padding: var(--space-xl);
-    border-radius: var(--radius-xl);
-    max-width: 90%;
-    width: 400px;
-    text-align: center;
-    box-shadow: var(--shadow-xl);
-    border: var(--border-medium) solid var(--color-border-dark);
-    animation: logoutModalSlideIn var(--transition-normal) var(--ease-out);
-    transform: translateY(-30px); /* Position slightly higher for better UX */
+  background: var(--color-white);
+  padding: var(--space-xl);
+  border-radius: var(--radius-xl);
+  max-width: 90%;
+  width: 400px;
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+  border: var(--border-medium) solid var(--color-border-dark);
+  animation: logoutModalSlideIn var(--transition-normal) var(--ease-out);
+  transform: translateY(-30px); /* Position slightly higher for better UX */
 }
 
 .logout-modal-content h3 {
-    margin-top: 0;
-    color: var(--color-primary);
-    font-size: var(--font-size-xl);
+  margin-top: 0;
+  color: var(--color-primary);
+  font-size: var(--font-size-xl);
 }
 
 .logout-modal-content p {
-    margin: var(--space-md) 0 var(--space-lg) 0;
-    color: var(--color-text-muted);
-    line-height: 1.5;
+  margin: var(--space-md) 0 var(--space-lg) 0;
+  color: var(--color-text-muted);
+  line-height: 1.5;
 }
 
 .logout-modal-buttons {
-    display: flex;
-    gap: var(--space-md);
-    justify-content: center;
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
 }
 
 .logout-modal-btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    cursor: pointer;
-    transition: var(--transition-all);
-    min-width: 100px;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-all);
+  min-width: 100px;
 }
 
 .logout-modal-btn.cancel {
-    background: var(--color-gray-500);
-    color: var(--color-white);
+  background: var(--color-gray-500);
+  color: var(--color-white);
 }
 
 .logout-modal-btn.cancel:hover {
-    background: var(--color-gray-600);
+  background: var(--color-gray-600);
 }
 
 .logout-modal-btn.confirm {
-    background: #dc3545;
-    color: var(--color-white);
+  background: #dc3545;
+  color: var(--color-white);
 }
 
 .logout-modal-btn.confirm:hover {
-    background: #c82333;
+  background: #c82333;
 }
 
 /* ================================
@@ -166,25 +166,25 @@
    ================================ */
 
 @keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes logoutModalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(-30px);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-30px);
+  }
 }
 
 /* ================================
@@ -192,34 +192,34 @@
    ================================ */
 
 .tooltip {
-    position: absolute;
-    background-color: #f44336;
-    color: var(--color-white);
-    padding: 8px;
-    border-radius: var(--radius-md);
-    z-index: var(--z-tooltip);
-    opacity: 0;
-    transition: opacity var(--transition-normal) var(--ease-out);
-    pointer-events: none;
-    max-width: 200px;
-    left: 0;
-    top: 100%;
-    margin-top: 4px;
+  position: absolute;
+  background-color: #f44336;
+  color: var(--color-white);
+  padding: 8px;
+  border-radius: var(--radius-md);
+  z-index: var(--z-tooltip);
+  opacity: 0;
+  transition: opacity var(--transition-normal) var(--ease-out);
+  pointer-events: none;
+  max-width: 200px;
+  left: 0;
+  top: 100%;
+  margin-top: 4px;
 }
 
 .tooltip.show {
-    opacity: 1;
+  opacity: 1;
 }
 
 .tooltip::before {
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: 15px;
-    width: 8px;
-    height: 8px;
-    background-color: #f44336;
-    transform: rotate(45deg);
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 15px;
+  width: 8px;
+  height: 8px;
+  background-color: #f44336;
+  transform: rotate(45deg);
 }
 
 /* ================================
@@ -228,47 +228,47 @@
 
 /* TABLET PORTRAIT (576px - 767px) */
 @media screen and (min-width: 576px) and (max-width: 767px) {
-    .modal-content,
-    .logout-modal-content {
-        width: 90%;
-        max-width: 350px;
-        padding: var(--space-lg);
-    }
-    
-    .modal-overlay .modal-content {
-        width: 90%;
-        max-width: 380px;
-    }
+  .modal-content,
+  .logout-modal-content {
+    width: 90%;
+    max-width: 350px;
+    padding: var(--space-lg);
+  }
+
+  .modal-overlay .modal-content {
+    width: 90%;
+    max-width: 380px;
+  }
 }
 
 /* MOBILE LANDSCAPE (480px - 575px) */
 @media screen and (min-width: 480px) and (max-width: 575px) {
-    .modal-content,
-    .logout-modal-content {
-        width: 95%;
-        max-width: 320px;
-        padding: 1.25rem;
-    }
-    
-    .modal-overlay .modal-content {
-        width: 95%;
-        max-width: 340px;
-        padding: var(--space-lg);
-    }
+  .modal-content,
+  .logout-modal-content {
+    width: 95%;
+    max-width: 320px;
+    padding: 1.25rem;
+  }
+
+  .modal-overlay .modal-content {
+    width: 95%;
+    max-width: 340px;
+    padding: var(--space-lg);
+  }
 }
 
 /* MOBILE PORTRAIT (320px - 479px) */
 @media screen and (max-width: 479px) {
-    .modal-content,
-    .logout-modal-content {
-        width: 95%;
-        max-width: 320px;
-        padding: 1.25rem;
-    }
-    
-    .modal-overlay .modal-content {
-        width: 95%;
-        max-width: 340px;
-        padding: var(--space-lg);
-    }
+  .modal-content,
+  .logout-modal-content {
+    width: 95%;
+    max-width: 320px;
+    padding: 1.25rem;
+  }
+
+  .modal-overlay .modal-content {
+    width: 95%;
+    max-width: 340px;
+    padding: var(--space-lg);
+  }
 }

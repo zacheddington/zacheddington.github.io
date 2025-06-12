@@ -4,12 +4,12 @@
 
 /* Fade transition utility class */
 .fade-transition {
-    transition: opacity var(--transition-slow) var(--ease-out);
+  transition: opacity var(--transition-slow) var(--ease-out);
 }
 
 /* Fade out effect for navigation */
 .fade-out {
-    animation: fadeOutBody var(--transition-slow) forwards;
+  animation: fadeOutBody var(--transition-slow) forwards;
 }
 
 /* ================================
@@ -18,59 +18,68 @@
 
 /* Body fade animations */
 @keyframes fadeInBody {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeOutBody {
-    from { opacity: 1; }
-    to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 /* Modal slide in animation */
 @keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-30px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(-20px) scale(1);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-20px) scale(1);
+  }
 }
 
 /* Modal fade out animation */
 @keyframes modalFadeOut {
-    from {
-        opacity: 1;
-        transform: translateY(-20px) scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: translateY(-50px) scale(0.95);
-    }
+  from {
+    opacity: 1;
+    transform: translateY(-20px) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.95);
+  }
 }
 
 /* Logout modal specific animation */
 @keyframes logoutModalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-40px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(-30px) scale(1);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-30px) scale(1);
+  }
 }
 
 /* Pulse warning animation for session status */
 @keyframes pulse-warning {
-    0%, 100% { 
-        opacity: 0.9; 
-        transform: scale(1);
-    }
-    50% { 
-        opacity: 1; 
-        transform: scale(1.02);
-    }
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
 }

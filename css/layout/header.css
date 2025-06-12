@@ -3,29 +3,33 @@
    ================================ */
 
 .app-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: var(--header-height);
-    background: var(--color-white);
-    background-image: linear-gradient(180deg, var(--color-white) 0%, rgba(248, 249, 250, 0.95) 100%);
-    box-shadow: var(--shadow-lg);
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Space between hamburger and title */
-    padding: 0 var(--space-lg);
-    z-index: var(--z-fixed);
-    border-bottom: var(--border-medium) solid var(--color-border-dark);
-    backdrop-filter: blur(10px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--header-height);
+  background: var(--color-white);
+  background-image: linear-gradient(
+    180deg,
+    var(--color-white) 0%,
+    rgba(248, 249, 250, 0.95) 100%
+  );
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Space between hamburger and title */
+  padding: 0 var(--space-lg);
+  z-index: var(--z-fixed);
+  border-bottom: var(--border-medium) solid var(--color-border-dark);
+  backdrop-filter: blur(10px);
 }
 
 .page-title {
-    margin: 0;
-    font-size: var(--font-size-2xl);
-    color: var(--color-primary);
-    font-weight: var(--font-weight-semibold);
-    text-align: right; /* Right-align the text */
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+  text-align: right; /* Right-align the text */
 }
 
 /* ================================
@@ -34,17 +38,17 @@
 
 /* Mobile responsive adjustments for header */
 @media screen and (max-width: 768px) {
-    .page-title {
-        font-size: var(--font-size-lg);
-    }
+  .page-title {
+    font-size: var(--font-size-lg);
+  }
 }
 
 @media screen and (max-width: 480px) {
-    .app-header {
-        padding: 0 15px;
-    }
-    
-    .page-title {
-        font-size: var(--font-size-base);
-    }
+  .app-header {
+    padding: 0 15px;
+  }
+
+  .page-title {
+    font-size: var(--font-size-base);
+  }
 }

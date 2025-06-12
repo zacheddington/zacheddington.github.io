@@ -5,108 +5,119 @@
 /* Login specific body styles */
 body.login-page,
 body.login-body {
-    padding-top: 0; /* No header on login page */
-    background: var(--color-background-dark);
-    background-image: 
-        linear-gradient(135deg, var(--color-background-dark) 0%, var(--color-gray-200) 100%),
-        radial-gradient(circle at 20% 50%, rgba(0, 150, 136, 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(0, 59, 73, 0.03) 0%, transparent 50%);
+  padding-top: 0; /* No header on login page */
+  background: var(--color-background-dark);
+  background-image: linear-gradient(
+      135deg,
+      var(--color-background-dark) 0%,
+      var(--color-gray-200) 100%
+    ),
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(0, 150, 136, 0.03) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(0, 59, 73, 0.03) 0%,
+      transparent 50%
+    );
 }
 
 /* Enhanced login container for better visual hierarchy */
 .welcome-container {
-    min-height: 100vh;
-    display: flex;
-    align-items: flex-start; /* Changed from center to flex-start */
-    justify-content: center;
-    padding: var(--space-lg);
-    padding-top: 8vh; /* Reduced from 15vh to 8vh for better positioning on large screens */
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start; /* Changed from center to flex-start */
+  justify-content: center;
+  padding: var(--space-lg);
+  padding-top: 8vh; /* Reduced from 15vh to 8vh for better positioning on large screens */
 }
 
 /* Additional styling for login-container (used in force-password-change) */
 .login-container {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-lg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
 }
 
 /* Enhanced login form styling */
 .login-card h1 {
-    color: var(--color-secondary);
-    text-align: center;
-    margin-bottom: var(--space-xl);
-    font-weight: var(--font-weight-bold);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  color: var(--color-secondary);
+  text-align: center;
+  margin-bottom: var(--space-xl);
+  font-weight: var(--font-weight-bold);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Login header styling for password change page */
 .login-header h1 {
-    color: var(--color-secondary);
-    text-align: center;
-    margin-bottom: var(--space-md);
-    font-weight: var(--font-weight-bold);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  color: var(--color-secondary);
+  text-align: center;
+  margin-bottom: var(--space-md);
+  font-weight: var(--font-weight-bold);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .login-subtitle {
-    color: var(--color-gray-600);
-    text-align: center;
-    margin-bottom: var(--space-xl);
-    font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  text-align: center;
+  margin-bottom: var(--space-xl);
+  font-size: var(--font-size-sm);
 }
 
 /* Enhanced form styling within login cards */
 .login-card .form-group {
-    margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-lg);
 }
 
 .login-card .form-group label {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-secondary);
-    margin-bottom: var(--space-sm);
-    display: block;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-secondary);
+  margin-bottom: var(--space-sm);
+  display: block;
 }
 
 .login-card input[type="text"],
 .login-card input[type="password"],
 .login-card input[type="email"] {
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-md);
-    width: 100%;
-    font-size: var(--font-size-base);
-    transition: var(--transition-all);
-    background: var(--color-white);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  width: 100%;
+  font-size: var(--font-size-base);
+  transition: var(--transition-all);
+  background: var(--color-white);
 }
 
 .login-card input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.1);
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.1);
 }
 
 /* Login form buttons */
 .login-card button[type="submit"] {
-    background: var(--color-primary);
-    color: var(--color-white);
-    border: none;
-    border-radius: var(--radius-md);
-    padding: var(--space-md) var(--space-xl);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    width: 100%;
-    cursor: pointer;
-    transition: var(--transition-all);
-    margin-top: var(--space-md);
-    box-shadow: var(--shadow-button);
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-xl);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  width: 100%;
+  cursor: pointer;
+  transition: var(--transition-all);
+  margin-top: var(--space-md);
+  box-shadow: var(--shadow-button);
 }
 
 .login-card button[type="submit"]:hover {
-    background: var(--color-primary-dark);
-    box-shadow: var(--shadow-button-hover);
-    transform: translateY(-1px);
+  background: var(--color-primary-dark);
+  box-shadow: var(--shadow-button-hover);
+  transform: translateY(-1px);
 }
 
 /* ================================
@@ -115,56 +126,56 @@ body.login-body {
 
 /* LARGE DESKTOP SCREENS (1400px and up) */
 @media screen and (min-width: 1400px) {
-    .welcome-container {
-        padding-top: 5vh; /* Even less top padding on large desktop screens */
-    }
+  .welcome-container {
+    padding-top: 5vh; /* Even less top padding on large desktop screens */
+  }
 }
 
 /* STANDARD DESKTOP SCREENS (992px - 1399px) */
 @media screen and (min-width: 992px) and (max-width: 1399px) {
-    .welcome-container {
-        padding-top: 6vh; /* Slightly less top padding on standard desktop */
-    }
+  .welcome-container {
+    padding-top: 6vh; /* Slightly less top padding on standard desktop */
+  }
 }
 
 /* TABLET LANDSCAPE AND SMALLER */
 @media screen and (max-width: 991px) {
-    .welcome-container {
-        padding-top: 12vh; /* Slightly less top padding on tablets */
-    }
+  .welcome-container {
+    padding-top: 12vh; /* Slightly less top padding on tablets */
+  }
 }
 
 /* TABLET PORTRAIT */
 @media screen and (max-width: 767px) {
-    .welcome-container {
-        padding-top: 8vh; /* Even less top padding on smaller tablets */
-        padding: var(--space-md);
-        padding-top: 8vh;
-    }
+  .welcome-container {
+    padding-top: 8vh; /* Even less top padding on smaller tablets */
+    padding: var(--space-md);
+    padding-top: 8vh;
+  }
 }
 
 /* MOBILE LANDSCAPE */
 @media screen and (max-width: 575px) {
-    .welcome-container {
-        padding-top: 6vh; /* Minimal top padding on mobile */
-        padding: var(--space-sm);
-        padding-top: 6vh;
-    }
+  .welcome-container {
+    padding-top: 6vh; /* Minimal top padding on mobile */
+    padding: var(--space-sm);
+    padding-top: 6vh;
+  }
 }
 
 /* MOBILE PORTRAIT */
 @media screen and (max-width: 479px) {
-    .welcome-container {
-        padding-top: 4vh; /* Very minimal top padding on small mobile */
-        padding: var(--space-xs);
-        padding-top: 4vh;
-    }
+  .welcome-container {
+    padding-top: 4vh; /* Very minimal top padding on small mobile */
+    padding: var(--space-xs);
+    padding-top: 4vh;
+  }
 }
 
 /* LANDSCAPE ORIENTATION ADJUSTMENTS */
 @media screen and (max-height: 500px) and (orientation: landscape) {
-    .welcome-container {
-        padding-top: 2vh; /* Very little padding on short landscape screens */
-        align-items: flex-start;
-    }
+  .welcome-container {
+    padding-top: 2vh; /* Very little padding on short landscape screens */
+    align-items: flex-start;
+  }
 }

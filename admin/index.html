@@ -1,154 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User Management - Integris Neuro</title>
-    
+
     <!-- Security: Prevent caching of authenticated pages -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">    <link rel="stylesheet" href="../css/main.css">
-    <link rel="icon" type="image/x-icon" href="../favicon.ico">
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <link rel="icon" type="image/png" href="../favicon.png">
-</head>
-<body>
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="icon" type="image/png" href="../favicon.png" />
+  </head>
+  <body>
     <!-- Header Bar -->
     <header class="app-header">
-        <div id="hamburger-menu"></div>
-        <h1 class="page-title">User Management</h1>
+      <div id="hamburger-menu"></div>
+      <h1 class="page-title">User Management</h1>
     </header>
 
     <div class="admin-container">
-        
-        <!-- Initial Choice Buttons -->
-        <div class="admin-choice" id="adminChoice">
-            <div class="choice-buttons">
-                <button class="choice-btn primary" id="createUserBtn">
-                    <h3>Create New User</h3>
-                    <p>Add a new user account to the system</p>
-                </button>
-                <button class="choice-btn secondary" id="manageUsersBtn">
-                    <h3>Manage Existing Users</h3>
-                    <p>View, edit, or disable existing user accounts</p>
-                </button>
-            </div>
-        </div>        <!-- Create User Form -->        <div class="admin-section hidden" id="createUserSection">
-            <div class="section-header">
-                <button type="button" class="secondary-btn" id="backToChoiceFromCreateUser" style="margin-right: auto;">
-                    ← Back to User Management
-                </button>
-                <h2>Create New User</h2>
-            </div>
-            
-            <form id="createUserForm" class="admin-form" data-form-type="user-registration">                <!-- Personal Information -->
-                <div class="form-section">
-                    <h3>Personal Information</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="firstName">First Name</label>
-                            <input type="text" id="firstName" name="firstName" required maxlength="50" autocomplete="given-name">
-                            <small class="field-note">Maximum 50 characters</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="middleName">Middle Name</label>
-                            <input type="text" id="middleName" name="middleName" maxlength="50" autocomplete="additional-name">
-                            <small class="field-note">Maximum 50 characters (optional)</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="lastName">Last Name</label>
-                            <input type="text" id="lastName" name="lastName" required maxlength="50" autocomplete="family-name">
-                            <small class="field-note">Maximum 50 characters</small>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="email">Email Address</label>
-                            <input type="email" id="email" name="email" required maxlength="50" autocomplete="email">
-                            <small class="field-note">Maximum 50 characters</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Account Information -->
-                <div class="form-section">
-                    <h3>Account Information</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="newUsername">Username</label>
-                            <input type="text" id="newUsername" name="username" required maxlength="50" autocomplete="username">
-                            <small class="field-note">Maximum 50 characters</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="userRole">Role</label>
-                            <select id="userRole" name="role" required autocomplete="off">
-                                <option value="">Select a role...</option>
-                                <!-- Roles will be populated dynamically -->
-                            </select>
-                            <small class="field-note">Determines user permissions</small>
-                        </div>
-                    </div>                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="newPassword">Password</label>
-                            <input type="password" id="newPassword" name="password" required minlength="8" autocomplete="new-password">
-                            <small class="field-note">Must meet healthcare security requirements</small>
-                            <!-- Password strength indicator will be added here by JavaScript -->
-                        </div>
-                        <div class="form-group">
-                            <label for="confirmPassword">Confirm Password</label>
-                            <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8" autocomplete="new-password">
-                            <small class="field-note">Must match password exactly</small>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="submit-btn" id="createUserSubmitBtn">Create User</button>
-                    <button type="button" class="secondary-btn" id="cancelCreateUser">Cancel</button>
-                </div>
-            </form>
-        </div>        <!-- Manage Users Section -->        <div class="admin-section hidden" id="manageUsersSection">
-            <div class="section-header">
-                <button type="button" class="secondary-btn" id="backToChoiceFromManageUsers" style="margin-right: auto;">
-                    ← Back to User Management
-                </button>
-                <h2>Manage Existing Users</h2>
-            </div>
-              <!-- User Filter -->
-            <div class="user-filter">
-                <div class="form-group">
-                    <label for="userFilter">Search Users</label>
-                    <input type="text" id="userFilter" placeholder="Search by username, name, or email..." autocomplete="off">
-                    <small class="field-note">Filter users to quickly find specific accounts</small>
-                </div>
-                <div class="filter-actions">
-                    <button type="button" class="secondary-btn" id="resetSort" style="display: none;">
-                        Clear Sort
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Users Table -->
-            <div class="users-table-container">
-                <table class="users-table" id="usersTable">
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Full Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody">
-                        <!-- Users will be loaded here dynamically -->
-                    </tbody>
-                </table>                <div id="usersLoading" class="loading-message">Loading users...</div>
-                <div id="noUsersFound" class="no-results hidden">No users found matching your search.</div>
-            </div>
+      <!-- Initial Choice Buttons -->
+      <div class="admin-choice" id="adminChoice">
+        <div class="choice-buttons">
+          <button class="choice-btn primary" id="createUserBtn">
+            <h3>Create New User</h3>
+            <p>Add a new user account to the system</p>
+          </button>
+          <button class="choice-btn secondary" id="manageUsersBtn">
+            <h3>Manage Existing Users</h3>
+            <p>View, edit, or disable existing user accounts</p>
+          </button>
         </div>
+      </div>
+      <!-- Create User Form -->
+      <div class="admin-section hidden" id="createUserSection">
+        <div class="section-header">
+          <button
+            type="button"
+            class="secondary-btn"
+            id="backToChoiceFromCreateUser"
+            style="margin-right: auto"
+          >
+            ← Back to User Management
+          </button>
+          <h2>Create New User</h2>
+        </div>
+
+        <form
+          id="createUserForm"
+          class="admin-form"
+          data-form-type="user-registration"
+        >
+          <!-- Personal Information -->
+          <div class="form-section">
+            <h3>Personal Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  required
+                  maxlength="50"
+                  autocomplete="given-name"
+                />
+                <small class="field-note">Maximum 50 characters</small>
+              </div>
+              <div class="form-group">
+                <label for="middleName">Middle Name</label>
+                <input
+                  type="text"
+                  id="middleName"
+                  name="middleName"
+                  maxlength="50"
+                  autocomplete="additional-name"
+                />
+                <small class="field-note"
+                  >Maximum 50 characters (optional)</small
+                >
+              </div>
+              <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  required
+                  maxlength="50"
+                  autocomplete="family-name"
+                />
+                <small class="field-note">Maximum 50 characters</small>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  maxlength="50"
+                  autocomplete="email"
+                />
+                <small class="field-note">Maximum 50 characters</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account Information -->
+          <div class="form-section">
+            <h3>Account Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="newUsername">Username</label>
+                <input
+                  type="text"
+                  id="newUsername"
+                  name="username"
+                  required
+                  maxlength="50"
+                  autocomplete="username"
+                />
+                <small class="field-note">Maximum 50 characters</small>
+              </div>
+              <div class="form-group">
+                <label for="userRole">Role</label>
+                <select id="userRole" name="role" required autocomplete="off">
+                  <option value="">Select a role...</option>
+                  <!-- Roles will be populated dynamically -->
+                </select>
+                <small class="field-note">Determines user permissions</small>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="newPassword">Password</label>
+                <input
+                  type="password"
+                  id="newPassword"
+                  name="password"
+                  required
+                  minlength="8"
+                  autocomplete="new-password"
+                />
+                <small class="field-note"
+                  >Must meet healthcare security requirements</small
+                >
+                <!-- Password strength indicator will be added here by JavaScript -->
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  required
+                  minlength="8"
+                  autocomplete="new-password"
+                />
+                <small class="field-note">Must match password exactly</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="submit-btn" id="createUserSubmitBtn">
+              Create User
+            </button>
+            <button type="button" class="secondary-btn" id="cancelCreateUser">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+      <!-- Manage Users Section -->
+      <div class="admin-section hidden" id="manageUsersSection">
+        <div class="section-header">
+          <button
+            type="button"
+            class="secondary-btn"
+            id="backToChoiceFromManageUsers"
+            style="margin-right: auto"
+          >
+            ← Back to User Management
+          </button>
+          <h2>Manage Existing Users</h2>
+        </div>
+        <!-- User Filter -->
+        <div class="user-filter">
+          <div class="form-group">
+            <label for="userFilter">Search Users</label>
+            <input
+              type="text"
+              id="userFilter"
+              placeholder="Search by username, name, or email..."
+              autocomplete="off"
+            />
+            <small class="field-note"
+              >Filter users to quickly find specific accounts</small
+            >
+          </div>
+          <div class="filter-actions">
+            <button
+              type="button"
+              class="secondary-btn"
+              id="resetSort"
+              style="display: none"
+            >
+              Clear Sort
+            </button>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="users-table-container">
+          <table class="users-table" id="usersTable">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <!-- Users will be loaded here dynamically -->
+            </tbody>
+          </table>
+          <div id="usersLoading" class="loading-message">Loading users...</div>
+          <div id="noUsersFound" class="no-results hidden">
+            No users found matching your search.
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Load shared modules first -->
@@ -158,11 +252,11 @@
     <script src="../js/shared/field-validation.js"></script>
     <script src="../js/shared/auth-utils.js"></script>
     <script src="../js/shared/navigation.js"></script>
-    
+
     <!-- Load page-specific module -->
     <script src="../js/pages/admin.js"></script>
-    
+
     <!-- Load main controller -->
     <script src="../js/main.js"></script>
-</body>
+  </body>
 </html>

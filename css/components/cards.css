@@ -4,37 +4,37 @@
 
 /* Option Cards for Welcome Page */
 .options {
-    display: flex;
-    gap: var(--space-xl);
-    margin-top: 2px;
-    justify-content: center;
-    flex-wrap: wrap;
+  display: flex;
+  gap: var(--space-xl);
+  margin-top: 2px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .option-card {
-    background: var(--color-white);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-lg);
-    padding: var(--padding-card);
-    text-align: center;
-    width: 100%;
-    max-width: 400px;
-    box-sizing: border-box;
-    margin: 0 auto;
-    transition: var(--transition-all);
-    border: var(--border-medium) solid var(--color-border-dark);
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--padding-card);
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  transition: var(--transition-all);
+  border: var(--border-medium) solid var(--color-border-dark);
 }
 
 .option-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-xl);
-    border-color: var(--color-primary);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--color-primary);
 }
 
 .option-card h2 {
-    margin-bottom: var(--space-md);
-    color: var(--color-primary);
-    font-size: var(--font-size-xl);
+  margin-bottom: var(--space-md);
+  color: var(--color-primary);
+  font-size: var(--font-size-xl);
 }
 
 /* ================================
@@ -42,29 +42,29 @@
    ================================ */
 
 .login-card {
-    background: var(--color-white);
-    padding: var(--space-xl);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-xl);
-    max-width: 420px;
-    width: 90%;
-    margin: 0 auto; /* Removed vertical margin to eliminate extra spacing */
-    border: 3px solid var(--color-border-dark);
-    position: relative;
-    backdrop-filter: blur(10px);
+  background: var(--color-white);
+  padding: var(--space-xl);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  max-width: 420px;
+  width: 90%;
+  margin: 0 auto; /* Removed vertical margin to eliminate extra spacing */
+  border: 3px solid var(--color-border-dark);
+  position: relative;
+  backdrop-filter: blur(10px);
 }
 
 /* Add a subtle inner shadow for more depth */
 .login-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: var(--radius-lg);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    pointer-events: none;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  pointer-events: none;
 }
 
 /* ================================
@@ -72,36 +72,36 @@
    ================================ */
 
 .admin-choice {
-    /* Removed card styling - no background, border, shadow, or padding */
-    margin-bottom: var(--space-xl);
+  /* Removed card styling - no background, border, shadow, or padding */
+  margin-bottom: var(--space-xl);
 }
 
 .admin-section {
-    background: var(--color-white);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    padding: var(--space-xl);
-    margin-top: var(--space-xl);
-    border: var(--border-medium) solid var(--color-border-dark);
-    transition: var(--transition-all);
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-xl);
+  margin-top: var(--space-xl);
+  border: var(--border-medium) solid var(--color-border-dark);
+  transition: var(--transition-all);
 }
 
 .admin-section.hidden {
-    display: none;
+  display: none;
 }
 
 .section-header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    margin-bottom: var(--space-xl);
-    padding-bottom: var(--space-md);
-    border-bottom: var(--border-medium) solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-md);
+  border-bottom: var(--border-medium) solid var(--color-border);
 }
 
 .section-header h2 {
-    margin: 0;
-    color: var(--color-primary);
+  margin: 0;
+  color: var(--color-primary);
 }
 
 /* ================================
@@ -109,31 +109,31 @@
    ================================ */
 
 .profile-section {
-    background: var(--color-white);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    padding: var(--space-xl);
-    margin-bottom: var(--space-xl);
-    border: var(--border-medium) solid var(--color-border-dark);
-    transition: var(--transition-all);
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+  border: var(--border-medium) solid var(--color-border-dark);
+  transition: var(--transition-all);
 }
 
 .profile-section:hover {
-    box-shadow: var(--shadow-xl);
-    border-color: var(--color-primary-light);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--color-primary-light);
 }
 
 .profile-section:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .profile-section h2 {
-    margin-top: 0;
-    margin-bottom: var(--space-lg);
-    color: var(--color-primary);
-    font-size: var(--font-size-xl);
-    border-bottom: var(--border-medium) solid var(--color-border);
-    padding-bottom: 0.5rem;
+  margin-top: 0;
+  margin-bottom: var(--space-lg);
+  color: var(--color-primary);
+  font-size: var(--font-size-xl);
+  border-bottom: var(--border-medium) solid var(--color-border);
+  padding-bottom: 0.5rem;
 }
 
 /* ================================
@@ -141,58 +141,58 @@
    ================================ */
 
 .profile-info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 
 .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-md);
-    background: var(--color-gray-50);
-    border-radius: var(--radius-md);
-    border: var(--border-thin) solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  border: var(--border-thin) solid var(--color-border);
 }
 
 .info-row label {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-primary);
-    margin-bottom: 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  margin-bottom: 0;
 }
 
 .info-row span {
-    color: var(--color-text-muted);
+  color: var(--color-text-muted);
 }
 
 .info-only {
-    background: var(--color-gray-50);
+  background: var(--color-gray-50);
 }
 
 .info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-md);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
 }
 
 .info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem;
-    background: var(--color-white);
-    border-radius: var(--radius-md);
-    border: var(--border-thin) solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  border: var(--border-thin) solid #e0e0e0;
 }
 
 .info-label {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
 }
 
 .info-value {
-    color: var(--color-text-muted);
+  color: var(--color-text-muted);
 }
 
 /* ================================
@@ -200,22 +200,22 @@
    ================================ */
 
 .security-section {
-    border: var(--border-thin) solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-md);
+  border: var(--border-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
 }
 
 .security-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .security-header h3 {
-    margin: 0;
-    color: var(--color-primary);
+  margin: 0;
+  color: var(--color-primary);
 }
 
 /* ================================
@@ -224,168 +224,168 @@
 
 /* ULTRAWIDE MONITORS (1400px and up) */
 @media screen and (min-width: 1400px) {
-    .options {
-        gap: 48px;
-        margin-top: 5px;
-    }
-    
-    .option-card {
-        max-width: 450px;
-        padding: 40px 48px;
-    }
+  .options {
+    gap: 48px;
+    margin-top: 5px;
+  }
+
+  .option-card {
+    max-width: 450px;
+    padding: 40px 48px;
+  }
 }
 
 /* LARGE DESKTOP (1200px - 1399px) */
 @media screen and (min-width: 1200px) and (max-width: 1399px) {
-    .options {
-        gap: 40px;
-        margin-top: 4px;
-    }
-    
-    .option-card {
-        max-width: 420px;
-        padding: 36px 42px;
-    }
+  .options {
+    gap: 40px;
+    margin-top: 4px;
+  }
+
+  .option-card {
+    max-width: 420px;
+    padding: 36px 42px;
+  }
 }
 
 /* STANDARD DESKTOP (992px - 1199px) */
 @media screen and (min-width: 992px) and (max-width: 1199px) {
-    .options {
-        gap: 32px;
-        margin-top: 2px;
-    }
-    
-    .option-card {
-        max-width: 380px;
-        padding: 32px 36px;
-    }
+  .options {
+    gap: 32px;
+    margin-top: 2px;
+  }
+
+  .option-card {
+    max-width: 380px;
+    padding: 32px 36px;
+  }
 }
 
 /* TABLET LANDSCAPE (768px - 991px) */
 @media screen and (min-width: 768px) and (max-width: 991px) {
-    .options {
-        flex-direction: column;
-        align-items: center;
-        gap: 24px;
-        margin-top: 2px;
-    }
-    
-    .option-card {
-        max-width: 450px;
-        width: 100%;
-        padding: 28px 32px;
-    }
-    
-    .admin-section {
-        padding: var(--space-lg);
-    }
-    
-    .profile-section {
-        padding: var(--space-lg);
-    }
-    
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
+  .options {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    margin-top: 2px;
+  }
+
+  .option-card {
+    max-width: 450px;
+    width: 100%;
+    padding: 28px 32px;
+  }
+
+  .admin-section {
+    padding: var(--space-lg);
+  }
+
+  .profile-section {
+    padding: var(--space-lg);
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 }
 
 /* TABLET PORTRAIT (576px - 767px) */
 @media screen and (min-width: 576px) and (max-width: 767px) {
-    .options {
-        flex-direction: column;
-        align-items: center;
-        gap: 16px;
-        margin-top: 2px;
-    }
-    
-    .option-card {
-        max-width: 350px;
-        width: 100%;
-        padding: 20px 24px;
-    }
-    
-    .option-card h2 {
-        font-size: var(--font-size-lg);
-        margin-bottom: 0.75rem;
-    }
-    
-    .admin-section {
-        padding: var(--space-lg);
-    }
-    
-    .profile-section {
-        padding: var(--space-lg);
-    }
-    
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
+  .options {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: 2px;
+  }
+
+  .option-card {
+    max-width: 350px;
+    width: 100%;
+    padding: 20px 24px;
+  }
+
+  .option-card h2 {
+    font-size: var(--font-size-lg);
+    margin-bottom: 0.75rem;
+  }
+
+  .admin-section {
+    padding: var(--space-lg);
+  }
+
+  .profile-section {
+    padding: var(--space-lg);
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 }
 
 /* MOBILE LANDSCAPE (480px - 575px) */
 @media screen and (min-width: 480px) and (max-width: 575px) {
-    .options {
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        margin-top: 2px;
-    }
-    
-    .option-card {
-        max-width: 300px;
-        width: 100%;
-        padding: 16px 20px;
-    }
-    
-    .option-card h2 {
-        font-size: var(--font-size-base);
-        margin-bottom: 0.5rem;
-    }
+  .options {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 2px;
+  }
+
+  .option-card {
+    max-width: 300px;
+    width: 100%;
+    padding: 16px 20px;
+  }
+
+  .option-card h2 {
+    font-size: var(--font-size-base);
+    margin-bottom: 0.5rem;
+  }
 }
 
 /* MOBILE PORTRAIT (320px - 479px) */
 @media screen and (max-width: 479px) {
-    .options {
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        margin-top: 2px;
-    }
-    
-    .option-card {
-        max-width: 300px;
-        width: 100%;
-        padding: 16px 20px;
-    }
-    
-    .option-card h2 {
-        font-size: var(--font-size-base);
-        margin-bottom: 0.5rem;
-    }
-    
-    .admin-section {
-        padding: var(--space-lg);
-    }
-    
-    .profile-section {
-        padding: var(--space-lg);
-    }
-    
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
+  .options {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 2px;
+  }
+
+  .option-card {
+    max-width: 300px;
+    width: 100%;
+    padding: 16px 20px;
+  }
+
+  .option-card h2 {
+    font-size: var(--font-size-base);
+    margin-bottom: 0.5rem;
+  }
+
+  .admin-section {
+    padding: var(--space-lg);
+  }
+
+  .profile-section {
+    padding: var(--space-lg);
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 }
 
 /* Fix for very narrow screens */
 @media screen and (max-width: 320px) {
-    .option-card {
-        min-width: 250px;
-        width: 100%;
-    }
+  .option-card {
+    min-width: 250px;
+    width: 100%;
+  }
 }

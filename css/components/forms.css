@@ -4,49 +4,49 @@
 
 /* Form Group Base */
 .form-group {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--space-md);
 }
 
 .form-group label {
-    margin-bottom: 6px;
-    color: var(--color-primary);
-    font-family: var(--font-primary);
-    font-weight: var(--font-weight-medium);
-    display: block;
-    letter-spacing: -0.01em;
+  margin-bottom: 6px;
+  color: var(--color-primary);
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-medium);
+  display: block;
+  letter-spacing: -0.01em;
 }
 
 .form-group input {
-    width: 100%;
+  width: 100%;
 }
 
 /* Form Row Layout */
 .form-row {
-    display: flex;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-    margin-bottom: var(--space-md);
-    width: 100%;
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-md);
+  width: 100%;
 }
 
 .form-row:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 /* Responsive Form Row */
 .form-row-responsive {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-md);
-    width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  width: 100%;
 }
 
 .form-group-responsive {
-    flex: 1;
-    min-width: 0;
-    box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 /* ================================
@@ -54,25 +54,25 @@
    ================================ */
 
 /* Common input styles */
-input[type="text"], 
-input[type="password"], 
+input[type="text"],
+input[type="password"],
 input[type="email"],
 input[type="tel"],
 select,
 textarea {
-    padding: var(--padding-input);
-    border: var(--border-medium) solid var(--color-border-dark);
-    border-radius: var(--radius-md);
-    font-family: var(--font-primary);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-normal);
-    transition: var(--transition-border);
-    background: var(--color-white);
-    width: 100%;
-    box-sizing: border-box;
-    font-size: 16px; /* Prevents zoom on iOS */
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-    letter-spacing: -0.01em;
+  padding: var(--padding-input);
+  border: var(--border-medium) solid var(--color-border-dark);
+  border-radius: var(--radius-md);
+  font-family: var(--font-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  transition: var(--transition-border);
+  background: var(--color-white);
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 16px; /* Prevents zoom on iOS */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  letter-spacing: -0.01em;
 }
 
 input[type="text"]:focus,
@@ -81,16 +81,17 @@ input[type="email"]:focus,
 input[type="tel"]:focus,
 select:focus,
 textarea:focus {
-    border-color: var(--color-primary);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.15),
+    inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 /* Input Wrapper with Validation */
 .input-wrapper {
-    position: relative;
-    width: 100%;
-    margin-bottom: var(--space-md);
+  position: relative;
+  width: 100%;
+  margin-bottom: var(--space-md);
 }
 
 /* ================================
@@ -98,49 +99,49 @@ textarea:focus {
    ================================ */
 
 .admin-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
 }
 
 .admin-form .form-row {
-    display: flex;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-    margin-bottom: var(--space-md);
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-md);
 }
 
 .admin-form .form-row:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .admin-form .form-group {
-    flex: 1;
-    min-width: 250px;
-    display: flex;
-    flex-direction: column;
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-form label {
-    margin-bottom: 0.5rem;
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-primary);
+  margin-bottom: 0.5rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
 }
 
 .admin-form input,
 .admin-form select {
-    padding: 12px;
-    border: var(--border-medium) solid var(--color-input-border);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-base);
-    transition: var(--transition-border);
-    background: var(--color-white);
+  padding: 12px;
+  border: var(--border-medium) solid var(--color-input-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  transition: var(--transition-border);
+  background: var(--color-white);
 }
 
 .admin-form input:focus,
 .admin-form select:focus {
-    border-color: var(--color-secondary);
-    outline: none;
+  border-color: var(--color-secondary);
+  outline: none;
 }
 
 /* ================================
@@ -148,49 +149,49 @@ textarea:focus {
    ================================ */
 
 .profile-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
 }
 
 .profile-form .form-row {
-    display: flex;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-    margin-bottom: var(--space-md);
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-md);
 }
 
 .profile-form .form-row:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .profile-form .form-group {
-    flex: 1;
-    min-width: 200px;
-    display: flex;
-    flex-direction: column;
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
 }
 
 .profile-form label {
-    margin-bottom: 0.5rem;
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-primary);
+  margin-bottom: 0.5rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
 }
 
 .profile-form input,
 .profile-form select {
-    padding: 12px;
-    border: var(--border-medium) solid var(--color-input-border);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-base);
-    transition: var(--transition-border);
-    background: var(--color-white);
+  padding: 12px;
+  border: var(--border-medium) solid var(--color-input-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  transition: var(--transition-border);
+  background: var(--color-white);
 }
 
 .profile-form input:focus,
 .profile-form select:focus {
-    border-color: var(--color-secondary);
-    outline: none;
+  border-color: var(--color-secondary);
+  outline: none;
 }
 
 /* ================================
@@ -198,28 +199,28 @@ textarea:focus {
    ================================ */
 
 .eeg-form {
-    background: var(--color-white);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    padding: 32px 40px;
-    max-width: 700px;
-    width: 100%;
-    margin: 0 auto;
-    box-sizing: border-box;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 32px 40px;
+  max-width: 700px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .patient-number-group {
-    min-width: 140px;
-    flex: 0 0 140px;
+  min-width: 140px;
+  flex: 0 0 140px;
 }
 
 .name-group {
-    min-width: 120px;
-    flex: 1 1 120px;
+  min-width: 120px;
+  flex: 1 1 120px;
 }
 
 .address-group {
-    width: 100%;
+  width: 100%;
 }
 
 /* ================================
@@ -227,10 +228,10 @@ textarea:focus {
    ================================ */
 
 .form-actions {
-    display: flex;
-    gap: var(--space-md);
-    margin-top: var(--space-lg);
-    justify-content: flex-start;
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+  justify-content: flex-start;
 }
 
 /* ================================
@@ -238,18 +239,18 @@ textarea:focus {
    ================================ */
 
 .form-section {
-    border: var(--border-thin) solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-lg);
-    background: #fafbfc;
+  border: var(--border-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  background: #fafbfc;
 }
 
 .form-section h3 {
-    margin: 0 0 var(--space-lg) 0;
-    color: var(--color-primary);
-    font-size: var(--font-size-lg);
-    border-bottom: var(--border-thin) solid var(--color-border);
-    padding-bottom: 0.5rem;
+  margin: 0 0 var(--space-lg) 0;
+  color: var(--color-primary);
+  font-size: var(--font-size-lg);
+  border-bottom: var(--border-thin) solid var(--color-border);
+  padding-bottom: 0.5rem;
 }
 
 /* ================================
@@ -257,29 +258,38 @@ textarea:focus {
    ================================ */
 
 .password-strength-container {
-    margin-top: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .password-strength-bar {
-    height: 4px;
-    background-color: #e0e0e0;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    margin-bottom: 0.5rem;
+  height: 4px;
+  background-color: #e0e0e0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 0.5rem;
 }
 
 .password-strength-fill {
-    height: 100%;
-    width: 0%;
-    transition: width var(--transition-normal) var(--ease-out), background-color var(--transition-normal) var(--ease-out);
-    border-radius: var(--radius-sm);
+  height: 100%;
+  width: 0%;
+  transition: width var(--transition-normal) var(--ease-out),
+    background-color var(--transition-normal) var(--ease-out);
+  border-radius: var(--radius-sm);
 }
 
 /* Strength levels */
-.password-strength-fill.weak { background-color: #f44336; }
-.password-strength-fill.fair { background-color: #ff9800; }
-.password-strength-fill.good { background-color: #2196f3; }
-.password-strength-fill.strong { background-color: #4caf50; }
+.password-strength-fill.weak {
+  background-color: #f44336;
+}
+.password-strength-fill.fair {
+  background-color: #ff9800;
+}
+.password-strength-fill.good {
+  background-color: #2196f3;
+}
+.password-strength-fill.strong {
+  background-color: #4caf50;
+}
 
 /* ================================
    PASSWORD REQUIREMENTS & VALIDATION
@@ -287,51 +297,51 @@ textarea:focus {
 
 /* Password Requirements Display */
 .password-requirements {
-    margin-top: var(--space-sm);
-    font-size: 12px;
+  margin-top: var(--space-sm);
+  font-size: 12px;
 }
 
 .requirement {
-    margin-bottom: 4px;
-    color: var(--color-text-muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  margin-bottom: 4px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .requirement-icon {
-    font-weight: bold;
-    width: 12px;
-    text-align: center;
+  font-weight: bold;
+  width: 12px;
+  text-align: center;
 }
 
 /* Field Notes */
 .field-note {
-    font-size: 12px;
-    margin-top: 2px;
-    color: var(--color-text-muted);
-    font-weight: 400;
+  font-size: 12px;
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-weight: 400;
 }
 
 /* Password Match Indicator */
 .password-match {
-    margin-top: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--radius-md);
-    font-size: 0.85rem;
-    font-weight: var(--font-weight-medium);
+  margin-top: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: var(--font-weight-medium);
 }
 
 .password-match.match {
-    background-color: #e8f5e8;
-    color: #2e7d32;
-    border: var(--border-thin) solid #c8e6c9;
+  background-color: #e8f5e8;
+  color: #2e7d32;
+  border: var(--border-thin) solid #c8e6c9;
 }
 
 .password-match.no-match {
-    background-color: #ffebee;
-    color: #c62828;
-    border: var(--border-thin) solid #ffcdd2;
+  background-color: #ffebee;
+  color: #c62828;
+  border: var(--border-thin) solid #ffcdd2;
 }
 
 /* ================================
@@ -340,28 +350,28 @@ textarea:focus {
 
 /* Username Availability Feedback */
 .username-feedback {
-    margin-top: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--radius-md);
-    font-weight: var(--font-weight-medium);
+  margin-top: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-medium);
 }
 
 .username-feedback.checking {
-    background-color: #e3f2fd;
-    color: #1976d2;
-    border: var(--border-thin) solid #bbdefb;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border: var(--border-thin) solid #bbdefb;
 }
 
 .username-feedback.available {
-    background-color: #e8f5e8;
-    color: #2e7d32;
-    border: var(--border-thin) solid #c8e6c9;
+  background-color: #e8f5e8;
+  color: #2e7d32;
+  border: var(--border-thin) solid #c8e6c9;
 }
 
 .username-feedback.unavailable {
-    background-color: #ffebee;
-    color: #c62828;
-    border: var(--border-thin) solid #ffcdd2;
+  background-color: #ffebee;
+  color: #c62828;
+  border: var(--border-thin) solid #ffcdd2;
 }
 
 /* ================================
@@ -377,9 +387,9 @@ input[type="email"].field-error,
 input[type="tel"].field-error,
 select.field-error,
 textarea.field-error {
-    background-color: #ffeaea !important;
-    border-color: #dc3545 !important;
-    border-width: 2px !important;
+  background-color: #ffeaea !important;
+  border-color: #dc3545 !important;
+  border-width: 2px !important;
 }
 
 input[type="text"].field-error:focus,
@@ -388,9 +398,9 @@ input[type="email"].field-error:focus,
 input[type="tel"].field-error:focus,
 select.field-error:focus,
 textarea.field-error:focus {
-    background-color: #ffeaea !important;
-    border-color: #c82333 !important;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+  background-color: #ffeaea !important;
+  border-color: #c82333 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
 }
 
 /* Required unfilled state: Pale yellow background with darker yellow outline */
@@ -400,9 +410,9 @@ input[type="email"].field-required,
 input[type="tel"].field-required,
 select.field-required,
 textarea.field-required {
-    background-color: #fffbea !important;
-    border-color: #ffc107 !important;
-    border-width: 2px !important;
+  background-color: #fffbea !important;
+  border-color: #ffc107 !important;
+  border-width: 2px !important;
 }
 
 input[type="text"].field-required:focus,
@@ -411,9 +421,9 @@ input[type="email"].field-required:focus,
 input[type="tel"].field-required:focus,
 select.field-required:focus,
 textarea.field-required:focus {
-    background-color: #fffbea !important;
-    border-color: #e0a800 !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25) !important;
+  background-color: #fffbea !important;
+  border-color: #e0a800 !important;
+  box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25) !important;
 }
 
 /* Optional empty state: Pale green background with darker green outline */
@@ -423,9 +433,9 @@ input[type="email"].field-optional,
 input[type="tel"].field-optional,
 select.field-optional,
 textarea.field-optional {
-    background-color: #eafaf1 !important;
-    border-color: #28a745 !important;
-    border-width: 2px !important;
+  background-color: #eafaf1 !important;
+  border-color: #28a745 !important;
+  border-width: 2px !important;
 }
 
 input[type="text"].field-optional:focus,
@@ -434,9 +444,9 @@ input[type="email"].field-optional:focus,
 input[type="tel"].field-optional:focus,
 select.field-optional:focus,
 textarea.field-optional:focus {
-    background-color: #eafaf1 !important;
-    border-color: #1e7e34 !important;
-    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+  background-color: #eafaf1 !important;
+  border-color: #1e7e34 !important;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
 }
 
 /* Filled/valid state: No fill color (plain text field) */
@@ -446,9 +456,9 @@ input[type="email"].field-filled,
 input[type="tel"].field-filled,
 select.field-filled,
 textarea.field-filled {
-    background-color: #fff !important;
-    border-color: #b2dfdb !important;
-    border-width: 2px !important;
+  background-color: #fff !important;
+  border-color: #b2dfdb !important;
+  border-width: 2px !important;
 }
 
 input[type="text"].field-filled:focus,
@@ -457,9 +467,9 @@ input[type="email"].field-filled:focus,
 input[type="tel"].field-filled:focus,
 select.field-filled:focus,
 textarea.field-filled:focus {
-    background-color: #fff !important;
-    border-color: #009688 !important;
-    box-shadow: 0 0 0 0.2rem rgba(0, 150, 136, 0.25) !important;
+  background-color: #fff !important;
+  border-color: #009688 !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 150, 136, 0.25) !important;
 }
 
 /* Disabled state: Light gray background with greyed out text */
@@ -475,11 +485,11 @@ input[type="email"]:disabled,
 input[type="tel"]:disabled,
 select:disabled,
 textarea:disabled {
-    background-color: #f8f9fa !important;
-    border-color: #dee2e6 !important;
-    color: #6c757d !important;
-    cursor: not-allowed !important;
-    border-width: 2px !important;
+  background-color: #f8f9fa !important;
+  border-color: #dee2e6 !important;
+  color: #6c757d !important;
+  cursor: not-allowed !important;
+  border-width: 2px !important;
 }
 
 /* Ensure disabled fields don't respond to focus */
@@ -493,36 +503,36 @@ input[type="password"]:disabled:focus,
 input[type="email"]:disabled:focus,
 select:disabled:focus,
 textarea:disabled:focus {
-    background-color: #f8f9fa !important;
-    border-color: #dee2e6 !important;
-    box-shadow: none !important;
+  background-color: #f8f9fa !important;
+  border-color: #dee2e6 !important;
+  box-shadow: none !important;
 }
 
 /* Username Field States */
 .admin-form input.username-available {
-    border-color: #28a745;
-    background-color: #f8fff9;
+  border-color: #28a745;
+  background-color: #f8fff9;
 }
 
 .admin-form input.username-unavailable {
-    border-color: #dc3545;
-    background-color: #fff8f8;
+  border-color: #dc3545;
+  background-color: #fff8f8;
 }
 
 /* Enhanced Password Field States */
 .admin-form input[type="password"].password-strong {
-    border-color: #28a745;
-    background-color: #f8fff9;
+  border-color: #28a745;
+  background-color: #f8fff9;
 }
 
 .admin-form input[type="password"].password-weak {
-    border-color: #ffc107;
-    background-color: #fffdf5;
+  border-color: #ffc107;
+  background-color: #fffdf5;
 }
 
 .admin-form input[type="password"].password-invalid {
-    border-color: #dc3545;
-    background-color: #fff8f8;
+  border-color: #dc3545;
+  background-color: #fff8f8;
 }
 
 /* ================================
@@ -531,108 +541,108 @@ textarea:disabled:focus {
 
 /* 2FA Setup Container */
 .setup-container {
-    max-width: 600px;
-    margin: 2rem auto;
-    padding: var(--space-xl);
-    background: var(--color-white);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: var(--space-xl);
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
 }
 
 /* 2FA Step Styles */
 .step {
-    margin: var(--space-xl) 0;
-    padding: var(--space-md);
-    border: var(--border-thin) solid #e0e0e0;
-    border-radius: var(--radius-md);
+  margin: var(--space-xl) 0;
+  padding: var(--space-md);
+  border: var(--border-thin) solid #e0e0e0;
+  border-radius: var(--radius-md);
 }
 
 .step.active {
-    border-color: #2196F3;
-    background-color: var(--color-gray-50);
+  border-color: #2196f3;
+  background-color: var(--color-gray-50);
 }
 
 .step-number {
-    display: inline-block;
-    width: 24px;
-    height: 24px;
-    background: #2196F3;
-    color: var(--color-white);
-    border-radius: var(--radius-full);
-    text-align: center;
-    line-height: 24px;
-    margin-right: var(--space-sm);
-    font-size: 14px;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background: #2196f3;
+  color: var(--color-white);
+  border-radius: var(--radius-full);
+  text-align: center;
+  line-height: 24px;
+  margin-right: var(--space-sm);
+  font-size: 14px;
 }
 
 /* QR Code Display */
 .qr-code {
-    text-align: center;
-    margin: var(--space-md) 0;
+  text-align: center;
+  margin: var(--space-md) 0;
 }
 
 .qr-code img {
-    max-width: 200px;
-    border: var(--border-thin) solid #ddd;
-    padding: var(--space-sm);
-    background: var(--color-white);
+  max-width: 200px;
+  border: var(--border-thin) solid #ddd;
+  padding: var(--space-sm);
+  background: var(--color-white);
 }
 
 /* Manual Entry Key */
 .manual-entry {
-    background: var(--color-gray-100);
-    padding: var(--space-sm);
-    border-radius: var(--radius-md);
-    margin: var(--space-md) 0;
-    word-break: break-all;
-    font-family: monospace;
+  background: var(--color-gray-100);
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  margin: var(--space-md) 0;
+  word-break: break-all;
+  font-family: monospace;
 }
 
 /* Backup Codes */
 .backup-codes {
-    background: #fff3cd;
-    border: var(--border-thin) solid #ffeaa7;
-    padding: 15px;
-    border-radius: var(--radius-md);
-    margin: var(--space-md) 0;
+  background: #fff3cd;
+  border: var(--border-thin) solid #ffeaa7;
+  padding: 15px;
+  border-radius: var(--radius-md);
+  margin: var(--space-md) 0;
 }
 
 .backup-codes-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-sm);
-    margin: var(--space-sm) 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  margin: var(--space-sm) 0;
 }
 
 .backup-code {
-    font-family: monospace;
-    background: var(--color-white);
-    padding: 8px;
-    border: var(--border-thin) solid #ddd;
-    border-radius: var(--radius-sm);
-    text-align: center;
+  font-family: monospace;
+  background: var(--color-white);
+  padding: 8px;
+  border: var(--border-thin) solid #ddd;
+  border-radius: var(--radius-sm);
+  text-align: center;
 }
 
 /* 2FA Verification Input */
 .verification-input {
-    font-size: 18px;
-    text-align: center;
-    letter-spacing: 2px;
-    font-family: monospace;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 2px;
+  font-family: monospace;
 }
 
 /* Security Option Styles */
 .security-option {
-    border: var(--border-thin) solid #e0e0e0;
-    border-radius: var(--radius-lg);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-md);
+  border: var(--border-thin) solid #e0e0e0;
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
 }
 
 .security-description {
-    color: var(--color-text-muted);
-    margin: var(--space-sm) 0;
-    line-height: 1.5;
+  color: var(--color-text-muted);
+  margin: var(--space-sm) 0;
+  line-height: 1.5;
 }
 
 /* ================================
@@ -641,104 +651,104 @@ textarea:disabled:focus {
 
 /* Enhanced responsive form utilities */
 .form-responsive {
-    width: 100%;
-    box-sizing: border-box;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* TABLET LANDSCAPE (768px - 991px) */
 @media screen and (min-width: 768px) and (max-width: 991px) {
-    .eeg-form {
-        padding: 24px 20px;
-        max-width: 600px;
-    }
-    
-    .form-row {
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .name-group,
-    .patient-number-group {
-        min-width: auto;
-        flex: none;
-    }
-    
-    .admin-form .form-row {
-        flex-direction: column;
-    }
-    
-    .admin-form .form-group {
-        min-width: auto;
-    }
-    
-    .profile-form .form-row {
-        flex-direction: column;
-    }
-    
-    .profile-form .form-group {
-        min-width: auto;
-    }
+  .eeg-form {
+    padding: 24px 20px;
+    max-width: 600px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .name-group,
+  .patient-number-group {
+    min-width: auto;
+    flex: none;
+  }
+
+  .admin-form .form-row {
+    flex-direction: column;
+  }
+
+  .admin-form .form-group {
+    min-width: auto;
+  }
+
+  .profile-form .form-row {
+    flex-direction: column;
+  }
+
+  .profile-form .form-group {
+    min-width: auto;
+  }
 }
 
 /* TABLET PORTRAIT (576px - 767px) */
 @media screen and (min-width: 576px) and (max-width: 767px) {
-    .eeg-form {
-        padding: 20px 16px;
-        max-width: 500px;
-    }
-    
-    .admin-form .form-row {
-        flex-direction: column;
-    }
-    
-    .admin-form .form-group {
-        min-width: auto;
-    }
-    
-    .profile-form .form-row {
-        flex-direction: column;
-    }
-    
-    .profile-form .form-group {
-        min-width: auto;
-    }
+  .eeg-form {
+    padding: 20px 16px;
+    max-width: 500px;
+  }
+
+  .admin-form .form-row {
+    flex-direction: column;
+  }
+
+  .admin-form .form-group {
+    min-width: auto;
+  }
+
+  .profile-form .form-row {
+    flex-direction: column;
+  }
+
+  .profile-form .form-group {
+    min-width: auto;
+  }
 }
 
 /* MOBILE LANDSCAPE (480px - 575px) */
 @media screen and (min-width: 480px) and (max-width: 575px) {
-    .eeg-form {
-        padding: 16px 12px;
-        max-width: 420px;
-    }
+  .eeg-form {
+    padding: 16px 12px;
+    max-width: 420px;
+  }
 }
 
 /* MOBILE PORTRAIT (320px - 479px) */
 @media screen and (max-width: 479px) {
-    .eeg-form {
-        padding: 12px 8px;
-        max-width: 350px;
-    }
-    
-    .form-row {
-        flex-direction: column;
-    }
-    
-    .form-group {
-        min-width: auto;
-        width: 100%;
-    }
+  .eeg-form {
+    padding: 12px 8px;
+    max-width: 350px;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-group {
+    min-width: auto;
+    width: 100%;
+  }
 }
 
 /* Fix for very narrow screens */
 @media screen and (max-width: 320px) {
-    .form-row {
-        flex-direction: column;
-    }
-    
-    .form-group {
-        min-width: auto;
-        width: 100%;
-    }
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-group {
+    min-width: auto;
+    width: 100%;
+  }
 }
 
 /* ================================
@@ -748,60 +758,60 @@ textarea:disabled:focus {
 /* Form Group States */
 .form-group.success input,
 .form-group.success select {
-    border-color: #28a745;
-    background-color: #f8fff9;
+  border-color: #28a745;
+  background-color: #f8fff9;
 }
 
 .form-group.error input,
 .form-group.error select {
-    border-color: #dc3545;
-    background-color: #fff8f8;
+  border-color: #dc3545;
+  background-color: #fff8f8;
 }
 
 /* Error Message Styling */
 .error-message {
-    background-color: #fee;
-    color: #c33;
-    padding: 10px;
-    border: 1px solid #fcc;
-    border-radius: var(--radius-md);
-    margin: 10px 0;
-    font-size: 14px;
+  background-color: #fee;
+  color: #c33;
+  padding: 10px;
+  border: 1px solid #fcc;
+  border-radius: var(--radius-md);
+  margin: 10px 0;
+  font-size: 14px;
 }
 
 .form-group .error-message {
-    color: #dc3545;
-    font-size: 0.85rem;
-    margin-top: 0.25rem;
-    font-weight: var(--font-weight-medium);
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  font-weight: var(--font-weight-medium);
 }
 
 .form-group .success-message {
-    color: #28a745;
-    font-size: 0.85rem;
-    margin-top: 0.25rem;
-    font-weight: var(--font-weight-medium);
+  color: #28a745;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  font-weight: var(--font-weight-medium);
 }
 
 /* Section Messages for Admin/Profile Pages */
 .section-message {
-    padding: var(--space-md);
-    border-radius: var(--radius-md);
-    margin: var(--space-md) 0;
-    font-size: 0.9rem;
-    font-weight: var(--font-weight-medium);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  margin: var(--space-md) 0;
+  font-size: 0.9rem;
+  font-weight: var(--font-weight-medium);
 }
 
 .section-message.success-message {
-    background-color: #d4edda;
-    border: var(--border-thin) solid #c3e6cb;
-    color: #155724;
+  background-color: #d4edda;
+  border: var(--border-thin) solid #c3e6cb;
+  color: #155724;
 }
 
 .section-message.error-message {
-    background-color: #f8d7da;
-    border: var(--border-thin) solid #f5c6cb;
-    color: #721c24;
+  background-color: #f8d7da;
+  border: var(--border-thin) solid #f5c6cb;
+  color: #721c24;
 }
 
 /* ================================
@@ -811,37 +821,37 @@ textarea:disabled:focus {
 /* Admin form validation states */
 .admin-form .form-group.success input,
 .admin-form .form-group.success select {
-    border-color: #28a745;
-    background-color: #f8fff9;
+  border-color: #28a745;
+  background-color: #f8fff9;
 }
 
 .admin-form .form-group.error input,
 .admin-form .form-group.error select {
-    border-color: #dc3545;
-    background-color: #fff8f8;
+  border-color: #dc3545;
+  background-color: #fff8f8;
 }
 
 .admin-form .error-message {
-    color: #dc3545;
-    font-size: 0.85rem;
-    margin-top: 0.25rem;
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
 }
 
 .admin-form .success-message {
-    color: #28a745;
-    font-size: 0.85rem;
-    margin-top: 0.25rem;
+  color: #28a745;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
 }
 
 /* Password validation states for admin forms */
 .admin-form input.password-match {
-    border-color: #28a745;
-    background-color: #f8fff9;
+  border-color: #28a745;
+  background-color: #f8fff9;
 }
 
 .admin-form input.password-mismatch {
-    border-color: #dc3545;
-    background-color: #fff8f8;
+  border-color: #dc3545;
+  background-color: #fff8f8;
 }
 
 /* ================================
@@ -849,82 +859,85 @@ textarea:disabled:focus {
    ================================ */
 
 /* Profile form disabled styling - lower priority than field states */
-.profile-form input:disabled:not(.field-required):not(.field-error):not(.field-optional):not(.field-filled) {
-    background: #f5f5f5;
-    cursor: not-allowed;
+.profile-form
+  input:disabled:not(.field-required):not(.field-error):not(
+    .field-optional
+  ):not(.field-filled) {
+  background: #f5f5f5;
+  cursor: not-allowed;
 }
 
 /* Ensure field state classes override disabled styling in profile forms */
 .profile-form input.field-required {
-    background-color: #fffbea !important;
-    border-color: #ffc107 !important;
-    color: #495057 !important;
+  background-color: #fffbea !important;
+  border-color: #ffc107 !important;
+  color: #495057 !important;
 }
 
 .profile-form input.field-error {
-    background-color: #ffeaea !important;
-    border-color: #dc3545 !important;
-    color: #495057 !important;
+  background-color: #ffeaea !important;
+  border-color: #dc3545 !important;
+  color: #495057 !important;
 }
 
 .profile-form input.field-optional {
-    background-color: #eafaf1 !important;
-    border-color: #28a745 !important;
-    color: #495057 !important;
+  background-color: #eafaf1 !important;
+  border-color: #28a745 !important;
+  color: #495057 !important;
 }
 
 .profile-form input.field-filled {
-    background-color: #fff !important;
-    border-color: #b2dfdb !important;
-    color: #495057 !important;
+  background-color: #fff !important;
+  border-color: #b2dfdb !important;
+  color: #495057 !important;
 }
 
 .profile-form input.field-disabled,
 .profile-form input:disabled {
-    background: #f5f5f5 !important;
-    cursor: not-allowed !important;
-    color: #6c757d !important;
-    border-color: #dee2e6 !important;
+  background: #f5f5f5 !important;
+  cursor: not-allowed !important;
+  color: #6c757d !important;
+  border-color: #dee2e6 !important;
 }
 
 .profile-form input[readonly] {
-    background: #f8f9fa;
-    cursor: not-allowed;
+  background: #f8f9fa;
+  cursor: not-allowed;
 }
 
 /* Password validation states for profile forms */
 .profile-form input.password-match {
-    border-color: #28a745 !important;
-    background-color: #f8fff9 !important;
+  border-color: #28a745 !important;
+  background-color: #f8fff9 !important;
 }
 
 .profile-form input.password-mismatch {
-    border-color: #dc3545 !important;
-    background-color: #fff8f8 !important;
+  border-color: #dc3545 !important;
+  background-color: #fff8f8 !important;
 }
 
 .profile-form .form-group.success input {
-    border-color: #28a745 !important;
-    background-color: #f8fff9 !important;
+  border-color: #28a745 !important;
+  background-color: #f8fff9 !important;
 }
 
 .profile-form .form-group.error input {
-    border-color: #dc3545 !important;
-    background-color: #fff8f8 !important;
+  border-color: #dc3545 !important;
+  background-color: #fff8f8 !important;
 }
 
 .profile-form .error-message {
-    color: #dc3545;
-    font-size: 0.85rem;
-    margin-top: 0.25rem;
-    font-weight: var(--font-weight-medium);
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  font-weight: var(--font-weight-medium);
 }
 
 .profile-form .success-message {
-    color: #28a745;
-    font-size: 0.85rem;
-    margin-top: 0.25rem;
-    font-weight: var(--font-weight-medium);
+  color: #28a745;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  font-weight: var(--font-weight-medium);
 }
 
 /* ================================
@@ -933,37 +946,37 @@ textarea:disabled:focus {
 
 /* Password validation states for login forms (including forced password change) */
 .login-form .form-group.error input {
-    border-color: #dc3545 !important;
-    background-color: #fff8f8 !important;
+  border-color: #dc3545 !important;
+  background-color: #fff8f8 !important;
 }
 
 .login-form .form-group.success input {
-    border-color: #28a745 !important;
-    background-color: #f8fff9 !important;
+  border-color: #28a745 !important;
+  background-color: #f8fff9 !important;
 }
 
 .login-form input.password-match {
-    border-color: #28a745 !important;
-    background-color: #f8fff9 !important;
+  border-color: #28a745 !important;
+  background-color: #f8fff9 !important;
 }
 
 .login-form input.password-mismatch {
-    border-color: #dc3545 !important;
-    background-color: #fff8f8 !important;
+  border-color: #dc3545 !important;
+  background-color: #fff8f8 !important;
 }
 
 .login-form .error-message {
-    color: #dc3545;
-    font-size: 0.85rem;
-    margin-top: 0.25rem;
-    font-weight: var(--font-weight-medium);
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  font-weight: var(--font-weight-medium);
 }
 
 .login-form .success-message {
-    color: #28a745;
-    font-size: 0.85rem;
-    margin-top: 0.25rem;
-    font-weight: var(--font-weight-medium);
+  color: #28a745;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  font-weight: var(--font-weight-medium);
 }
 
 /* ================================
@@ -971,22 +984,30 @@ textarea:disabled:focus {
    ================================ */
 
 .requirement.valid {
-    color: #28a745;
+  color: #28a745;
 }
 
 .requirement.invalid {
-    color: #dc3545;
+  color: #dc3545;
 }
 
 /* Password strength text */
 .password-strength-text {
-    font-size: 12px;
-    margin-top: 0.25rem;
-    color: var(--color-text-muted);
-    font-weight: 400;
+  font-size: 12px;
+  margin-top: 0.25rem;
+  color: var(--color-text-muted);
+  font-weight: 400;
 }
 
-.password-strength-text.weak { color: #f44336; }
-.password-strength-text.fair { color: #ff9800; }
-.password-strength-text.good { color: #2196f3; }
-.password-strength-text.strong { color: #4caf50; }
+.password-strength-text.weak {
+  color: #f44336;
+}
+.password-strength-text.fair {
+  color: #ff9800;
+}
+.password-strength-text.good {
+  color: #2196f3;
+}
+.password-strength-text.strong {
+  color: #4caf50;
+}
