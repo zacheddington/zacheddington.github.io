@@ -12,6 +12,30 @@
     border: var(--border-medium) solid var(--color-border-dark);
 }
 
+/* Mobile responsive adjustments for setup container */
+@media screen and (max-width: 480px) {
+    .setup-container {
+        margin: 0.5rem auto; /* Much less top margin on mobile */
+        padding: var(--space-lg);
+    }
+}
+
+@media screen and (min-height: 800px) and (max-width: 480px) {
+    /* Tall mobile screens - bring much closer to top */
+    .setup-container {
+        margin: -1rem auto 1rem auto; /* Negative top margin */
+        margin-top: max(-1rem, env(safe-area-inset-top, 0px));
+    }
+}
+
+@media screen and (min-height: 900px) and (max-width: 480px) {
+    /* Extra tall mobile screens */
+    .setup-container {
+        margin: -2rem auto 1rem auto; /* Even more negative top margin */
+        margin-top: max(-2rem, env(safe-area-inset-top, 0px));
+    }
+}
+
 .step {
     margin: var(--space-xl) 0;
     padding: var(--space-lg);

@@ -40,6 +40,14 @@ body {
     transition: var(--transition-all);
 }
 
+/* Mobile-first approach - prevent centering on mobile */
+@media screen and (max-width: 480px) {
+    body {
+        justify-content: flex-start !important;
+        align-items: stretch !important;
+    }
+}
+
 /* Welcome page specific body layout - don't center vertically */
 body.welcome-page {
     justify-content: flex-start;
@@ -166,6 +174,55 @@ body.login-page {
     body:not(.login-page) {
         justify-content: flex-start;
         padding-top: calc(var(--header-height) - 10px);
+    }
+}
+
+/* ================================
+   AGGRESSIVE MOBILE POSITIONING FIXES
+   ================================ */
+
+/* ALL MOBILE SCREENS - force content to top */
+@media screen and (max-width: 480px) {
+    body:not(.login-page) {
+        justify-content: flex-start !important; /* Force top alignment */
+        align-items: stretch; /* Remove center alignment */
+        padding-top: calc(var(--header-height) - 15px) !important;
+    }
+
+    /* Override any container margins that push content down */
+    .welcome-container,
+    .admin-container,
+    .profile-container {
+        margin-top: -25px !important;
+        transform: translateY(-20px); /* Additional upward push */
+    }
+}
+
+/* TALL MOBILE SCREENS - even more aggressive */
+@media screen and (min-height: 800px) and (max-width: 480px) {
+    body:not(.login-page) {
+        padding-top: calc(var(--header-height) - 30px) !important;
+    }
+
+    .welcome-container,
+    .admin-container,
+    .profile-container {
+        margin-top: -50px !important;
+        transform: translateY(-30px);
+    }
+}
+
+/* EXTRA TALL MOBILE (iPhone Pro Max) - maximum aggressive positioning */
+@media screen and (min-height: 900px) and (max-width: 480px) {
+    body:not(.login-page) {
+        padding-top: calc(var(--header-height) - 45px) !important;
+    }
+
+    .welcome-container,
+    .admin-container,
+    .profile-container {
+        margin-top: -70px !important;
+        transform: translateY(-40px);
     }
 }
 

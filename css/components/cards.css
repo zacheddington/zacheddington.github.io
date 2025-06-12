@@ -398,31 +398,34 @@
 /* Adjust option cards positioning for all mobile screens */
 @media screen and (max-width: 480px) {
     .options {
-        margin-top: -20px; /* Bring cards much closer to top */
-        gap: var(--space-md); /* Reduce gap between cards */
+        margin-top: -40px !important; /* Much more aggressive negative margin */
+        gap: var(--space-sm); /* Reduce gap between cards */
+        transform: translateY(-30px); /* Additional upward push */
     }
 
     .option-card {
-        margin-bottom: var(--space-sm); /* Reduce bottom margin */
+        margin-bottom: var(--space-xs); /* Reduce bottom margin */
     }
 }
 
 /* Adjust option cards positioning for tall mobile screens (iPhone 16 Pro Max, etc.) */
 @media screen and (min-height: 800px) and (max-width: 480px) {
     .options {
-        margin-top: -40px; /* Bring cards much closer to top */
-        gap: var(--space-sm); /* Further reduce gap between cards */
+        margin-top: -70px !important; /* Much more aggressive */
+        gap: var(--space-xs); /* Further reduce gap between cards */
+        transform: translateY(-50px); /* More upward push */
     }
 
     .option-card {
-        margin-bottom: var(--space-xs); /* Further reduce bottom margin */
+        margin-bottom: 0; /* Remove bottom margin completely */
     }
 }
 
 @media screen and (min-height: 900px) and (max-width: 480px) {
-    /* Extra tall mobile screens - even closer to top */
+    /* Extra tall mobile screens - maximum aggressive positioning */
     .options {
-        margin-top: -60px;
-        gap: var(--space-xs);
+        margin-top: -100px !important;
+        gap: 8px; /* Minimal gap */
+        transform: translateY(-70px); /* Maximum upward push */
     }
 }
