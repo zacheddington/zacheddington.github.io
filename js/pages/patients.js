@@ -60,7 +60,23 @@ function initializeManagePatientsPage() {
     loadPatients();
     setupPatientFilter();
 
+    // Add event listener for window resize to adjust column widths
+    window.addEventListener('resize', debounce(adjustPatientColumnWidths, 250));
+
     console.log('Manage patients page initialized');
+}
+
+// Simple debounce function to limit how often a function is called
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }
 
 // Set up navigation between patient sections
@@ -506,14 +522,15 @@ function handlePatientSort(columnKey) {
     } else {
         currentPatientSort.column = columnKey;
         currentPatientSort.direction = 'asc';
-    }
-
-    // Update sort indicators
+    } // Update sort indicators
     updatePatientSortIndicators();
 
     // Sort and display patients
     const sortedPatients = getSortedPatients();
     displayPatients(sortedPatients);
+
+    // Adjust column widths after sorting
+    setTimeout(adjustPatientColumnWidths, 100);
 }
 
 // Update visual sort indicators
@@ -582,6 +599,7 @@ function getSortedPatients() {
 function displayPatients(patients) {
     const patientsTableBody = document.getElementById('patientsTableBody');
     const noPatientsFound = document.getElementById('noPatientsFound');
+    const tableContainer = document.querySelector('.table-responsive');
 
     if (!patientsTableBody) return;
 
@@ -593,6 +611,10 @@ function displayPatients(patients) {
 
     if (noPatientsFound) noPatientsFound.classList.add('hidden');
 
+    // Reset scroll position when displaying new data
+    if (tableContainer) {
+        tableContainer.scrollLeft = 0;
+    }
     patientsTableBody.innerHTML = patients
         .map((patient) => {
             const fullName = patient.middle_name
@@ -608,19 +630,21 @@ function displayPatients(patients) {
 
             return `
             <tr data-patient-id="${patient.patient_key}">
-                <td>
-                    <div class="patient-name">
-                        <div class="patient-full-name">${fullName}</div>
-                    </div>
+                <td class="patient-name" title="${fullName}">
+                    <div class="patient-full-name">${fullName}</div>
                 </td>
-                <td>${patient.address || ''}</td>
-                <td>${patient.phone || ''}</td>
+                <td class="patient-address" title="${patient.address || ''}">${
+                patient.address || ''
+            }</td>
+                <td class="patient-phone" title="${patient.phone || ''}">${
+                patient.phone || ''
+            }</td>
                 <td>
-                    <span class="accepts-texts ${acceptsTextsClass}">
+                    <span class="accepts-texts ${acceptsTextsClass}" title="${acceptsTexts}">
                         ${acceptsTexts}
                     </span>
                 </td>
-                <td class="patient-created">${createdDate}</td>
+                <td class="patient-created" title="${createdDate}">${createdDate}</td>
                 <td>
                     <div class="patient-actions">
                         <button class="btn-icon btn-edit" onclick="editPatient(${
@@ -639,6 +663,9 @@ function displayPatients(patients) {
         `;
         })
         .join('');
+
+    // Adjust column widths after rendering
+    setTimeout(adjustPatientColumnWidths, 100);
 }
 
 // Filter patients based on search input
@@ -667,6 +694,9 @@ function filterPatients() {
     });
 
     displayPatients(filteredPatients);
+
+    // Adjust column widths based on content after filtering
+    setTimeout(adjustPatientColumnWidths, 100);
 }
 
 // Set up patient filter functionality
@@ -700,12 +730,50 @@ function deletePatient(patientId, patientName) {
     );
 }
 
-// Expose functions to global scope
-window.patientsPage = {
-    initializePatientsPage,
-    setupPatientsNavigation,
-    loadPatients,
-    filterPatients,
-    editPatient,
-    deletePatient,
-};
+// Function to adjust column widths based on content
+function adjustPatientColumnWidths() {
+    const table = document.querySelector('#patientsTable');
+    if (!table) return;
+
+    // Allow table to determine natural column widths first
+    table.style.tableLayout = 'auto';
+
+    // Get all table headers
+    const headers = Array.from(table.querySelectorAll('th'));
+
+    // Calculate optimal widths based on content
+    headers.forEach((header, index) => {
+        const cells = Array.from(
+            table.querySelectorAll(`tbody tr td:nth-child(${index + 1})`)
+        );
+
+        // Get maximum content width in this column
+        let maxWidth = header.textContent.length;
+        cells.forEach((cell) => {
+            if (cell.textContent.length > maxWidth) {
+                maxWidth = Math.min(cell.textContent.length, 50); // Cap at 50 chars to prevent super wide columns
+            }
+        });
+
+        // Set min-width based on content (rough approximation of character width)
+        const charWidth = 8; // Estimated average character width in pixels
+        let minWidth = 100; // Default minimum width
+
+        try {
+            const currentMinWidth = parseInt(
+                window.getComputedStyle(header).minWidth || '0'
+            );
+            minWidth = Math.max(maxWidth * charWidth, currentMinWidth);
+        } catch (e) {
+            console.error('Error calculating column width:', e);
+        }
+
+        // Apply the calculated width if it's larger than the minimum
+        header.style.width = `${minWidth}px`;
+    });
+
+    // Reapply fixed table layout for better performance after widths are set
+    setTimeout(() => {
+        table.style.tableLayout = 'fixed';
+    }, 100);
+}

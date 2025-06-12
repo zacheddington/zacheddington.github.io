@@ -95,3 +95,66 @@
     transform: translateY(-2px) !important;
     box-shadow: var(--shadow-button-hover) !important;
 }
+
+/* ================================
+   PATIENT TABLE RESPONSIVE STYLES
+   ================================ */
+
+/* Patient table cell styles */
+#patientsTable td {
+    white-space: nowrap; /* Prevent text from wrapping */
+    text-overflow: ellipsis; /* Show ... when text overflows */
+    overflow: hidden; /* Hide overflow content */
+    max-width: 0; /* Required for text-overflow to work with table cells */
+}
+
+/* Column widths - min-width instead of fixed width for responsive behavior */
+#patientsTable th:nth-child(1) {
+    min-width: 150px;
+    width: 20%;
+} /* Patient Name */
+
+#patientsTable th:nth-child(2) {
+    min-width: 200px;
+    width: 30%;
+} /* Address - larger for potentially long addresses */
+
+#patientsTable th:nth-child(3) {
+    min-width: 120px;
+    width: 15%;
+} /* Phone */
+
+#patientsTable th:nth-child(4) {
+    min-width: 100px;
+    width: 10%;
+} /* Accepts Texts */
+
+#patientsTable th:nth-child(5) {
+    min-width: 100px;
+    width: 10%;
+} /* Created */
+
+#patientsTable th:nth-child(6) {
+    min-width: 110px;
+    width: 15%;
+} /* Actions */
+
+/* Patient address cell specific style */
+#patientsTable td.patient-address {
+    max-width: none; /* Remove the max-width limit to allow full expansion */
+    text-align: left; /* Left-align address text */
+    position: relative; /* For potential overflow indicator */
+}
+
+/* Cell hover effect to show full content on mobile */
+@media screen and (max-width: 767px) {
+    #patientsTable td:hover {
+        white-space: normal;
+        overflow: visible;
+        max-width: none;
+        z-index: 10;
+        position: relative;
+        background-color: #f8fdff;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+}

@@ -17,7 +17,7 @@
     </head>
     <body class="content-page">
         <header class="app-header">
-            <div id="hamburger-menu"></div>
+            <div id="hamburger-menu" class="hamburger-container"></div>
             <h1 class="page-title">Manage Patients</h1>
         </header>
         <div class="admin-container">
@@ -53,19 +53,21 @@
                     </div>
                 </div>
                 <div class="users-table-container">
-                    <table class="users-table" id="patientsTable">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Address</th>
-                                <th>Phone</th>
-                                <th>Accepts Texts</th>
-                                <th>Created</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="patientsTableBody"></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="users-table" id="patientsTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Address</th>
+                                    <th>Phone</th>
+                                    <th>Accepts Texts</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patientsTableBody"></tbody>
+                        </table>
+                    </div>
                     <div id="patientsLoading" class="loading-message">
                         Loading patients...
                     </div>
