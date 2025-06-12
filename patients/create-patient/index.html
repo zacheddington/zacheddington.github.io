@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Create Patient - Integris Neuro</title>
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <link rel="stylesheet" href="../../css/main.css" />
+        <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+        <link rel="icon" type="image/png" href="../../favicon.png" />
+    </head>
+    <body>
+        <header class="app-header">
+            <div id="hamburger-menu"></div>
+            <h1 class="page-title">Create New Patient</h1>
+        </header>
+        <div class="admin-container">
+            <div class="admin-section" id="createPatientSection">
+                <div class="section-header">
+                    <a href="../index.html" class="secondary-btn ml-auto fade-nav">← Back to Patient Management</a>
+                    <h2>Create New Patient</h2>
+                </div>
+                <form id="createPatientForm" class="admin-form" data-form-type="patient-registration">
+                    <div class="form-section">
+                        <h3>Patient Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="patientFirstName">First Name</label>
+                                <input type="text" id="patientFirstName" name="firstName" required maxlength="50" autocomplete="given-name" />
+                                <small class="field-note">Maximum 50 characters</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientMiddleName">Middle Name</label>
+                                <input type="text" id="patientMiddleName" name="middleName" maxlength="50" autocomplete="additional-name" />
+                                <small class="field-note">Maximum 50 characters (optional)</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientLastName">Last Name</label>
+                                <input type="text" id="patientLastName" name="lastName" required maxlength="50" autocomplete="family-name" />
+                                <small class="field-note">Maximum 50 characters</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="patientAddress">Address</label>
+                                <input type="text" id="patientAddress" name="address" required maxlength="100" autocomplete="street-address" />
+                                <small class="field-note">Maximum 100 characters</small>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="patientPhone">Phone Number</label>
+                                <input type="tel" id="patientPhone" name="phone" required placeholder="(555) 123-4567" pattern="[\(\)\d\s\-]+" autocomplete="tel" />
+                                <small class="field-note">Enter 10 digits - formatting applied automatically</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="acceptsTexts">Accepts Text Messages</label>
+                                <select id="acceptsTexts" name="acceptsTexts" required autocomplete="off">
+                                    <option value="">Select...</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+                                <small class="field-note">Patient consent for text messaging</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="submit-btn" id="createPatientSubmitBtn">Create Patient</button>
+                        <a href="../index.html" class="secondary-btn fade-nav">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script src="../../js/shared/api-client.js"></script>
+        <script src="../../js/shared/modal-manager.js"></script>
+        <script src="../../js/shared/password-utils.js"></script>
+        <script src="../../js/shared/field-validation.js"></script>
+        <script src="../../js/shared/auth-utils.js"></script>
+        <script src="../../js/shared/page-transitions.js"></script>
+        <script src="../../js/shared/navigation.js"></script>
+        <script src="../../js/pages/patients.js"></script>
+        <script src="../../js/main.js"></script>
+    </body>
+</html>

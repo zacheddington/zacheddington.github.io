@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Manage Users - Integris Neuro</title>
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <link rel="stylesheet" href="../../css/main.css" />
+        <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+        <link rel="icon" type="image/png" href="../../favicon.png" />
+    </head>
+    <body>
+        <header class="app-header">
+            <div id="hamburger-menu"></div>
+            <h1 class="page-title">Manage Users</h1>
+        </header>
+        <div class="admin-container">
+            <div class="admin-section" id="manageUsersSection">
+                <div class="section-header">
+                    <a href="../index.html" class="secondary-btn ml-auto fade-nav">← Back to User Management</a>
+                    <h2>Manage Existing Users</h2>
+                </div>
+                <div class="user-filter">
+                    <div class="form-group">
+                        <label for="userFilter">Search Users</label>
+                        <input type="text" id="userFilter" placeholder="Search by username, name, or email..." autocomplete="off" />
+                        <small class="field-note">Filter users to quickly find specific accounts</small>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="button" class="secondary-btn hidden" id="resetSort">Clear Sort</button>
+                    </div>
+                </div>
+                <div class="users-table-container">
+                    <table class="users-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                    <div id="usersLoading" class="loading-message">Loading users...</div>
+                    <div id="noUsersFound" class="no-results hidden">No users found matching your search.</div>
+                </div>
+            </div>
+        </div>
+        <script src="../../js/shared/api-client.js"></script>
+        <script src="../../js/shared/modal-manager.js"></script>
+        <script src="../../js/shared/password-utils.js"></script>
+        <script src="../../js/shared/field-validation.js"></script>
+        <script src="../../js/shared/auth-utils.js"></script>
+        <script src="../../js/shared/page-transitions.js"></script>
+        <script src="../../js/shared/navigation.js"></script>
+        <script src="../../js/pages/admin.js"></script>
+        <script src="../../js/main.js"></script>
+    </body>
+</html>

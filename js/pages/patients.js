@@ -7,16 +7,62 @@ let currentPatientSort = { column: null, direction: null };
 
 // Initialize patients page functionality
 function initializePatientsPage() {
-    // Navigation handlers
-    setupPatientsNavigation();
+    // Determine which page we're on and initialize accordingly
+    const currentPage = getCurrentPageType();
+    
+    switch (currentPage) {
+        case 'create-patient':
+            initializeCreatePatientPage();
+            break;
+        case 'manage-patients':
+            initializeManagePatientsPage();
+            break;
+        case 'patients-index':
+        default:
+            initializePatientsIndexPage();
+            break;
+    }
 
-    // Form handlers
-    setupCreatePatientForm();
-
-    // Load hamburger menu
+    // Load hamburger menu for all patient pages
     if (document.getElementById('hamburger-menu')) {
         loadMenu();
     }
+}
+
+// Determine current page type based on URL or page elements
+function getCurrentPageType() {
+    const path = window.location.pathname;
+    if (path.includes('create-patient.html')) {
+        return 'create-patient';
+    } else if (path.includes('manage-patients.html')) {
+        return 'manage-patients';
+    } else if (path.includes('/patients/')) {
+        return 'patients-index';
+    }
+    return 'patients-index';
+}
+
+// Initialize the patients index page (choice page)
+function initializePatientsIndexPage() {
+    // No specific initialization needed for choice page
+    console.log('Patients index page initialized');
+}
+
+// Initialize the create patient page
+function initializeCreatePatientPage() {
+    // Setup create patient form
+    setupCreatePatientForm();
+    
+    console.log('Create patient page initialized');
+}
+
+// Initialize the manage patients page
+function initializeManagePatientsPage() {
+    // Load patients and setup patient management
+    loadPatients();
+    setupPatientFilter();
+    
+    console.log('Manage patients page initialized');
 }
 
 // Set up navigation between patient sections
@@ -294,31 +340,12 @@ async function createPatient() {
                 ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`
                 : `${formData.firstName} ${formData.lastName}`;
             const successMessage = `Success, new patient ${patientName} created!`;
-            window.modalManager.showModal('success', successMessage);
-
-            // Redirect back to patient choice page after brief delay
+            window.modalManager.showModal('success', successMessage);            // Redirect back to patient choice page after brief delay
             setTimeout(() => {
                 window.modalManager.closeModal();
-                // Navigate back to main patient page
-                document
-                    .getElementById('createPatientSection')
-                    .classList.add('hidden');
-                document
-                    .getElementById('patientChoice')
-                    .classList.remove('hidden');
+                // Navigate back to main patient page using page transitions
+                window.location.href = 'index.html';
             }, 2500);
-
-            // Refresh patients if we're on manage patients section
-            if (
-                typeof loadPatients === 'function' &&
-                !document
-                    .getElementById('managePatientsSection')
-                    .classList.contains('hidden')
-            ) {
-                setTimeout(() => {
-                    loadPatients();
-                }, 1000);
-            }
         } else {
             throw new Error(result.error || 'Failed to create patient');
         }

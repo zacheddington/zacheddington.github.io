@@ -8,19 +8,66 @@ let currentSort = { column: null, direction: null };
 
 // Initialize admin page
 function initializeAdminPage() {
-    // Load roles for dropdown
-    loadRoles();
+    // Determine which page we're on and initialize accordingly
+    const currentPage = getCurrentPageType();
+    
+    switch (currentPage) {
+        case 'create-user':
+            initializeCreateUserPage();
+            break;
+        case 'manage-users':
+            initializeManageUsersPage();
+            break;
+        case 'admin-index':
+        default:
+            initializeAdminIndexPage();
+            break;
+    }
 
-    // Navigation handlers
-    setupAdminNavigation();
-
-    // Form handlers
-    setupCreateUserForm();
-
-    // Load hamburger menu
+    // Load hamburger menu for all admin pages
     if (document.getElementById('hamburger-menu')) {
         loadMenu();
     }
+}
+
+// Determine current page type based on URL or page elements
+function getCurrentPageType() {
+    const path = window.location.pathname;
+    if (path.includes('create-user.html')) {
+        return 'create-user';
+    } else if (path.includes('manage-users.html')) {
+        return 'manage-users';
+    } else if (path.includes('/admin/')) {
+        return 'admin-index';
+    }
+    return 'admin-index';
+}
+
+// Initialize the admin index page (choice page)
+function initializeAdminIndexPage() {
+    // No specific initialization needed for choice page
+    console.log('Admin index page initialized');
+}
+
+// Initialize the create user page
+function initializeCreateUserPage() {
+    // Load roles for dropdown
+    loadRoles();
+    
+    // Setup create user form
+    setupCreateUserForm();
+    
+    console.log('Create user page initialized');
+}
+
+// Initialize the manage users page
+function initializeManageUsersPage() {
+    // Load users and setup user management
+    loadUsers();
+    loadRolesForUserManagement();
+    setupUserFilter();
+    
+    console.log('Manage users page initialized');
 }
 
 // Setup admin navigation
@@ -352,31 +399,12 @@ async function createUser() {
                 ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`
                 : `${formData.firstName} ${formData.lastName}`;
             const successMessage = `Success, new user for ${userName} created!`;
-            window.modalManager.showModal('success', successMessage);
-
-            // Redirect back to admin choice page after brief delay
+            window.modalManager.showModal('success', successMessage);            // Redirect back to admin choice page after brief delay
             setTimeout(() => {
                 window.modalManager.closeModal();
-                // Navigate back to main admin page
-                document
-                    .getElementById('createUserSection')
-                    .classList.add('hidden');
-                document
-                    .getElementById('adminChoice')
-                    .classList.remove('hidden');
+                // Navigate back to main admin page using page transitions
+                window.location.href = 'index.html';
             }, 2500);
-
-            // Refresh users if we're on manage users section
-            if (
-                typeof loadUsers === 'function' &&
-                !document
-                    .getElementById('manageUsersSection')
-                    .classList.contains('hidden')
-            ) {
-                setTimeout(() => {
-                    loadUsers();
-                }, 1000);
-            }
         } else {
             throw new Error(result.error || 'Failed to create user');
         }
