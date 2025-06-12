@@ -81,7 +81,7 @@ body.login-page {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 2px; /* Further reduced to match options positioning */
+    margin-top: 0; /* Removed margin to allow media query adjustments to take full effect */
 }
 
 /* Mobile responsive adjustments for welcome screen - handled by aggressive positioning below */
@@ -139,10 +139,10 @@ body.login-page {
         padding-top: calc(var(--header-height) - 15px) !important;
     }
 
-    /* Welcome container gets same positioning as management pages */
+    /* Welcome container positioned higher to match management pages visual position */
     .welcome-container {
-        margin-top: 5px !important; /* Same as admin containers */
-        transform: translateY(-5px); /* Slight upward push for alignment */
+        margin-top: -10px !important; /* Move up more than admin containers */
+        transform: translateY(-10px); /* Stronger upward push for alignment */
     }
 
     /* Management page containers get minimal positioning to stay below header */
@@ -161,8 +161,8 @@ body.login-page {
 
     /* Welcome pages aligned with management pages */
     .welcome-container {
-        margin-top: 0px !important;
-        transform: translateY(-5px);
+        margin-top: -15px !important;
+        transform: translateY(-15px);
     }
 
     /* Management pages stay conservative */
@@ -181,8 +181,8 @@ body.login-page {
 
     /* Welcome pages aligned with management pages at same level */
     .welcome-container {
-        margin-top: -5px !important;
-        transform: translateY(-5px);
+        margin-top: -25px !important;
+        transform: translateY(-20px);
     }
 
     /* Management pages get slight upward positioning but stay safe */

@@ -4,59 +4,57 @@
 
 /* Hamburger Button */
 .hamburger-btn {
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  z-index: var(--z-hamburger);
-  cursor: pointer;
-  padding: 12px;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-md);
-  min-width: var(--hamburger-size);
-  min-height: var(--hamburger-size);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition-all);
+    position: relative; /* Changed from fixed for proper flex alignment */
+    z-index: var(--z-hamburger);
+    cursor: pointer;
+    padding: 12px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    min-width: var(--hamburger-size);
+    min-height: var(--hamburger-size);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-all);
 }
 
 .hamburger-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
 }
 
 .hamburger-btn:hover span {
-  height: 3px;
-  background: var(--color-primary-dark);
+    height: 3px;
+    background: var(--color-primary-dark);
 }
 
 .hamburger-btn span {
-  display: block;
-  width: 22px;
-  height: 2px;
-  margin: 3px 0;
-  background: var(--color-primary);
-  transition: var(--transition-all);
-  border-radius: var(--radius-sm);
+    display: block;
+    width: 22px;
+    height: 2px;
+    margin: 3px 0;
+    background: var(--color-primary);
+    transition: var(--transition-all);
+    border-radius: var(--radius-sm);
 }
 
 /* Hamburger Animation States */
 .hamburger-btn.active {
-  background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .hamburger-btn.active span:nth-child(1) {
-  transform: rotate(45deg) translate(5px, 5px);
+    transform: rotate(45deg) translate(5px, 5px);
 }
 
 .hamburger-btn.active span:nth-child(2) {
-  opacity: 0;
+    opacity: 0;
 }
 
 .hamburger-btn.active span:nth-child(3) {
-  transform: rotate(-45deg) translate(5px, -5px);
+    transform: rotate(-45deg) translate(5px, -5px);
 }
 
 /* ================================
@@ -65,43 +63,43 @@
 
 /* Side Menu */
 .side-menu {
-  position: fixed;
-  top: 0;
-  left: -300px;
-  width: 300px;
-  height: 100vh;
-  background: var(--color-white);
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  transition: left var(--transition-normal) var(--ease-out);
-  z-index: var(--z-modal); /* Below hamburger button */
-  padding: 90px 20px 20px;
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100vh;
+    background: var(--color-white);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: left var(--transition-normal) var(--ease-out);
+    z-index: var(--z-modal); /* Below hamburger button */
+    padding: 90px 20px 20px;
 }
 
 .side-menu.active,
 .side-menu.open {
-  left: 0;
+    left: 0;
 }
 
 .side-menu ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .side-menu ul li {
-  margin-bottom: 15px;
+    margin-bottom: 15px;
 }
 
 .side-menu ul li a {
-  color: var(--color-primary);
-  text-decoration: none;
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-medium);
-  transition: color var(--transition-fast) var(--ease-out);
+    color: var(--color-primary);
+    text-decoration: none;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    transition: color var(--transition-fast) var(--ease-out);
 }
 
 .side-menu ul li a:hover {
-  color: var(--color-secondary);
+    color: var(--color-secondary);
 }
 
 /* ================================
@@ -110,33 +108,33 @@
 
 /* Overlay for dimming content when menu is open - covers entire viewport */
 .menu-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  visibility: hidden;
-  transition: var(--transition-all);
-  z-index: 100; /* Below header (500) and sidebar (1000) - only above main content */
-  pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition-all);
+    z-index: 100; /* Below header (500) and sidebar (1000) - only above main content */
+    pointer-events: none;
 }
 
 .menu-overlay.active {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 /* Remove the global body overlay */
 body::after {
-  display: none;
+    display: none;
 }
 
 body.menu-open::after,
 body.menu-active::after {
-  display: none;
+    display: none;
 }
 
 /* ================================
@@ -145,81 +143,81 @@ body.menu-active::after {
 
 /* TABLET PORTRAIT (576px - 767px) */
 @media screen and (min-width: 576px) and (max-width: 767px) {
-  .hamburger-btn {
-    top: 14px;
-    left: 14px;
-    min-width: var(--hamburger-size);
-    min-height: var(--hamburger-size);
-    padding: 12px;
-  }
+    .hamburger-btn {
+        top: 14px;
+        left: 14px;
+        min-width: var(--hamburger-size);
+        min-height: var(--hamburger-size);
+        padding: 12px;
+    }
 
-  .side-menu {
-    width: 280px;
-    padding: 80px 15px 15px;
-  }
+    .side-menu {
+        width: 280px;
+        padding: 80px 15px 15px;
+    }
 }
 
 /* MOBILE LANDSCAPE (480px - 575px) */
 @media screen and (min-width: 480px) and (max-width: 575px) {
-  .hamburger-btn {
-    top: 12px;
-    left: 12px;
-    min-width: var(--hamburger-size);
-    min-height: var(--hamburger-size);
-    padding: 10px;
-  }
+    .hamburger-btn {
+        top: 12px;
+        left: 12px;
+        min-width: var(--hamburger-size);
+        min-height: var(--hamburger-size);
+        padding: 10px;
+    }
 
-  .hamburger-btn span {
-    width: 22px;
-  }
+    .hamburger-btn span {
+        width: 22px;
+    }
 
-  .side-menu {
-    width: 260px;
-    padding: 75px 12px 12px;
-  }
+    .side-menu {
+        width: 260px;
+        padding: 75px 12px 12px;
+    }
 
-  .side-menu ul li a {
-    font-size: var(--font-size-base);
-  }
+    .side-menu ul li a {
+        font-size: var(--font-size-base);
+    }
 }
 
 /* MOBILE PORTRAIT (320px - 479px) */
 @media screen and (max-width: 479px) {
-  .hamburger-btn {
-    top: 9px;
-    left: 9px;
-    min-width: var(--hamburger-size);
-    min-height: var(--hamburger-size);
-    padding: 8px;
-  }
+    .hamburger-btn {
+        top: 9px;
+        left: 9px;
+        min-width: var(--hamburger-size);
+        min-height: var(--hamburger-size);
+        padding: 8px;
+    }
 
-  .hamburger-btn span {
-    width: 20px;
-    height: 2.5px;
-  }
+    .hamburger-btn span {
+        width: 20px;
+        height: 2.5px;
+    }
 
-  .side-menu {
-    width: 240px;
-    padding: 70px 10px 10px;
-  }
+    .side-menu {
+        width: 240px;
+        padding: 70px 10px 10px;
+    }
 
-  .side-menu ul li {
-    margin-bottom: 12px;
-  }
+    .side-menu ul li {
+        margin-bottom: 12px;
+    }
 
-  .side-menu ul li a {
-    font-size: 0.95rem;
-  }
+    .side-menu ul li a {
+        font-size: 0.95rem;
+    }
 }
 
 /* Landscape orientation adjustments for mobile */
 @media screen and (max-height: 500px) and (orientation: landscape) {
-  .hamburger-btn {
-    top: 9px;
-    left: 9px;
-  }
+    .hamburger-btn {
+        top: 9px;
+        left: 9px;
+    }
 
-  .side-menu {
-    padding-top: 60px;
-  }
+    .side-menu {
+        padding-top: 60px;
+    }
 }
