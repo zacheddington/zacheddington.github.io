@@ -33,9 +33,9 @@ function initializeAdminPage() {
 // Determine current page type based on URL or page elements
 function getCurrentPageType() {
     const path = window.location.pathname;
-    if (path.includes('create-user.html')) {
+    if (path.includes('/admin/create-user/')) {
         return 'create-user';
-    } else if (path.includes('manage-users.html')) {
+    } else if (path.includes('/admin/manage-users/')) {
         return 'manage-users';
     } else if (path.includes('/admin/')) {
         return 'admin-index';
@@ -380,10 +380,11 @@ async function createUser() {
 
         response = await fetch(`${API_URL}/api/create-user`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
+            headers:
+                {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
             body: JSON.stringify(formData),
         });
 

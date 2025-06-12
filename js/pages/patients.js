@@ -32,9 +32,9 @@ function initializePatientsPage() {
 // Determine current page type based on URL or page elements
 function getCurrentPageType() {
     const path = window.location.pathname;
-    if (path.includes('create-patient.html')) {
+    if (path.includes('/patients/create-patient/')) {
         return 'create-patient';
-    } else if (path.includes('manage-patients.html')) {
+    } else if (path.includes('/patients/manage-patients/')) {
         return 'manage-patients';
     } else if (path.includes('/patients/')) {
         return 'patients-index';
