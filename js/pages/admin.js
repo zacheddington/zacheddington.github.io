@@ -192,12 +192,13 @@ function setupCreateUserForm() {
                 window.fieldStateManager.updateFieldState(newPassword);
             }
         });
-    }
-
-    // Username availability checking (debounced)
+    } // Username availability checking (debounced)
     if (newUsername) {
         let usernameTimeout;
         newUsername.addEventListener('input', function () {
+            // Clear previous validation state when user types
+            clearUsernameValidation();
+
             clearTimeout(usernameTimeout);
             usernameTimeout = setTimeout(() => {
                 checkUsernameAvailability(newUsername.value.trim());
@@ -243,6 +244,28 @@ async function checkUsernameAvailability(username) {
         const API_URL = getAPIUrl();
         const token = localStorage.getItem('token');
 
+        const usernameInput = document.getElementById('newUsername');
+        const usernameGroup = usernameInput.closest('.form-group');
+
+        // Clear existing validation states and show checking state
+        usernameGroup.classList.remove('error', 'success');
+        const existingMessage = usernameGroup.querySelector(
+            '.error-message, .success-message'
+        );
+        if (existingMessage) {
+            existingMessage.remove();
+        } // Add checking indicator
+        const checkingMsg = document.createElement('div');
+        checkingMsg.className = 'checking-message';
+        checkingMsg.textContent = 'Checking username availability...';
+        checkingMsg.style.color = '#6c757d';
+        checkingMsg.style.fontSize = '0.85rem';
+        checkingMsg.style.marginTop = '0.25rem';
+        usernameGroup.appendChild(checkingMsg);
+
+        // Update submit button state
+        updateCreateUserSubmitButton();
+
         const response = await fetch(`${API_URL}/api/check-username`, {
             method: 'POST',
             headers: {
@@ -253,20 +276,15 @@ async function checkUsernameAvailability(username) {
         });
 
         const result = await response.json();
-        const usernameInput = document.getElementById('newUsername');
-        const usernameGroup = usernameInput.closest('.form-group');
 
-        // Clear existing validation states
-        usernameGroup.classList.remove('error', 'success');
-        const existingMessage = usernameGroup.querySelector(
-            '.error-message, .success-message'
-        );
-        if (existingMessage) {
-            existingMessage.remove();
+        // Remove checking message
+        const currentCheckingMsg =
+            usernameGroup.querySelector('.checking-message');
+        if (currentCheckingMsg) {
+            currentCheckingMsg.remove();
         }
-
-        if (response.ok) {
-            if (result.available) {
+        if (response.ok && result.data) {
+            if (result.data.available) {
                 usernameGroup.classList.add('success');
                 const successMsg = document.createElement('div');
                 successMsg.className = 'success-message';
@@ -279,9 +297,38 @@ async function checkUsernameAvailability(username) {
                 errorMsg.textContent = 'Username is already taken';
                 usernameGroup.appendChild(errorMsg);
             }
+        } else {
+            // Handle API error
+            console.error('Username check failed:', result);
+            usernameGroup.classList.add('error');
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'error-message';
+            errorMsg.textContent = 'Unable to check username availability';
+            usernameGroup.appendChild(errorMsg);
         }
+
+        // Update submit button state
+        updateCreateUserSubmitButton();
     } catch (error) {
         console.error('Error checking username availability:', error);
+        // Show error state on network/API failure
+        const usernameInput = document.getElementById('newUsername');
+        const usernameGroup = usernameInput.closest('.form-group');
+
+        // Remove checking message if present
+        const checkingMsg = usernameGroup.querySelector('.checking-message');
+        if (checkingMsg) {
+            checkingMsg.remove();
+        }
+
+        usernameGroup.classList.add('error');
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'error-message';
+        errorMsg.textContent = 'Unable to check username availability';
+        usernameGroup.appendChild(errorMsg);
+
+        // Update submit button state
+        updateCreateUserSubmitButton();
     }
 }
 
@@ -292,11 +339,14 @@ function clearUsernameValidation() {
         const usernameGroup = usernameInput.closest('.form-group');
         usernameGroup.classList.remove('error', 'success');
         const existingMessage = usernameGroup.querySelector(
-            '.error-message, .success-message'
+            '.error-message, .success-message, .checking-message'
         );
         if (existingMessage) {
             existingMessage.remove();
         }
+
+        // Update submit button state
+        updateCreateUserSubmitButton();
     }
 }
 
@@ -362,14 +412,28 @@ async function createUser() {
         // Validate email format
         if (!validateEmail(formData.email)) {
             throw new Error('Please enter a valid email address.');
-        }
-
-        // Validate password strength using healthcare standards
+        } // Validate password strength using healthcare standards
         const passwordValidation = validatePasswordStrength(formData.password);
         if (!passwordValidation.isValid) {
             const errorMessages = passwordValidation.failed.join('\\n• ');
             throw new Error(
                 `Password does not meet security requirements:\\n• ${errorMessages}`
+            );
+        }
+
+        // Check username validation state before submitting
+        const usernameInput = document.getElementById('newUsername');
+        const usernameGroup = usernameInput.closest('.form-group');
+        if (usernameGroup.classList.contains('error')) {
+            throw new Error(
+                'Username is not available. Please choose a different username.'
+            );
+        }
+
+        // Ensure username availability has been checked
+        if (!usernameGroup.classList.contains('success')) {
+            throw new Error(
+                'Please wait for username availability check to complete.'
             );
         }
 
@@ -743,6 +807,29 @@ function deleteUser(userId, username) {
         'info',
         'User deletion functionality will be implemented in a future update.'
     );
+}
+
+// Update submit button state based on form validation
+function updateCreateUserSubmitButton() {
+    const submitBtn = document.getElementById('createUserSubmitBtn');
+    const usernameInput = document.getElementById('newUsername');
+
+    if (!submitBtn || !usernameInput) return;
+
+    const usernameGroup = usernameInput.closest('.form-group');
+    const hasUsernameError = usernameGroup.classList.contains('error');
+    const isCheckingUsername = usernameGroup.querySelector('.checking-message');
+
+    // Disable submit if username has error or is being checked
+    if (hasUsernameError || isCheckingUsername) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = isCheckingUsername
+            ? 'Checking Username...'
+            : 'Create User';
+    } else {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create User';
+    }
 }
 
 // Make admin functions available globally
