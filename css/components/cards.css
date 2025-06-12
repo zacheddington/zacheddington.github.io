@@ -395,12 +395,12 @@
    MOBILE POSITIONING FIXES FOR WELCOME SCREEN
    ================================ */
 
-/* Adjust option cards positioning for all mobile screens - balanced approach */
+/* Adjust option cards positioning for all mobile screens - aligned with management cards */
 @media screen and (max-width: 480px) {
     .options {
-        margin-top: -20px !important; /* Moderate negative margin */
+        margin-top: 0px !important; /* Align with management cards */
         gap: var(--space-sm); /* Reduce gap between cards */
-        transform: translateY(-15px); /* Moderate upward push */
+        transform: translateY(0px); /* No additional transform needed */
         justify-content: center !important; /* Ensure horizontal centering */
         align-items: center; /* Center cards within container */
     }
@@ -413,9 +413,9 @@
 /* Adjust option cards positioning for tall mobile screens (iPhone 16 Pro Max, etc.) */
 @media screen and (min-height: 800px) and (max-width: 480px) {
     .options {
-        margin-top: -35px !important; /* More moderate positioning */
+        margin-top: 0px !important; /* Keep aligned with management cards */
         gap: var(--space-xs); /* Further reduce gap between cards */
-        transform: translateY(-25px); /* Moderate upward push */
+        transform: translateY(0px); /* No additional transform */
         justify-content: center !important; /* Ensure horizontal centering */
         align-items: center; /* Center cards within container */
     }
@@ -426,11 +426,11 @@
 }
 
 @media screen and (min-height: 900px) and (max-width: 480px) {
-    /* Extra tall mobile screens - still push up but not as aggressively */
+    /* Extra tall mobile screens - keep aligned */
     .options {
-        margin-top: -50px !important; /* Reduced from -100px */
+        margin-top: 0px !important; /* Aligned with management cards */
         gap: 8px; /* Minimal gap */
-        transform: translateY(-35px); /* Reduced from -70px */
+        transform: translateY(0px); /* No additional transform */
         justify-content: center !important; /* Ensure horizontal centering */
         align-items: center; /* Center cards within container */
     }
