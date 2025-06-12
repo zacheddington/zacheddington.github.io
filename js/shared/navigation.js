@@ -139,17 +139,22 @@ async function loadMenu() {
 function setupFadeNavigation() {
   const FADE_DURATION = 450;
 
-  // Setup general navigation links
+  // Setup general navigation links with .fade-nav class
   document.querySelectorAll(".fade-nav").forEach((link) => {
     link.addEventListener("click", function (e) {
       const href = link.getAttribute("href");
       if (href && href !== "#") {
         e.preventDefault();
-        // Simple fade navigation
-        document.body.classList.add("fade-out");
-        setTimeout(() => {
-          window.location.href = href;
-        }, FADE_DURATION);
+        // Use new page transitions system if available, otherwise fallback to old system
+        if (window.pageTransitions) {
+          window.pageTransitions.navigateTo(href);
+        } else {
+          // Legacy fade navigation
+          document.body.classList.add("fade-out");
+          setTimeout(() => {
+            window.location.href = href;
+          }, FADE_DURATION);
+        }
       }
     });
   });

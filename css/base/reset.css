@@ -77,16 +77,23 @@ body.login-page {
    ANIMATIONS
    ================================ */
 
-/* Body fade animations */
+/* Body page transition animations */
 body {
-  animation: fadeInBody 0.7s ease;
+  animation: pageTransitionIn var(--page-transition-duration, 0.45s) ease-in-out;
   animation-fill-mode: forwards;
 }
 
-.fade-out {
-  animation: fadeOutBody var(--transition-slow) forwards;
+/* Page transition out state */
+body.page-transition-out {
+  animation: pageTransitionOut var(--page-transition-duration, 0.45s) ease-in-out forwards;
 }
 
+/* Legacy support - keep existing classes for backward compatibility */
+body.fade-out {
+  animation: pageTransitionOut var(--page-transition-duration, 0.45s) ease-in-out forwards;
+}
+
+/* Legacy keyframes - used by existing animation on body */
 @keyframes fadeInBody {
   from {
     opacity: 0;
