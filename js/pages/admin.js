@@ -89,9 +89,9 @@ async function loadRoles() {
                 Authorization: `Bearer ${token}`,
             },
         });
-
         if (response.ok) {
-            const roles = await response.json();
+            const result = await response.json();
+            const roles = result.data; // Extract data from response object
             const roleSelect = document.getElementById('userRole');
             if (roleSelect) {
                 // Clear existing options except the placeholder
@@ -427,9 +427,9 @@ async function loadUsers() {
                 Authorization: `Bearer ${token}`,
             },
         });
-
         if (response.ok) {
-            allUsers = await response.json();
+            const result = await response.json();
+            allUsers = result.data; // Extract data from response object
             setupTableSorting();
             const sortedUsers = getSortedUsers();
             displayUsers(sortedUsers);
@@ -460,9 +460,9 @@ async function loadRolesForUserManagement() {
                 Authorization: `Bearer ${token}`,
             },
         });
-
         if (response.ok) {
-            currentRoles = await response.json();
+            const result = await response.json();
+            currentRoles = result.data; // Extract data from response object
         } else {
             console.error('Failed to load roles for user management');
         }

@@ -417,9 +417,9 @@ async function loadPatients() {
                 Authorization: `Bearer ${token}`,
             },
         });
-
         if (response.ok) {
-            allPatients = await response.json();
+            const result = await response.json();
+            allPatients = result.data; // Extract data from response object
             setupPatientTableSorting();
             const sortedPatients = getSortedPatients();
             displayPatients(sortedPatients);
