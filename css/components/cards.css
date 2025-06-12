@@ -48,7 +48,7 @@
     box-shadow: var(--shadow-xl);
     max-width: 420px;
     width: 90%;
-    margin: 0.5rem auto; /* Reduced from 2rem to bring login form higher */
+    margin: 0 auto; /* Removed vertical margin to eliminate extra spacing */
     border: 3px solid var(--color-border-dark);
     position: relative;
     backdrop-filter: blur(10px);
