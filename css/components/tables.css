@@ -104,12 +104,11 @@
     user-select: none;
 }
 
-.users-table.resizing th,
-.users-table.resizing td,
-#patientsTable.resizing th,
-#patientsTable.resizing td {
-    border-right-color: var(--color-primary-dark);
-    border-right-width: 2px;
+/* Only highlight the specific column being resized, not all columns */
+.column-resize-handle.active {
+    background-color: var(--resize-handle-color);
+    opacity: var(--resize-handle-active-opacity);
+    width: var(--resize-handle-active-width);
 }
 
 /* ================================

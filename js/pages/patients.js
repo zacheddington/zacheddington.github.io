@@ -567,13 +567,14 @@ function setupPatientTableSorting() {
         { index: 2, key: 'phone', label: 'Phone' },
         { index: 3, key: 'acceptsTexts', label: 'Accepts Texts' },
         { index: 4, key: 'created', label: 'Created' },
-    ];    sortableColumns.forEach((column) => {
+    ];
+    sortableColumns.forEach((column) => {
         const header = headers[column.index];
         if (header) {
             header.style.cursor = 'default'; // Remove pointer cursor from entire header
             header.classList.add('sortable-column'); // Add sortable-column class for styling
             header.innerHTML = `${column.label} <span class="sort-indicator" data-column="${column.key}"></span>`;
-            
+
             // Only add click handler to the sort indicator, not the entire header
             const sortIndicator = header.querySelector('.sort-indicator');
             if (sortIndicator) {
@@ -1131,7 +1132,8 @@ function startPatientColumnResize(event, header, columnIndex) {
     if (event.preventDefault) event.preventDefault();
 
     const table = document.querySelector('#patientsTable');
-    const startX = event.pageX || event.clientX;
+    const startX = event.pageX || event.clientX; // For calculations
+    const startClientX = event.clientX || event.pageX; // For fixed positioning
     const startWidth = header.offsetWidth;
     const handle = event.target;
 
@@ -1139,43 +1141,44 @@ function startPatientColumnResize(event, header, columnIndex) {
     handle.setAttribute('aria-valuenow', startWidth);
 
     // Add resizing class to table
-    table.classList.add('resizing');
+    table.classList.add('resizing'); // Mark the handle as active
+    handle.classList.add('active');
 
-    // Mark the handle as active
-    handle.classList.add('active'); // Create and show a resize guide line that follows the table position
+    // Create and show a resize guide line that follows the table position
     const tableRect = table.getBoundingClientRect();
     const resizeGuide = document.createElement('div');
     resizeGuide.style.position = 'fixed'; // Use fixed positioning to stay with viewport
-    resizeGuide.style.top = `${tableRect.top}px`;
+    resizeGuide.style.top = `${tableRect.top}px`; // This is already correct for fixed positioning
     resizeGuide.style.height = `${tableRect.height}px`;
     resizeGuide.style.width = 'var(--resize-handle-active-width, 2px)';
     resizeGuide.style.backgroundColor =
         'var(--resize-guide-color, var(--color-primary))';
     resizeGuide.style.opacity = 'var(--resize-handle-active-opacity, 0.7)';
-    resizeGuide.style.left = `${startX}px`;
+    resizeGuide.style.left = `${startClientX}px`; // Use clientX for fixed positioning
     resizeGuide.style.zIndex = '1000';
     resizeGuide.setAttribute('role', 'presentation'); // For accessibility
     resizeGuide.style.pointerEvents = 'none'; // Ensure guide doesn't interfere with mouse events
-    document.body.appendChild(resizeGuide);
-
-    // Function to handle mouse/touch movement during resize
+    document.body.appendChild(resizeGuide); // Function to handle mouse/touch movement during resize
     function handlePointerMove(e) {
-        // Get pageX from mouse or touch event
+        // Get pageX for calculations and clientX for positioning
         const pageX =
             e.pageX ||
             (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
+        const clientX =
+            e.clientX ||
+            (e.touches && e.touches[0] ? e.touches[0].clientX : startClientX);
 
         // Throttle the resize for better performance
         if (!handlePointerMove.throttleTimer) {
             handlePointerMove.throttleTimer = setTimeout(() => {
-                // Keep guide within table boundaries
+                // Keep guide within table boundaries using clientX for viewport positioning
                 const tableRect = table.getBoundingClientRect();
                 const boundedX = Math.max(
                     tableRect.left,
-                    Math.min(pageX, tableRect.right)
+                    Math.min(clientX, tableRect.right)
                 );
 
-                // Update guide position
+                // Update guide position using viewport coordinates
                 resizeGuide.style.left = `${boundedX}px`;
 
                 // Clear the throttle timer
