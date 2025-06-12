@@ -181,8 +181,8 @@ const modalManager = {
                         <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">You will be redirected to the login page and will need to sign in again to access the system.</p>
                     </div>
                     <div class="modal-footer">
-                        <button class="logout-modal-btn cancel" id="cancelLogout">Cancel</button>
-                        <button class="logout-modal-btn confirm" id="confirmLogout">Logout</button>
+                        <button class="modal-btn cancel" id="cancelLogout">Cancel</button>
+                        <button class="modal-btn confirm" id="confirmLogout">Logout</button>
                     </div>
                 </div>
             `;
@@ -255,8 +255,8 @@ function showLogoutModal(confirmCallback) {
                     <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">You will be redirected to the login page and will need to sign in again to access the system.</p>
                 </div>
                 <div class="modal-footer">
-                    <button class="logout-modal-btn cancel" id="cancelLogout">Cancel</button>
-                    <button class="logout-modal-btn confirm" id="confirmLogout">Logout</button>
+                    <button class="modal-btn cancel" id="cancelLogout">Cancel</button>
+                    <button class="modal-btn confirm" id="confirmLogout">Logout</button>
                 </div>
             </div>
         `;
