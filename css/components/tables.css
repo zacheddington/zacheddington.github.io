@@ -170,7 +170,7 @@
 /* Specific column behavior */
 .users-table td.user-email {
     max-width: 200px; /* Limit width but allow it to expand as needed */
-    text-align: left;  /* Left-align email text */
+    text-align: left; /* Left-align email text */
     padding-left: 10px; /* Add some left padding */
 }
 
