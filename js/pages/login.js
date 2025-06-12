@@ -60,14 +60,13 @@ function setupLoginFieldValidation() {
     const usernameField = document.getElementById('username');
     const passwordField = document.getElementById('password');
     const twofaField = document.getElementById('twofaToken');
+    const backToLoginBtn = document.getElementById('backToLogin');
 
     if (usernameField) {
         usernameField.addEventListener('input', function () {
-            // Simple clear errors on input for login page
             clearLoginErrors();
         });
 
-        // No blur validation for login - just clear errors
         usernameField.addEventListener('blur', function () {
             clearLoginErrors();
         });
@@ -75,7 +74,6 @@ function setupLoginFieldValidation() {
 
     if (passwordField) {
         passwordField.addEventListener('input', function () {
-            // Simple clear errors on input for login page
             clearLoginErrors();
         });
     }
@@ -94,6 +92,12 @@ function setupLoginFieldValidation() {
                 e.preventDefault();
                 performLogin();
             }
+        });
+    }
+
+    if (backToLoginBtn) {
+        backToLoginBtn.addEventListener('click', function () {
+            showCredentialsStep();
         });
     }
 }
@@ -119,21 +123,32 @@ async function performLogin() {
     performLogin.isRunning = true;
 
     const submitBtn = document.getElementById('loginBtn');
+    const twofaSubmitBtn = document.getElementById('twofa-submit');
     const usernameField = document.getElementById('username');
     const passwordField = document.getElementById('password');
     const twofaField = document.getElementById('twofaToken');
-    const twofaGroup = document.getElementById('twofaGroup');
-    const originalText = submitBtn.textContent;
+    const credentialsStep = document.getElementById('credentialsStep');
+    const twofaStep = document.getElementById('twofaStep');
+    
+    // Determine which step we're on
+    const isOnTwofaStep = !twofaStep.classList.contains('hidden');
+    const currentButton = isOnTwofaStep ? twofaSubmitBtn : submitBtn;
+    const originalText = currentButton.textContent;
+    
     let response = null;
     let loginSuccessful = false;
 
     try {
-        // Disable form controls during login
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Logging in...';
-        usernameField.disabled = true;
-        passwordField.disabled = true;
-        if (twofaField) twofaField.disabled = true;
+        // Disable current step controls
+        currentButton.disabled = true;
+        currentButton.textContent = isOnTwofaStep ? 'Verifying...' : 'Logging in...';
+        
+        if (!isOnTwofaStep) {
+            usernameField.disabled = true;
+            passwordField.disabled = true;
+        } else {
+            twofaField.disabled = true;
+        }
 
         // Pre-flight connectivity check
         const connectivity = await window.apiClient.checkConnectivity();
@@ -146,23 +161,20 @@ async function performLogin() {
         const password = passwordField.value;
         const twofaToken = twofaField ? twofaField.value.trim() : null;
 
-        // Validate input
-        if (!username || !password) {
-            throw new Error('Username and password are required.');
-        }
-
-        // If 2FA field is visible, require the token
-        if (
-            twofaGroup &&
-            !twofaGroup.classList.contains('hidden') &&
-            !twofaToken
-        ) {
-            throw new Error('Two-factor authentication code is required.');
-        }
-
-        // Basic username validation (allow more flexibility)
-        if (username.length < 2 || username.length > 50) {
-            throw new Error('Username must be between 2 and 50 characters.');
+        // Validate input based on current step
+        if (!isOnTwofaStep) {
+            // Credentials step validation
+            if (!username || !password) {
+                throw new Error('Username and password are required.');
+            }
+            if (username.length < 2 || username.length > 50) {
+                throw new Error('Username must be between 2 and 50 characters.');
+            }
+        } else {
+            // 2FA step validation
+            if (!twofaToken || twofaToken.length !== 6) {
+                throw new Error('Please enter a 6-digit authentication code.');
+            }
         }
 
         const API_URL = window.apiClient.getAPIUrl();
@@ -198,7 +210,6 @@ async function performLogin() {
 
             // Check if user needs to change password
             if (user && user.force_password_change) {
-                // Redirect to force password change page
                 window.location.href = '/force-password-change/';
                 return;
             }
@@ -214,15 +225,17 @@ async function performLogin() {
             }
         } else {
             // Handle 2FA required case
-            if (
-                response.status === 400 &&
-                result.error === '2FA token required'
-            ) {
-                // Reset the guard flag since we're returning early
-                performLogin.isRunning = false;
-                show2FAField();
-                // Don't throw an error - just show the 2FA field and return
-                return;
+            if (response.status === 400 && result.error === '2FA token required') {
+                // Only show 2FA step if we're currently on credentials step
+                if (!isOnTwofaStep) {
+                    show2FAStep();
+                    // Reset the guard flag since we're transitioning steps
+                    performLogin.isRunning = false;
+                    return;
+                } else {
+                    // If we're already on 2FA step, this means invalid token
+                    throw new Error('Invalid authentication code. Please try again.');
+                }
             } else {
                 throw new Error(result.error || 'Login failed');
             }
@@ -230,8 +243,10 @@ async function performLogin() {
     } catch (error) {
         console.error('Login error:', error);
 
-        // Clear password field for security (but not 2FA token as user might need to retry)
-        passwordField.value = '';
+        // Clear password field for security on credentials step
+        if (!isOnTwofaStep) {
+            passwordField.value = '';
+        }
 
         // For authentication errors (401), show specific message
         if (response && response.status === 401) {
@@ -249,48 +264,59 @@ async function performLogin() {
 
         // Only re-enable form controls if login was not successful
         if (!loginSuccessful) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
-            usernameField.disabled = false;
-            passwordField.disabled = false;
-            if (twofaField) twofaField.disabled = false;
-        } // If login was successful, keep form disabled until redirect
+            currentButton.disabled = false;
+            currentButton.textContent = originalText;
+            
+            if (!isOnTwofaStep) {
+                usernameField.disabled = false;
+                passwordField.disabled = false;
+            } else {
+                twofaField.disabled = false;
+            }
+        }
     }
 }
 
-// Show 2FA input field when required
-function show2FAField() {
-    const twofaGroup = document.getElementById('twofaGroup');
+// Show 2FA step and hide credentials step
+function show2FAStep() {
+    const credentialsStep = document.getElementById('credentialsStep');
+    const twofaStep = document.getElementById('twofaStep');
     const twofaField = document.getElementById('twofaToken');
-    const submitBtn = document.getElementById('loginBtn');
-    const usernameField = document.getElementById('username');
-    const passwordField = document.getElementById('password');
 
-    if (twofaGroup && twofaField) {
-        twofaGroup.classList.remove('hidden'); // Re-enable form controls for 2FA entry
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Complete Login';
-        usernameField.disabled = false;
-        passwordField.disabled = false;
-        twofaField.disabled = false;
-
-        // Set up 2FA field formatting (avoid duplicate event listeners)
-        if (!twofaField.hasAttribute('data-setup')) {
-            twofaField.addEventListener('input', function (e) {
-                // Only allow numbers and limit to 6 digits
-                e.target.value = e.target.value
-                    .replace(/[^0-9]/g, '')
-                    .substring(0, 6);
-
-                // Clear errors when user types
-                clearLoginErrors();
-            });
-            twofaField.setAttribute('data-setup', 'true');
-        }
-
+    if (credentialsStep && twofaStep && twofaField) {
+        credentialsStep.classList.add('hidden');
+        twofaStep.classList.remove('hidden');
+        
+        // Clear any previous 2FA token
+        twofaField.value = '';
+        
         // Focus on 2FA field
         setTimeout(() => twofaField.focus(), 100);
     }
+}
+
+// Show credentials step and hide 2FA step
+function showCredentialsStep() {
+    const credentialsStep = document.getElementById('credentialsStep');
+    const twofaStep = document.getElementById('twofaStep');
+    const twofaField = document.getElementById('twofaToken');
+
+    if (credentialsStep && twofaStep && twofaField) {
+        twofaStep.classList.add('hidden');
+        credentialsStep.classList.remove('hidden');
+        
+        // Clear any 2FA token
+        twofaField.value = '';
+        
+        // Clear any error messages
+        clearLoginErrors();
+    }
+}
+
+// Show 2FA input field when required (legacy function for backward compatibility)
+function show2FAField() {
+    // Use the new step-based system
+    show2FAStep();
 }
 
 // Show login error message
