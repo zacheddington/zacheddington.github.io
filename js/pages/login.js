@@ -235,6 +235,9 @@ async function performLogin() {
             ) {
                 // Only show 2FA step if we're currently on credentials step
                 if (!isOnTwofaStep) {
+                    console.log(
+                        '🔐 2FA required, transitioning to 2FA step...'
+                    );
                     show2FAStep();
                     // Reset the guard flag since we're transitioning steps
                     performLogin.isRunning = false;
