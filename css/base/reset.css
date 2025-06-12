@@ -9,40 +9,40 @@
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-primary);
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-primary);
 }
 
 /* Remove default list styles */
 ul,
 ol {
-  list-style: none;
+    list-style: none;
 }
 
 /* Remove default button styles */
 button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
 }
 
 /* Remove default input styles */
 input,
 textarea,
 select {
-  font: inherit;
-  background: transparent;
-  border: none;
-  outline: none;
+    font: inherit;
+    background: transparent;
+    border: none;
+    outline: none;
 }
 
 /* Remove default link styles */
 a {
-  text-decoration: none;
-  color: inherit;
+    text-decoration: none;
+    color: inherit;
 }
 
 /* ================================
@@ -50,27 +50,27 @@ a {
    ================================ */
 
 body {
-  background: var(--color-primary-bg);
-  font-family: var(--font-primary);
-  font-weight: var(--font-weight-normal);
-  color: var(--color-secondary);
-  line-height: var(--line-height-normal);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  overflow-x: hidden; /* Prevent horizontal scroll */
-  padding-top: var(--header-height); /* Account for fixed header */
-  transition: var(--transition-all);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+    background: var(--color-primary-bg);
+    font-family: var(--font-primary);
+    font-weight: var(--font-weight-normal);
+    color: var(--color-secondary);
+    line-height: var(--line-height-normal);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    padding-top: var(--header-height); /* Account for fixed header */
+    transition: var(--transition-all);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 /* Login page has no header, so remove the top padding */
 body.login-page {
-  padding-top: 0;
+    padding-top: 0;
 }
 
 /* ================================
@@ -79,42 +79,45 @@ body.login-page {
 
 /* Body page transition animations */
 body {
-  animation: pageTransitionIn var(--page-transition-duration, 0.45s) ease-in-out;
-  animation-fill-mode: forwards;
+    animation: pageTransitionIn var(--page-transition-duration, 0.45s)
+        ease-in-out;
+    animation-fill-mode: forwards;
 }
 
 /* Page transition out state */
 body.page-transition-out {
-  animation: pageTransitionOut var(--page-transition-duration, 0.45s) ease-in-out forwards;
+    animation: pageTransitionOut var(--page-transition-duration, 0.45s)
+        ease-in-out forwards;
 }
 
 /* Legacy support - keep existing classes for backward compatibility */
 body.fade-out {
-  animation: pageTransitionOut var(--page-transition-duration, 0.45s) ease-in-out forwards;
+    animation: pageTransitionOut var(--page-transition-duration, 0.45s)
+        ease-in-out forwards;
 }
 
 /* Legacy keyframes - used by existing animation on body */
 @keyframes fadeInBody {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes fadeOutBody {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }
 
 /* Fade transition utility class */
 .fade-transition {
-  transition: opacity var(--transition-slow) var(--ease-out);
+    transition: opacity var(--transition-slow) var(--ease-out);
 }
 
 /* ================================
@@ -123,27 +126,27 @@ body.fade-out {
 
 /* Focus styles for accessibility */
 *:focus {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
 }
 
 /* Reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-  :root {
-    --shadow-sm: none;
-    --shadow-md: none;
-    --shadow-lg: none;
-    --shadow-xl: none;
-  }
+    :root {
+        --shadow-sm: none;
+        --shadow-md: none;
+        --shadow-lg: none;
+        --shadow-xl: none;
+    }
 }

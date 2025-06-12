@@ -4,27 +4,31 @@
 
 /* Page Transition Configuration */
 :root {
-  --page-transition-duration: 0.45s;
-  --page-transition-easing: ease-in-out;
+    --page-transition-duration: 0.45s;
+    --page-transition-easing: ease-in-out;
 }
 
 /* Fade transition utility class */
 .fade-transition {
-  transition: opacity var(--page-transition-duration) var(--page-transition-easing);
+    transition: opacity var(--page-transition-duration)
+        var(--page-transition-easing);
 }
 
 /* Page transition states */
 .page-fade-in {
-  animation: pageTransitionIn var(--page-transition-duration) var(--page-transition-easing) forwards;
+    animation: pageTransitionIn var(--page-transition-duration)
+        var(--page-transition-easing) forwards;
 }
 
 .page-fade-out {
-  animation: pageTransitionOut var(--page-transition-duration) var(--page-transition-easing) forwards;
+    animation: pageTransitionOut var(--page-transition-duration)
+        var(--page-transition-easing) forwards;
 }
 
 /* Legacy support - keep existing classes */
 .fade-out {
-  animation: pageTransitionOut var(--page-transition-duration) var(--page-transition-easing) forwards;
+    animation: pageTransitionOut var(--page-transition-duration)
+        var(--page-transition-easing) forwards;
 }
 
 /* ================================
@@ -33,91 +37,91 @@
 
 /* Page Transition Animations */
 @keyframes pageTransitionIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes pageTransitionOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
 }
 
 /* Legacy Body fade animations - keep for backward compatibility */
 @keyframes fadeInBody {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes fadeOutBody {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }
 
 /* Modal slide in animation */
 @keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(-20px) scale(1);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(-20px) scale(1);
+    }
 }
 
 /* Modal fade out animation */
 @keyframes modalFadeOut {
-  from {
-    opacity: 1;
-    transform: translateY(-20px) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-50px) scale(0.95);
-  }
+    from {
+        opacity: 1;
+        transform: translateY(-20px) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.95);
+    }
 }
 
 /* Logout modal specific animation */
 @keyframes logoutModalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-40px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(-30px) scale(1);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(-30px) scale(1);
+    }
 }
 
 /* Pulse warning animation for session status */
 @keyframes pulse-warning {
-  0%,
-  100% {
-    opacity: 0.9;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.02);
-  }
+    0%,
+    100% {
+        opacity: 0.9;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
 }
