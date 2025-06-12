@@ -716,19 +716,17 @@ function displayUsers(users) {
             const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, '');
 
             const createdDate = new Date(user.created_at).toLocaleDateString();
-            const isCurrentUser = currentUser.username === user.username;
-
-            return `
+            const isCurrentUser = currentUser.username === user.username;            return `
             <tr data-user-id="${user.user_key}">
-                <td class="user-username">${user.username}</td>
-                <td class="user-fullname">${fullName}</td>
-                <td class="user-email">${user.email}</td>
+                <td class="user-username" title="${user.username}">${user.username}</td>
+                <td class="user-fullname" title="${fullName}">${fullName}</td>
+                <td class="user-email" title="${user.email}">${user.email}</td>
                 <td>
-                    <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}">
+                    <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}" title="${primaryRole}">
                         ${primaryRole}
                     </span>
                 </td>
-                <td class="user-created">${createdDate}</td>
+                <td class="user-created" title="${createdDate}">${createdDate}</td>
                 <td>
                     <div class="user-actions">
                         <button class="btn-icon btn-edit" onclick="editUserRole(${

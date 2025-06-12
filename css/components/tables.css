@@ -54,9 +54,9 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
-    table-layout: fixed; /* Changed from auto to fixed for better column control */
+    table-layout: auto; /* Changed back to auto for content-based column widths */
     display: table;
-    min-width: 800px; /* Increased minimum width for better content display */
+    min-width: 800px; /* Minimum width for better content display */
 }
 
 .users-table thead {
@@ -86,24 +86,24 @@
     white-space: nowrap; /* Prevent text wrapping in headers */
 }
 
-/* Column widths */
+/* Column widths - min-width instead of fixed width for responsive behavior */
 .users-table th:nth-child(1) {
-    width: 15%;
+    min-width: 120px;
 } /* Username */
 .users-table th:nth-child(2) {
-    width: 20%;
+    min-width: 150px;
 } /* Full Name */
 .users-table th:nth-child(3) {
-    width: 25%;
-} /* Email */
+    min-width: 200px;
+} /* Email - larger for potentially long emails */
 .users-table th:nth-child(4) {
-    width: 12%;
+    min-width: 100px;
 } /* Role */
 .users-table th:nth-child(5) {
-    width: 13%;
+    min-width: 100px;
 } /* Created */
 .users-table th:nth-child(6) {
-    width: 15%;
+    min-width: 110px;
 } /* Actions */
 
 .users-table th:last-child {
@@ -161,6 +161,17 @@
     border-right: var(--border-thin) solid #f0f0f0;
     vertical-align: middle;
     display: table-cell;
+    max-width: 0; /* Required for text overflow ellipsis to work */
+    overflow: hidden; /* Hide overflowing content */
+    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
+    white-space: nowrap; /* Prevent text from wrapping */
+}
+
+/* Specific column behavior */
+.users-table td.user-email {
+    max-width: 200px; /* Limit width but allow it to expand as needed */
+    text-align: left;  /* Left-align email text */
+    padding-left: 10px; /* Add some left padding */
 }
 
 /* Specific cell styling */
