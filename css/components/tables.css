@@ -27,6 +27,10 @@
 #patientsTable th {
     position: relative;
     user-select: none; /* Prevent text selection during resizing */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE 10+ */
+    touch-action: none; /* Disable browser handling of touch gestures */
 }
 
 /* Resize handle for table columns */
@@ -34,17 +38,20 @@
     position: absolute;
     top: 0;
     right: 0;
-    width: 5px;
+    width: var(--resize-handle-width, 5px);
     height: 100%;
     background-color: transparent;
     cursor: col-resize;
     z-index: 10;
+    touch-action: none; /* Prevent default touch behavior */
 }
 
 .column-resize-handle:hover,
-.column-resize-handle.active {
+.column-resize-handle.active,
+.column-resize-handle:focus {
     background-color: var(--color-primary);
     opacity: 0.5;
+    outline: none; /* Remove focus outline, we're using background color instead */
 }
 
 /* Improve resize handle visibility on header hover */
@@ -54,19 +61,40 @@
     opacity: 0.3;
 }
 
+/* CSS Variables for resize handles */
+:root {
+    --resize-handle-width: 5px;
+    --resize-handle-active-width: 2px;
+    --resize-handle-hover-width: 4px;
+    --resize-handle-color: var(--color-primary);
+    --resize-handle-opacity: 0.5;
+    --resize-handle-hover-opacity: 0.5;
+    --resize-handle-active-opacity: 0.7;
+    --resize-guide-color: var(--color-primary);
+}
+
 /* Add visual indicator when columns are being resized */
 .resizing .column-resize-handle.active {
-    background-color: var(--color-primary);
-    opacity: 0.7;
-    width: 2px;
+    background-color: var(--resize-handle-color);
+    opacity: var(--resize-handle-active-opacity);
+    width: var(--resize-handle-active-width);
 }
 
 /* Add a hover state for resize handles to indicate they're interactive */
 .column-resize-handle:hover {
     cursor: col-resize;
-    background-color: var(--color-primary);
-    opacity: 0.5;
-    width: 4px;
+    background-color: var(--resize-handle-color);
+    opacity: var(--resize-handle-hover-opacity);
+    width: var(--resize-handle-hover-width);
+}
+
+/* Focus state for keyboard users */
+.column-resize-handle:focus {
+    cursor: col-resize;
+    background-color: var(--resize-handle-color);
+    opacity: 0.8;
+    width: var(--resize-handle-hover-width);
+    box-shadow: 0 0 0 2px rgba(0, 150, 136, 0.5);
 }
 
 /* Show a visual feedback for resizing */
@@ -155,6 +183,8 @@
     position: sticky; /* Keep headers visible when scrolling */
     top: 0;
     z-index: 2;
+    transition: width 0.1s ease-out; /* Smooth width transitions */
+    overflow: hidden; /* Prevent content from overflowing during resize */
 }
 
 /* Column widths - min-width instead of fixed width for responsive behavior */
@@ -406,14 +436,21 @@
 }
 
 @media screen and (max-width: 480px) {
-    .users-table th {
+    .users-table th,
+    #patientsTable th {
         padding: 0.5rem 0.25rem;
         font-size: 0.85rem;
     }
 
-    .users-table td {
+    .users-table td,
+    #patientsTable td {
         padding: 0.5rem 0.25rem;
         font-size: 0.85rem;
+    }
+
+    /* Better resize handle targeting on small screens */
+    .column-resize-handle {
+        width: 8px; /* Wider target for touch */
     }
 
     .btn-edit,
@@ -421,5 +458,41 @@
         width: 32px;
         height: 32px;
         font-size: 14px;
+    }
+
+    /* Add visual indicator for horizontally scrollable tables */
+    .table-responsive {
+        position: relative;
+    }
+
+    .table-responsive::after {
+        content: '⟷';
+        position: absolute;
+        right: 10px;
+        bottom: -20px;
+        font-size: 16px;
+        color: var(--color-primary);
+        opacity: 0.7;
+        animation: pulse 1.5s infinite;
+    }
+}
+
+/* Very small screens */
+@media screen and (max-width: 320px) {
+    .users-table th,
+    #patientsTable th {
+        padding: 0.4rem 0.2rem;
+        font-size: 0.8rem;
+    }
+
+    .users-table td,
+    #patientsTable td {
+        padding: 0.4rem 0.2rem;
+        font-size: 0.8rem;
+    }
+
+    /* Even wider touch targets */
+    .column-resize-handle {
+        width: 10px;
     }
 }

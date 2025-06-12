@@ -71,9 +71,7 @@ function initializeManageUsersPage() {
     } catch (e) {
         console.error('Error loading column preferences:', e);
         adjustColumnWidths();
-    }
-
-    // Add event listener for window resize to adjust column widths
+    } // Add event listener for window resize to adjust column widths
     window.addEventListener(
         'resize',
         debounce(function () {
@@ -81,9 +79,24 @@ function initializeManageUsersPage() {
             if (!localStorage.getItem('userTableColumnWidths')) {
                 adjustColumnWidths();
             } else {
-                // Just refresh resize handles
-                addColumnResizeHandles();
+                // For responsive tables, check if we've crossed a breakpoint
+                const width = window.innerWidth;
+                if (
+                    !window.lastWidth ||
+                    (width < 480 && window.lastWidth >= 480) ||
+                    (width >= 480 &&
+                        width < 768 &&
+                        (window.lastWidth < 480 || window.lastWidth >= 768)) ||
+                    (width >= 768 && window.lastWidth < 768)
+                ) {
+                    // We've crossed a responsive breakpoint, adjust columns
+                    adjustColumnWidths();
+                } else {
+                    // Just refresh resize handles
+                    addColumnResizeHandles();
+                }
             }
+            window.lastWidth = window.innerWidth;
         }, 250)
     );
 
@@ -95,9 +108,15 @@ function initializeManageUsersPage() {
         resetColumnsBtn.className = 'secondary-btn';
         resetColumnsBtn.id = 'resetColumns';
         resetColumnsBtn.textContent = 'Reset Columns';
+        resetColumnsBtn.title =
+            'Reset all column widths to optimal size based on content';
         resetColumnsBtn.addEventListener('click', function () {
             localStorage.removeItem('userTableColumnWidths');
             adjustColumnWidths();
+            // Announce to screen readers
+            announceForScreenReader(
+                'Table columns have been reset to optimal width'
+            );
         });
         filterActions.appendChild(resetColumnsBtn);
     }
@@ -647,7 +666,26 @@ async function loadUsers() {
             allUsers = result.data; // Extract data from response object
             setupTableSorting();
             const sortedUsers = getSortedUsers();
-            displayUsers(sortedUsers);
+
+            // Check if we have saved column widths
+            try {
+                const savedWidths = JSON.parse(
+                    localStorage.getItem('userTableColumnWidths')
+                );
+                if (savedWidths && Array.isArray(savedWidths)) {
+                    // Display users with saved column widths
+                    displayUsersPreserveWidths(sortedUsers, savedWidths);
+                } else {
+                    // No saved preferences, just display and auto-adjust
+                    displayUsers(sortedUsers);
+                }
+            } catch (e) {
+                console.error(
+                    'Error applying column widths after loading users:',
+                    e
+                );
+                displayUsers(sortedUsers);
+            }
         } else {
             throw new Error('Failed to load users');
         }
@@ -731,14 +769,22 @@ function handleSort(columnKey) {
     }
 
     // Update sort indicators
-    updateSortIndicators();
-
-    // Update reset sort button visibility
+    updateSortIndicators(); // Update reset sort button visibility
     updateResetSortButton();
+
+    // Capture current column widths before making any changes
+    const table = document.querySelector('.users-table');
+    let columnWidths = [];
+
+    if (table) {
+        // Store current column widths
+        const headers = Array.from(table.querySelectorAll('th'));
+        columnWidths = headers.map((header) => header.style.width);
+    }
 
     // Sort and display users
     const sortedUsers = getSortedUsers();
-    displayUsers(sortedUsers);
+    displayUsersPreserveWidths(sortedUsers, columnWidths);
 }
 
 // Update sort indicators
@@ -893,6 +939,151 @@ function displayUsers(users) {
     setTimeout(adjustColumnWidths, 100);
 }
 
+// Display users in the table while preserving column widths
+function displayUsersPreserveWidths(users, columnWidths = []) {
+    const usersTableBody = document.getElementById('usersTableBody');
+    const noUsersFound = document.getElementById('noUsersFound');
+    const tableContainer = document.querySelector('.table-responsive');
+    const table = document.querySelector('.users-table');
+
+    if (!usersTableBody || !table) return;
+
+    // Show resize tip message if this is the first time (using localStorage)
+    if (!localStorage.getItem('hasSeenTableResizeTip')) {
+        const tipDiv = document.createElement('div');
+        tipDiv.className = 'info-message resize-tip';
+        tipDiv.innerHTML = `
+            <span class="tip-icon">💡</span>
+            <span>Tip: You can resize columns by dragging the edge between headers. Double-click to auto-size.</span>
+            <button class="tip-close" aria-label="Dismiss tip">✕</button>
+        `;
+
+        // Add the tip above the table
+        tableContainer.parentNode.insertBefore(tipDiv, tableContainer);
+
+        // Add dismiss functionality
+        tipDiv
+            .querySelector('.tip-close')
+            .addEventListener('click', function () {
+                tipDiv.remove();
+                localStorage.setItem('hasSeenTableResizeTip', 'true');
+            });
+
+        // Auto dismiss after 10 seconds
+        setTimeout(() => {
+            if (tipDiv.parentNode) {
+                tipDiv.remove();
+                localStorage.setItem('hasSeenTableResizeTip', 'true');
+            }
+        }, 10000);
+    }
+
+    if (users.length === 0) {
+        usersTableBody.innerHTML = '';
+        if (noUsersFound) noUsersFound.classList.remove('hidden');
+        return;
+    }
+
+    if (noUsersFound) noUsersFound.classList.add('hidden');
+
+    // Reset scroll position when displaying new data
+    if (tableContainer) {
+        tableContainer.scrollLeft = 0;
+    }
+
+    // Set the table to fixed layout to maintain column widths during update
+    table.style.tableLayout = 'fixed';
+
+    // Add title attributes to cells for better tooltips
+    usersTableBody.addEventListener('mouseover', function (e) {
+        if (e.target.tagName === 'TD') {
+            e.target.title = e.target.textContent;
+        }
+    });
+
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+    // Generate the HTML for the table rows
+    usersTableBody.innerHTML = users
+        .map((user) => {
+            const fullName = user.middle_name
+                ? `${user.first_name} ${user.middle_name} ${user.last_name}`
+                : `${user.first_name} ${user.last_name}`;
+
+            const primaryRole =
+                user.roles && user.roles.length > 0 ? user.roles[0] : 'User';
+            const primaryRoleKey =
+                user.role_keys && user.role_keys.length > 0
+                    ? user.role_keys[0]
+                    : 2;
+
+            const createdDate = user.created_at
+                ? new Date(user.created_at).toLocaleDateString()
+                : '';
+
+            return `
+            <tr data-user-id="${user.user_key}">
+                <td class="user-username" title="${user.username}">${
+                user.username
+            }</td>
+                <td class="user-fullname" title="${fullName}">${fullName}</td>
+                <td class="user-email" title="${user.email || ''}">${
+                user.email || ''
+            }</td>
+                <td class="user-role" title="${primaryRole}">
+                    ${
+                        currentRoles.length > 0
+                            ? `<select class="role-select" onchange="window.adminPage.editUserRole(${
+                                  user.user_key
+                              }, this.value)">
+                            ${currentRoles
+                                .map(
+                                    (role) => `
+                                <option value="${role.role_key}" ${
+                                        role.role_key == primaryRoleKey
+                                            ? 'selected'
+                                            : ''
+                                    }>
+                                    ${role.role_name}
+                                </option>
+                            `
+                                )
+                                .join('')}
+                        </select>`
+                            : primaryRole
+                    }
+                </td>
+                <td class="user-created" title="${createdDate}">${createdDate}</td>
+                <td>
+                    <div class="user-actions">
+                        ${
+                            currentUser.user_key !== user.user_key
+                                ? `<button class="btn-icon btn-delete" onclick="window.adminPage.deleteUser(${user.user_key}, '${user.username}')" title="Delete User">
+                                🗑️
+                            </button>`
+                                : `<span title="Cannot delete your own account">-</span>`
+                        }
+                    </div>
+                </td>
+            </tr>
+        `;
+        })
+        .join('');
+
+    // Reapply column widths if provided
+    if (columnWidths.length > 0) {
+        const headers = Array.from(table.querySelectorAll('th'));
+        headers.forEach((header, index) => {
+            if (columnWidths[index] && columnWidths[index] !== '') {
+                header.style.width = columnWidths[index];
+            }
+        });
+    }
+
+    // Add column resize handles
+    addColumnResizeHandles();
+}
+
 // Filter users
 function filterUsers() {
     const filterValue = document
@@ -1007,12 +1198,19 @@ function addColumnResizeHandles() {
     document.querySelectorAll('.column-resize-handle').forEach((handle) => {
         handle.remove();
     });
+
     // Add resize handle to each header except the last one (actions column)
     headers.forEach((header, index) => {
         if (index < headers.length - 1) {
             // Skip last column (actions)
             const resizeHandle = document.createElement('div');
             resizeHandle.className = 'column-resize-handle';
+            resizeHandle.setAttribute('role', 'separator');
+            resizeHandle.setAttribute('aria-orientation', 'vertical');
+            resizeHandle.setAttribute('aria-valuemin', '80'); // Minimum width
+            resizeHandle.setAttribute('aria-valuemax', '500'); // Maximum width
+            resizeHandle.setAttribute('aria-valuenow', header.offsetWidth);
+            resizeHandle.setAttribute('tabindex', '0'); // Make focusable for keyboard
             header.appendChild(resizeHandle);
 
             // Add tooltip to indicate resizable column
@@ -1021,10 +1219,22 @@ function addColumnResizeHandles() {
                 'Drag to resize column | Double-click to auto-size'
             );
 
-            // Add resize listeners
+            // Add resize listeners for mouse
             resizeHandle.addEventListener('mousedown', function (e) {
                 startColumnResize(e, header, index);
             });
+
+            // Add touch support
+            resizeHandle.addEventListener(
+                'touchstart',
+                function (e) {
+                    // Prevent scrolling while resizing
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    startColumnResize(touch, header, index);
+                },
+                { passive: false }
+            );
 
             // Add double-click to auto-size functionality
             resizeHandle.addEventListener('dblclick', function (e) {
@@ -1032,62 +1242,117 @@ function addColumnResizeHandles() {
                 e.stopPropagation();
                 autoSizeColumn(header, index);
             });
+
+            // Add keyboard support
+            resizeHandle.addEventListener('keydown', function (e) {
+                // Respond to left/right arrow keys
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    const currentWidth = header.offsetWidth;
+                    const step = e.key === 'ArrowLeft' ? -10 : 10;
+                    const newWidth = Math.max(80, currentWidth + step);
+                    header.style.width = newWidth + 'px';
+                    this.setAttribute('aria-valuenow', newWidth);
+                    saveColumnWidthPreferences();
+                }
+                // Enter key to auto-size
+                else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    autoSizeColumn(header, index);
+                }
+            });
         }
     });
 }
 
 // Function to handle column resizing
 function startColumnResize(event, header, columnIndex) {
-    event.preventDefault();
+    // Accept both mouse and touch events
+    if (event.preventDefault) event.preventDefault();
 
     const table = document.querySelector('.users-table');
-    const startX = event.pageX;
+    const startX = event.pageX || event.clientX;
     const startWidth = header.offsetWidth;
+    const handle = event.target;
+
+    // Update ARIA attributes for accessibility
+    handle.setAttribute('aria-valuenow', startWidth);
 
     // Add resizing class to table
     table.classList.add('resizing');
 
     // Mark the handle as active
-    event.target.classList.add('active');
+    handle.classList.add('active');
+
     // Create and show a resize guide line that's contained within the table
     const tableRect = table.getBoundingClientRect();
     const resizeGuide = document.createElement('div');
     resizeGuide.style.position = 'absolute';
     resizeGuide.style.top = `${tableRect.top}px`;
     resizeGuide.style.height = `${tableRect.height}px`;
-    resizeGuide.style.width = '2px';
-    resizeGuide.style.backgroundColor = 'var(--color-primary)';
-    resizeGuide.style.opacity = '0.7';
-    resizeGuide.style.left = `${event.pageX}px`;
+    resizeGuide.style.width = 'var(--resize-handle-active-width, 2px)';
+    resizeGuide.style.backgroundColor =
+        'var(--resize-guide-color, var(--color-primary))';
+    resizeGuide.style.opacity = 'var(--resize-handle-active-opacity, 0.7)';
+    resizeGuide.style.left = `${startX}px`;
     resizeGuide.style.zIndex = '1000';
+    resizeGuide.setAttribute('role', 'presentation'); // For accessibility
     document.body.appendChild(resizeGuide);
-    // Function to handle mouse movement during resize
-    function handleMouseMove(e) {
-        // Keep guide within table boundaries
-        const tableRect = table.getBoundingClientRect();
-        const pageX = Math.max(
-            tableRect.left,
-            Math.min(e.pageX, tableRect.right)
-        );
 
-        // Update guide position
-        resizeGuide.style.left = `${pageX}px`;
+    // Function to handle mouse/touch movement during resize
+    function handlePointerMove(e) {
+        // Get pageX from mouse or touch event
+        const pageX =
+            e.pageX ||
+            (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
 
-        // Don't apply width during move for smoother performance
-        // Just show the guide
+        // Throttle the resize for better performance
+        if (!handlePointerMove.throttleTimer) {
+            handlePointerMove.throttleTimer = setTimeout(() => {
+                // Keep guide within table boundaries
+                const tableRect = table.getBoundingClientRect();
+                const boundedX = Math.max(
+                    tableRect.left,
+                    Math.min(pageX, tableRect.right)
+                );
+
+                // Update guide position
+                resizeGuide.style.left = `${boundedX}px`;
+
+                // Clear the throttle timer
+                handlePointerMove.throttleTimer = null;
+            }, 10); // 10ms throttle
+        }
     }
 
-    // Function to handle mouse up (end of resize)
-    function handleMouseUp(e) {
+    // Function to handle mouse/touch up (end of resize)
+    function handlePointerUp(e) {
         // Remove event listeners
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('mousemove', handlePointerMove);
+        document.removeEventListener('mouseup', handlePointerUp);
+        document.removeEventListener('touchmove', handlePointerMove);
+        document.removeEventListener('touchend', handlePointerUp);
+        document.removeEventListener('touchcancel', handlePointerUp);
 
-        // Calculate the final width
-        const newWidth = Math.max(80, startWidth + (e.pageX - startX)); // Minimum 80px width
+        // Get pageX from mouse or touch event
+        const pageX =
+            e.pageX ||
+            (e.changedTouches && e.changedTouches[0]
+                ? e.changedTouches[0].pageX
+                : startX);
 
-        // Apply the new width to the column
+        // Calculate the final width with constraints
+        const newWidth = Math.max(
+            80,
+            Math.min(500, startWidth + (pageX - startX))
+        ); // Min 80px, Max 500px
+
+        // Apply the new width to the column with a transition for smoothness
+        header.style.transition = 'width 0.1s ease-out';
         header.style.width = `${newWidth}px`;
+
+        // Update ARIA value for accessibility
+        handle.setAttribute('aria-valuenow', newWidth);
 
         // Remove the resize guide
         document.body.removeChild(resizeGuide);
@@ -1096,15 +1361,45 @@ function startColumnResize(event, header, columnIndex) {
         table.classList.remove('resizing');
 
         // Remove active from handle
-        event.target.classList.remove('active');
+        handle.classList.remove('active');
 
-        // Save column width in localStorage for persistence
+        // Reset transition after width is applied
+        setTimeout(() => {
+            header.style.transition = '';
+        }, 100); // Save column width in localStorage for persistence
         saveColumnWidthPreferences();
+
+        // Announce resize completion for screen readers
+        announceForScreenReader(`Column ${header.textContent.trim()} resized`);
     }
 
-    // Add event listeners for mouse movement and release
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    // Add event listeners for mouse/touch movement and release
+    document.addEventListener('mousemove', handlePointerMove, {
+        passive: true,
+    });
+    document.addEventListener('mouseup', handlePointerUp);
+
+    // Add touch event handlers
+    document.addEventListener('touchmove', handlePointerMove, {
+        passive: true,
+    });
+    document.addEventListener('touchend', handlePointerUp);
+    document.addEventListener('touchcancel', handlePointerUp);
+}
+
+// Function to announce changes to screen readers
+function announceForScreenReader(message) {
+    const announcement = document.createElement('div');
+    announcement.setAttribute('aria-live', 'polite');
+    announcement.setAttribute('aria-atomic', 'true');
+    announcement.classList.add('sr-only'); // Screen reader only
+    announcement.textContent = message;
+    document.body.appendChild(announcement);
+
+    // Remove after announcement is made
+    setTimeout(() => {
+        document.body.removeChild(announcement);
+    }, 1000);
 }
 
 // Function to auto-size a specific column
@@ -1172,12 +1467,15 @@ function autoSizeColumn(header, columnIndex) {
     setTimeout(() => {
         table.style.tableLayout = 'fixed';
         saveColumnWidthPreferences();
-    }, 50);
-
-    // Show visual feedback
+    }, 50); // Show visual feedback
     header.style.transition = 'background-color 0.3s';
     const originalColor = header.style.backgroundColor;
     header.style.backgroundColor = 'rgba(0, 150, 136, 0.2)'; // Highlight color
+
+    // Announce the change to screen readers
+    announceForScreenReader(
+        `Column ${header.textContent.trim()} automatically sized`
+    );
 
     setTimeout(() => {
         header.style.backgroundColor = originalColor;
