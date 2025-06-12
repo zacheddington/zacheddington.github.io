@@ -395,12 +395,12 @@
    MOBILE POSITIONING FIXES FOR WELCOME SCREEN
    ================================ */
 
-/* Adjust option cards positioning for all mobile screens */
+/* Adjust option cards positioning for all mobile screens - balanced approach */
 @media screen and (max-width: 480px) {
     .options {
-        margin-top: -40px !important; /* Much more aggressive negative margin */
+        margin-top: -20px !important; /* Moderate negative margin */
         gap: var(--space-sm); /* Reduce gap between cards */
-        transform: translateY(-30px); /* Additional upward push */
+        transform: translateY(-15px); /* Moderate upward push */
         justify-content: center !important; /* Ensure horizontal centering */
         align-items: center; /* Center cards within container */
     }
@@ -413,25 +413,54 @@
 /* Adjust option cards positioning for tall mobile screens (iPhone 16 Pro Max, etc.) */
 @media screen and (min-height: 800px) and (max-width: 480px) {
     .options {
-        margin-top: -70px !important; /* Much more aggressive */
+        margin-top: -35px !important; /* More moderate positioning */
         gap: var(--space-xs); /* Further reduce gap between cards */
-        transform: translateY(-50px); /* More upward push */
+        transform: translateY(-25px); /* Moderate upward push */
         justify-content: center !important; /* Ensure horizontal centering */
         align-items: center; /* Center cards within container */
     }
-    
+
     .option-card {
         margin-bottom: 0; /* Remove bottom margin completely */
     }
 }
 
 @media screen and (min-height: 900px) and (max-width: 480px) {
-    /* Extra tall mobile screens - maximum aggressive positioning */
+    /* Extra tall mobile screens - still push up but not as aggressively */
     .options {
-        margin-top: -100px !important;
+        margin-top: -50px !important; /* Reduced from -100px */
         gap: 8px; /* Minimal gap */
-        transform: translateY(-70px); /* Maximum upward push */
+        transform: translateY(-35px); /* Reduced from -70px */
         justify-content: center !important; /* Ensure horizontal centering */
         align-items: center; /* Center cards within container */
+    }
+}
+
+/* ================================
+   MOBILE POSITIONING FIXES FOR MANAGEMENT PAGES
+   ================================ */
+
+/* Prevent management page cards (admin-section, choice-buttons) from going above header */
+@media screen and (max-width: 480px) {
+    .admin-section,
+    .choice-buttons {
+        margin-top: 10px !important; /* Ensure they stay below header */
+        transform: translateY(0px); /* No upward movement */
+    }
+}
+
+@media screen and (min-height: 800px) and (max-width: 480px) {
+    .admin-section,
+    .choice-buttons {
+        margin-top: 5px !important; /* Slightly closer but safe */
+        transform: translateY(0px);
+    }
+}
+
+@media screen and (min-height: 900px) and (max-width: 480px) {
+    .admin-section,
+    .choice-buttons {
+        margin-top: 0px !important; /* Minimal margin for extra tall screens */
+        transform: translateY(0px);
     }
 }
