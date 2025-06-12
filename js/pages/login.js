@@ -59,6 +59,7 @@ function setupLoginForm() {
 function setupLoginFieldValidation() {
     const usernameField = document.getElementById('username');
     const passwordField = document.getElementById('password');
+    const twofaField = document.getElementById('twofaToken');
 
     if (usernameField) {
         usernameField.addEventListener('input', function () {
@@ -76,6 +77,23 @@ function setupLoginFieldValidation() {
         passwordField.addEventListener('input', function () {
             // Simple clear errors on input for login page
             clearLoginErrors();
+        });
+    }
+
+    if (twofaField) {
+        twofaField.addEventListener('input', function (e) {
+            // Only allow numbers and limit to 6 digits
+            e.target.value = e.target.value
+                .replace(/[^0-9]/g, '')
+                .substring(0, 6);
+            clearLoginErrors();
+        });
+
+        twofaField.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performLogin();
+            }
         });
     }
 }
@@ -103,6 +121,8 @@ async function performLogin() {
     const submitBtn = document.getElementById('loginBtn');
     const usernameField = document.getElementById('username');
     const passwordField = document.getElementById('password');
+    const twofaField = document.getElementById('twofaToken');
+    const twofaGroup = document.getElementById('twofaGroup');
     const originalText = submitBtn.textContent;
     let response = null;
     let loginSuccessful = false;
@@ -113,17 +133,31 @@ async function performLogin() {
         submitBtn.textContent = 'Logging in...';
         usernameField.disabled = true;
         passwordField.disabled = true;
+        if (twofaField) twofaField.disabled = true;
 
         // Pre-flight connectivity check
         const connectivity = await window.apiClient.checkConnectivity();
         if (!connectivity.connected) {
             throw new Error(`Connection failed: ${connectivity.error}`);
         }
+
         // Get form data
         const username = usernameField.value.trim();
-        const password = passwordField.value; // Validate input
+        const password = passwordField.value;
+        const twofaToken = twofaField ? twofaField.value.trim() : null;
+
+        // Validate input
         if (!username || !password) {
             throw new Error('Username and password are required.');
+        }
+
+        // If 2FA field is visible, require the token
+        if (
+            twofaGroup &&
+            !twofaGroup.classList.contains('hidden') &&
+            !twofaToken
+        ) {
+            throw new Error('Two-factor authentication code is required.');
         }
 
         // Basic username validation (allow more flexibility)
@@ -133,18 +167,25 @@ async function performLogin() {
 
         const API_URL = window.apiClient.getAPIUrl();
 
+        // Prepare login data
+        const loginData = { username, password };
+        if (twofaToken) {
+            loginData.twofaToken = twofaToken;
+        }
+
         response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, password }),
+            body: JSON.stringify(loginData),
         });
+
         const result = await response.json();
 
         if (response.ok) {
             // Handle both old and new response formats
-            const responseData = result.data || result; // Support both formats
+            const responseData = result.data || result;
             const token = responseData.token;
             const user = responseData.user;
 
@@ -154,6 +195,7 @@ async function performLogin() {
 
             // Mark login as successful to prevent button re-enabling
             loginSuccessful = true;
+
             // Check if user needs to change password
             if (user && user.force_password_change) {
                 // Redirect to force password change page
@@ -171,12 +213,23 @@ async function performLogin() {
                 window.location.href = '/welcome/';
             }
         } else {
-            throw new Error(result.error || 'Login failed');
+            // Handle 2FA required case
+            if (
+                response.status === 400 &&
+                result.error === '2FA token required'
+            ) {
+                show2FAField();
+                throw new Error(
+                    'Please enter your two-factor authentication code.'
+                );
+            } else {
+                throw new Error(result.error || 'Login failed');
+            }
         }
     } catch (error) {
         console.error('Login error:', error);
 
-        // Clear password field for security
+        // Clear password field for security (but not 2FA token as user might need to retry)
         passwordField.value = '';
 
         // For authentication errors (401), show specific message
@@ -199,8 +252,32 @@ async function performLogin() {
             submitBtn.textContent = originalText;
             usernameField.disabled = false;
             passwordField.disabled = false;
-        }
-        // If login was successful, keep form disabled until redirect
+            if (twofaField) twofaField.disabled = false;
+        } // If login was successful, keep form disabled until redirect
+    }
+}
+
+// Show 2FA input field when required
+function show2FAField() {
+    const twofaGroup = document.getElementById('twofaGroup');
+    const twofaField = document.getElementById('twofaToken');
+
+    if (twofaGroup && twofaField) {
+        twofaGroup.classList.remove('hidden');
+
+        // Set up 2FA field formatting
+        twofaField.addEventListener('input', function (e) {
+            // Only allow numbers and limit to 6 digits
+            e.target.value = e.target.value
+                .replace(/[^0-9]/g, '')
+                .substring(0, 6);
+
+            // Clear errors when user types
+            clearLoginErrors();
+        });
+
+        // Focus on 2FA field
+        setTimeout(() => twofaField.focus(), 100);
     }
 }
 

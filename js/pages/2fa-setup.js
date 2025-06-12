@@ -10,6 +10,11 @@ function initialize2FASetupPage() {
     // Setup event listeners for navigation buttons
     setupNavigationEventListeners();
 
+    // Load hamburger menu if available
+    if (document.getElementById('hamburger-menu') && window.navigation) {
+        window.navigation.loadMenu();
+    }
+
     // Setup event listeners for verification input
     const verificationInput = document.getElementById('verificationCode');
     if (verificationInput) {
@@ -156,6 +161,12 @@ async function verifyCode() {
         verifyBtn.disabled = true;
         verifyBtn.textContent = 'Verifying...';
 
+        // Pre-flight connectivity check
+        const connectivity = await window.apiClient.checkConnectivity();
+        if (!connectivity.connected) {
+            throw new Error(`Connection failed: ${connectivity.error}`);
+        }
+
         const token = localStorage.getItem('token');
         const API_URL = window.apiClient.getAPIUrl();
         const response = await fetch(`${API_URL}/api/2fa/verify`, {
@@ -170,15 +181,20 @@ async function verifyCode() {
         const data = await response.json();
 
         if (response.ok) {
-            backupCodes = data.backupCodes;
+            // Handle both old and new response formats
+            const responseData = data.data || data;
+            backupCodes = responseData.backupCodes || [];
             displayBackupCodes();
             nextStep(4);
         } else {
-            showVerificationError(data.error || 'Invalid verification code');
+            throw new Error(data.error || 'Invalid verification code');
         }
     } catch (error) {
         console.error('2FA verification error:', error);
-        showVerificationError('Network error. Please try again.');
+
+        // Use enhanced error categorization
+        const errorInfo = window.apiClient.categorizeError(error, null);
+        showVerificationError(errorInfo.message);
     } finally {
         const verifyBtn = document.getElementById('verifyBtn');
         verifyBtn.disabled = false;
