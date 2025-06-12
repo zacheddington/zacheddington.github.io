@@ -1077,13 +1077,22 @@ function addPatientColumnResizeHandles() {
                     startPatientColumnResize(touch, header, index);
                 },
                 { passive: false }
-            );
-
-            // Add double-click to auto-size functionality
+            );            // Add double-click to auto-size functionality (on both handle and header)
             resizeHandle.addEventListener('dblclick', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 autoSizePatientColumn(header, index);
+            });
+              // Also add double-click to the header itself for better UX
+            header.addEventListener('dblclick', function (e) {
+                // Only trigger if not clicking on sort indicator or other interactive elements
+                if (!e.target.classList.contains('sort-indicator') && 
+                    !e.target.closest('.sort-indicator') &&
+                    !e.target.classList.contains('column-resize-handle')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    autoSizePatientColumn(header, index);
+                }
             });
 
             // Add keyboard support
@@ -1125,12 +1134,10 @@ function startPatientColumnResize(event, header, columnIndex) {
     table.classList.add('resizing');
 
     // Mark the handle as active
-    handle.classList.add('active');
-
-    // Create and show a resize guide line that's contained within the table
+    handle.classList.add('active');    // Create and show a resize guide line that follows the table position
     const tableRect = table.getBoundingClientRect();
     const resizeGuide = document.createElement('div');
-    resizeGuide.style.position = 'absolute';
+    resizeGuide.style.position = 'fixed'; // Use fixed positioning to stay with viewport
     resizeGuide.style.top = `${tableRect.top}px`;
     resizeGuide.style.height = `${tableRect.height}px`;
     resizeGuide.style.width = 'var(--resize-handle-active-width, 2px)';
@@ -1140,6 +1147,7 @@ function startPatientColumnResize(event, header, columnIndex) {
     resizeGuide.style.left = `${startX}px`;
     resizeGuide.style.zIndex = '1000';
     resizeGuide.setAttribute('role', 'presentation'); // For accessibility
+    resizeGuide.style.pointerEvents = 'none'; // Ensure guide doesn't interfere with mouse events
     document.body.appendChild(resizeGuide);
 
     // Function to handle mouse/touch movement during resize

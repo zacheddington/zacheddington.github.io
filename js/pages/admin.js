@@ -212,6 +212,21 @@ function debounce(func, wait) {
     };
 }
 
+// Function to announce changes to screen readers
+function announceForScreenReader(message) {
+    const announcement = document.createElement('div');
+    announcement.setAttribute('aria-live', 'polite');
+    announcement.setAttribute('aria-atomic', 'true');
+    announcement.classList.add('sr-only'); // Screen reader only
+    announcement.textContent = message;
+    document.body.appendChild(announcement);
+    
+    // Remove after announcement is made
+    setTimeout(() => {
+        document.body.removeChild(announcement);
+    }, 1000);
+}
+
 // Setup admin navigation
 function setupAdminNavigation() {
     const adminChoice = document.getElementById('adminChoice');
@@ -1234,13 +1249,22 @@ function addColumnResizeHandles() {
                     startColumnResize(touch, header, index);
                 },
                 { passive: false }
-            );
-
-            // Add double-click to auto-size functionality
+            );            // Add double-click to auto-size functionality
             resizeHandle.addEventListener('dblclick', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 autoSizeColumn(header, index);
+            });
+              // Also add double-click to the header itself for better UX
+            header.addEventListener('dblclick', function (e) {
+                // Only trigger if not clicking on sort indicator or other interactive elements
+                if (!e.target.classList.contains('sort-indicator') && 
+                    !e.target.closest('.sort-indicator') &&
+                    !e.target.classList.contains('column-resize-handle')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    autoSizeColumn(header, index);
+                }
             });
 
             // Add keyboard support
@@ -1282,12 +1306,10 @@ function startColumnResize(event, header, columnIndex) {
     table.classList.add('resizing');
 
     // Mark the handle as active
-    handle.classList.add('active');
-
-    // Create and show a resize guide line that's contained within the table
+    handle.classList.add('active');    // Create and show a resize guide line that follows the table position
     const tableRect = table.getBoundingClientRect();
     const resizeGuide = document.createElement('div');
-    resizeGuide.style.position = 'absolute';
+    resizeGuide.style.position = 'fixed'; // Use fixed positioning to stay with viewport
     resizeGuide.style.top = `${tableRect.top}px`;
     resizeGuide.style.height = `${tableRect.height}px`;
     resizeGuide.style.width = 'var(--resize-handle-active-width, 2px)';
@@ -1297,6 +1319,7 @@ function startColumnResize(event, header, columnIndex) {
     resizeGuide.style.left = `${startX}px`;
     resizeGuide.style.zIndex = '1000';
     resizeGuide.setAttribute('role', 'presentation'); // For accessibility
+    resizeGuide.style.pointerEvents = 'none'; // Ensure guide doesn't interfere with mouse events
     document.body.appendChild(resizeGuide);
 
     // Function to handle mouse/touch movement during resize
