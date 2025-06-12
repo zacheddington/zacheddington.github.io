@@ -65,21 +65,22 @@ button,
         var(--color-secondary) 0%,
         #00796b 100%
     );
-    color: var(--color-white);    border: none;
+    color: var(--color-white);
+    border: none;
     border-radius: var(--radius-lg);
     padding: var(--padding-button);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     cursor: pointer;
     transition: var(--transition-all);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-button);
 }
 
 .secondary-btn:hover,
 .btn-secondary:hover {
     background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-button-hover);
 }
 
 /* ================================
