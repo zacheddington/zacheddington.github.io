@@ -119,7 +119,8 @@ async function initiate2FASetup() {
             },
         });
 
-        const data = await response.json();        if (response.ok) {
+        const data = await response.json();
+        if (response.ok) {
             setupData = data.data; // Access the nested data object
 
             // Display QR code
