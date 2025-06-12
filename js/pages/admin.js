@@ -220,7 +220,7 @@ function announceForScreenReader(message) {
     announcement.classList.add('sr-only'); // Screen reader only
     announcement.textContent = message;
     document.body.appendChild(announcement);
-    
+
     // Remove after announcement is made
     setTimeout(() => {
         document.body.removeChild(announcement);
@@ -753,14 +753,22 @@ function setupTableSorting() {
         { index: 2, key: 'email', label: 'Email' },
         { index: 3, key: 'role', label: 'Role' },
         { index: 4, key: 'created', label: 'Created' },
-    ];
-    sortableColumns.forEach((column) => {
+    ];    sortableColumns.forEach((column) => {
         const header = headers[column.index];
         if (header) {
-            header.style.cursor = 'pointer';
+            header.style.cursor = 'default'; // Remove pointer cursor from entire header
             header.classList.add('sortable-column');
             header.innerHTML = `${column.label} <span class="sort-indicator" data-column="${column.key}"></span>`;
-            header.addEventListener('click', () => handleSort(column.key));
+            
+            // Only add click handler to the sort indicator, not the entire header
+            const sortIndicator = header.querySelector('.sort-indicator');
+            if (sortIndicator) {
+                sortIndicator.style.cursor = 'pointer';
+                sortIndicator.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent event bubbling
+                    handleSort(column.key);
+                });
+            }
         }
     });
 }
@@ -1249,18 +1257,20 @@ function addColumnResizeHandles() {
                     startColumnResize(touch, header, index);
                 },
                 { passive: false }
-            );            // Add double-click to auto-size functionality
+            ); // Add double-click to auto-size functionality
             resizeHandle.addEventListener('dblclick', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 autoSizeColumn(header, index);
             });
-              // Also add double-click to the header itself for better UX
+            // Also add double-click to the header itself for better UX
             header.addEventListener('dblclick', function (e) {
                 // Only trigger if not clicking on sort indicator or other interactive elements
-                if (!e.target.classList.contains('sort-indicator') && 
+                if (
+                    !e.target.classList.contains('sort-indicator') &&
                     !e.target.closest('.sort-indicator') &&
-                    !e.target.classList.contains('column-resize-handle')) {
+                    !e.target.classList.contains('column-resize-handle')
+                ) {
                     e.preventDefault();
                     e.stopPropagation();
                     autoSizeColumn(header, index);
@@ -1306,7 +1316,7 @@ function startColumnResize(event, header, columnIndex) {
     table.classList.add('resizing');
 
     // Mark the handle as active
-    handle.classList.add('active');    // Create and show a resize guide line that follows the table position
+    handle.classList.add('active'); // Create and show a resize guide line that follows the table position
     const tableRect = table.getBoundingClientRect();
     const resizeGuide = document.createElement('div');
     resizeGuide.style.position = 'fixed'; // Use fixed positioning to stay with viewport

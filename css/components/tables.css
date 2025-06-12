@@ -221,11 +221,11 @@
 
 /* Sortable Headers */
 .sortable-column {
-    cursor: pointer;
+    cursor: default; /* Default cursor for header, pointer only on sort indicator */
     user-select: none;
     position: relative;
     text-align: center;
-    padding-right: 20px; /* Make room for the sort indicator */
+    padding-right: 30px; /* Make room for the resize handle */
 }
 
 .sortable-column:hover {
@@ -236,11 +236,18 @@
     margin-left: 0.25rem;
     opacity: 0.5;
     display: inline-block;
-    width: 10px;
-    position: absolute;
-    right: 6px;
-    top: 50%;
-    transform: translateY(-50%);
+    width: 12px;
+    cursor: pointer;
+    position: relative; /* Changed from absolute to relative */
+    padding: 2px; /* Add some padding for better click target */
+    border-radius: 2px;
+    transition: opacity 0.2s, background-color 0.2s;
+    /* Removed absolute positioning to keep it close to text */
+}
+
+.sort-indicator:hover {
+    opacity: 0.8;
+    background-color: rgba(0, 150, 136, 0.1);
 }
 
 .sort-indicator::after {

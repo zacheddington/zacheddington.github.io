@@ -567,16 +567,22 @@ function setupPatientTableSorting() {
         { index: 2, key: 'phone', label: 'Phone' },
         { index: 3, key: 'acceptsTexts', label: 'Accepts Texts' },
         { index: 4, key: 'created', label: 'Created' },
-    ];
-
-    sortableColumns.forEach((column) => {
+    ];    sortableColumns.forEach((column) => {
         const header = headers[column.index];
         if (header) {
-            header.style.cursor = 'pointer';
+            header.style.cursor = 'default'; // Remove pointer cursor from entire header
+            header.classList.add('sortable-column'); // Add sortable-column class for styling
             header.innerHTML = `${column.label} <span class="sort-indicator" data-column="${column.key}"></span>`;
-            header.addEventListener('click', () =>
-                handlePatientSort(column.key)
-            );
+            
+            // Only add click handler to the sort indicator, not the entire header
+            const sortIndicator = header.querySelector('.sort-indicator');
+            if (sortIndicator) {
+                sortIndicator.style.cursor = 'pointer';
+                sortIndicator.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent event bubbling
+                    handlePatientSort(column.key);
+                });
+            }
         }
     });
 }
@@ -1077,18 +1083,20 @@ function addPatientColumnResizeHandles() {
                     startPatientColumnResize(touch, header, index);
                 },
                 { passive: false }
-            );            // Add double-click to auto-size functionality (on both handle and header)
+            ); // Add double-click to auto-size functionality (on both handle and header)
             resizeHandle.addEventListener('dblclick', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 autoSizePatientColumn(header, index);
             });
-              // Also add double-click to the header itself for better UX
+            // Also add double-click to the header itself for better UX
             header.addEventListener('dblclick', function (e) {
                 // Only trigger if not clicking on sort indicator or other interactive elements
-                if (!e.target.classList.contains('sort-indicator') && 
+                if (
+                    !e.target.classList.contains('sort-indicator') &&
                     !e.target.closest('.sort-indicator') &&
-                    !e.target.classList.contains('column-resize-handle')) {
+                    !e.target.classList.contains('column-resize-handle')
+                ) {
                     e.preventDefault();
                     e.stopPropagation();
                     autoSizePatientColumn(header, index);
@@ -1134,7 +1142,7 @@ function startPatientColumnResize(event, header, columnIndex) {
     table.classList.add('resizing');
 
     // Mark the handle as active
-    handle.classList.add('active');    // Create and show a resize guide line that follows the table position
+    handle.classList.add('active'); // Create and show a resize guide line that follows the table position
     const tableRect = table.getBoundingClientRect();
     const resizeGuide = document.createElement('div');
     resizeGuide.style.position = 'fixed'; // Use fixed positioning to stay with viewport
