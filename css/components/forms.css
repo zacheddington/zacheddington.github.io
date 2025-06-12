@@ -175,7 +175,7 @@ textarea:focus {
     padding: 32px 40px;
     max-width: 700px;
     width: 100%;
-    margin: 0 auto;
+    margin: 0 auto; /* No top margin - container handles spacing */
     box-sizing: border-box;
 }
 
@@ -512,7 +512,7 @@ textarea:disabled:focus {
 /* 2FA Setup Container */
 .setup-container {
     max-width: 600px;
-    margin: 2rem auto;
+    margin: 2rem auto; /* Consistent 2rem top margin */
     padding: var(--space-xl);
     background: var(--color-white);
     border-radius: var(--radius-lg);

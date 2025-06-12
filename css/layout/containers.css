@@ -51,11 +51,13 @@ body {
     body.welcome-page {
         justify-content: flex-start !important;
         align-items: center !important;
-    }
-
-    /* Keep consistent spacing for .admin-container on mobile */
-    .admin-container {
-        margin: 2rem auto 0;
+    } /* Keep consistent spacing for all containers on mobile */
+    .admin-container,
+    .welcome-container,
+    .profile-container,
+    .setup-container,
+    .eeg-container {
+        margin: 2rem auto 0; /* Standard 2rem top margin on all devices */
     }
 }
 
@@ -88,16 +90,21 @@ body.login-page {
 }
 
 /* Admin container styles - consistent across admin, patients, and welcome pages */
-.admin-container {
+/* Common container styles for all page types */
+.admin-container,
+.welcome-container,
+.profile-container,
+.setup-container,
+.eeg-container {
     display: flex;
     flex-direction: column;
     width: 100%;
     max-width: 1200px;
-    margin: 2rem auto 0;
+    margin: 2rem auto 0; /* Consistent top margin of 2rem (32px) */
     padding: 0 1rem;
 }
 
-/* Welcome page container - inherits from admin-container but explicitly set for consistency */
+/* Welcome page container already inherits the same margin */
 .welcome-page .admin-container {
     margin: 2rem auto 0;
 }
@@ -207,9 +214,8 @@ body.login-page {
 .profile-container {
     max-width: 1000px;
     width: 100%;
-    margin: 1rem auto;
+    margin: 2rem auto 1rem; /* Updated to match other containers with 2rem top margin */
     padding: 1rem;
-    margin-top: 5px; /* Further reduced padding */
     box-sizing: border-box;
 }
 

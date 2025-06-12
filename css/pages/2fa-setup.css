@@ -4,7 +4,7 @@
 
 .setup-container {
     max-width: 600px;
-    margin: 2rem auto;
+    margin: 2rem auto; /* Consistent 2rem top margin */
     padding: var(--space-xl);
     background: var(--color-white);
     border-radius: var(--radius-lg);
@@ -15,7 +15,7 @@
 /* Mobile responsive adjustments for setup container */
 @media screen and (max-width: 480px) {
     .setup-container {
-        margin: 0.5rem auto; /* Much less top margin on mobile */
+        margin: 2rem auto; /* Keep consistent 2rem top margin on mobile */
         padding: var(--space-lg);
     }
 }
