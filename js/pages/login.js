@@ -129,20 +129,22 @@ async function performLogin() {
     const twofaField = document.getElementById('twofaToken');
     const credentialsStep = document.getElementById('credentialsStep');
     const twofaStep = document.getElementById('twofaStep');
-    
+
     // Determine which step we're on
     const isOnTwofaStep = !twofaStep.classList.contains('hidden');
     const currentButton = isOnTwofaStep ? twofaSubmitBtn : submitBtn;
     const originalText = currentButton.textContent;
-    
+
     let response = null;
     let loginSuccessful = false;
 
     try {
         // Disable current step controls
         currentButton.disabled = true;
-        currentButton.textContent = isOnTwofaStep ? 'Verifying...' : 'Logging in...';
-        
+        currentButton.textContent = isOnTwofaStep
+            ? 'Verifying...'
+            : 'Logging in...';
+
         if (!isOnTwofaStep) {
             usernameField.disabled = true;
             passwordField.disabled = true;
@@ -168,7 +170,9 @@ async function performLogin() {
                 throw new Error('Username and password are required.');
             }
             if (username.length < 2 || username.length > 50) {
-                throw new Error('Username must be between 2 and 50 characters.');
+                throw new Error(
+                    'Username must be between 2 and 50 characters.'
+                );
             }
         } else {
             // 2FA step validation
@@ -225,7 +229,10 @@ async function performLogin() {
             }
         } else {
             // Handle 2FA required case
-            if (response.status === 400 && result.error === '2FA token required') {
+            if (
+                response.status === 400 &&
+                result.error === '2FA token required'
+            ) {
                 // Only show 2FA step if we're currently on credentials step
                 if (!isOnTwofaStep) {
                     show2FAStep();
@@ -234,7 +241,9 @@ async function performLogin() {
                     return;
                 } else {
                     // If we're already on 2FA step, this means invalid token
-                    throw new Error('Invalid authentication code. Please try again.');
+                    throw new Error(
+                        'Invalid authentication code. Please try again.'
+                    );
                 }
             } else {
                 throw new Error(result.error || 'Login failed');
@@ -266,7 +275,7 @@ async function performLogin() {
         if (!loginSuccessful) {
             currentButton.disabled = false;
             currentButton.textContent = originalText;
-            
+
             if (!isOnTwofaStep) {
                 usernameField.disabled = false;
                 passwordField.disabled = false;
@@ -286,10 +295,10 @@ function show2FAStep() {
     if (credentialsStep && twofaStep && twofaField) {
         credentialsStep.classList.add('hidden');
         twofaStep.classList.remove('hidden');
-        
+
         // Clear any previous 2FA token
         twofaField.value = '';
-        
+
         // Focus on 2FA field
         setTimeout(() => twofaField.focus(), 100);
     }
@@ -304,10 +313,10 @@ function showCredentialsStep() {
     if (credentialsStep && twofaStep && twofaField) {
         twofaStep.classList.add('hidden');
         credentialsStep.classList.remove('hidden');
-        
+
         // Clear any 2FA token
         twofaField.value = '';
-        
+
         // Clear any error messages
         clearLoginErrors();
     }
