@@ -552,6 +552,7 @@ async function disable2FA() {
             <h2>Disable Two-Factor Authentication</h2>
             <p>Please enter your current password to disable 2FA:</p>
             <form id="disable2faForm">
+                <input type="text" name="username" autocomplete="username" style="display: none;" readonly>
                 <div class="form-group">
                     <label for="disable2faPassword">Current Password</label>
                     <input type="password" id="disable2faPassword" class="modal-input" required autocomplete="current-password">
@@ -641,11 +642,26 @@ async function disable2FA() {
 
     // Handle cancel button
     const cancelBtn = modalOverlay.querySelector('#cancel2faDisable');
-    cancelBtn.addEventListener('click', closeModal);
-
-    // Add modal to page and focus
+    cancelBtn.addEventListener('click', closeModal); // Add modal to page and focus
     document.body.appendChild(modalOverlay);
     modalOverlay.focus();
+
+    // Populate the hidden username field for accessibility
+    const usernameField = modalOverlay.querySelector('input[name="username"]');
+    if (usernameField) {
+        try {
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            const username = userData.email || userData.username || '';
+            if (username) {
+                usernameField.value = username;
+            }
+        } catch (error) {
+            console.log(
+                'Could not populate username for accessibility:',
+                error
+            );
+        }
+    }
 
     // Focus the password input
     setTimeout(() => {
