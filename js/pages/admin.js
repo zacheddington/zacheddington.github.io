@@ -576,11 +576,11 @@ function setupTableSorting() {
         { index: 3, key: 'role', label: 'Role' },
         { index: 4, key: 'created', label: 'Created' },
     ];
-
     sortableColumns.forEach((column) => {
         const header = headers[column.index];
         if (header) {
             header.style.cursor = 'pointer';
+            header.classList.add('sortable-column');
             header.innerHTML = `${column.label} <span class="sort-indicator" data-column="${column.key}"></span>`;
             header.addEventListener('click', () => handleSort(column.key));
         }
