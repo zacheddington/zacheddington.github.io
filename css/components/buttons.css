@@ -65,10 +65,9 @@ button,
         var(--color-secondary) 0%,
         #00796b 100%
     );
-    color: var(--color-white);
-    border: none;
+    color: var(--color-white);    border: none;
     border-radius: var(--radius-lg);
-    padding: 12px 24px;
+    padding: var(--padding-button);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     cursor: pointer;
