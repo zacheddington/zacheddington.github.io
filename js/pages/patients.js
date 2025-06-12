@@ -60,8 +60,39 @@ function initializeManagePatientsPage() {
     loadPatients();
     setupPatientFilter();
 
+    // Apply column preferences or auto-size if no preferences exist
+    try {
+        loadPatientColumnWidthPreferences();
+    } catch (e) {
+        console.error('Error loading patient column preferences:', e);
+        adjustPatientColumnWidths();
+    }
+
     // Add event listener for window resize to adjust column widths
-    window.addEventListener('resize', debounce(adjustPatientColumnWidths, 250));
+    window.addEventListener('resize', debounce(function() {
+        // Only auto-adjust if no saved preferences
+        if (!localStorage.getItem('patientTableColumnWidths')) {
+            adjustPatientColumnWidths();
+        } else {
+            // Just refresh resize handles
+            addPatientColumnResizeHandles();
+        }
+    }, 250));
+
+    // Add a reset columns button to the filter actions
+    const filterActions = document.querySelector('.filter-actions');
+    if (filterActions) {
+        const resetColumnsBtn = document.createElement('button');
+        resetColumnsBtn.type = 'button';
+        resetColumnsBtn.className = 'secondary-btn';
+        resetColumnsBtn.id = 'resetPatientColumns';
+        resetColumnsBtn.textContent = 'Reset Columns';
+        resetColumnsBtn.addEventListener('click', function() {
+            localStorage.removeItem('patientTableColumnWidths');
+            adjustPatientColumnWidths();
+        });
+        filterActions.appendChild(resetColumnsBtn);
+    }
 
     console.log('Manage patients page initialized');
 }
@@ -735,45 +766,234 @@ function adjustPatientColumnWidths() {
     const table = document.querySelector('#patientsTable');
     if (!table) return;
 
-    // Allow table to determine natural column widths first
+    // Set table-layout to auto to allow content-based sizing
     table.style.tableLayout = 'auto';
 
     // Get all table headers
     const headers = Array.from(table.querySelectorAll('th'));
 
-    // Calculate optimal widths based on content
+    // Calculate optimal widths based on actual content
     headers.forEach((header, index) => {
         const cells = Array.from(
             table.querySelectorAll(`tbody tr td:nth-child(${index + 1})`)
         );
 
-        // Get maximum content width in this column
-        let maxWidth = header.textContent.length;
+        // Remove any previous width to get natural content width
+        header.style.width = '';
         cells.forEach((cell) => {
-            if (cell.textContent.length > maxWidth) {
-                maxWidth = Math.min(cell.textContent.length, 50); // Cap at 50 chars to prevent super wide columns
+            cell.style.width = '';
+        });
+
+        // Get the content type to optimize column width
+        const columnType = getPatientColumnType(header.textContent);
+
+        // Create a hidden span to measure actual text width
+        const measureElement = document.createElement('span');
+        measureElement.style.visibility = 'hidden';
+        measureElement.style.position = 'absolute';
+        measureElement.style.whiteSpace = 'nowrap';
+        measureElement.style.font = window.getComputedStyle(header).font;
+        document.body.appendChild(measureElement);
+
+        // Measure header width
+        measureElement.textContent = header.textContent;
+        let maxWidth = measureElement.offsetWidth + 40; // Add padding
+
+        // Measure all cells in the column
+        cells.forEach((cell) => {
+            measureElement.textContent = cell.textContent;
+            const cellWidth = measureElement.offsetWidth + 40; // Add padding
+
+            // Update maxWidth if needed, with limits based on column type
+            if (cellWidth > maxWidth) {
+                if (columnType === 'address') {
+                    maxWidth = Math.min(cellWidth, 300); // Address column can be wider
+                } else if (columnType === 'accepts-texts') {
+                    maxWidth = Math.min(cellWidth, 120); // Accepts Texts column should be compact
+                } else if (columnType === 'actions') {
+                    maxWidth = Math.min(cellWidth, 120); // Actions column has fixed size elements
+                } else if (columnType === 'date') {
+                    maxWidth = Math.min(cellWidth, 120); // Date column has fixed format
+                } else if (columnType === 'phone') {
+                    maxWidth = Math.min(cellWidth, 150); // Phone column has fixed format
+                } else {
+                    maxWidth = Math.min(cellWidth, 200); // General limit for other columns
+                }
             }
         });
 
-        // Set min-width based on content (rough approximation of character width)
-        const charWidth = 8; // Estimated average character width in pixels
-        let minWidth = 100; // Default minimum width
+        // Apply the calculated width
+        header.style.width = `${maxWidth}px`;
+        header.style.minWidth = `${columnType === 'address' ? 150 : 80}px`; // Ensure minimum widths
 
-        try {
-            const currentMinWidth = parseInt(
-                window.getComputedStyle(header).minWidth || '0'
-            );
-            minWidth = Math.max(maxWidth * charWidth, currentMinWidth);
-        } catch (e) {
-            console.error('Error calculating column width:', e);
-        }
-
-        // Apply the calculated width if it's larger than the minimum
-        header.style.width = `${minWidth}px`;
+        // Clean up
+        document.body.removeChild(measureElement);
     });
 
-    // Reapply fixed table layout for better performance after widths are set
+    // After a small delay, switch back to fixed layout for better performance
     setTimeout(() => {
         table.style.tableLayout = 'fixed';
+        // Add column resize handles after setting initial widths
+        addPatientColumnResizeHandles();
     }, 100);
+}
+
+// Function to determine the column type based on header text
+function getPatientColumnType(headerText) {
+    headerText = headerText.toLowerCase();
+
+    if (headerText.includes('address')) {
+        return 'address';
+    } else if (headerText.includes('accepts texts')) {
+        return 'accepts-texts';
+    } else if (headerText.includes('actions')) {
+        return 'actions';
+    } else if (headerText.includes('created') || headerText.includes('date')) {
+        return 'date';
+    } else if (headerText.includes('phone')) {
+        return 'phone';
+    } else if (headerText.includes('name')) {
+        return 'name';
+    } else {
+        return 'general';
+    }
+}
+
+// Function to add resize handles to table columns
+function addPatientColumnResizeHandles() {
+    const table = document.querySelector('#patientsTable');
+    if (!table) return;
+
+    const headers = Array.from(table.querySelectorAll('th'));
+
+    // Remove any existing resize handles
+    table.querySelectorAll('.column-resize-handle').forEach((handle) => {
+        handle.remove();
+    });
+
+    // Add resize handle to each header except the last one (actions column)
+    headers.forEach((header, index) => {
+        if (index < headers.length - 1) {
+            // Skip last column (actions)
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'column-resize-handle';
+            header.appendChild(resizeHandle);
+
+            // Add tooltip to indicate resizable column
+            header.setAttribute('title', 'Drag to resize column');
+
+            // Add resize listeners
+            resizeHandle.addEventListener('mousedown', function (e) {
+                startPatientColumnResize(e, header, index);
+            });
+        }
+    });
+}
+
+// Function to handle column resizing
+function startPatientColumnResize(event, header, columnIndex) {
+    event.preventDefault();
+
+    const table = document.querySelector('#patientsTable');
+    const startX = event.pageX;
+    const startWidth = header.offsetWidth;
+
+    // Add resizing class to table
+    table.classList.add('resizing');
+
+    // Mark the handle as active
+    event.target.classList.add('active');
+
+    // Create and show a resize guide line
+    const resizeGuide = document.createElement('div');
+    resizeGuide.style.position = 'absolute';
+    resizeGuide.style.top = '0';
+    resizeGuide.style.bottom = '0';
+    resizeGuide.style.width = '2px';
+    resizeGuide.style.backgroundColor = 'var(--color-primary)';
+    resizeGuide.style.opacity = '0.7';
+    resizeGuide.style.left = `${event.pageX}px`;
+    resizeGuide.style.zIndex = '1000';
+    document.body.appendChild(resizeGuide);
+
+    // Function to handle mouse movement during resize
+    function handleMouseMove(e) {
+        // Update guide position
+        resizeGuide.style.left = `${e.pageX}px`;
+
+        // Don't apply width during move for smoother performance
+        // Just show the guide
+    }
+
+    // Function to handle mouse up (end of resize)
+    function handleMouseUp(e) {
+        // Remove event listeners
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+
+        // Calculate the final width
+        const newWidth = Math.max(80, startWidth + (e.pageX - startX)); // Minimum 80px width
+
+        // Apply the new width to the column
+        header.style.width = `${newWidth}px`;
+
+        // Remove the resize guide
+        document.body.removeChild(resizeGuide);
+
+        // Remove the resizing class
+        table.classList.remove('resizing');
+
+        // Remove active from handle
+        event.target.classList.remove('active');
+
+        // Save column width in localStorage for persistence
+        savePatientColumnWidthPreferences();
+    }
+
+    // Add event listeners for mouse movement and release
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+}
+
+// Function to save column width preferences
+function savePatientColumnWidthPreferences() {
+    const table = document.querySelector('#patientsTable');
+    if (!table) return;
+
+    const headers = Array.from(table.querySelectorAll('th'));
+    const widths = headers.map((header) => header.style.width);
+
+    localStorage.setItem('patientTableColumnWidths', JSON.stringify(widths));
+}
+
+// Function to load column width preferences
+function loadPatientColumnWidthPreferences() {
+    const table = document.querySelector('#patientsTable');
+    if (!table) return;
+
+    try {
+        const savedWidths = JSON.parse(
+            localStorage.getItem('patientTableColumnWidths')
+        );
+
+        if (savedWidths && Array.isArray(savedWidths)) {
+            const headers = Array.from(table.querySelectorAll('th'));
+
+            headers.forEach((header, index) => {
+                if (savedWidths[index]) {
+                    header.style.width = savedWidths[index];
+                }
+            });
+
+            table.style.tableLayout = 'fixed';
+            // Add resize handles after applying saved widths
+            addPatientColumnResizeHandles();
+        } else {
+            // No saved preferences, run auto-sizing algorithm
+            adjustPatientColumnWidths();
+        }
+    } catch (error) {
+        console.error('Error loading patient column width preferences:', error);
+        adjustPatientColumnWidths();
+    }
 }

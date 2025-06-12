@@ -19,6 +19,50 @@
 /* User filter inputs inherit unified styling from forms.css */
 
 /* ================================
+   RESIZABLE COLUMNS
+   ================================ */
+
+/* Make table columns resizable */
+.users-table th,
+#patientsTable th {
+    position: relative;
+    user-select: none; /* Prevent text selection during resizing */
+}
+
+/* Resize handle for table columns */
+.column-resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 5px;
+    height: 100%;
+    background-color: transparent;
+    cursor: col-resize;
+    z-index: 10;
+}
+
+.column-resize-handle:hover,
+.column-resize-handle.active {
+    background-color: var(--color-primary);
+    opacity: 0.5;
+}
+
+/* Show a visual feedback for resizing */
+.users-table.resizing,
+#patientsTable.resizing {
+    cursor: col-resize;
+    user-select: none;
+}
+
+.users-table.resizing th,
+.users-table.resizing td,
+#patientsTable.resizing th,
+#patientsTable.resizing td {
+    border-right-color: var(--color-primary-dark);
+    border-right-width: 2px;
+}
+
+/* ================================
    USERS TABLE CONTAINER
    ================================ */
 
@@ -174,6 +218,7 @@
     text-overflow: ellipsis; /* Show ... when text overflows */
     overflow: hidden; /* Hide overflow content */
     max-width: 0; /* Required for text-overflow to work with table cells */
+    position: relative; /* For hover effect */
 }
 
 /* Specific column behavior */

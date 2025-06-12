@@ -65,8 +65,39 @@ function initializeManageUsersPage() {
     loadRolesForUserManagement();
     setupUserFilter();
 
+    // Apply column preferences or auto-size if no preferences exist
+    try {
+        loadColumnWidthPreferences();
+    } catch (e) {
+        console.error('Error loading column preferences:', e);
+        adjustColumnWidths();
+    }
+    
     // Add event listener for window resize to adjust column widths
-    window.addEventListener('resize', debounce(adjustColumnWidths, 250));
+    window.addEventListener('resize', debounce(function() {
+        // Only auto-adjust if no saved preferences
+        if (!localStorage.getItem('userTableColumnWidths')) {
+            adjustColumnWidths();
+        } else {
+            // Just refresh resize handles
+            addColumnResizeHandles();
+        }
+    }, 250));
+
+    // Add a reset columns button to the filter actions
+    const filterActions = document.querySelector('.filter-actions');
+    if (filterActions) {
+        const resetColumnsBtn = document.createElement('button');
+        resetColumnsBtn.type = 'button';
+        resetColumnsBtn.className = 'secondary-btn';
+        resetColumnsBtn.id = 'resetColumns';
+        resetColumnsBtn.textContent = 'Reset Columns';
+        resetColumnsBtn.addEventListener('click', function() {
+            localStorage.removeItem('userTableColumnWidths');
+            adjustColumnWidths();
+        });
+        filterActions.appendChild(resetColumnsBtn);
+    }
 
     console.log('Manage users page initialized');
 }
@@ -76,40 +107,73 @@ function adjustColumnWidths() {
     const table = document.querySelector('.users-table');
     if (!table) return;
 
-    // Allow table to determine natural column widths first
+    // Set table-layout to auto to allow content-based sizing
     table.style.tableLayout = 'auto';
 
     // Get all table headers
     const headers = Array.from(table.querySelectorAll('th'));
-
-    // Calculate optimal widths based on content
+    
+    // Calculate optimal widths based on actual content
     headers.forEach((header, index) => {
         const cells = Array.from(
             table.querySelectorAll(`tbody tr td:nth-child(${index + 1})`)
         );
-
-        // Get maximum content width in this column
-        let maxWidth = header.textContent.length;
-        cells.forEach((cell) => {
-            if (cell.textContent.length > maxWidth) {
-                maxWidth = Math.min(cell.textContent.length, 50); // Cap at 50 chars to prevent super wide columns
+        
+        // Remove any previous width to get natural content width
+        header.style.width = '';
+        cells.forEach(cell => {
+            cell.style.width = '';
+        });
+        
+        // Get the content type to optimize column width
+        const columnType = getColumnType(header.textContent);
+        
+        // Create a hidden span to measure actual text width
+        const measureElement = document.createElement('span');
+        measureElement.style.visibility = 'hidden';
+        measureElement.style.position = 'absolute';
+        measureElement.style.whiteSpace = 'nowrap';
+        measureElement.style.font = window.getComputedStyle(header).font;
+        document.body.appendChild(measureElement);
+        
+        // Measure header width
+        measureElement.textContent = header.textContent;
+        let maxWidth = measureElement.offsetWidth + 40; // Add padding
+        
+        // Measure all cells in the column
+        cells.forEach(cell => {
+            measureElement.textContent = cell.textContent;
+            const cellWidth = measureElement.offsetWidth + 40; // Add padding
+            
+            // Update maxWidth if needed, with limits based on column type
+            if (cellWidth > maxWidth) {
+                if (columnType === 'email') {
+                    maxWidth = Math.min(cellWidth, 300); // Email column can be wider
+                } else if (columnType === 'role') {
+                    maxWidth = Math.min(cellWidth, 140); // Role column should be compact
+                } else if (columnType === 'actions') {
+                    maxWidth = Math.min(cellWidth, 120); // Actions column has fixed size elements
+                } else if (columnType === 'date') {
+                    maxWidth = Math.min(cellWidth, 120); // Date column has fixed format
+                } else {
+                    maxWidth = Math.min(cellWidth, 200); // General limit for other columns
+                }
             }
         });
-
-        // Set min-width based on content (rough approximation of character width)
-        const charWidth = 8; // Estimated average character width in pixels
-        const minWidth = Math.max(
-            maxWidth * charWidth,
-            parseInt(window.getComputedStyle(header).minWidth)
-        );
-
-        // Apply the calculated width if it's larger than the minimum
-        header.style.width = `${minWidth}px`;
+        
+        // Apply the calculated width
+        header.style.width = `${maxWidth}px`;
+        header.style.minWidth = `${columnType === 'email' ? 150 : 80}px`; // Ensure minimum widths
+        
+        // Clean up
+        document.body.removeChild(measureElement);
     });
-
-    // Reapply fixed table layout for better performance after widths are set
+    
+    // After a small delay, switch back to fixed layout for better performance
     setTimeout(() => {
         table.style.tableLayout = 'fixed';
+        // Add column resize handles after setting initial widths
+        addColumnResizeHandles();
     }, 100);
 }
 
@@ -500,10 +564,11 @@ async function createUser() {
 
         response = await fetch(`${API_URL}/api/create-user`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
+            headers:
+                {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
             body: JSON.stringify(formData),
         });
 
@@ -756,12 +821,17 @@ function displayUsers(users) {
         return;
     }
 
-    if (noUsersFound) noUsersFound.classList.add('hidden');
-
-    // Reset scroll position when displaying new data
+    if (noUsersFound) noUsersFound.classList.add('hidden');    // Reset scroll position when displaying new data
     if (tableContainer) {
         tableContainer.scrollLeft = 0;
     }
+    
+    // Add title attributes to cells for better tooltips
+    usersTableBody.addEventListener('mouseover', function(e) {
+        if (e.target.tagName === 'TD') {
+            e.target.title = e.target.textContent;
+        }
+    });
 
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -900,6 +970,161 @@ function updateCreateUserSubmitButton() {
     } else {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Create User';
+    }
+}
+
+// After the debounce function, add these new functions
+
+// Helper function to determine column type based on header text
+function getColumnType(headerText) {
+    headerText = headerText.toLowerCase();
+    
+    if (headerText.includes('email')) {
+        return 'email';
+    } else if (headerText.includes('role')) {
+        return 'role';
+    } else if (headerText.includes('actions')) {
+        return 'actions';
+    } else if (headerText.includes('created') || headerText.includes('date')) {
+        return 'date';
+    } else if (headerText.includes('name')) {
+        return 'name';
+    } else {
+        return 'general';
+    }
+}
+
+// Function to add resize handles to table columns
+function addColumnResizeHandles() {
+    const table = document.querySelector('.users-table');
+    if (!table) return;
+    
+    const headers = Array.from(table.querySelectorAll('th'));
+    
+    // Remove any existing resize handles
+    document.querySelectorAll('.column-resize-handle').forEach(handle => {
+        handle.remove();
+    });
+    
+    // Add resize handle to each header except the last one (actions column)
+    headers.forEach((header, index) => {
+        if (index < headers.length - 1) { // Skip last column (actions)
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'column-resize-handle';
+            header.appendChild(resizeHandle);
+            
+            // Add resize listeners
+            resizeHandle.addEventListener('mousedown', function(e) {
+                startColumnResize(e, header, index);
+            });
+        }
+    });
+}
+
+// Function to handle column resizing
+function startColumnResize(event, header, columnIndex) {
+    event.preventDefault();
+    
+    const table = document.querySelector('.users-table');
+    const startX = event.pageX;
+    const startWidth = header.offsetWidth;
+    
+    // Add resizing class to table
+    table.classList.add('resizing');
+    
+    // Mark the handle as active
+    event.target.classList.add('active');
+    
+    // Create and show a resize guide line
+    const resizeGuide = document.createElement('div');
+    resizeGuide.style.position = 'absolute';
+    resizeGuide.style.top = '0';
+    resizeGuide.style.bottom = '0';
+    resizeGuide.style.width = '2px';
+    resizeGuide.style.backgroundColor = 'var(--color-primary)';
+    resizeGuide.style.opacity = '0.7';
+    resizeGuide.style.left = `${event.pageX}px`;
+    resizeGuide.style.zIndex = '1000';
+    document.body.appendChild(resizeGuide);
+    
+    // Function to handle mouse movement during resize
+    function handleMouseMove(e) {
+        // Calculate the new width
+        const newWidth = startWidth + (e.pageX - startX);
+        
+        // Update guide position
+        resizeGuide.style.left = `${e.pageX}px`;
+        
+        // Don't apply width during move for smoother performance
+        // Just show the guide
+    }
+    
+    // Function to handle mouse up (end of resize)
+    function handleMouseUp(e) {
+        // Remove event listeners
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        
+        // Calculate the final width
+        const newWidth = Math.max(80, startWidth + (e.pageX - startX)); // Minimum 80px width
+        
+        // Apply the new width to the column
+        header.style.width = `${newWidth}px`;
+        
+        // Remove the resize guide
+        document.body.removeChild(resizeGuide);
+        
+        // Remove the resizing class
+        table.classList.remove('resizing');
+        
+        // Remove active from handle
+        event.target.classList.remove('active');
+        
+        // Save column width in localStorage for persistence
+        saveColumnWidthPreferences();
+    }
+    
+    // Add event listeners for mouse movement and release
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+}
+
+// Function to save column width preferences
+function saveColumnWidthPreferences() {
+    const table = document.querySelector('.users-table');
+    if (!table) return;
+    
+    const headers = Array.from(table.querySelectorAll('th'));
+    const widths = headers.map(header => header.style.width);
+    
+    localStorage.setItem('userTableColumnWidths', JSON.stringify(widths));
+}
+
+// Function to load column width preferences
+function loadColumnWidthPreferences() {
+    const table = document.querySelector('.users-table');
+    if (!table) return;
+    
+    try {
+        const savedWidths = JSON.parse(localStorage.getItem('userTableColumnWidths'));
+        
+        if (savedWidths && Array.isArray(savedWidths)) {
+            const headers = Array.from(table.querySelectorAll('th'));
+            
+            headers.forEach((header, index) => {
+                if (savedWidths[index]) {
+                    header.style.width = savedWidths[index];
+                }
+            });
+            
+            table.style.tableLayout = 'fixed';
+        } else {
+            // No saved preferences, run auto-sizing algorithm
+            adjustColumnWidths();
+        }
+    } catch (error) {
+        console.error('Error loading column width preferences:', error);
+        adjustColumnWidths();
     }
 }
 
