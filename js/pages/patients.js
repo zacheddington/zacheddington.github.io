@@ -69,15 +69,18 @@ function initializeManagePatientsPage() {
     }
 
     // Add event listener for window resize to adjust column widths
-    window.addEventListener('resize', debounce(function() {
-        // Only auto-adjust if no saved preferences
-        if (!localStorage.getItem('patientTableColumnWidths')) {
-            adjustPatientColumnWidths();
-        } else {
-            // Just refresh resize handles
-            addPatientColumnResizeHandles();
-        }
-    }, 250));
+    window.addEventListener(
+        'resize',
+        debounce(function () {
+            // Only auto-adjust if no saved preferences
+            if (!localStorage.getItem('patientTableColumnWidths')) {
+                adjustPatientColumnWidths();
+            } else {
+                // Just refresh resize handles
+                addPatientColumnResizeHandles();
+            }
+        }, 250)
+    );
 
     // Add a reset columns button to the filter actions
     const filterActions = document.querySelector('.filter-actions');
@@ -87,7 +90,7 @@ function initializeManagePatientsPage() {
         resetColumnsBtn.className = 'secondary-btn';
         resetColumnsBtn.id = 'resetPatientColumns';
         resetColumnsBtn.textContent = 'Reset Columns';
-        resetColumnsBtn.addEventListener('click', function() {
+        resetColumnsBtn.addEventListener('click', function () {
             localStorage.removeItem('patientTableColumnWidths');
             adjustPatientColumnWidths();
         });
@@ -495,6 +498,24 @@ async function loadPatients() {
             setupPatientTableSorting();
             const sortedPatients = getSortedPatients();
             displayPatients(sortedPatients);
+
+            // Apply column resize preferences or adjust widths
+            try {
+                const savedWidths = JSON.parse(
+                    localStorage.getItem('patientTableColumnWidths')
+                );
+                if (savedWidths && Array.isArray(savedWidths)) {
+                    loadPatientColumnWidthPreferences();
+                } else {
+                    adjustPatientColumnWidths();
+                }
+            } catch (e) {
+                console.error(
+                    'Error applying column widths after loading patients:',
+                    e
+                );
+                adjustPatientColumnWidths();
+            }
         } else {
             throw new Error('Failed to load patients');
         }
@@ -558,10 +579,24 @@ function handlePatientSort(columnKey) {
 
     // Sort and display patients
     const sortedPatients = getSortedPatients();
-    displayPatients(sortedPatients);
-
-    // Adjust column widths after sorting
-    setTimeout(adjustPatientColumnWidths, 100);
+    displayPatients(sortedPatients); // After sorting, either apply saved column widths or adjust automatically
+    setTimeout(() => {
+        try {
+            const savedWidths = JSON.parse(
+                localStorage.getItem('patientTableColumnWidths')
+            );
+            if (savedWidths && Array.isArray(savedWidths)) {
+                // Apply saved column widths
+                loadPatientColumnWidthPreferences();
+            } else {
+                // If no saved preferences, auto-adjust columns
+                adjustPatientColumnWidths();
+            }
+        } catch (e) {
+            console.error('Error applying column widths after sorting:', e);
+            adjustPatientColumnWidths();
+        }
+    }, 100);
 }
 
 // Update visual sort indicators
@@ -646,6 +681,9 @@ function displayPatients(patients) {
     if (tableContainer) {
         tableContainer.scrollLeft = 0;
     }
+
+    // Make sure tooltips are added to column headers
+    addColumnResizeTooltips();
     patientsTableBody.innerHTML = patients
         .map((patient) => {
             const fullName = patient.middle_name
@@ -697,6 +735,26 @@ function displayPatients(patients) {
 
     // Adjust column widths after rendering
     setTimeout(adjustPatientColumnWidths, 100);
+
+    // Add column resize tooltips
+    addColumnResizeTooltips();
+}
+
+// Function to add tooltips to column headers to indicate they can be resized
+function addColumnResizeTooltips() {
+    const table = document.querySelector('#patientsTable');
+    if (!table) return;
+
+    const headers = Array.from(table.querySelectorAll('th'));
+
+    // Add tooltip to each header except the last one (actions column)
+    headers.forEach((header, index) => {
+        if (index < headers.length - 1) {
+            // Skip last column (actions)
+            header.title =
+                'Drag edge to resize column | Double-click to auto-size';
+        }
+    });
 }
 
 // Filter patients based on search input
@@ -723,11 +781,26 @@ function filterPatients() {
                 patient.address.toLowerCase().includes(filterValue))
         );
     });
-
     displayPatients(filteredPatients);
 
-    // Adjust column widths based on content after filtering
-    setTimeout(adjustPatientColumnWidths, 100);
+    // After filtering, either apply saved column widths or adjust automatically
+    setTimeout(() => {
+        try {
+            const savedWidths = JSON.parse(
+                localStorage.getItem('patientTableColumnWidths')
+            );
+            if (savedWidths && Array.isArray(savedWidths)) {
+                // Apply saved column widths
+                loadPatientColumnWidthPreferences();
+            } else {
+                // If no saved preferences, auto-adjust columns
+                adjustPatientColumnWidths();
+            }
+        } catch (e) {
+            console.error('Error applying column widths after filtering:', e);
+            adjustPatientColumnWidths();
+        }
+    }, 100);
 }
 
 // Set up patient filter functionality
@@ -869,9 +942,7 @@ function addPatientColumnResizeHandles() {
     // Remove any existing resize handles
     table.querySelectorAll('.column-resize-handle').forEach((handle) => {
         handle.remove();
-    });
-
-    // Add resize handle to each header except the last one (actions column)
+    }); // Add resize handle to each header except the last one (actions column)
     headers.forEach((header, index) => {
         if (index < headers.length - 1) {
             // Skip last column (actions)
@@ -880,11 +951,21 @@ function addPatientColumnResizeHandles() {
             header.appendChild(resizeHandle);
 
             // Add tooltip to indicate resizable column
-            header.setAttribute('title', 'Drag to resize column');
+            header.setAttribute(
+                'title',
+                'Drag to resize column | Double-click to auto-size'
+            );
 
             // Add resize listeners
             resizeHandle.addEventListener('mousedown', function (e) {
                 startPatientColumnResize(e, header, index);
+            });
+
+            // Add double-click to auto-size functionality
+            resizeHandle.addEventListener('dblclick', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                autoSizePatientColumn(header, index);
             });
         }
     });
@@ -902,24 +983,28 @@ function startPatientColumnResize(event, header, columnIndex) {
     table.classList.add('resizing');
 
     // Mark the handle as active
-    event.target.classList.add('active');
-
-    // Create and show a resize guide line
+    event.target.classList.add('active'); // Create and show a resize guide line that's contained within the table
+    const tableRect = table.getBoundingClientRect();
     const resizeGuide = document.createElement('div');
     resizeGuide.style.position = 'absolute';
-    resizeGuide.style.top = '0';
-    resizeGuide.style.bottom = '0';
+    resizeGuide.style.top = `${tableRect.top}px`;
+    resizeGuide.style.height = `${tableRect.height}px`;
     resizeGuide.style.width = '2px';
     resizeGuide.style.backgroundColor = 'var(--color-primary)';
     resizeGuide.style.opacity = '0.7';
     resizeGuide.style.left = `${event.pageX}px`;
     resizeGuide.style.zIndex = '1000';
-    document.body.appendChild(resizeGuide);
-
-    // Function to handle mouse movement during resize
+    document.body.appendChild(resizeGuide); // Function to handle mouse movement during resize
     function handleMouseMove(e) {
+        // Keep guide within table boundaries
+        const tableRect = table.getBoundingClientRect();
+        const pageX = Math.max(
+            tableRect.left,
+            Math.min(e.pageX, tableRect.right)
+        );
+
         // Update guide position
-        resizeGuide.style.left = `${e.pageX}px`;
+        resizeGuide.style.left = `${pageX}px`;
 
         // Don't apply width during move for smoother performance
         // Just show the guide
@@ -953,6 +1038,96 @@ function startPatientColumnResize(event, header, columnIndex) {
     // Add event listeners for mouse movement and release
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+}
+
+// Function to auto-size a specific column
+function autoSizePatientColumn(header, columnIndex) {
+    const table = document.querySelector('#patientsTable');
+    if (!table) return;
+
+    // Get all cells in this column
+    const cells = Array.from(
+        table.querySelectorAll(`tbody tr td:nth-child(${columnIndex + 1})`)
+    );
+
+    // Remove any previous width to get natural content width
+    header.style.width = '';
+    cells.forEach((cell) => {
+        cell.style.width = '';
+    });
+
+    // Get the content type to optimize column width
+    const columnType = getPatientColumnType(header.textContent);
+
+    // Create a hidden span to measure actual text width
+    const measureElement = document.createElement('span');
+    measureElement.style.visibility = 'hidden';
+    measureElement.style.position = 'absolute';
+    measureElement.style.whiteSpace = 'nowrap';
+    measureElement.style.font = window.getComputedStyle(header).font;
+    document.body.appendChild(measureElement);
+
+    // Measure header width
+    measureElement.textContent = header.textContent;
+    let maxWidth = measureElement.offsetWidth + 40; // Add padding
+
+    // Measure all cells in the column to find the widest content
+    cells.forEach((cell) => {
+        // Get the actual text content from the cell or its children
+        let cellText = '';
+        if (cell.querySelector('.patient-full-name')) {
+            cellText = cell.querySelector('.patient-full-name').textContent;
+        } else if (cell.querySelector('.patient-actions')) {
+            // For action cells, use a fixed width
+            measureElement.textContent = 'Actions';
+        } else {
+            cellText = cell.textContent;
+        }
+
+        measureElement.textContent = cellText;
+        const cellWidth = measureElement.offsetWidth + 40; // Add padding
+
+        // Find the maximum width needed
+        maxWidth = Math.max(maxWidth, cellWidth);
+    });
+
+    // Apply constraints based on column type
+    if (columnType === 'address') {
+        maxWidth = Math.min(maxWidth, 300); // Address column max width
+        maxWidth = Math.max(maxWidth, 150); // Address column min width
+    } else if (columnType === 'accepts-texts') {
+        maxWidth = Math.min(maxWidth, 120); // Accepts Texts column max width
+    } else if (columnType === 'actions') {
+        maxWidth = 120; // Actions column fixed width
+    } else if (columnType === 'date') {
+        maxWidth = Math.min(maxWidth, 120); // Date column max width
+    } else if (columnType === 'phone') {
+        maxWidth = Math.min(maxWidth, 150); // Phone column max width
+    } else {
+        maxWidth = Math.min(maxWidth, 200); // General max width
+    }
+
+    // Apply the calculated width
+    header.style.width = `${maxWidth}px`;
+
+    // Clean up
+    document.body.removeChild(measureElement);
+
+    // Save the updated column widths to localStorage
+    setTimeout(() => {
+        table.style.tableLayout = 'fixed';
+        savePatientColumnWidthPreferences();
+    }, 50);
+
+    // Show visual feedback
+    header.style.transition = 'background-color 0.3s';
+    const originalColor = header.style.backgroundColor;
+    header.style.backgroundColor = 'rgba(0, 150, 136, 0.2)'; // Highlight color
+
+    setTimeout(() => {
+        header.style.backgroundColor = originalColor;
+        header.style.transition = '';
+    }, 300);
 }
 
 // Function to save column width preferences

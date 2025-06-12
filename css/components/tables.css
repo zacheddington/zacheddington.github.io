@@ -47,6 +47,28 @@
     opacity: 0.5;
 }
 
+/* Improve resize handle visibility on header hover */
+.users-table th:hover .column-resize-handle,
+#patientsTable th:hover .column-resize-handle {
+    background-color: var(--color-primary);
+    opacity: 0.3;
+}
+
+/* Add visual indicator when columns are being resized */
+.resizing .column-resize-handle.active {
+    background-color: var(--color-primary);
+    opacity: 0.7;
+    width: 2px;
+}
+
+/* Add a hover state for resize handles to indicate they're interactive */
+.column-resize-handle:hover {
+    cursor: col-resize;
+    background-color: var(--color-primary);
+    opacity: 0.5;
+    width: 4px;
+}
+
 /* Show a visual feedback for resizing */
 .users-table.resizing,
 #patientsTable.resizing {

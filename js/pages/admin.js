@@ -72,17 +72,20 @@ function initializeManageUsersPage() {
         console.error('Error loading column preferences:', e);
         adjustColumnWidths();
     }
-    
+
     // Add event listener for window resize to adjust column widths
-    window.addEventListener('resize', debounce(function() {
-        // Only auto-adjust if no saved preferences
-        if (!localStorage.getItem('userTableColumnWidths')) {
-            adjustColumnWidths();
-        } else {
-            // Just refresh resize handles
-            addColumnResizeHandles();
-        }
-    }, 250));
+    window.addEventListener(
+        'resize',
+        debounce(function () {
+            // Only auto-adjust if no saved preferences
+            if (!localStorage.getItem('userTableColumnWidths')) {
+                adjustColumnWidths();
+            } else {
+                // Just refresh resize handles
+                addColumnResizeHandles();
+            }
+        }, 250)
+    );
 
     // Add a reset columns button to the filter actions
     const filterActions = document.querySelector('.filter-actions');
@@ -92,7 +95,7 @@ function initializeManageUsersPage() {
         resetColumnsBtn.className = 'secondary-btn';
         resetColumnsBtn.id = 'resetColumns';
         resetColumnsBtn.textContent = 'Reset Columns';
-        resetColumnsBtn.addEventListener('click', function() {
+        resetColumnsBtn.addEventListener('click', function () {
             localStorage.removeItem('userTableColumnWidths');
             adjustColumnWidths();
         });
@@ -112,22 +115,22 @@ function adjustColumnWidths() {
 
     // Get all table headers
     const headers = Array.from(table.querySelectorAll('th'));
-    
+
     // Calculate optimal widths based on actual content
     headers.forEach((header, index) => {
         const cells = Array.from(
             table.querySelectorAll(`tbody tr td:nth-child(${index + 1})`)
         );
-        
+
         // Remove any previous width to get natural content width
         header.style.width = '';
-        cells.forEach(cell => {
+        cells.forEach((cell) => {
             cell.style.width = '';
         });
-        
+
         // Get the content type to optimize column width
         const columnType = getColumnType(header.textContent);
-        
+
         // Create a hidden span to measure actual text width
         const measureElement = document.createElement('span');
         measureElement.style.visibility = 'hidden';
@@ -135,16 +138,16 @@ function adjustColumnWidths() {
         measureElement.style.whiteSpace = 'nowrap';
         measureElement.style.font = window.getComputedStyle(header).font;
         document.body.appendChild(measureElement);
-        
+
         // Measure header width
         measureElement.textContent = header.textContent;
         let maxWidth = measureElement.offsetWidth + 40; // Add padding
-        
+
         // Measure all cells in the column
-        cells.forEach(cell => {
+        cells.forEach((cell) => {
             measureElement.textContent = cell.textContent;
             const cellWidth = measureElement.offsetWidth + 40; // Add padding
-            
+
             // Update maxWidth if needed, with limits based on column type
             if (cellWidth > maxWidth) {
                 if (columnType === 'email') {
@@ -160,15 +163,15 @@ function adjustColumnWidths() {
                 }
             }
         });
-        
+
         // Apply the calculated width
         header.style.width = `${maxWidth}px`;
         header.style.minWidth = `${columnType === 'email' ? 150 : 80}px`; // Ensure minimum widths
-        
+
         // Clean up
         document.body.removeChild(measureElement);
     });
-    
+
     // After a small delay, switch back to fixed layout for better performance
     setTimeout(() => {
         table.style.tableLayout = 'fixed';
@@ -564,11 +567,10 @@ async function createUser() {
 
         response = await fetch(`${API_URL}/api/create-user`, {
             method: 'POST',
-            headers:
-                {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify(formData),
         });
 
@@ -821,13 +823,13 @@ function displayUsers(users) {
         return;
     }
 
-    if (noUsersFound) noUsersFound.classList.add('hidden');    // Reset scroll position when displaying new data
+    if (noUsersFound) noUsersFound.classList.add('hidden'); // Reset scroll position when displaying new data
     if (tableContainer) {
         tableContainer.scrollLeft = 0;
     }
-    
+
     // Add title attributes to cells for better tooltips
-    usersTableBody.addEventListener('mouseover', function(e) {
+    usersTableBody.addEventListener('mouseover', function (e) {
         if (e.target.tagName === 'TD') {
             e.target.title = e.target.textContent;
         }
@@ -978,7 +980,7 @@ function updateCreateUserSubmitButton() {
 // Helper function to determine column type based on header text
 function getColumnType(headerText) {
     headerText = headerText.toLowerCase();
-    
+
     if (headerText.includes('email')) {
         return 'email';
     } else if (headerText.includes('role')) {
@@ -998,24 +1000,37 @@ function getColumnType(headerText) {
 function addColumnResizeHandles() {
     const table = document.querySelector('.users-table');
     if (!table) return;
-    
+
     const headers = Array.from(table.querySelectorAll('th'));
-    
+
     // Remove any existing resize handles
-    document.querySelectorAll('.column-resize-handle').forEach(handle => {
+    document.querySelectorAll('.column-resize-handle').forEach((handle) => {
         handle.remove();
     });
-    
     // Add resize handle to each header except the last one (actions column)
     headers.forEach((header, index) => {
-        if (index < headers.length - 1) { // Skip last column (actions)
+        if (index < headers.length - 1) {
+            // Skip last column (actions)
             const resizeHandle = document.createElement('div');
             resizeHandle.className = 'column-resize-handle';
             header.appendChild(resizeHandle);
-            
+
+            // Add tooltip to indicate resizable column
+            header.setAttribute(
+                'title',
+                'Drag to resize column | Double-click to auto-size'
+            );
+
             // Add resize listeners
-            resizeHandle.addEventListener('mousedown', function(e) {
+            resizeHandle.addEventListener('mousedown', function (e) {
                 startColumnResize(e, header, index);
+            });
+
+            // Add double-click to auto-size functionality
+            resizeHandle.addEventListener('dblclick', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                autoSizeColumn(header, index);
             });
         }
     });
@@ -1024,79 +1039,160 @@ function addColumnResizeHandles() {
 // Function to handle column resizing
 function startColumnResize(event, header, columnIndex) {
     event.preventDefault();
-    
+
     const table = document.querySelector('.users-table');
     const startX = event.pageX;
     const startWidth = header.offsetWidth;
-    
+
     // Add resizing class to table
     table.classList.add('resizing');
-    
+
     // Mark the handle as active
     event.target.classList.add('active');
-    
-    // Create and show a resize guide line
+    // Create and show a resize guide line that's contained within the table
+    const tableRect = table.getBoundingClientRect();
     const resizeGuide = document.createElement('div');
     resizeGuide.style.position = 'absolute';
-    resizeGuide.style.top = '0';
-    resizeGuide.style.bottom = '0';
+    resizeGuide.style.top = `${tableRect.top}px`;
+    resizeGuide.style.height = `${tableRect.height}px`;
     resizeGuide.style.width = '2px';
     resizeGuide.style.backgroundColor = 'var(--color-primary)';
     resizeGuide.style.opacity = '0.7';
     resizeGuide.style.left = `${event.pageX}px`;
     resizeGuide.style.zIndex = '1000';
     document.body.appendChild(resizeGuide);
-    
     // Function to handle mouse movement during resize
     function handleMouseMove(e) {
-        // Calculate the new width
-        const newWidth = startWidth + (e.pageX - startX);
-        
+        // Keep guide within table boundaries
+        const tableRect = table.getBoundingClientRect();
+        const pageX = Math.max(
+            tableRect.left,
+            Math.min(e.pageX, tableRect.right)
+        );
+
         // Update guide position
-        resizeGuide.style.left = `${e.pageX}px`;
-        
+        resizeGuide.style.left = `${pageX}px`;
+
         // Don't apply width during move for smoother performance
         // Just show the guide
     }
-    
+
     // Function to handle mouse up (end of resize)
     function handleMouseUp(e) {
         // Remove event listeners
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
-        
+
         // Calculate the final width
         const newWidth = Math.max(80, startWidth + (e.pageX - startX)); // Minimum 80px width
-        
+
         // Apply the new width to the column
         header.style.width = `${newWidth}px`;
-        
+
         // Remove the resize guide
         document.body.removeChild(resizeGuide);
-        
+
         // Remove the resizing class
         table.classList.remove('resizing');
-        
+
         // Remove active from handle
         event.target.classList.remove('active');
-        
+
         // Save column width in localStorage for persistence
         saveColumnWidthPreferences();
     }
-    
+
     // Add event listeners for mouse movement and release
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+}
+
+// Function to auto-size a specific column
+function autoSizeColumn(header, columnIndex) {
+    const table = document.querySelector('.users-table');
+    if (!table) return;
+
+    // Get all cells in this column
+    const cells = Array.from(
+        table.querySelectorAll(`tbody tr td:nth-child(${columnIndex + 1})`)
+    );
+
+    // Remove any previous width to get natural content width
+    header.style.width = '';
+    cells.forEach((cell) => {
+        cell.style.width = '';
+    });
+
+    // Get the content type to optimize column width
+    const columnType = getColumnType(header.textContent);
+
+    // Create a hidden span to measure actual text width
+    const measureElement = document.createElement('span');
+    measureElement.style.visibility = 'hidden';
+    measureElement.style.position = 'absolute';
+    measureElement.style.whiteSpace = 'nowrap';
+    measureElement.style.font = window.getComputedStyle(header).font;
+    document.body.appendChild(measureElement);
+
+    // Measure header width
+    measureElement.textContent = header.textContent;
+    let maxWidth = measureElement.offsetWidth + 40; // Add padding
+
+    // Measure all cells in the column to find the widest content
+    cells.forEach((cell) => {
+        // Get the actual text content from the cell
+        measureElement.textContent = cell.textContent;
+        const cellWidth = measureElement.offsetWidth + 40; // Add padding
+
+        // Find the maximum width needed
+        maxWidth = Math.max(maxWidth, cellWidth);
+    });
+
+    // Apply constraints based on column type
+    if (columnType === 'email') {
+        maxWidth = Math.min(maxWidth, 300); // Email column max width
+        maxWidth = Math.max(maxWidth, 150); // Email column min width
+    } else if (columnType === 'role') {
+        maxWidth = Math.min(maxWidth, 140); // Role column max width
+    } else if (columnType === 'actions') {
+        maxWidth = 120; // Actions column fixed width
+    } else if (columnType === 'date') {
+        maxWidth = Math.min(maxWidth, 120); // Date column max width
+    } else {
+        maxWidth = Math.min(maxWidth, 200); // General max width
+    }
+
+    // Apply the calculated width
+    header.style.width = `${maxWidth}px`;
+
+    // Clean up
+    document.body.removeChild(measureElement);
+
+    // Save the updated column widths to localStorage
+    setTimeout(() => {
+        table.style.tableLayout = 'fixed';
+        saveColumnWidthPreferences();
+    }, 50);
+
+    // Show visual feedback
+    header.style.transition = 'background-color 0.3s';
+    const originalColor = header.style.backgroundColor;
+    header.style.backgroundColor = 'rgba(0, 150, 136, 0.2)'; // Highlight color
+
+    setTimeout(() => {
+        header.style.backgroundColor = originalColor;
+        header.style.transition = '';
+    }, 300);
 }
 
 // Function to save column width preferences
 function saveColumnWidthPreferences() {
     const table = document.querySelector('.users-table');
     if (!table) return;
-    
+
     const headers = Array.from(table.querySelectorAll('th'));
-    const widths = headers.map(header => header.style.width);
-    
+    const widths = headers.map((header) => header.style.width);
+
     localStorage.setItem('userTableColumnWidths', JSON.stringify(widths));
 }
 
@@ -1104,19 +1200,21 @@ function saveColumnWidthPreferences() {
 function loadColumnWidthPreferences() {
     const table = document.querySelector('.users-table');
     if (!table) return;
-    
+
     try {
-        const savedWidths = JSON.parse(localStorage.getItem('userTableColumnWidths'));
-        
+        const savedWidths = JSON.parse(
+            localStorage.getItem('userTableColumnWidths')
+        );
+
         if (savedWidths && Array.isArray(savedWidths)) {
             const headers = Array.from(table.querySelectorAll('th'));
-            
+
             headers.forEach((header, index) => {
                 if (savedWidths[index]) {
                     header.style.width = savedWidths[index];
                 }
             });
-            
+
             table.style.tableLayout = 'fixed';
         } else {
             // No saved preferences, run auto-sizing algorithm
