@@ -40,6 +40,16 @@ body {
     transition: var(--transition-all);
 }
 
+/* Welcome page specific body layout - don't center vertically */
+body.welcome-page {
+    justify-content: flex-start;
+}
+
+/* Content pages that should flow from top, not center vertically */
+body.content-page {
+    justify-content: flex-start;
+}
+
 /* Login page has no header, so remove the top padding */
 body.login-page {
     padding-top: 0;
@@ -67,19 +77,95 @@ body.login-page {
 }
 
 /* Mobile responsive adjustments for welcome screen */
-@media screen and (min-height: 800px) and (max-width: 480px) {
-    /* Larger mobile screens (like iPhone 16 Pro Max) - bring cards closer to top */
+@media screen and (max-width: 480px) {
+    /* All mobile screens - reduce top spacing significantly */
+    body.welcome-page {
+        padding-top: calc(
+            var(--header-height) - 20px
+        ); /* Reduce header padding */
+        /* Account for device safe areas (notches, etc.) */
+        padding-top: max(
+            calc(var(--header-height) - 20px),
+            env(safe-area-inset-top, 0px)
+        );
+    }
+
     .welcome-container {
-        margin-top: -20px;
+        margin-top: -30px; /* Bring much closer to header */
         padding-top: 10px;
     }
 }
 
-@media screen and (min-height: 900px) and (max-width: 480px) {
-    /* Extra tall mobile screens - bring cards even closer to top */
+@media screen and (min-height: 800px) and (max-width: 480px) {
+    /* Larger mobile screens (like iPhone 16 Pro Max) - bring cards closer to top */
+    body.welcome-page {
+        padding-top: calc(var(--header-height) - 40px);
+        padding-top: max(
+            calc(var(--header-height) - 40px),
+            env(safe-area-inset-top, 0px)
+        );
+    }
+
     .welcome-container {
-        margin-top: -40px;
+        margin-top: -50px;
+        padding-top: 15px;
+    }
+}
+
+@media screen and (min-height: 900px) and (max-width: 480px) {
+    /* Extra tall mobile screens - even closer to top */
+    body.welcome-page {
+        padding-top: calc(var(--header-height) - 50px);
+        padding-top: max(
+            calc(var(--header-height) - 50px),
+            env(safe-area-inset-top, 0px)
+        );
+    }
+
+    .welcome-container {
+        margin-top: -60px;
         padding-top: 20px;
+    }
+}
+
+/* ================================
+   RESPONSIVE FIXES FOR ALL CONTENT PAGES
+   ================================ */
+
+/* Tablet portrait and mobile landscape - prevent vertical centering issues */
+@media screen and (min-height: 600px) and (max-width: 1024px) {
+    body:not(.login-page) {
+        justify-content: flex-start; /* Override centering for all non-login pages */
+    }
+}
+
+/* Large mobile portrait - reduce excessive top spacing */
+@media screen and (min-height: 800px) and (max-width: 430px) {
+    body:not(.login-page) {
+        padding-top: calc(var(--header-height) - 20px);
+        padding-top: max(
+            calc(var(--header-height) - 20px),
+            env(safe-area-inset-top, 0px)
+        );
+    }
+}
+
+/* Extra large mobile (iPhone Pro Max, etc.) - further reduce spacing */
+@media screen and (min-height: 900px) and (max-width: 430px) {
+    body:not(.login-page) {
+        padding-top: calc(var(--header-height) - 30px);
+        padding-top: max(
+            calc(var(--header-height) - 30px),
+            env(safe-area-inset-top, 0px)
+        );
+    }
+}
+
+/* Foldable devices and very tall screens */
+@media screen and (min-height: 1200px) {
+    body:not(.login-page) {
+        justify-content: flex-start;
+        padding-top: calc(var(--header-height) - 10px);
     }
 }
 
