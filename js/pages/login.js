@@ -121,17 +121,14 @@ async function performLogin() {
         }
         // Get form data
         const username = usernameField.value.trim();
-        const password = passwordField.value;
-
-        // Validate input
+        const password = passwordField.value; // Validate input
         if (!username || !password) {
             throw new Error('Username and password are required.');
         }
 
-        // Validate username format
-        const usernameRegex = /^[a-zA-Z0-9_-]{3,50}$/;
-        if (!usernameRegex.test(username)) {
-            throw new Error('Please enter a valid username.');
+        // Basic username validation (allow more flexibility)
+        if (username.length < 2 || username.length > 50) {
+            throw new Error('Username must be between 2 and 50 characters.');
         }
 
         const API_URL = window.apiClient.getAPIUrl();
@@ -179,25 +176,18 @@ async function performLogin() {
     } catch (error) {
         console.error('Login error:', error);
 
-        // For authentication errors (401) or validation errors, always show modal
+        // Clear password field for security
+        passwordField.value = '';
+
+        // For authentication errors (401), show specific message
         if (response && response.status === 401) {
-            // Clear password field for security
-            passwordField.value = '';
             window.modalManager.showModal(
                 'error',
                 'Invalid username or password. Please try again.'
             );
         } else {
-            // Use enhanced error categorization for other errors
-            const errorInfo = window.apiClient.categorizeError(error, response);
-
-            // For network/connectivity issues, show modal
-            if (errorInfo.modal) {
-                window.modalManager.showModal('error', errorInfo.message);
-            } else {
-                // For validation errors, show inline
-                showLoginError(errorInfo.message);
-            }
+            // For all other errors (including validation), show modal with error message
+            window.modalManager.showModal('error', error.message);
         }
     } finally {
         // Reset the guard flag
