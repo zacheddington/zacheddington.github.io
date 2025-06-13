@@ -42,10 +42,14 @@ const modalManager = {
 
         document.body.appendChild(modal);
 
+        // Prevent body scrolling
+        document.body.classList.add('modal-open');
+
         // Style the modal based on type
         setTimeout(() => {
             const modalElement = document.getElementById('feedbackModal');
             if (modalElement) {
+                // Force modal to center in viewport
                 modalElement.style.display = 'flex';
                 modalElement.style.position = 'fixed';
                 modalElement.style.top = '0';
@@ -56,6 +60,17 @@ const modalManager = {
                 modalElement.style.justifyContent = 'center';
                 modalElement.style.alignItems = 'center';
                 modalElement.style.zIndex = '10000';
+                modalElement.style.margin = '0';
+                modalElement.style.padding = '0';
+
+                // Ensure it's above everything else
+                modalElement.style.setProperty(
+                    'position',
+                    'fixed',
+                    'important'
+                );
+                modalElement.style.setProperty('z-index', '10000', 'important');
+                modalElement.style.setProperty('display', 'flex', 'important');
 
                 const modalContent =
                     modalElement.querySelector('.modal-content');
@@ -156,6 +171,9 @@ const modalManager = {
         } else {
             this.isShowingModal = false;
         }
+
+        // Remove body scroll prevention
+        document.body.classList.remove('modal-open');
     },
 
     showLogoutConfirmation: function (onConfirm) {
@@ -264,14 +282,35 @@ const modalManager = {
 
         document.body.appendChild(modal);
 
+        // Prevent body scrolling
+        document.body.classList.add('modal-open');
+
         // Style the modal
         setTimeout(() => {
             const modalElement = document.getElementById('feedbackModal');
             if (modalElement) {
+                // Force modal to center in viewport
                 modalElement.style.display = 'flex';
                 modalElement.style.position = 'fixed';
                 modalElement.style.top = '0';
                 modalElement.style.left = '0';
+                modalElement.style.width = '100%';
+                modalElement.style.height = '100%';
+                modalElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                modalElement.style.justifyContent = 'center';
+                modalElement.style.alignItems = 'center';
+                modalElement.style.zIndex = '10000';
+                modalElement.style.margin = '0';
+                modalElement.style.padding = '0';
+
+                // Ensure it's above everything else
+                modalElement.style.setProperty(
+                    'position',
+                    'fixed',
+                    'important'
+                );
+                modalElement.style.setProperty('z-index', '10000', 'important');
+                modalElement.style.setProperty('display', 'flex', 'important');
                 modalElement.style.width = '100%';
                 modalElement.style.height = '100%';
                 modalElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
@@ -389,16 +428,16 @@ const modalManager = {
             document.body.appendChild(logoutModal);
 
             // Focus on the modal for accessibility
-            logoutModal.focus();
-
-            // Set up event handlers
+            logoutModal.focus(); // Set up event handlers
             const cancelHandler = () => {
                 document.body.removeChild(logoutModal);
+                document.body.classList.remove('modal-open');
                 resolve(false);
             };
 
             const confirmHandler = () => {
                 document.body.removeChild(logoutModal);
+                document.body.classList.remove('modal-open');
                 if (confirmCallback) confirmCallback();
                 resolve(true);
             };
