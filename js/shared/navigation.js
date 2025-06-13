@@ -561,19 +561,34 @@ function ensureSidebarPinned() {
     }
 }
 
-// Monitor scroll events when sidebar is open
+// Monitor scroll events when sidebar is open - now uses absolute positioning
 function startScrollMonitoring() {
-    console.log('🚀 Starting scroll monitoring...');
+    console.log('🚀 Starting scroll monitoring with absolute positioning...');
     if (scrollMonitor) {
         clearInterval(scrollMonitor);
     }
+    
+    // Initial positioning
+    forceViewportPositioning();
+    
+    // Update positions on scroll and resize
     scrollMonitor = setInterval(() => {
-        ensureSidebarPinned();
-        // Also apply nuclear positioning every 500ms
-        forceViewportPositioning();
-    }, 500);
-    window.addEventListener('scroll', ensureSidebarPinned, { passive: true });
-    window.addEventListener('resize', ensureSidebarPinned, { passive: true });
+        if (window.updateSidebarPosition) {
+            window.updateSidebarPosition();
+        }
+    }, 16); // ~60fps for smooth movement
+    
+    window.addEventListener('scroll', () => {
+        if (window.updateSidebarPosition) {
+            window.updateSidebarPosition();
+        }
+    }, { passive: true });
+    
+    window.addEventListener('resize', () => {
+        if (window.updateSidebarPosition) {
+            window.updateSidebarPosition();
+        }
+    }, { passive: true });
 }
 
 function stopScrollMonitoring() {
@@ -581,13 +596,22 @@ function stopScrollMonitoring() {
         clearInterval(scrollMonitor);
         scrollMonitor = null;
     }
-    window.removeEventListener('scroll', ensureSidebarPinned);
-    window.removeEventListener('resize', ensureSidebarPinned);
+    
+    // Remove scroll and resize listeners
+    window.removeEventListener('scroll', window.updateSidebarPosition);
+    window.removeEventListener('resize', window.updateSidebarPosition);
+    
+    // Clean up the global function
+    if (window.updateSidebarPosition) {
+        delete window.updateSidebarPosition;
+    }
+    
+    console.log('🛑 Scroll monitoring stopped');
 }
 
 // Nuclear option: Remove all interfering CSS properties
 function forceViewportPositioning() {
-    console.log('☢️  NUCLEAR OPTION - Forcing viewport positioning...');
+    console.log('☢️  REVOLUTIONARY APPROACH - Using absolute positioning with viewport calculations...');
 
     const sidebar =
         document.querySelector('.side-menu') ||
@@ -600,61 +624,28 @@ function forceViewportPositioning() {
         console.error('❌ Sidebar or overlay not found!');
         return;
     }
-
+    
     console.log('🔍 Current scroll position:', window.scrollX, window.scrollY);
     console.log('🔍 Viewport size:', window.innerWidth, window.innerHeight);
 
-    // ULTRA NUCLEAR: Force elements to document body if they're not already there
-    if (sidebar.parentNode !== document.body) {
-        console.log('🚨 Moving sidebar to document body...');
-        document.body.appendChild(sidebar);
-    }
-    if (overlay.parentNode !== document.body) {
-        console.log('🚨 Moving overlay to document body...');
-        document.body.appendChild(overlay);
-    }
-
-    // Force remove any CSS that might interfere with fixed positioning on ALL elements
-    const allElements = document.querySelectorAll('*');
-    allElements.forEach((el) => {
-        if (el === sidebar || el === overlay) return; // Skip sidebar and overlay
-
-        // Remove transforms that might create new stacking contexts
-        const computedStyle = window.getComputedStyle(el);
-        if (computedStyle.transform !== 'none') {
-            el.style.setProperty('transform', 'none', 'important');
-            console.log('🔧 Removed transform from:', el.tagName, el.className);
-        }
-
-        // Remove will-change that might affect positioning
-        if (computedStyle.willChange !== 'auto') {
-            el.style.setProperty('will-change', 'auto', 'important');
-        }
-
-        // Remove contain that might create new containing blocks
-        if (computedStyle.contain !== 'none') {
-            el.style.setProperty('contain', 'none', 'important');
-        }
-
-        // Remove isolation that might create new stacking contexts
-        if (computedStyle.isolation !== 'auto') {
-            el.style.setProperty('isolation', 'auto', 'important');
-        }
-
-        // Remove perspective that might create new stacking contexts
-        if (computedStyle.perspective !== 'none') {
-            el.style.setProperty('perspective', 'none', 'important');
-        }
+    // Calculate absolute positions that account for scroll to simulate viewport positioning
+    const sidebarTop = window.scrollY;
+    const sidebarLeft = window.scrollX;
+    const overlayTop = window.scrollY;
+    const overlayLeft = window.scrollX + 300;
+    
+    console.log('🧮 Calculated viewport-relative positions:', {
+        sidebarTop,
+        sidebarLeft,
+        overlayTop,
+        overlayLeft
     });
 
-    // ULTRA-NUCLEAR: Use absolute positioning with explicit coordinates
-    console.log('🎯 Applying ULTRA NUCLEAR positioning...');
-
-    // Ultra-aggressive sidebar positioning
+    // REVOLUTIONARY: Use absolute positioning with scroll-adjusted coordinates
     sidebar.style.cssText = `
-        position: fixed !important;
-        top: 0px !important;
-        left: 0px !important;
+        position: absolute !important;
+        top: ${sidebarTop}px !important;
+        left: ${sidebarLeft}px !important;
         width: 300px !important;
         height: ${window.innerHeight}px !important;
         z-index: 10001 !important;
@@ -672,11 +663,10 @@ function forceViewportPositioning() {
         perspective: none !important;
     `;
 
-    // Ultra-aggressive overlay positioning
     overlay.style.cssText = `
-        position: fixed !important;
-        top: 0px !important;
-        left: 300px !important;
+        position: absolute !important;
+        top: ${overlayTop}px !important;
+        left: ${overlayLeft}px !important;
         width: ${window.innerWidth - 300}px !important;
         height: ${window.innerHeight}px !important;
         z-index: 10000 !important;
@@ -692,49 +682,33 @@ function forceViewportPositioning() {
         visibility: visible !important;
         perspective: none !important;
     `;
-
-    // Force recalculation
-    sidebar.offsetHeight;
-    overlay.offsetHeight;
-
-    console.log('☢️  Nuclear positioning applied!');
-
-    // Check final positioning after a tick
+    
+    console.log('☢️  Absolute positioning applied!');
+    
+    // Check final positioning
     setTimeout(() => {
         const sidebarRect = sidebar.getBoundingClientRect();
         const overlayRect = overlay.getBoundingClientRect();
-        console.log('📐 Sidebar final rect:', sidebarRect);
-        console.log('📐 Overlay final rect:', overlayRect);
-
-        // If still not at 0,0, try one more time with even more force
-        if (sidebarRect.top !== 0 || overlayRect.top !== 0) {
-            console.log(
-                '🚨 STILL NOT POSITIONED CORRECTLY - Trying ultimate fix...'
-            );
-
-            // Use style.setProperty with highest specificity
-            sidebar.style.setProperty('position', 'fixed', 'important');
-            sidebar.style.setProperty('top', '0px', 'important');
-            sidebar.style.setProperty('left', '0px', 'important');
-
-            overlay.style.setProperty('position', 'fixed', 'important');
-            overlay.style.setProperty('top', '0px', 'important');
-            overlay.style.setProperty('left', '300px', 'important');
-
-            // Force another recalculation
-            sidebar.offsetHeight;
-            overlay.offsetHeight;
-
-            console.log(
-                '📐 After ultimate fix - Sidebar rect:',
-                sidebar.getBoundingClientRect()
-            );
-            console.log(
-                '📐 After ultimate fix - Overlay rect:',
-                overlay.getBoundingClientRect()
-            );
-        }
-    }, 10);
+        console.log('📐 Sidebar rect (should be 0,0):', sidebarRect);
+        console.log('📐 Overlay rect (should be 300,0):', overlayRect);
+        
+        // Create global function to update positions on scroll
+        window.updateSidebarPosition = function() {
+            const newTop = window.scrollY;
+            const newLeft = window.scrollX;
+            const newOverlayLeft = window.scrollX + 300;
+            
+            sidebar.style.top = `${newTop}px`;
+            sidebar.style.left = `${newLeft}px`;
+            sidebar.style.height = `${window.innerHeight}px`;
+            
+            overlay.style.top = `${newTop}px`;
+            overlay.style.left = `${newOverlayLeft}px`;
+            overlay.style.width = `${window.innerWidth - 300}px`;
+            overlay.style.height = `${window.innerHeight}px`;
+            
+            console.log('🔄 Updated to viewport positions:', { newTop, newLeft, newOverlayLeft });
+        };    }, 10);
 }
 
 // Diagnostic function to identify what's causing the positioning offset
