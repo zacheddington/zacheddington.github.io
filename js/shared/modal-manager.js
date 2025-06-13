@@ -227,78 +227,207 @@ const modalManager = {
             });
         });
     },
-};
-
-// Enhanced logout confirmation modal - unified function
-function showLogoutModal(confirmCallback) {
-    return new Promise((resolve) => {
-        // Prevent duplicate modals
-        const existingModal = document.querySelector(
-            '.modal-overlay, .logout-modal'
-        );
-        if (existingModal) {
-            return resolve(false);
+    showConfirmModal: function (title, message, onConfirm, onCancel) {
+        if (this.isShowingModal) {
+            console.log('Modal already showing, skipping new modal');
+            return false;
         }
 
-        const logoutModal = document.createElement('div');
-        logoutModal.className = 'modal-overlay';
-        logoutModal.innerHTML = `
+        this.isShowingModal = true;
+
+        // Remove any existing modal
+        const existingModal = document.getElementById('feedbackModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Create modal element
+        const modal = document.createElement('div');
+        modal.id = 'feedbackModal';
+        modal.className = 'modal confirm-modal';
+        modal.tabIndex = '-1';
+        modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>🚪 Confirm Logout</h3>
+                    <h3>${title || '⚠️ Confirm Action'}</h3>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to log out?</p>
-                    <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">You will be redirected to the login page and will need to sign in again to access the system.</p>
+                    <p>${message.replace(/\n/g, '<br>')}</p>
                 </div>
                 <div class="modal-footer">
-                    <button class="modal-btn cancel" id="cancelLogout">Cancel</button>
-                    <button class="modal-btn confirm" id="confirmLogout">Logout</button>
+                    <button class="modal-btn cancel" id="modalCancel">Cancel</button>
+                    <button class="modal-btn confirm" id="modalConfirm">Confirm</button>
+                    <div class="modal-hint" style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; text-align: center;">Press Enter to confirm, Escape to cancel</div>
                 </div>
             </div>
         `;
 
-        document.body.appendChild(logoutModal);
+        document.body.appendChild(modal);
 
-        // Focus on the modal for accessibility
-        logoutModal.focus();
+        // Style the modal
+        setTimeout(() => {
+            const modalElement = document.getElementById('feedbackModal');
+            if (modalElement) {
+                modalElement.style.display = 'flex';
+                modalElement.style.position = 'fixed';
+                modalElement.style.top = '0';
+                modalElement.style.left = '0';
+                modalElement.style.width = '100%';
+                modalElement.style.height = '100%';
+                modalElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+                modalElement.style.justifyContent = 'center';
+                modalElement.style.alignItems = 'center';
+                modalElement.style.zIndex = '10000';
 
-        // Set up event handlers
-        const cancelHandler = () => {
-            document.body.removeChild(logoutModal);
-            resolve(false);
-        };
+                const modalContent =
+                    modalElement.querySelector('.modal-content');
+                if (modalContent) {
+                    modalContent.style.backgroundColor = 'white';
+                    modalContent.style.padding = '2rem';
+                    modalContent.style.borderRadius = '8px';
+                    modalContent.style.maxWidth = '500px';
+                    modalContent.style.width = '90%';
+                    modalContent.style.maxHeight = '80vh';
+                    modalContent.style.overflowY = 'auto';
+                    modalContent.style.boxShadow =
+                        '0 4px 20px rgba(0, 0, 0, 0.3)';
+                }
 
-        const confirmHandler = () => {
-            document.body.removeChild(logoutModal);
-            if (confirmCallback) confirmCallback();
-            resolve(true);
-        };
+                // Style buttons
+                const cancelBtn = modalElement.querySelector('#modalCancel');
+                const confirmBtn = modalElement.querySelector('#modalConfirm');
 
-        document
-            .getElementById('cancelLogout')
-            .addEventListener('click', cancelHandler);
-        document
-            .getElementById('confirmLogout')
-            .addEventListener('click', confirmHandler);
+                if (cancelBtn) {
+                    cancelBtn.style.padding = '0.75rem 1.5rem';
+                    cancelBtn.style.border = '1px solid #6c757d';
+                    cancelBtn.style.borderRadius = '4px';
+                    cancelBtn.style.cursor = 'pointer';
+                    cancelBtn.style.fontSize = '1rem';
+                    cancelBtn.style.fontWeight = '500';
+                    cancelBtn.style.backgroundColor = '#6c757d';
+                    cancelBtn.style.color = 'white';
+                    cancelBtn.style.marginRight = '1rem';
+                }
 
-        // Keyboard support
-        logoutModal.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                cancelHandler();
-            } else if (e.key === 'Enter') {
-                confirmHandler();
+                if (confirmBtn) {
+                    confirmBtn.style.padding = '0.75rem 1.5rem';
+                    confirmBtn.style.border = 'none';
+                    confirmBtn.style.borderRadius = '4px';
+                    confirmBtn.style.cursor = 'pointer';
+                    confirmBtn.style.fontSize = '1rem';
+                    confirmBtn.style.fontWeight = '500';
+                    confirmBtn.style.backgroundColor = '#dc3545';
+                    confirmBtn.style.color = 'white';
+                }
             }
-        });
 
-        // Close on background click
-        logoutModal.addEventListener('click', (e) => {
-            if (e.target === logoutModal) {
-                cancelHandler();
+            // Add event handlers
+            const confirmHandler = () => {
+                this.closeModal();
+                if (onConfirm) onConfirm();
+            };
+
+            const cancelHandler = () => {
+                this.closeModal();
+                if (onCancel) onCancel();
+            };
+
+            document
+                .getElementById('modalConfirm')
+                .addEventListener('click', confirmHandler);
+            document
+                .getElementById('modalCancel')
+                .addEventListener('click', cancelHandler);
+
+            // Keyboard support
+            modalElement.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmHandler();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cancelHandler();
+                }
+            });
+
+            // Focus the modal for keyboard navigation
+            modalElement.focus();
+        }, 10);
+
+        return true;
+    },
+
+    // Enhanced logout confirmation modal - unified function
+    showLogoutModal: function (confirmCallback) {
+        return new Promise((resolve) => {
+            // Prevent duplicate modals
+            const existingModal = document.querySelector(
+                '.modal-overlay, .logout-modal'
+            );
+            if (existingModal) {
+                return resolve(false);
             }
+
+            const logoutModal = document.createElement('div');
+            logoutModal.className = 'modal-overlay';
+            logoutModal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>🚪 Confirm Logout</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to log out?</p>
+                        <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">You will be redirected to the login page and will need to sign in again to access the system.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="modal-btn cancel" id="cancelLogout">Cancel</button>
+                        <button class="modal-btn confirm" id="confirmLogout">Logout</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(logoutModal);
+
+            // Focus on the modal for accessibility
+            logoutModal.focus();
+
+            // Set up event handlers
+            const cancelHandler = () => {
+                document.body.removeChild(logoutModal);
+                resolve(false);
+            };
+
+            const confirmHandler = () => {
+                document.body.removeChild(logoutModal);
+                if (confirmCallback) confirmCallback();
+                resolve(true);
+            };
+
+            document
+                .getElementById('cancelLogout')
+                .addEventListener('click', cancelHandler);
+            document
+                .getElementById('confirmLogout')
+                .addEventListener('click', confirmHandler);
+
+            // Keyboard support
+            logoutModal.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    cancelHandler();
+                } else if (e.key === 'Enter') {
+                    confirmHandler();
+                }
+            });
+
+            // Close on background click
+            logoutModal.addEventListener('click', (e) => {
+                if (e.target === logoutModal) {
+                    cancelHandler();
+                }
+            });
         });
-    });
-}
+    },
+};
 
 // Make modal functions globally available
 window.showModal = modalManager.showModal.bind(modalManager);

@@ -669,6 +669,41 @@ async function loadUsers() {
                 displayUsers(sortedUsers);
             }
         } else {
+            if (response.status === 403) {
+                // Handle authorization error
+                const errorMessage =
+                    'You do not have permission to view users. Admin access required.';
+                console.error('Authorization error:', errorMessage);
+
+                const usersTableBody =
+                    document.getElementById('usersTableBody');
+                if (usersTableBody) {
+                    usersTableBody.innerHTML = `
+                        <tr><td colspan="6" style="text-align: center; color: #dc3545; padding: 2rem;">
+                            <div>
+                                <h4>⚠️ Access Denied</h4>
+                                <p>You do not have permission to view user management.</p>
+                                <p>Please contact your administrator to request admin access.</p>
+                            </div>
+                        </td></tr>
+                    `;
+                }
+
+                // Hide loading indicator
+                if (usersLoading) usersLoading.style.display = 'none';
+                return;
+            } else if (response.status === 401) {
+                // Handle authentication error
+                window.modalManager.showModal(
+                    'error',
+                    'Your session has expired. Please log in again.'
+                );
+                // Redirect to login
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+                return;
+            }
             throw new Error('Failed to load users');
         }
     } catch (error) {
@@ -697,9 +732,20 @@ async function loadRolesForUserManagement() {
         });
         if (response.ok) {
             const result = await response.json();
-            currentRoles = result.data; // Extract data from response object
-        } else {
-            console.error('Failed to load roles for user management');
+            currentRoles = result.data; // Extract data from response object        } else {
+            if (response.status === 403) {
+                console.error(
+                    'Access denied when loading roles - user may not have admin privileges'
+                );
+                // Don't show error modal, just log it. The table will show without dropdowns.
+                currentRoles = [];
+            } else if (response.status === 401) {
+                console.error('Authentication failed when loading roles');
+                currentRoles = [];
+            } else {
+                console.error('Failed to load roles for user management');
+                currentRoles = [];
+            }
         }
     } catch (error) {
         console.error('Error loading roles for user management:', error);
@@ -896,29 +942,44 @@ function displayUsers(users) {
                 user.username
             }</td>
                 <td class="user-fullname" title="${fullName}">${fullName}</td>
-                <td class="user-email" title="${user.email}">${user.email}</td>
-                <td>
-                    <span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}" title="${primaryRole}">
-                        ${primaryRole}
-                    </span>
+                <td class="user-email" title="${user.email}">${
+                user.email
+            }</td>                <td>
+                    ${
+                        currentRoles.length > 0
+                            ? `<select class="role-select" onchange="window.adminPage.editUserRole(${
+                                  user.user_key
+                              }, this.value)" ${
+                                  isCurrentUser ? 'disabled' : ''
+                              }>
+                            ${currentRoles
+                                .map(
+                                    (role) => `
+                                <option value="${role.role_key}" ${
+                                        role.role_key == primaryRoleKey
+                                            ? 'selected'
+                                            : ''
+                                    }>
+                                    ${role.role_name}
+                                </option>
+                            `
+                                )
+                                .join('')}
+                        </select>`
+                            : `<span class="user-role ${roleClass}" data-role-key="${primaryRoleKey}" title="${primaryRole}">
+                                ${primaryRole}
+                            </span>`
+                    }
                 </td>
-                <td class="user-created" title="${createdDate}">${createdDate}</td>
-                <td>
+                <td class="user-created" title="${createdDate}">${createdDate}</td>                <td>
                     <div class="user-actions">
-                        <button class="btn-icon btn-edit" onclick="editUserRole(${
-                            user.user_key
-                        })" title="Edit Role" ${
-                isCurrentUser ? 'disabled' : ''
-            }>
-                            ✏️
-                        </button>
-                        <button class="btn-icon btn-delete" onclick="deleteUser(${
-                            user.user_key
-                        }, '${user.username}')" title="Delete User" ${
-                isCurrentUser ? 'disabled' : ''
-            }>
-                            🗑️
-                        </button>
+                        ${
+                            !isCurrentUser
+                                ? `<button class="btn-icon btn-delete" onclick="window.adminPage.deleteUser(${user.user_key}, '${user.username}')" title="Delete User">
+                                🗑️
+                            </button>`
+                                : `<span title="Cannot delete your own account">-</span>`
+                        }
                     </div>
                 </td>
             </tr>
@@ -1127,11 +1188,9 @@ async function editUserRole(userId, newRoleKey) {
         const selectedRole = currentRoles.find(
             (role) => role.role_key == newRoleKey
         );
-        const roleName = selectedRole ? selectedRole.role_name : 'Unknown';
-
-        // Show confirmation modal
-        window.modalManager.showModal(
-            'confirm',
+        const roleName = selectedRole ? selectedRole.role_name : 'Unknown'; // Show confirmation modal
+        window.modalManager.showConfirmModal(
+            '🔄 Change User Role',
             `Are you sure you want to change this user's role to ${roleName}?`,
             async () => {
                 try {
@@ -1209,11 +1268,9 @@ async function deleteUser(userId, username) {
         userId,
         'Username:',
         username
-    );
-
-    // Show confirmation modal with strong warning
-    window.modalManager.showModal(
-        'confirm',
+    ); // Show confirmation modal with strong warning
+    window.modalManager.showConfirmModal(
+        '🗑️ Delete User',
         `Are you sure you want to permanently delete user "${username}"? This action cannot be undone and will remove all associated data.`,
         async () => {
             try {
