@@ -672,22 +672,91 @@ function startScrollMonitoring() {
         const overlay =
             document.querySelector('.menu-overlay') ||
             document.querySelector('#menuOverlay');
-
         if (sidebar && overlay) {
+            // For absolute positioning, we need to check if elements are at correct viewport-relative positions
+            const expectedSidebarTop = window.scrollY;
+            const expectedSidebarLeft = window.scrollX;
+            const expectedOverlayTop = window.scrollY;
+            const expectedOverlayLeft = window.scrollX + 300;
+
             const sidebarRect = sidebar.getBoundingClientRect();
             const overlayRect = overlay.getBoundingClientRect();
 
-            // Check if positioning is still correct (should always be 0,0 and 300,0)
+            // Check if positioning matches viewport coordinates (0,0) and (300,0) respectively
             if (sidebarRect.top !== 0 || sidebarRect.left !== 0) {
                 console.warn(
                     '⚠️ POSITION DRIFT DETECTED - Correcting sidebar position'
                 );
-                forceViewportPositioning();
+
+                // Update absolute positions to match current scroll
+                sidebar.style.setProperty(
+                    'top',
+                    `${expectedSidebarTop}px`,
+                    'important'
+                );
+                sidebar.style.setProperty(
+                    'left',
+                    `${expectedSidebarLeft}px`,
+                    'important'
+                );
+            }
+
+            if (overlayRect.top !== 0 || overlayRect.left !== 300) {
+                console.warn(
+                    '⚠️ OVERLAY DRIFT DETECTED - Correcting overlay position'
+                );
+
+                overlay.style.setProperty(
+                    'top',
+                    `${expectedOverlayTop}px`,
+                    'important'
+                );
+                overlay.style.setProperty(
+                    'left',
+                    `${expectedOverlayLeft}px`,
+                    'important'
+                );
             }
         }
-    }, 1000); // Check every second for any position drift
+    }, 1000); // Check every second for any position drift    // Add scroll listeners to update absolute positions for viewport simulation
+    window.addEventListener(
+        'scroll',
+        () => {
+            const sidebar =
+                document.querySelector('.side-menu') ||
+                document.querySelector('#sideMenu');
+            const overlay =
+                document.querySelector('.menu-overlay') ||
+                document.querySelector('#menuOverlay');
 
-    // No scroll listeners needed for fixed positioning, but add resize for completeness
+            if (sidebar && overlay) {
+                // Update positions to simulate viewport pinning
+                sidebar.style.setProperty(
+                    'top',
+                    `${window.scrollY}px`,
+                    'important'
+                );
+                sidebar.style.setProperty(
+                    'left',
+                    `${window.scrollX}px`,
+                    'important'
+                );
+
+                overlay.style.setProperty(
+                    'top',
+                    `${window.scrollY}px`,
+                    'important'
+                );
+                overlay.style.setProperty(
+                    'left',
+                    `${window.scrollX + 300}px`,
+                    'important'
+                );
+            }
+        },
+        { passive: true }
+    );
+
     window.addEventListener(
         'resize',
         () => {
@@ -753,13 +822,15 @@ function forceViewportPositioning() {
         el.style.setProperty('perspective', 'none', 'important');
         el.style.setProperty('margin', '0', 'important');
         el.style.setProperty('padding', '0', 'important');
-    });
+    }); // ALTERNATIVE APPROACH: Use absolute positioning with explicit viewport coordinates
+    console.log(
+        '🔧 USING ABSOLUTE POSITIONING with explicit viewport calculations'
+    );
 
-    // CORRECT: Use fixed positioning for viewport pinning with nuclear overrides
     sidebar.style.cssText = `
-        position: fixed !important;
-        top: 0px !important;
-        left: 0px !important;
+        position: absolute !important;
+        top: ${window.scrollY}px !important;
+        left: ${window.scrollX}px !important;
         width: 300px !important;
         height: 100vh !important;
         z-index: 10001 !important;
@@ -778,18 +849,16 @@ function forceViewportPositioning() {
         transition: none !important;
         border: none !important;
         outline: none !important;
-        inset: 0px auto auto 0px !important;
     `;
 
     // Force reflow and re-apply positioning
     sidebar.offsetHeight;
     sidebar.style.setProperty('top', '0px', 'important');
     sidebar.style.setProperty('left', '0px', 'important');
-
     overlay.style.cssText = `
-        position: fixed !important;
-        top: 0px !important;
-        left: 300px !important;
+        position: absolute !important;
+        top: ${window.scrollY}px !important;
+        left: ${window.scrollX + 300}px !important;
         width: calc(100vw - 300px) !important;
         height: 100vh !important;
         z-index: 10000 !important;
@@ -807,7 +876,6 @@ function forceViewportPositioning() {
         transition: none !important;
         border: none !important;
         outline: none !important;
-        inset: 0px 0px auto 300px !important;
     `;
 
     // Force reflow and re-apply positioning
