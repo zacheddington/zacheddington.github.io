@@ -1171,33 +1171,20 @@ function startPatientColumnResize(event, header, columnIndex) {
     // Add resizing class to table
     table.classList.add('resizing');
     // Mark the handle as active
-    handle.classList.add('active');
-
-    // Function to handle mouse/touch movement during resize
+    handle.classList.add('active'); // Function to handle mouse/touch movement during resize
     function handlePointerMove(e) {
         // Get pageX for calculations
         const pageX =
             e.pageX ||
             (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
 
-        // Throttle the resize for better performance
-        if (!handlePointerMove.throttleTimer) {
-            handlePointerMove.throttleTimer = setTimeout(() => {
-                // Calculate new width
-                const deltaX = pageX - startX;
-                const newWidth = Math.max(
-                    80,
-                    Math.min(500, startWidth + deltaX)
-                );
+        // Calculate new width in real-time without throttling
+        const deltaX = pageX - startX;
+        const newWidth = Math.max(80, Math.min(500, startWidth + deltaX));
 
-                // Apply the new width
-                header.style.width = `${newWidth}px`;
-                handle.setAttribute('aria-valuenow', newWidth);
-
-                // Clear the throttle timer
-                handlePointerMove.throttleTimer = null;
-            }, 10); // 10ms throttle
-        }
+        // Apply the new width immediately for real-time feedback
+        header.style.width = `${newWidth}px`;
+        handle.setAttribute('aria-valuenow', newWidth);
     }
 
     // Function to handle mouse/touch up (end of resize)

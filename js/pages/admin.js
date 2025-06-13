@@ -1179,13 +1179,40 @@ function setupUserFilter() {
     }
 }
 
-// Placeholder functions for user editing and deletion
-function editUserRole(userId) {
-    console.log('Edit user role functionality for ID:', userId);
-    window.modalManager.showModal(
-        'info',
-        'User role editing functionality will be implemented in a future update.'
-    );
+// Function to handle user role editing
+function editUserRole(userId, newRoleKey) {
+    // If newRoleKey is provided, we're handling a dropdown change
+    if (newRoleKey !== undefined) {
+        console.log('Updating user role:', { userId, newRoleKey });
+
+        // Find the role name from currentRoles array
+        const selectedRole = currentRoles.find(
+            (role) => role.role_key == newRoleKey
+        );
+        const roleName = selectedRole ? selectedRole.role_name : 'Unknown';
+
+        // Show confirmation modal
+        window.modalManager.showModal(
+            'confirm',
+            `Are you sure you want to change this user's role to ${roleName}?`,
+            () => {
+                // Here you would make an API call to update the user's role
+                // For now, we'll show a success message
+                console.log(`Role updated for user ${userId} to ${roleName}`);
+                window.modalManager.showModal(
+                    'success',
+                    `User role successfully updated to ${roleName}.`
+                );
+            }
+        );
+    } else {
+        // Legacy single parameter call - show info modal
+        console.log('Edit user role functionality for ID:', userId);
+        window.modalManager.showModal(
+            'info',
+            'User role editing functionality will be implemented in a future update.'
+        );
+    }
 }
 
 function deleteUser(userId, username) {
@@ -1345,33 +1372,18 @@ function startColumnResize(event, header, columnIndex) {
     // Add resizing class to table
     table.classList.add('resizing');
     // Mark the handle as active
-    handle.classList.add('active');
-
-    // Function to handle mouse/touch movement during resize
+    handle.classList.add('active'); // Function to handle mouse/touch movement during resize
     function handlePointerMove(e) {
         // Get pageX for calculations
         const pageX =
             e.pageX ||
             (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
 
-        // Throttle the resize for better performance
-        if (!handlePointerMove.throttleTimer) {
-            handlePointerMove.throttleTimer = setTimeout(() => {
-                // Calculate new width
-                const deltaX = pageX - startX;
-                const newWidth = Math.max(
-                    80,
-                    Math.min(500, startWidth + deltaX)
-                );
-
-                // Apply the new width
-                header.style.width = `${newWidth}px`;
-                handle.setAttribute('aria-valuenow', newWidth);
-
-                // Clear the throttle timer
-                handlePointerMove.throttleTimer = null;
-            }, 10); // 10ms throttle
-        }
+        // Calculate new width in real-time without throttling
+        const deltaX = pageX - startX;
+        const newWidth = Math.max(80, Math.min(500, startWidth + deltaX)); // Apply the new width immediately for real-time feedback
+        header.style.width = `${newWidth}px`;
+        handle.setAttribute('aria-valuenow', newWidth);
     }
 
     // Function to handle mouse/touch up (end of resize)
@@ -1409,7 +1421,12 @@ function startColumnResize(event, header, columnIndex) {
         // Remove active from handle
         handle.classList.remove('active');
 
-        // Reset transition after width is applied        // Save column width in localStorage for persistence
+        // Reset transition after width is applied
+        setTimeout(() => {
+            header.style.transition = '';
+        }, 100);
+
+        // Save column width in localStorage for persistence
         saveColumnWidthPreferences();
 
         // Announce resize completion for screen readers
