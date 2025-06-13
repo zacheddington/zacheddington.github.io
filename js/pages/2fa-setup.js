@@ -7,6 +7,9 @@ let backupCodes = [];
 
 // Initialize 2FA setup page
 function initialize2FASetupPage() {
+    // Reset page state first
+    resetPageState();
+
     // Setup event listeners for navigation buttons
     setupNavigationEventListeners();
 
@@ -34,6 +37,58 @@ function initialize2FASetupPage() {
                 .getElementById('verificationError')
                 .classList.add('hidden');
         });
+    }
+}
+
+// Reset page state to initial conditions
+function resetPageState() {
+    // Reset to step 1
+    currentStep = 1;
+    setupData = null;
+    backupCodes = [];
+
+    // Hide all steps except step 1
+    for (let i = 1; i <= 4; i++) {
+        const step = document.getElementById(`step${i}`);
+        if (step) {
+            if (i === 1) {
+                step.classList.remove('hidden');
+                step.classList.add('active');
+            } else {
+                step.classList.add('hidden');
+                step.classList.remove('active');
+            }
+        }
+    }
+
+    // Reset verify button state
+    const verifyBtn = document.getElementById('verifyBtn');
+    if (verifyBtn) {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify & Enable 2FA';
+    }
+
+    // Clear verification input and errors
+    const verificationInput = document.getElementById('verificationCode');
+    if (verificationInput) {
+        verificationInput.value = '';
+    }
+
+    const errorDiv = document.getElementById('verificationError');
+    if (errorDiv) {
+        errorDiv.classList.add('hidden');
+        errorDiv.textContent = '';
+    }
+
+    // Clear loading/error states
+    const loadingDiv = document.getElementById('loadingMessage');
+    if (loadingDiv) {
+        loadingDiv.classList.add('hidden');
+    }
+
+    const errorMessage = document.getElementById('errorMessage');
+    if (errorMessage) {
+        errorMessage.classList.add('hidden');
     }
 }
 

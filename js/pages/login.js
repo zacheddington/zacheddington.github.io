@@ -4,6 +4,10 @@
 // Initialize login page functionality
 function initializeLoginPage() {
     console.log('🔐 Initializing login page...');
+
+    // Clear form fields first
+    clearLoginFormFields();
+
     setupLoginForm();
     clearStoredCredentials();
 
@@ -13,6 +17,30 @@ function initializeLoginPage() {
         setTimeout(() => usernameField.focus(), 100);
     }
     console.log('✅ Login page initialization complete');
+}
+
+// Clear login form fields
+function clearLoginFormFields() {
+    const usernameField = document.getElementById('username');
+    const passwordField = document.getElementById('password');
+    const twofaField = document.getElementById('twofaToken');
+
+    if (usernameField) usernameField.value = '';
+    if (passwordField) passwordField.value = '';
+    if (twofaField) twofaField.value = '';
+
+    // Reset to credentials step if on 2FA step
+    showCredentialsStep();
+
+    // Clear any error messages
+    clearLoginErrors();
+
+    // Reset login button state
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) {
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Sign In';
+    }
 }
 
 // Clear any stored credentials on login page load

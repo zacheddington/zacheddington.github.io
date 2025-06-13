@@ -53,11 +53,18 @@ function initializeApp() {
             if (!tokenValid) {
                 return; // Token expired, redirect handled by monitoring
             }
-        }
-
-        // Set up global authenticated fetch wrapper
+        } // Set up global authenticated fetch wrapper
         if (window.authUtils.createAuthenticatedFetch) {
             window.authUtils.createAuthenticatedFetch();
+        }
+        // Prevent back navigation to auth pages
+        if (window.authUtils.preventAuthPageBackNavigation) {
+            window.authUtils.preventAuthPageBackNavigation();
+        }
+
+        // Secure history replacement
+        if (window.authUtils.secureHistoryReplacement) {
+            window.authUtils.secureHistoryReplacement();
         }
     }
 

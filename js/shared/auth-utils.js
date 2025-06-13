@@ -353,6 +353,71 @@ function setupSecureHistoryManagement() {
     });
 }
 
+// Replace browser history to prevent navigation back to login
+function secureHistoryReplacement() {
+    const currentPath = window.location.pathname;
+
+    // Only do this for authenticated pages
+    const authenticatedPages = [
+        '/welcome/',
+        '/admin/',
+        '/patients/',
+        '/profile/',
+        '/enter_eeg/',
+        '/view_eeg/',
+    ];
+
+    if (authenticatedPages.some((page) => currentPath.includes(page))) {
+        // Replace the current history entry to break the back button chain
+        if (window.history.replaceState) {
+            window.history.replaceState(
+                { page: 'authenticated', preventBack: true },
+                '',
+                window.location.href
+            );
+        }
+
+        // Add additional history entry to make back button less functional
+        if (window.history.pushState) {
+            window.history.pushState(
+                { page: 'authenticated', preventBack: true },
+                '',
+                window.location.href
+            );
+        }
+    }
+}
+
+// Prevent navigation back to auth pages once authenticated
+function preventAuthPageBackNavigation() {
+    // Only run this on authenticated pages
+    const currentPath = window.location.pathname;
+    const authPages = [
+        '/',
+        '/index.html',
+        '/2fa-setup/',
+        '/force-password-change/',
+    ];
+
+    if (authPages.some((page) => currentPath.includes(page))) {
+        return; // Don't prevent navigation on auth pages themselves
+    }
+
+    // Replace current history entry to prevent back navigation to auth pages
+    if (window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.href);
+    }
+
+    // Listen for back button and redirect to current page
+    window.addEventListener('popstate', function (event) {
+        const token = localStorage.getItem('token');
+        if (token && checkTokenValidity()) {
+            // User is authenticated, stay on current page
+            window.history.pushState(null, '', window.location.href);
+        }
+    });
+}
+
 // Perform secure logout
 async function logout(reason = 'User logout') {
     try {
@@ -421,6 +486,8 @@ window.authUtils = {
     initializeGlobalTokenMonitoring,
     stopGlobalTokenMonitoring,
     createAuthenticatedFetch,
+    preventAuthPageBackNavigation,
+    secureHistoryReplacement,
 };
 
 // Backward compatibility - individual function exports
