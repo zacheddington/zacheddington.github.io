@@ -1377,16 +1377,19 @@ function startColumnResize(event, header, columnIndex) {
         // Get pageX for calculations
         const pageX =
             e.pageX ||
-            (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
-
-        // Calculate new width immediately for responsive feedback
+            (e.touches && e.touches[0] ? e.touches[0].pageX : startX); // Calculate new width immediately for responsive feedback
         const deltaX = pageX - startX;
         const newWidth = Math.max(80, Math.min(500, startWidth + deltaX));
+
+        // Debug log to verify the function is being called
+        console.log('Resizing:', { pageX, deltaX, newWidth });
 
         // Apply the new width immediately - no throttling for real-time response
         header.style.width = `${newWidth}px`;
         handle.setAttribute('aria-valuenow', newWidth);
-    } // Function to handle mouse/touch up (end of resize)
+    }
+
+    // Function to handle mouse/touch up (end of resize)
     function handlePointerUp(e) {
         // Remove event listeners
         document.removeEventListener('mousemove', handlePointerMove);
@@ -1431,17 +1434,15 @@ function startColumnResize(event, header, columnIndex) {
 
         // Announce resize completion for screen readers
         announceForScreenReader(`Column ${header.textContent.trim()} resized`);
-    }
-
-    // Add event listeners for mouse/touch movement and release
+    } // Add event listeners for mouse/touch movement and release
     document.addEventListener('mousemove', handlePointerMove, {
-        passive: true,
+        passive: false,
     });
     document.addEventListener('mouseup', handlePointerUp);
 
     // Add touch event handlers
     document.addEventListener('touchmove', handlePointerMove, {
-        passive: true,
+        passive: false,
     });
     document.addEventListener('touchend', handlePointerUp);
     document.addEventListener('touchcancel', handlePointerUp);
