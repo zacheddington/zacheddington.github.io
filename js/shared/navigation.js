@@ -718,14 +718,27 @@ function forceViewportPositioning() {
     }
 
     console.log('🔍 Current scroll position:', window.scrollX, window.scrollY);
-    console.log('🔍 Viewport size:', window.innerWidth, window.innerHeight);
-
-    // TRUE VIEWPORT PINNING: Use fixed positioning relative to viewport
+    console.log('🔍 Viewport size:', window.innerWidth, window.innerHeight); // TRUE VIEWPORT PINNING: Use fixed positioning relative to viewport
     console.log(
         '🧮 Setting viewport-pinned positions: sidebar (0,0), overlay (300,0)'
     );
 
-    // CORRECT: Use fixed positioning for viewport pinning
+    // NUCLEAR: Remove any interfering properties from all parent elements
+    const body = document.body;
+    const html = document.documentElement;
+
+    // Force clean state on html and body
+    [html, body].forEach((el) => {
+        el.style.setProperty('transform', 'none', 'important');
+        el.style.setProperty('position', 'static', 'important');
+        el.style.setProperty('contain', 'none', 'important');
+        el.style.setProperty('isolation', 'auto', 'important');
+        el.style.setProperty('perspective', 'none', 'important');
+        el.style.setProperty('margin', '0', 'important');
+        el.style.setProperty('padding', '0', 'important');
+    });
+
+    // CORRECT: Use fixed positioning for viewport pinning with nuclear overrides
     sidebar.style.cssText = `
         position: fixed !important;
         top: 0px !important;
@@ -746,7 +759,15 @@ function forceViewportPositioning() {
         pointer-events: auto !important;
         perspective: none !important;
         transition: none !important;
+        border: none !important;
+        outline: none !important;
+        inset: 0px auto auto 0px !important;
     `;
+
+    // Force reflow and re-apply positioning
+    sidebar.offsetHeight;
+    sidebar.style.setProperty('top', '0px', 'important');
+    sidebar.style.setProperty('left', '0px', 'important');
 
     overlay.style.cssText = `
         position: fixed !important;
@@ -767,7 +788,15 @@ function forceViewportPositioning() {
         visibility: visible !important;
         perspective: none !important;
         transition: none !important;
+        border: none !important;
+        outline: none !important;
+        inset: 0px 0px auto 300px !important;
     `;
+
+    // Force reflow and re-apply positioning
+    overlay.offsetHeight;
+    overlay.style.setProperty('top', '0px', 'important');
+    overlay.style.setProperty('left', '300px', 'important');
     console.log('☢️  Fixed positioning applied for viewport pinning!');
 
     // Check final positioning
@@ -775,9 +804,7 @@ function forceViewportPositioning() {
         const sidebarRect = sidebar.getBoundingClientRect();
         const overlayRect = overlay.getBoundingClientRect();
         console.log('📐 Sidebar rect (should be 0,0):', sidebarRect);
-        console.log('📐 Overlay rect (should be 300,0):', overlayRect);
-
-        // Verify positioning is correct
+        console.log('📐 Overlay rect (should be 300,0):', overlayRect); // Verify positioning is correct
         if (sidebarRect.top === 0 && sidebarRect.left === 0) {
             console.log('✅ VIEWPORT PINNING SUCCESSFUL - Sidebar at (0,0)');
         } else {
@@ -785,6 +812,104 @@ function forceViewportPositioning() {
                 top: sidebarRect.top,
                 left: sidebarRect.left,
             });
+
+            // AGGRESSIVE CORRECTION: Force position again with multiple approaches
+            console.log('🔧 APPLYING AGGRESSIVE CORRECTION FOR SIDEBAR...');
+
+            // Method 1: Direct style override
+            sidebar.style.setProperty('top', '0px', 'important');
+            sidebar.style.setProperty('left', '0px', 'important');
+            sidebar.style.setProperty('position', 'fixed', 'important');
+
+            // Method 2: Force via transform if needed
+            sidebar.style.setProperty(
+                'transform',
+                'translate3d(0px, 0px, 0px)',
+                'important'
+            );
+
+            // Method 3: Use inset property
+            sidebar.style.setProperty(
+                'inset',
+                '0px auto auto 0px',
+                'important'
+            );
+
+            // Check again after correction
+            setTimeout(() => {
+                const correctedRect = sidebar.getBoundingClientRect();
+                console.log(
+                    '🔧 AFTER CORRECTION - Sidebar at:',
+                    correctedRect.top,
+                    correctedRect.left
+                );
+
+                if (correctedRect.top !== 0) {
+                    console.error(
+                        '🚨 CRITICAL: Unable to pin sidebar to viewport top'
+                    );
+
+                    // NUCLEAR OPTION: Remove and re-insert sidebar with clean DOM
+                    console.log(
+                        '☢️ NUCLEAR DOM RESET - Removing and recreating sidebar...'
+                    );
+                    const parent = sidebar.parentNode;
+                    const sidebarClone = sidebar.cloneNode(true);
+                    parent.removeChild(sidebar);
+
+                    // Clean the clone and apply nuclear positioning
+                    sidebarClone.style.cssText = `
+                        position: fixed !important;
+                        top: 0px !important;
+                        left: 0px !important;
+                        width: 300px !important;
+                        height: 100vh !important;
+                        z-index: 50000 !important;
+                        background: white !important;
+                        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1) !important;
+                        padding: 90px 20px 20px !important;
+                        margin: 0 !important;
+                        overflow-y: auto !important;
+                        box-sizing: border-box !important;
+                        transform: translate3d(0px, 0px, 0px) !important;
+                        inset: 0px auto auto 0px !important;
+                    `;
+
+                    parent.appendChild(sidebarClone);
+                    console.log('☢️ NUCLEAR DOM RESET COMPLETE');
+
+                    // Final check after nuclear reset
+                    setTimeout(() => {
+                        const finalRect = sidebarClone.getBoundingClientRect();
+                        console.log(
+                            '☢️ NUCLEAR RESULT - Final sidebar position:',
+                            finalRect.top,
+                            finalRect.left
+                        );
+
+                        if (finalRect.top !== 0) {
+                            console.log(
+                                '🔄 TRYING ALTERNATIVE: position: sticky'
+                            );
+                            sidebarClone.style.setProperty(
+                                'position',
+                                'sticky',
+                                'important'
+                            );
+                            sidebarClone.style.setProperty(
+                                'top',
+                                '0px',
+                                'important'
+                            );
+                            sidebarClone.style.setProperty(
+                                'left',
+                                '0px',
+                                'important'
+                            );
+                        }
+                    }, 100);
+                }
+            }, 50);
         }
 
         if (overlayRect.top === 0 && overlayRect.left === 300) {
@@ -797,6 +922,32 @@ function forceViewportPositioning() {
                     left: overlayRect.left,
                 }
             );
+
+            // AGGRESSIVE CORRECTION: Force position again
+            console.log('🔧 APPLYING AGGRESSIVE CORRECTION FOR OVERLAY...');
+
+            overlay.style.setProperty('top', '0px', 'important');
+            overlay.style.setProperty('left', '300px', 'important');
+            overlay.style.setProperty('position', 'fixed', 'important');
+            overlay.style.setProperty(
+                'transform',
+                'translate3d(300px, 0px, 0px)',
+                'important'
+            );
+            overlay.style.setProperty(
+                'inset',
+                '0px 0px auto 300px',
+                'important'
+            );
+
+            setTimeout(() => {
+                const correctedRect = overlay.getBoundingClientRect();
+                console.log(
+                    '🔧 AFTER CORRECTION - Overlay at:',
+                    correctedRect.top,
+                    correctedRect.left
+                );
+            }, 50);
         }
     }, 100);
 }
@@ -815,6 +966,10 @@ function diagnosticCheck() {
         contain: docStyle.contain,
         isolation: docStyle.isolation,
         perspective: docStyle.perspective,
+        top: docStyle.top,
+        left: docStyle.left,
+        margin: docStyle.margin,
+        padding: docStyle.padding,
     });
 
     console.log('📋 Body styles:', {
@@ -823,7 +978,58 @@ function diagnosticCheck() {
         contain: bodyStyle.contain,
         isolation: bodyStyle.isolation,
         perspective: bodyStyle.perspective,
+        top: bodyStyle.top,
+        left: bodyStyle.left,
+        margin: bodyStyle.margin,
+        padding: bodyStyle.padding,
     });
+
+    // Check sidebar and overlay parent elements for potential issues
+    const sidebar =
+        document.querySelector('.side-menu') ||
+        document.querySelector('#sideMenu');
+    const overlay =
+        document.querySelector('.menu-overlay') ||
+        document.querySelector('#menuOverlay');
+
+    if (sidebar) {
+        console.log('🔍 SIDEBAR PARENT CHAIN ANALYSIS:');
+        let parent = sidebar.parentElement;
+        let depth = 0;
+        while (parent && depth < 5) {
+            const parentStyle = window.getComputedStyle(parent);
+            console.log(
+                `📋 Parent ${depth} (${parent.tagName}.${parent.className}):`,
+                {
+                    position: parentStyle.position,
+                    transform: parentStyle.transform,
+                    contain: parentStyle.contain,
+                    isolation: parentStyle.isolation,
+                    top: parentStyle.top,
+                    left: parentStyle.left,
+                    margin: parentStyle.margin,
+                    padding: parentStyle.padding,
+                    overflow: parentStyle.overflow,
+                    zIndex: parentStyle.zIndex,
+                }
+            );
+            parent = parent.parentElement;
+            depth++;
+        }
+
+        // Check sidebar's own computed styles
+        const sidebarStyle = window.getComputedStyle(sidebar);
+        console.log('🔍 SIDEBAR COMPUTED STYLES:', {
+            position: sidebarStyle.position,
+            top: sidebarStyle.top,
+            left: sidebarStyle.left,
+            transform: sidebarStyle.transform,
+            zIndex: sidebarStyle.zIndex,
+            offsetParent: sidebar.offsetParent
+                ? sidebar.offsetParent.tagName
+                : 'null',
+        });
+    }
 
     // Check for any elements with transforms
     const elementsWithTransforms = [];
