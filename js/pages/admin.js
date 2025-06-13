@@ -1359,10 +1359,105 @@ function announceForScreenReader(message) {
     }, 1000);
 }
 
-// Simple auto-size function (just sets to auto width)
+// Enhanced auto-size function that measures actual content width
 function autoSizeColumn(header, columnIndex) {
-    // Remove fixed width to let content determine size
-    header.style.width = 'auto';
+    const table = document.querySelector('.users-table');
+    if (!table) return;
+
+    // Get all cells in this column
+    const cells = Array.from(
+        table.querySelectorAll(`tbody tr td:nth-child(${columnIndex + 1})`)
+    );
+
+    // Remove any previous width to get natural content width
+    header.style.width = '';
+    cells.forEach((cell) => {
+        cell.style.width = '';
+    });
+
+    // Use canvas for accurate text measurement
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+        // Fallback to simple calculation if canvas is not available
+        const headerText = header.textContent;
+        let maxWidth = Math.max(headerText.length * 8 + 40, 80); // Rough estimation
+
+        // Apply the calculated width
+        header.style.width = `${maxWidth}px`;
+
+        // Save the updated column widths
+        saveColumnWidthPreferences();
+
+        // Announce the change to screen readers
+        announceForScreenReader(
+            `Column ${header.textContent.trim()} auto-sized`
+        );
+        return;
+    }
+
+    const headerStyle = window.getComputedStyle(header);
+    context.font = `${headerStyle.fontWeight} ${headerStyle.fontSize} ${headerStyle.fontFamily}`;
+
+    // Measure header width
+    let maxWidth = Math.max(
+        context.measureText(header.textContent).width + 40,
+        80
+    ); // Add padding, minimum 80px    // Measure all cells in the column to find the widest content
+    cells.forEach((cell) => {
+        // Get the actual text content from the cell or its children
+        let cellText = '';
+
+        // Handle different cell types properly
+        if (cell.querySelector('.user-full-name')) {
+            cellText = cell.querySelector('.user-full-name').textContent.trim();
+        } else if (cell.querySelector('.user-actions')) {
+            // For action cells, measure the actual button content
+            cellText = '✏️ Edit Role 🗑️ Delete'; // More accurate representation
+        } else {
+            // Get the raw text content and clean it
+            cellText = cell.textContent.trim();
+        }
+
+        if (cellText) {
+            // Use canvas to measure text width more accurately
+            const cellStyle = window.getComputedStyle(cell);
+            context.font = `${cellStyle.fontWeight} ${cellStyle.fontSize} ${cellStyle.fontFamily}`;
+            const cellWidth = context.measureText(cellText).width + 40; // Add padding
+
+            // Find the maximum width needed
+            maxWidth = Math.max(maxWidth, cellWidth);
+        }
+    });
+
+    // Apply constraints based on column type
+    const columnType = getAdminColumnType(header.textContent);
+
+    if (columnType === 'email') {
+        maxWidth = Math.min(maxWidth, 400); // Email column max width for long emails
+        maxWidth = Math.max(maxWidth, 200); // Email column min width
+    } else if (columnType === 'username') {
+        maxWidth = Math.min(maxWidth, 200); // Username column max width
+        maxWidth = Math.max(maxWidth, 120); // Username column min width
+    } else if (columnType === 'name') {
+        maxWidth = Math.min(maxWidth, 250); // Name column max width
+        maxWidth = Math.max(maxWidth, 150); // Name column min width
+    } else if (columnType === 'role') {
+        maxWidth = Math.min(maxWidth, 150); // Role column max width
+        maxWidth = Math.max(maxWidth, 100); // Role column min width
+    } else if (columnType === 'created') {
+        maxWidth = Math.min(maxWidth, 150); // Created column max width
+        maxWidth = Math.max(maxWidth, 100); // Created column min width
+    } else if (columnType === 'actions') {
+        maxWidth = 140; // Actions column fixed width
+    } else {
+        maxWidth = Math.min(maxWidth, 300); // General max width
+        maxWidth = Math.max(maxWidth, 100); // Minimum width for readability
+    }
+
+    // Apply the calculated width
+    header.style.width = `${maxWidth}px`;
 
     // Save the updated column widths
     saveColumnWidthPreferences();
@@ -1410,6 +1505,26 @@ function loadColumnWidthPreferences() {
         console.error('Error loading column width preferences:', error);
         adjustColumnWidths();
     }
+}
+
+// Function to determine the column type based on header text
+function getAdminColumnType(headerText) {
+    headerText = headerText.toLowerCase();
+
+    if (headerText.includes('username')) {
+        return 'username';
+    } else if (headerText.includes('name')) {
+        return 'name';
+    } else if (headerText.includes('email')) {
+        return 'email';
+    } else if (headerText.includes('role')) {
+        return 'role';
+    } else if (headerText.includes('created')) {
+        return 'created';
+    } else if (headerText.includes('action')) {
+        return 'actions';
+    }
+    return 'general';
 }
 
 // Make admin functions available globally

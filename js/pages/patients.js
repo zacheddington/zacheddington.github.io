@@ -1057,6 +1057,8 @@ function getPatientColumnType(headerText) {
         return 'date';
     } else if (headerText.includes('phone')) {
         return 'phone';
+    } else if (headerText.includes('email')) {
+        return 'email';
     } else if (headerText.includes('name')) {
         return 'name';
     } else {
@@ -1345,21 +1347,25 @@ function autoSizePatientColumn(header, columnIndex) {
             // Find the maximum width needed
             maxWidth = Math.max(maxWidth, cellWidth);
         }
-    });
-
-    // Apply constraints based on column type
+    }); // Apply constraints based on column type
     if (columnType === 'address') {
-        maxWidth = Math.min(maxWidth, 300); // Address column max width
+        maxWidth = Math.min(maxWidth, 350); // Address column max width for long addresses
         maxWidth = Math.max(maxWidth, 150); // Address column min width
     } else if (columnType === 'accepts-texts') {
         maxWidth = Math.min(maxWidth, 120); // Accepts Texts column max width
     } else if (columnType === 'actions') {
-        maxWidth = 120; // Actions column fixed width
+        maxWidth = 140; // Actions column fixed width
     } else if (columnType === 'phone') {
         maxWidth = Math.min(maxWidth, 150); // Phone column max width
         maxWidth = Math.max(maxWidth, 120); // Phone column min width
+    } else if (columnType === 'name') {
+        maxWidth = Math.min(maxWidth, 250); // Name column max width
+        maxWidth = Math.max(maxWidth, 150); // Name column min width
+    } else if (columnType === 'email') {
+        maxWidth = Math.min(maxWidth, 400); // Email column max width for long emails
+        maxWidth = Math.max(maxWidth, 200); // Email column min width
     } else {
-        maxWidth = Math.min(maxWidth, 250); // General max width
+        maxWidth = Math.min(maxWidth, 300); // General max width (increased)
         maxWidth = Math.max(maxWidth, 100); // Minimum width for readability
     } // Apply the calculated width
     header.style.width = `${maxWidth}px`;
