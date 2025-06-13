@@ -388,3 +388,63 @@ body.menu-active {
     flex-direction: initial !important;
     transform: none !important;
 }
+
+/* NUCLEAR OPTION: Force sidebar and overlay positioning when menu is active */
+body.menu-active .side-menu,
+body.menu-active #sideMenu {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 300px !important;
+    height: 100vh !important;
+    z-index: 1000 !important;
+    transform: none !important;
+    will-change: auto !important;
+    contain: none !important;
+    isolation: auto !important;
+    margin: 0 !important;
+    padding: 90px 20px 20px !important;
+    background: var(--color-white) !important;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1) !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+    pointer-events: auto !important;
+}
+
+body.menu-active .menu-overlay,
+body.menu-active #menuOverlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 300px !important;
+    width: calc(100vw - 300px) !important;
+    height: 100vh !important;
+    z-index: 999 !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    transform: none !important;
+    will-change: auto !important;
+    contain: none !important;
+    isolation: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Force body and html to not interfere with fixed positioning */
+body.menu-active,
+body.menu-active
+    *:not(.side-menu):not(.menu-overlay):not(#sideMenu):not(#menuOverlay) {
+    transform: none !important;
+    will-change: auto !important;
+    contain: none !important;
+    isolation: auto !important;
+}
+
+html:has(body.menu-active),
+html:has(body.menu-active) body {
+    position: static !important;
+    transform: none !important;
+    contain: none !important;
+    isolation: auto !important;
+}

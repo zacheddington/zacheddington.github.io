@@ -111,11 +111,45 @@ async function loadMenu() {
             });
             hamburgerBtn.addEventListener('click', function () {
                 const isOpening = !sideMenu.classList.contains('open');
+
+                console.log('🍔 HAMBURGER CLICKED - Opening:', isOpening);
+                console.log(
+                    '📊 Current viewport:',
+                    window.innerWidth,
+                    'x',
+                    window.innerHeight
+                );
+                console.log(
+                    '📜 Current scroll:',
+                    window.scrollX,
+                    window.scrollY
+                );
+
                 sideMenu.classList.toggle('open');
                 hamburgerBtn.classList.toggle('active');
                 menuOverlay.classList.toggle('active', isOpening);
                 document.body.classList.toggle('menu-active', isOpening);
+
                 if (isOpening) {
+                    console.log(
+                        '🚀 OPENING MENU - Starting aggressive positioning...'
+                    );
+
+                    // Log initial element states
+                    const sideMenuRect = sideMenu.getBoundingClientRect();
+                    const overlayRect = menuOverlay.getBoundingClientRect();
+                    console.log('📐 Initial sidebar rect:', {
+                        top: sideMenuRect.top,
+                        left: sideMenuRect.left,
+                        width: sideMenuRect.width,
+                        height: sideMenuRect.height,
+                    });
+                    console.log('📐 Initial overlay rect:', {
+                        top: overlayRect.top,
+                        left: overlayRect.left,
+                        width: overlayRect.width,
+                        height: overlayRect.height,
+                    });
                     // Override body properties that might interfere with fixed positioning
                     document.body.style.setProperty(
                         'position',
@@ -158,6 +192,7 @@ async function loadMenu() {
                         'important'
                     );
 
+                    console.log('🔧 Forcing html/body properties...');
                     // CRITICAL: Ensure elements are positioned relative to viewport, not page
                     // Remove any transform on html and body that might interfere
                     document.documentElement.style.setProperty(
@@ -179,6 +214,10 @@ async function loadMenu() {
                         'isolation',
                         'auto',
                         'important'
+                    );
+
+                    console.log(
+                        '🎯 APPLYING AGGRESSIVE SIDEBAR POSITIONING...'
                     ); // Ensure viewport-relative positioning
                     sideMenu.style.setProperty(
                         'position',
@@ -194,6 +233,25 @@ async function loadMenu() {
                         '1000',
                         'important'
                     ); /* Above overlay */
+
+                    // Log sidebar positioning after applying styles
+                    setTimeout(() => {
+                        const newSideMenuRect =
+                            sideMenu.getBoundingClientRect();
+                        console.log('✅ Sidebar positioned:', {
+                            top: newSideMenuRect.top,
+                            left: newSideMenuRect.left,
+                            width: newSideMenuRect.width,
+                            height: newSideMenuRect.height,
+                            position:
+                                window.getComputedStyle(sideMenu).position,
+                            zIndex: window.getComputedStyle(sideMenu).zIndex,
+                        });
+                    }, 50);
+
+                    console.log(
+                        '🎯 APPLYING AGGRESSIVE OVERLAY POSITIONING...'
+                    );
                     sideMenu.style.setProperty(
                         'overflow-y',
                         'auto',
@@ -248,6 +306,21 @@ async function loadMenu() {
                         '999',
                         'important'
                     ); /* Below sidebar */
+
+                    // Log overlay positioning after applying styles
+                    setTimeout(() => {
+                        const newOverlayRect =
+                            menuOverlay.getBoundingClientRect();
+                        console.log('✅ Overlay positioned:', {
+                            top: newOverlayRect.top,
+                            left: newOverlayRect.left,
+                            width: newOverlayRect.width,
+                            height: newOverlayRect.height,
+                            position:
+                                window.getComputedStyle(menuOverlay).position,
+                            zIndex: window.getComputedStyle(menuOverlay).zIndex,
+                        });
+                    }, 50);
                     menuOverlay.style.setProperty(
                         'contain',
                         'none',
@@ -267,10 +340,13 @@ async function loadMenu() {
                         'pointer-events',
                         'auto',
                         'important'
-                    );
-
-                    // Start monitoring to keep sidebar pinned
+                    ); // Start monitoring to keep sidebar pinned
                     startScrollMonitoring();
+
+                    // Nuclear option: Force viewport positioning after a brief delay
+                    setTimeout(() => {
+                        forceViewportPositioning();
+                    }, 100);
                 } else {
                     // Stop monitoring when closing
                     stopScrollMonitoring();
@@ -428,6 +504,11 @@ function ensureSidebarPinned() {
         (sidebar.classList.contains('open') ||
             sidebar.classList.contains('active'))
     ) {
+        console.log(
+            '🔄 SCROLL MONITOR - Enforcing sidebar position at scroll:',
+            window.scrollY
+        );
+
         // CRITICAL: Ensure viewport-relative positioning
         document.documentElement.style.setProperty(
             'transform',
@@ -483,10 +564,15 @@ function ensureSidebarPinned() {
 
 // Monitor scroll events when sidebar is open
 function startScrollMonitoring() {
+    console.log('🚀 Starting scroll monitoring...');
     if (scrollMonitor) {
         clearInterval(scrollMonitor);
     }
-    scrollMonitor = setInterval(ensureSidebarPinned, 100);
+    scrollMonitor = setInterval(() => {
+        ensureSidebarPinned();
+        // Also apply nuclear positioning every 500ms
+        forceViewportPositioning();
+    }, 500);
     window.addEventListener('scroll', ensureSidebarPinned, { passive: true });
     window.addEventListener('resize', ensureSidebarPinned, { passive: true });
 }
@@ -498,4 +584,92 @@ function stopScrollMonitoring() {
     }
     window.removeEventListener('scroll', ensureSidebarPinned);
     window.removeEventListener('resize', ensureSidebarPinned);
+}
+
+// Nuclear option: Remove all interfering CSS properties
+function forceViewportPositioning() {
+    console.log('☢️  NUCLEAR OPTION - Forcing viewport positioning...');
+
+    const sidebar =
+        document.querySelector('.side-menu') ||
+        document.querySelector('#sideMenu');
+    const overlay =
+        document.querySelector('.menu-overlay') ||
+        document.querySelector('#menuOverlay');
+
+    if (!sidebar || !overlay) {
+        console.error('❌ Sidebar or overlay not found!');
+        return;
+    }
+
+    // Force remove any CSS that might interfere with fixed positioning on ALL elements
+    const allElements = document.querySelectorAll('*');
+    allElements.forEach((el) => {
+        if (el === sidebar || el === overlay) return; // Skip sidebar and overlay
+
+        // Remove transforms that might create new stacking contexts
+        if (window.getComputedStyle(el).transform !== 'none') {
+            el.style.setProperty('transform', 'none', 'important');
+        }
+
+        // Remove will-change that might affect positioning
+        if (window.getComputedStyle(el).willChange !== 'auto') {
+            el.style.setProperty('will-change', 'auto', 'important');
+        }
+
+        // Remove contain that might create new containing blocks
+        if (window.getComputedStyle(el).contain !== 'none') {
+            el.style.setProperty('contain', 'none', 'important');
+        }
+
+        // Remove isolation that might create new stacking contexts
+        if (window.getComputedStyle(el).isolation !== 'auto') {
+            el.style.setProperty('isolation', 'auto', 'important');
+        }
+    });
+
+    // Ultra-aggressive sidebar positioning
+    sidebar.style.cssText = `
+        position: fixed !important;
+        top: 0px !important;
+        left: 0px !important;
+        width: 300px !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
+        background: white !important;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1) !important;
+        padding: 90px 20px 20px !important;
+        margin: 0 !important;
+        overflow-y: auto !important;
+        box-sizing: border-box !important;
+        transform: none !important;
+        will-change: auto !important;
+        contain: none !important;
+        isolation: auto !important;
+        pointer-events: auto !important;
+    `;
+
+    // Ultra-aggressive overlay positioning
+    overlay.style.cssText = `
+        position: fixed !important;
+        top: 0px !important;
+        left: 300px !important;
+        width: calc(100vw - 300px) !important;
+        height: 100vh !important;
+        z-index: 999 !important;
+        background: rgba(0, 0, 0, 0.3) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transform: none !important;
+        will-change: auto !important;
+        contain: none !important;
+        isolation: auto !important;
+        pointer-events: auto !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    `;
+
+    console.log('☢️  Nuclear positioning applied!');
+    console.log('📐 Sidebar final rect:', sidebar.getBoundingClientRect());
+    console.log('📐 Overlay final rect:', overlay.getBoundingClientRect());
 }
