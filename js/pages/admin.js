@@ -129,8 +129,9 @@ function adjustColumnWidths() {
     const table = document.querySelector('.users-table');
     if (!table) return;
 
-    // Set table to fixed layout for consistent sizing
-    table.style.tableLayout = 'fixed';
+    // Use auto layout to allow table to expand beyond container width
+    table.style.tableLayout = 'auto';
+    table.style.minWidth = 'max-content'; // Allow table to expand as needed
 
     // Add column resize handles
     addColumnResizeHandles();

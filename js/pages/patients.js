@@ -782,10 +782,9 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
     // Reset scroll position when displaying new data
     if (tableContainer) {
         tableContainer.scrollLeft = 0;
-    }
-
-    // Set the table to fixed layout to maintain column widths during update
-    table.style.tableLayout = 'fixed';
+    } // Set the table to auto layout to allow proper expansion
+    table.style.tableLayout = 'auto';
+    table.style.minWidth = 'max-content'; // Allow table to expand as needed
 
     // Update the table body with new data
     patientsTableBody.innerHTML = patients
@@ -1035,11 +1034,10 @@ function adjustPatientColumnWidths() {
 
         // Apply the calculated width
         header.style.width = `${maxWidth}px`;
-    });
-
-    // After a small delay, switch back to fixed layout for better performance
+    }); // After a small delay, switch to auto layout for better expansion
     setTimeout(() => {
-        table.style.tableLayout = 'fixed';
+        table.style.tableLayout = 'auto';
+        table.style.minWidth = 'max-content';
         // Add column resize handles after setting initial widths
         addPatientColumnResizeHandles();
     }, 100);
@@ -1293,14 +1291,13 @@ function autoSizePatientColumn(header, columnIndex) {
     if (!context) {
         // Fallback to simple calculation if canvas is not available
         const headerText = header.textContent;
-        let maxWidth = Math.max(headerText.length * 8 + 40, 80); // Rough estimation
-
-        // Apply the calculated width
+        let maxWidth = Math.max(headerText.length * 8 + 40, 80); // Rough estimation        // Apply the calculated width
         header.style.width = `${maxWidth}px`;
 
         // Save and announce
         setTimeout(() => {
-            table.style.tableLayout = 'fixed';
+            table.style.tableLayout = 'auto';
+            table.style.minWidth = 'max-content';
             savePatientColumnWidthPreferences();
         }, 50);
 
@@ -1364,14 +1361,13 @@ function autoSizePatientColumn(header, columnIndex) {
     } else {
         maxWidth = Math.min(maxWidth, 250); // General max width
         maxWidth = Math.max(maxWidth, 100); // Minimum width for readability
-    }
-
-    // Apply the calculated width
+    } // Apply the calculated width
     header.style.width = `${maxWidth}px`;
 
     // Save the updated column widths to localStorage
     setTimeout(() => {
-        table.style.tableLayout = 'fixed';
+        table.style.tableLayout = 'auto';
+        table.style.minWidth = 'max-content';
         savePatientColumnWidthPreferences();
     }, 50);
 
@@ -1410,8 +1406,8 @@ function loadPatientColumnWidthPreferences() {
                     header.style.width = savedWidths[index];
                 }
             });
-
-            table.style.tableLayout = 'fixed';
+            table.style.tableLayout = 'auto';
+            table.style.minWidth = 'max-content';
             // Add resize handles after applying saved widths
             addPatientColumnResizeHandles();
         } else {

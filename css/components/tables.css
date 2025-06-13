@@ -223,7 +223,7 @@
     font-size: 0.9rem;
     table-layout: auto; /* Auto layout allows content to determine column width */
     display: table;
-    min-width: 800px; /* Minimum width for better content display */
+    min-width: max-content; /* Allow table to expand to fit content */
 }
 
 .users-table thead {
