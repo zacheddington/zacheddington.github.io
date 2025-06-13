@@ -681,9 +681,7 @@ function startScrollMonitoring() {
             const computedStyle = window.getComputedStyle(sidebar);
             console.log(
                 `📊 SCROLL DEBUG - ScrollY: ${window.scrollY}, Sidebar rect: top=${rect.top}, left=${rect.left}, position=${computedStyle.position}`
-            );
-
-            // If sidebar is not at correct position, log what's wrong
+            ); // If sidebar is not at correct position, log what's wrong
             if (rect.top !== 0 || rect.left !== 0) {
                 console.warn(
                     `⚠️ SIDEBAR POSITION INCORRECT - Expected (0,0), Got (${rect.left}, ${rect.top})`
@@ -696,12 +694,88 @@ function startScrollMonitoring() {
                     zIndex: computedStyle.zIndex,
                 });
 
-                // FORCE CORRECTION IMMEDIATELY
+                // DIAGNOSE THE STACKING CONTEXT ISSUE
+                console.log('🔍 ANALYZING STACKING CONTEXT...');
+                let parent = sidebar.parentElement;
+                let depth = 0;
+                while (parent && depth < 5) {
+                    const parentStyle = window.getComputedStyle(parent);
+                    const problematicProps = {};
+
+                    if (parentStyle.transform !== 'none')
+                        problematicProps.transform = parentStyle.transform;
+                    if (parentStyle.willChange !== 'auto')
+                        problematicProps.willChange = parentStyle.willChange;
+                    if (parentStyle.contain !== 'none')
+                        problematicProps.contain = parentStyle.contain;
+                    if (parentStyle.perspective !== 'none')
+                        problematicProps.perspective = parentStyle.perspective;
+                    if (parentStyle.filter !== 'none')
+                        problematicProps.filter = parentStyle.filter;
+                    if (parentStyle.isolation !== 'auto')
+                        problematicProps.isolation = parentStyle.isolation;
+
+                    if (Object.keys(problematicProps).length > 0) {
+                        console.warn(
+                            `🚨 STACKING CONTEXT CREATOR FOUND:`,
+                            parent.tagName,
+                            parent.className,
+                            problematicProps
+                        );
+
+                        // TRY TO FIX THE STACKING CONTEXT
+                        Object.keys(problematicProps).forEach((prop) => {
+                            const resetValue =
+                                prop === 'transform'
+                                    ? 'none'
+                                    : prop === 'willChange'
+                                    ? 'auto'
+                                    : prop === 'contain'
+                                    ? 'none'
+                                    : prop === 'perspective'
+                                    ? 'none'
+                                    : prop === 'filter'
+                                    ? 'none'
+                                    : prop === 'isolation'
+                                    ? 'auto'
+                                    : 'initial';
+                            parent.style.setProperty(
+                                prop,
+                                resetValue,
+                                'important'
+                            );
+                            console.log(
+                                `🔧 Reset ${prop} to ${resetValue} on`,
+                                parent.tagName
+                            );
+                        });
+                    }
+
+                    parent = parent.parentElement;
+                    depth++;
+                } // FORCE CORRECTION IMMEDIATELY
                 console.log('🚨 EMERGENCY POSITION CORRECTION');
+
+                // NUCLEAR OPTION: Move sidebar to body if it's not already there
+                if (sidebar.parentElement !== document.body) {
+                    console.log(
+                        '🚨 MOVING SIDEBAR TO BODY TO ESCAPE STACKING CONTEXT'
+                    );
+                    document.body.appendChild(sidebar);
+                }
+
                 sidebar.style.setProperty('position', 'fixed', 'important');
                 sidebar.style.setProperty('top', '0px', 'important');
                 sidebar.style.setProperty('left', '0px', 'important');
                 sidebar.style.setProperty('transform', 'none', 'important');
+
+                // Double-check after correction
+                setTimeout(() => {
+                    const correctedRect = sidebar.getBoundingClientRect();
+                    console.log(
+                        `✅ After correction: top=${correctedRect.top}, left=${correctedRect.left}`
+                    );
+                }, 10);
             }
         }
     };
