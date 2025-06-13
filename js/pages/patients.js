@@ -1142,19 +1142,18 @@ function startPatientColumnResize(event, header, columnIndex) {
 
     // Add resizing class to table
     table.classList.add('resizing'); // Mark the handle as active
-    handle.classList.add('active');
-
-    // Create and show a resize guide line that follows the table position
+    handle.classList.add('active'); // Create and show a resize guide line that follows the table position
     const tableRect = table.getBoundingClientRect();
+    const handleRect = handle.getBoundingClientRect();
     const resizeGuide = document.createElement('div');
     resizeGuide.style.position = 'fixed'; // Use fixed positioning to stay with viewport
-    resizeGuide.style.top = `${tableRect.top}px`; // This is already correct for fixed positioning
+    resizeGuide.style.top = `${tableRect.top}px`;
     resizeGuide.style.height = `${tableRect.height}px`;
     resizeGuide.style.width = 'var(--resize-handle-active-width, 2px)';
     resizeGuide.style.backgroundColor =
         'var(--resize-guide-color, var(--color-primary))';
     resizeGuide.style.opacity = 'var(--resize-handle-active-opacity, 0.7)';
-    resizeGuide.style.left = `${startClientX}px`; // Use clientX for fixed positioning
+    resizeGuide.style.left = `${handleRect.right - 1}px`; // Position at the handle's right edge
     resizeGuide.style.zIndex = '1000';
     resizeGuide.setAttribute('role', 'presentation'); // For accessibility
     resizeGuide.style.pointerEvents = 'none'; // Ensure guide doesn't interfere with mouse events
@@ -1293,26 +1292,33 @@ function autoSizePatientColumn(header, columnIndex) {
 
     // Measure header width
     measureElement.textContent = header.textContent;
-    let maxWidth = measureElement.offsetWidth + 40; // Add padding
-
-    // Measure all cells in the column to find the widest content
+    let maxWidth = measureElement.offsetWidth + 40; // Add padding    // Measure all cells in the column to find the widest content
     cells.forEach((cell) => {
         // Get the actual text content from the cell or its children
         let cellText = '';
+
+        // Handle different cell types properly
         if (cell.querySelector('.patient-full-name')) {
-            cellText = cell.querySelector('.patient-full-name').textContent;
+            cellText = cell
+                .querySelector('.patient-full-name')
+                .textContent.trim();
+        } else if (cell.querySelector('.accepts-texts')) {
+            cellText = cell.querySelector('.accepts-texts').textContent.trim();
         } else if (cell.querySelector('.patient-actions')) {
-            // For action cells, use a fixed width
-            measureElement.textContent = 'Actions';
+            // For action cells, measure the actual button content
+            cellText = '✏️ 🗑️'; // Represent the action buttons
         } else {
-            cellText = cell.textContent;
+            // Get the raw text content and clean it
+            cellText = cell.textContent.trim();
         }
 
-        measureElement.textContent = cellText;
-        const cellWidth = measureElement.offsetWidth + 40; // Add padding
+        if (cellText) {
+            measureElement.textContent = cellText;
+            const cellWidth = measureElement.offsetWidth + 40; // Add padding
 
-        // Find the maximum width needed
-        maxWidth = Math.max(maxWidth, cellWidth);
+            // Find the maximum width needed
+            maxWidth = Math.max(maxWidth, cellWidth);
+        }
     });
 
     // Apply constraints based on column type
@@ -1335,26 +1341,16 @@ function autoSizePatientColumn(header, columnIndex) {
     header.style.width = `${maxWidth}px`;
 
     // Clean up
-    document.body.removeChild(measureElement);
-
-    // Save the updated column widths to localStorage
+    document.body.removeChild(measureElement); // Save the updated column widths to localStorage
     setTimeout(() => {
         table.style.tableLayout = 'fixed';
         savePatientColumnWidthPreferences();
-    }, 50); // Show visual feedback
-    header.style.transition = 'background-color 0.3s';
-    const originalColor = header.style.backgroundColor;
-    header.style.backgroundColor = 'rgba(0, 150, 136, 0.2)'; // Highlight color
+    }, 50);
 
     // Announce the change to screen readers
     announceForScreenReader(
         `Column ${header.textContent.trim()} automatically sized`
     );
-
-    setTimeout(() => {
-        header.style.backgroundColor = originalColor;
-        header.style.transition = '';
-    }, 300);
 }
 
 // Function to save column width preferences
