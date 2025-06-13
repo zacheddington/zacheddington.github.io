@@ -60,6 +60,13 @@ async function loadMenu() {
                 // Stop scroll monitoring
                 stopScrollMonitoring();
 
+                // Restore body properties
+                document.body.style.removeProperty('position');
+                document.body.style.removeProperty('display');
+                document.body.style.removeProperty('align-items');
+                document.body.style.removeProperty('justify-content');
+                document.body.style.removeProperty('flex-direction');
+
                 // Reset sidebar positioning when closed
                 sideMenu.style.setProperty('left', '-300px', 'important');
 
@@ -101,8 +108,34 @@ async function loadMenu() {
                 hamburgerBtn.classList.toggle('active');
                 menuOverlay.classList.toggle('active', isOpening);
                 document.body.classList.toggle('menu-active', isOpening);
-
                 if (isOpening) {
+                    // Override body properties that might interfere with fixed positioning
+                    document.body.style.setProperty(
+                        'position',
+                        'static',
+                        'important'
+                    );
+                    document.body.style.setProperty(
+                        'display',
+                        'block',
+                        'important'
+                    );
+                    document.body.style.setProperty(
+                        'align-items',
+                        'normal',
+                        'important'
+                    );
+                    document.body.style.setProperty(
+                        'justify-content',
+                        'normal',
+                        'important'
+                    );
+                    document.body.style.setProperty(
+                        'flex-direction',
+                        'initial',
+                        'important'
+                    );
+
                     // Force sidebar positioning when opening with maximum enforcement
                     sideMenu.style.setProperty(
                         'position',
@@ -113,7 +146,7 @@ async function loadMenu() {
                     sideMenu.style.setProperty('left', '0px', 'important');
                     sideMenu.style.setProperty('height', '100vh', 'important');
                     sideMenu.style.setProperty('width', '300px', 'important');
-                    sideMenu.style.setProperty('z-index', '1000', 'important');
+                    sideMenu.style.setProperty('z-index', '10000', 'important'); // Much higher z-index
                     sideMenu.style.setProperty(
                         'overflow-y',
                         'auto',
@@ -129,8 +162,14 @@ async function loadMenu() {
                         'auto',
                         'important'
                     );
+                    sideMenu.style.setProperty('contain', 'none', 'important');
+                    sideMenu.style.setProperty(
+                        'isolation',
+                        'auto',
+                        'important'
+                    );
 
-                    // Force overlay to cover full viewport
+                    // Force overlay to cover full viewport with high z-index
                     menuOverlay.style.setProperty(
                         'position',
                         'fixed',
@@ -150,7 +189,22 @@ async function loadMenu() {
                     );
                     menuOverlay.style.setProperty(
                         'z-index',
-                        '100',
+                        '9999',
+                        'important'
+                    ); // Higher than default
+                    menuOverlay.style.setProperty(
+                        'contain',
+                        'none',
+                        'important'
+                    );
+                    menuOverlay.style.setProperty(
+                        'isolation',
+                        'auto',
+                        'important'
+                    );
+                    menuOverlay.style.setProperty(
+                        'transform',
+                        'none',
                         'important'
                     );
 
@@ -320,7 +374,11 @@ function ensureSidebarPinned() {
         sidebar.style.setProperty('top', '0px', 'important');
         sidebar.style.setProperty('left', '0px', 'important');
         sidebar.style.setProperty('height', '100vh', 'important');
-        sidebar.style.setProperty('z-index', '1000', 'important');
+        sidebar.style.setProperty('z-index', '10000', 'important');
+        sidebar.style.setProperty('width', '300px', 'important');
+        sidebar.style.setProperty('contain', 'none', 'important');
+        sidebar.style.setProperty('isolation', 'auto', 'important');
+        sidebar.style.setProperty('transform', 'none', 'important');
 
         // Also ensure overlay covers full viewport
         const overlay = document.querySelector('.menu-overlay');
@@ -330,6 +388,10 @@ function ensureSidebarPinned() {
             overlay.style.setProperty('left', '0px', 'important');
             overlay.style.setProperty('width', '100vw', 'important');
             overlay.style.setProperty('height', '100vh', 'important');
+            overlay.style.setProperty('z-index', '9999', 'important');
+            overlay.style.setProperty('contain', 'none', 'important');
+            overlay.style.setProperty('isolation', 'auto', 'important');
+            overlay.style.setProperty('transform', 'none', 'important');
         }
     }
 }
