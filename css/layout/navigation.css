@@ -73,21 +73,27 @@
 .side-menu {
     position: fixed !important;
     top: 0 !important;
-    left: -300px;
-    width: 300px;
+    left: -300px !important;
+    width: 300px !important;
     height: 100vh !important;
     background: var(--color-white);
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     transition: left var(--transition-normal) var(--ease-out);
-    z-index: var(--z-modal); /* Below hamburger button */
+    z-index: var(--z-modal) !important; /* Below hamburger button */
     padding: 90px 20px 20px;
-    overflow-y: auto; /* Allow scrolling within sidebar if content is long */
-    box-sizing: border-box;
+    overflow-y: auto !important; /* Allow scrolling within sidebar if content is long */
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    transform: none !important; /* Prevent any transform interference */
 }
 
 .side-menu.active,
 .side-menu.open {
-    left: 0;
+    left: 0 !important;
+    position: fixed !important; /* Reinforce fixed positioning when open */
+    top: 0 !important;
+    height: 100vh !important;
+    transform: none !important; /* Prevent any transform interference */
 }
 
 .side-menu ul {
@@ -230,4 +236,46 @@ body.menu-active::after {
     .side-menu {
         padding-top: 60px;
     }
+}
+
+/* ================================
+   SIDEBAR POSITIONING ENFORCEMENT
+   ================================ */
+
+/* Override any possible conflicts with sidebar positioning */
+body .side-menu,
+html .side-menu,
+* .side-menu {
+    position: fixed !important;
+    top: 0 !important;
+    height: 100vh !important;
+    width: 300px !important;
+    z-index: 1000 !important;
+    margin: 0 !important;
+    padding: 90px 20px 20px !important;
+    box-sizing: border-box !important;
+    overflow-y: auto !important;
+    transform: none !important;
+    transition: left var(--transition-normal) var(--ease-out) !important;
+}
+
+/* Closed state */
+body .side-menu:not(.open):not(.active),
+html .side-menu:not(.open):not(.active),
+* .side-menu:not(.open):not(.active) {
+    left: -300px !important;
+}
+
+/* Open state - maximum specificity */
+body .side-menu.open,
+body .side-menu.active,
+html .side-menu.open,
+html .side-menu.active,
+* .side-menu.open,
+* .side-menu.active {
+    left: 0 !important;
+    position: fixed !important;
+    top: 0 !important;
+    height: 100vh !important;
+    transform: none !important;
 }

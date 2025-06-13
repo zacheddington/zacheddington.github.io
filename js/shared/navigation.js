@@ -56,6 +56,9 @@ async function loadMenu() {
                 hamburgerBtn.classList.remove('active');
                 menuOverlay.classList.remove('active');
                 document.body.classList.remove('menu-active');
+
+                // Reset sidebar positioning when closed
+                sideMenu.style.left = '-300px';
             }
 
             // Ensure menu is closed on page load (handles any cached state)
@@ -84,13 +87,22 @@ async function loadMenu() {
                     closeMenu();
                 }
             });
-
             hamburgerBtn.addEventListener('click', function () {
                 const isOpening = !sideMenu.classList.contains('open');
                 sideMenu.classList.toggle('open');
                 hamburgerBtn.classList.toggle('active');
                 menuOverlay.classList.toggle('active', isOpening);
                 document.body.classList.toggle('menu-active', isOpening);
+
+                // Force sidebar positioning when opening
+                if (isOpening) {
+                    sideMenu.style.position = 'fixed';
+                    sideMenu.style.top = '0';
+                    sideMenu.style.left = '0';
+                    sideMenu.style.height = '100vh';
+                    sideMenu.style.zIndex = '1000';
+                    sideMenu.style.overflowY = 'auto';
+                }
             });
 
             // Close menu when clicking outside or on overlay
