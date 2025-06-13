@@ -49,28 +49,30 @@ const modalManager = {
         setTimeout(() => {
             const modalElement = document.getElementById('feedbackModal');
             if (modalElement) {
-                // Force modal to center in viewport
+                // Force modal to center in viewport - higher z-index than sidebar
                 modalElement.style.display = 'flex';
                 modalElement.style.position = 'fixed';
                 modalElement.style.top = '0';
                 modalElement.style.left = '0';
-                modalElement.style.width = '100%';
-                modalElement.style.height = '100%';
+                modalElement.style.width = '100vw';
+                modalElement.style.height = '100vh';
                 modalElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
                 modalElement.style.justifyContent = 'center';
                 modalElement.style.alignItems = 'center';
-                modalElement.style.zIndex = '10000';
+                modalElement.style.zIndex = '99999';
                 modalElement.style.margin = '0';
                 modalElement.style.padding = '0';
 
-                // Ensure it's above everything else
+                // Ensure it's above everything else with higher z-index
                 modalElement.style.setProperty(
                     'position',
                     'fixed',
                     'important'
                 );
-                modalElement.style.setProperty('z-index', '10000', 'important');
+                modalElement.style.setProperty('z-index', '99999', 'important');
                 modalElement.style.setProperty('display', 'flex', 'important');
+                modalElement.style.setProperty('width', '100vw', 'important');
+                modalElement.style.setProperty('height', '100vh', 'important');
 
                 const modalContent =
                     modalElement.querySelector('.modal-content');
@@ -206,28 +208,28 @@ const modalManager = {
             // Prevent body scrolling
             document.body.classList.add('modal-open');
 
-            // Force modal to center in viewport with inline styles
+            // Force modal to center in viewport with inline styles - higher z-index than sidebar
             logoutModal.style.display = 'flex';
             logoutModal.style.position = 'fixed';
             logoutModal.style.top = '0';
             logoutModal.style.left = '0';
-            logoutModal.style.width = '100%';
-            logoutModal.style.height = '100%';
+            logoutModal.style.width = '100vw';
+            logoutModal.style.height = '100vh';
             logoutModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
             logoutModal.style.justifyContent = 'center';
             logoutModal.style.alignItems = 'center';
-            logoutModal.style.zIndex = '10000';
+            logoutModal.style.zIndex = '99999';
             logoutModal.style.margin = '0';
             logoutModal.style.padding = '0';
 
-            // Ensure it's above everything else with !important
+            // Ensure it's above everything else with !important - higher than sidebar z-index
             logoutModal.style.setProperty('position', 'fixed', 'important');
-            logoutModal.style.setProperty('z-index', '10000', 'important');
+            logoutModal.style.setProperty('z-index', '99999', 'important');
             logoutModal.style.setProperty('display', 'flex', 'important');
             logoutModal.style.setProperty('top', '0', 'important');
             logoutModal.style.setProperty('left', '0', 'important');
-            logoutModal.style.setProperty('width', '100%', 'important');
-            logoutModal.style.setProperty('height', '100%', 'important');
+            logoutModal.style.setProperty('width', '100vw', 'important');
+            logoutModal.style.setProperty('height', '100vh', 'important');
 
             // Focus on the modal for accessibility
             logoutModal.focus(); // Set up event handlers
@@ -449,33 +451,31 @@ const modalManager = {
                     </div>
                 </div>
             `;
-            document.body.appendChild(logoutModal);
-
-            // Prevent body scrolling
+            document.body.appendChild(logoutModal); // Prevent body scrolling
             document.body.classList.add('modal-open');
 
-            // Force modal to center in viewport with inline styles
+            // Force modal to center in viewport with inline styles - higher z-index than sidebar
             logoutModal.style.display = 'flex';
             logoutModal.style.position = 'fixed';
             logoutModal.style.top = '0';
             logoutModal.style.left = '0';
-            logoutModal.style.width = '100%';
-            logoutModal.style.height = '100%';
+            logoutModal.style.width = '100vw';
+            logoutModal.style.height = '100vh';
             logoutModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
             logoutModal.style.justifyContent = 'center';
             logoutModal.style.alignItems = 'center';
-            logoutModal.style.zIndex = '10000';
+            logoutModal.style.zIndex = '99999';
             logoutModal.style.margin = '0';
             logoutModal.style.padding = '0';
 
-            // Ensure it's above everything else with !important
+            // Ensure it's above everything else with !important - higher than sidebar z-index
             logoutModal.style.setProperty('position', 'fixed', 'important');
-            logoutModal.style.setProperty('z-index', '10000', 'important');
+            logoutModal.style.setProperty('z-index', '99999', 'important');
             logoutModal.style.setProperty('display', 'flex', 'important');
             logoutModal.style.setProperty('top', '0', 'important');
             logoutModal.style.setProperty('left', '0', 'important');
-            logoutModal.style.setProperty('width', '100%', 'important');
-            logoutModal.style.setProperty('height', '100%', 'important');
+            logoutModal.style.setProperty('width', '100vw', 'important');
+            logoutModal.style.setProperty('height', '100vh', 'important');
 
             // Focus on the modal for accessibility
             logoutModal.focus(); // Set up event handlers

@@ -71,16 +71,18 @@
 
 /* Side Menu */
 .side-menu {
-    position: fixed;
-    top: 0;
+    position: fixed !important;
+    top: 0 !important;
     left: -300px;
     width: 300px;
-    height: 100vh;
+    height: 100vh !important;
     background: var(--color-white);
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     transition: left var(--transition-normal) var(--ease-out);
     z-index: var(--z-modal); /* Below hamburger button */
     padding: 90px 20px 20px;
+    overflow-y: auto; /* Allow scrolling within sidebar if content is long */
+    box-sizing: border-box;
 }
 
 .side-menu.active,
