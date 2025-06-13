@@ -1166,29 +1166,51 @@ function startPatientColumnResize(event, header, columnIndex) {
     const handle = event.target;
 
     // Update ARIA attributes for accessibility
-    handle.setAttribute('aria-valuenow', startWidth);
-
-    // Add resizing class to table
+    handle.setAttribute('aria-valuenow', startWidth); // Add resizing class to table
     table.classList.add('resizing');
     // Mark the handle as active
-    handle.classList.add('active'); // Function to handle mouse/touch movement during resize
+    handle.classList.add('active');
+
+    // Variables for smooth resizing
+    let resizeRequestId = null;
+    let currentMouseX = startX;
+
+    // Function to handle mouse/touch movement during resize
     function handlePointerMove(e) {
         // Get pageX for calculations
         const pageX =
             e.pageX ||
             (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
 
-        // Calculate new width in real-time without throttling
-        const deltaX = pageX - startX;
-        const newWidth = Math.max(80, Math.min(500, startWidth + deltaX));
+        // Store the current mouse position
+        currentMouseX = pageX;
 
-        // Apply the new width immediately for real-time feedback
-        header.style.width = `${newWidth}px`;
-        handle.setAttribute('aria-valuenow', newWidth);
-    }
+        // Cancel any pending resize update
+        if (resizeRequestId) {
+            cancelAnimationFrame(resizeRequestId);
+        }
 
-    // Function to handle mouse/touch up (end of resize)
+        // Schedule a resize update using requestAnimationFrame for smooth performance
+        resizeRequestId = requestAnimationFrame(() => {
+            // Calculate new width
+            const deltaX = currentMouseX - startX;
+            const newWidth = Math.max(80, Math.min(500, startWidth + deltaX));
+
+            // Apply the new width with optimized performance
+            header.style.width = `${newWidth}px`;
+            handle.setAttribute('aria-valuenow', newWidth);
+
+            // Clear the request ID
+            resizeRequestId = null;
+        });
+    } // Function to handle mouse/touch up (end of resize)
     function handlePointerUp(e) {
+        // Cancel any pending resize animation
+        if (resizeRequestId) {
+            cancelAnimationFrame(resizeRequestId);
+            resizeRequestId = null;
+        }
+
         // Remove event listeners
         document.removeEventListener('mousemove', handlePointerMove);
         document.removeEventListener('mouseup', handlePointerUp);
