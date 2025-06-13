@@ -1171,10 +1171,6 @@ function startPatientColumnResize(event, header, columnIndex) {
     // Mark the handle as active
     handle.classList.add('active');
 
-    // Variables for smooth resizing
-    let resizeRequestId = null;
-    let currentMouseX = startX;
-
     // Function to handle mouse/touch movement during resize
     function handlePointerMove(e) {
         // Get pageX for calculations
@@ -1182,35 +1178,15 @@ function startPatientColumnResize(event, header, columnIndex) {
             e.pageX ||
             (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
 
-        // Store the current mouse position
-        currentMouseX = pageX;
+        // Calculate new width immediately for responsive feedback
+        const deltaX = pageX - startX;
+        const newWidth = Math.max(80, Math.min(500, startWidth + deltaX));
 
-        // Cancel any pending resize update
-        if (resizeRequestId) {
-            cancelAnimationFrame(resizeRequestId);
-        }
-
-        // Schedule a resize update using requestAnimationFrame for smooth performance
-        resizeRequestId = requestAnimationFrame(() => {
-            // Calculate new width
-            const deltaX = currentMouseX - startX;
-            const newWidth = Math.max(80, Math.min(500, startWidth + deltaX));
-
-            // Apply the new width with optimized performance
-            header.style.width = `${newWidth}px`;
-            handle.setAttribute('aria-valuenow', newWidth);
-
-            // Clear the request ID
-            resizeRequestId = null;
-        });
+        // Apply the new width immediately - no throttling for real-time response
+        header.style.width = `${newWidth}px`;
+        handle.setAttribute('aria-valuenow', newWidth);
     } // Function to handle mouse/touch up (end of resize)
     function handlePointerUp(e) {
-        // Cancel any pending resize animation
-        if (resizeRequestId) {
-            cancelAnimationFrame(resizeRequestId);
-            resizeRequestId = null;
-        }
-
         // Remove event listeners
         document.removeEventListener('mousemove', handlePointerMove);
         document.removeEventListener('mouseup', handlePointerUp);

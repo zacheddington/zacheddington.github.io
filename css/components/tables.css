@@ -77,14 +77,16 @@
 .users-table th,
 #patientsTable th {
     will-change: auto;
-    transition: width var(--resize-transition-duration) ease-out;
+    /* Remove default transition for immediate response during resize */
 }
 
-/* During resizing, disable transitions for real-time feedback */
+/* During resizing, optimize for performance */
 .users-table.resizing th,
 #patientsTable.resizing th {
     transition: none;
     will-change: width;
+    /* Force hardware acceleration for smooth resizing */
+    transform: translateZ(0);
 }
 
 /* Add visual indicator when columns are being resized */
