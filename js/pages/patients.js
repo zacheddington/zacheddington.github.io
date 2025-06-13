@@ -1280,12 +1280,6 @@ function autoSizePatientColumn(header, columnIndex) {
         table.querySelectorAll(`tbody tr td:nth-child(${columnIndex + 1})`)
     );
 
-    // Remove any previous width to get natural content width
-    header.style.width = '';
-    cells.forEach((cell) => {
-        cell.style.width = '';
-    });
-
     // Get the content type to optimize column width
     const columnType = getPatientColumnType(header.textContent); // Use canvas for more accurate text measurement
     const canvas = document.createElement('canvas');

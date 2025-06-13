@@ -1369,12 +1369,6 @@ function autoSizeColumn(header, columnIndex) {
         table.querySelectorAll(`tbody tr td:nth-child(${columnIndex + 1})`)
     );
 
-    // Remove any previous width to get natural content width
-    header.style.width = '';
-    cells.forEach((cell) => {
-        cell.style.width = '';
-    });
-
     // Use canvas for accurate text measurement
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
