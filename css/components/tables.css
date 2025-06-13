@@ -70,7 +70,6 @@
     --resize-handle-opacity: 0.5;
     --resize-handle-hover-opacity: 0.5;
     --resize-handle-active-opacity: 0.7;
-    --resize-guide-color: var(--color-primary);
 }
 
 /* Add visual indicator when columns are being resized */

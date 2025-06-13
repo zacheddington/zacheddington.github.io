@@ -950,6 +950,10 @@ function adjustPatientColumnWidths() {
     // Get all table headers
     const headers = Array.from(table.querySelectorAll('th'));
 
+    // Use canvas for more accurate text measurement
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
     // Calculate optimal widths based on actual content
     headers.forEach((header, index) => {
         const cells = Array.from(
@@ -965,47 +969,72 @@ function adjustPatientColumnWidths() {
         // Get the content type to optimize column width
         const columnType = getPatientColumnType(header.textContent);
 
-        // Create a hidden span to measure actual text width
-        const measureElement = document.createElement('span');
-        measureElement.style.visibility = 'hidden';
-        measureElement.style.position = 'absolute';
-        measureElement.style.whiteSpace = 'nowrap';
-        measureElement.style.font = window.getComputedStyle(header).font;
-        document.body.appendChild(measureElement);
+        let maxWidth = 80; // Minimum width
 
-        // Measure header width
-        measureElement.textContent = header.textContent;
-        let maxWidth = measureElement.offsetWidth + 40; // Add padding
+        if (context) {
+            // Measure header width with canvas
+            const headerStyle = window.getComputedStyle(header);
+            context.font = `${headerStyle.fontWeight} ${headerStyle.fontSize} ${headerStyle.fontFamily}`;
+            maxWidth = Math.max(
+                context.measureText(header.textContent).width + 40,
+                80
+            );
 
-        // Measure all cells in the column
-        cells.forEach((cell) => {
-            measureElement.textContent = cell.textContent;
-            const cellWidth = measureElement.offsetWidth + 40; // Add padding
+            // Measure all cells in the column
+            cells.forEach((cell) => {
+                let cellText = '';
 
-            // Update maxWidth if needed, with limits based on column type
-            if (cellWidth > maxWidth) {
-                if (columnType === 'address') {
-                    maxWidth = Math.min(cellWidth, 300); // Address column can be wider
-                } else if (columnType === 'accepts-texts') {
-                    maxWidth = Math.min(cellWidth, 120); // Accepts Texts column should be compact
-                } else if (columnType === 'actions') {
-                    maxWidth = Math.min(cellWidth, 120); // Actions column has fixed size elements
-                } else if (columnType === 'date') {
-                    maxWidth = Math.min(cellWidth, 120); // Date column has fixed format
-                } else if (columnType === 'phone') {
-                    maxWidth = Math.min(cellWidth, 150); // Phone column has fixed format
+                // Handle different cell types properly
+                if (cell.querySelector('.patient-full-name')) {
+                    cellText = cell
+                        .querySelector('.patient-full-name')
+                        .textContent.trim();
+                } else if (cell.querySelector('.accepts-texts')) {
+                    cellText = cell
+                        .querySelector('.accepts-texts')
+                        .textContent.trim();
+                } else if (cell.querySelector('.patient-actions')) {
+                    cellText = '✏️ Edit 🗑️ Delete'; // Representative text for action buttons
                 } else {
-                    maxWidth = Math.min(cellWidth, 200); // General limit for other columns
+                    cellText = cell.textContent.trim();
                 }
-            }
-        });
+
+                if (cellText) {
+                    const cellStyle = window.getComputedStyle(cell);
+                    context.font = `${cellStyle.fontWeight} ${cellStyle.fontSize} ${cellStyle.fontFamily}`;
+                    const cellWidth = context.measureText(cellText).width + 40; // Add padding
+                    maxWidth = Math.max(maxWidth, cellWidth);
+                }
+            });
+        } else {
+            // Fallback for browsers without canvas support
+            maxWidth = Math.max(header.textContent.length * 8 + 40, 80);
+            cells.forEach((cell) => {
+                const cellText = cell.textContent.trim();
+                if (cellText) {
+                    maxWidth = Math.max(maxWidth, cellText.length * 8 + 40);
+                }
+            });
+        }
+
+        // Apply constraints based on column type
+        if (columnType === 'address') {
+            maxWidth = Math.min(maxWidth, 300); // Address column max width
+            maxWidth = Math.max(maxWidth, 150); // Address column min width
+        } else if (columnType === 'accepts-texts') {
+            maxWidth = Math.min(maxWidth, 120); // Accepts Texts column max width
+        } else if (columnType === 'actions') {
+            maxWidth = 120; // Actions column fixed width
+        } else if (columnType === 'phone') {
+            maxWidth = Math.min(maxWidth, 150); // Phone column max width
+            maxWidth = Math.max(maxWidth, 120); // Phone column min width
+        } else {
+            maxWidth = Math.min(maxWidth, 250); // General max width
+            maxWidth = Math.max(maxWidth, 100); // General min width
+        }
 
         // Apply the calculated width
         header.style.width = `${maxWidth}px`;
-        header.style.minWidth = `${columnType === 'address' ? 150 : 80}px`; // Ensure minimum widths
-
-        // Clean up
-        document.body.removeChild(measureElement);
     });
 
     // After a small delay, switch back to fixed layout for better performance
@@ -1140,53 +1169,30 @@ function startPatientColumnResize(event, header, columnIndex) {
     handle.setAttribute('aria-valuenow', startWidth);
 
     // Add resizing class to table
-    table.classList.add('resizing'); // Mark the handle as active
-    handle.classList.add('active'); // Create and show a resize guide line that follows the table position
-    const tableRect = table.getBoundingClientRect();
-    const handleRect = handle.getBoundingClientRect();
-    const resizeGuide = document.createElement('div');
-    resizeGuide.style.position = 'fixed'; // Use fixed positioning to stay with viewport
-    resizeGuide.style.top = `${tableRect.top}px`;
-    resizeGuide.style.height = `${tableRect.height}px`;
-    resizeGuide.style.width = 'var(--resize-handle-active-width, 2px)';
-    resizeGuide.style.backgroundColor =
-        'var(--resize-guide-color, var(--color-primary))';
-    resizeGuide.style.opacity = 'var(--resize-handle-active-opacity, 0.7)';
-    resizeGuide.style.left = `${handleRect.right - 1}px`; // Position at the handle's right edge
-    resizeGuide.style.zIndex = '1000';
-    resizeGuide.setAttribute('role', 'presentation'); // For accessibility
-    resizeGuide.style.pointerEvents = 'none'; // Ensure guide doesn't interfere with mouse events
-    document.body.appendChild(resizeGuide); // Function to handle mouse/touch movement during resize
+    table.classList.add('resizing');
+    // Mark the handle as active
+    handle.classList.add('active');
+
+    // Function to handle mouse/touch movement during resize
     function handlePointerMove(e) {
-        // Get pageX for calculations and clientX for positioning
+        // Get pageX for calculations
         const pageX =
             e.pageX ||
             (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
-        const clientX =
-            e.clientX ||
-            (e.touches && e.touches[0] ? e.touches[0].clientX : startX);
 
         // Throttle the resize for better performance
         if (!handlePointerMove.throttleTimer) {
             handlePointerMove.throttleTimer = setTimeout(() => {
-                // Get current table position to account for any scrolling
-                const currentTableRect = table.getBoundingClientRect();
-                const currentHandleRect = handle.getBoundingClientRect();
-
-                // Calculate relative position from original handle position
+                // Calculate new width
                 const deltaX = pageX - startX;
-                const newGuideLeft = currentHandleRect.right - 1 + deltaX;
-
-                // Keep guide within table boundaries using current table position
-                const boundedX = Math.max(
-                    currentTableRect.left,
-                    Math.min(newGuideLeft, currentTableRect.right)
+                const newWidth = Math.max(
+                    80,
+                    Math.min(500, startWidth + deltaX)
                 );
 
-                // Update guide position and height to match current table
-                resizeGuide.style.left = `${boundedX}px`;
-                resizeGuide.style.top = `${currentTableRect.top}px`;
-                resizeGuide.style.height = `${currentTableRect.height}px`;
+                // Apply the new width
+                header.style.width = `${newWidth}px`;
+                handle.setAttribute('aria-valuenow', newWidth);
 
                 // Clear the throttle timer
                 handlePointerMove.throttleTimer = null;
@@ -1222,9 +1228,6 @@ function startPatientColumnResize(event, header, columnIndex) {
 
         // Update ARIA value for accessibility
         handle.setAttribute('aria-valuenow', newWidth);
-
-        // Remove the resize guide
-        document.body.removeChild(resizeGuide);
 
         // Remove the resizing class
         table.classList.remove('resizing');
