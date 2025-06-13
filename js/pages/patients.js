@@ -1133,7 +1133,6 @@ function startPatientColumnResize(event, header, columnIndex) {
 
     const table = document.querySelector('#patientsTable');
     const startX = event.pageX || event.clientX; // For calculations
-    const startClientX = event.clientX || event.pageX; // For fixed positioning
     const startWidth = header.offsetWidth;
     const handle = event.target;
 
@@ -1165,20 +1164,29 @@ function startPatientColumnResize(event, header, columnIndex) {
             (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
         const clientX =
             e.clientX ||
-            (e.touches && e.touches[0] ? e.touches[0].clientX : startClientX);
+            (e.touches && e.touches[0] ? e.touches[0].clientX : startX);
 
         // Throttle the resize for better performance
         if (!handlePointerMove.throttleTimer) {
             handlePointerMove.throttleTimer = setTimeout(() => {
-                // Keep guide within table boundaries using clientX for viewport positioning
-                const tableRect = table.getBoundingClientRect();
+                // Get current table position to account for any scrolling
+                const currentTableRect = table.getBoundingClientRect();
+                const currentHandleRect = handle.getBoundingClientRect();
+
+                // Calculate relative position from original handle position
+                const deltaX = pageX - startX;
+                const newGuideLeft = currentHandleRect.right - 1 + deltaX;
+
+                // Keep guide within table boundaries using current table position
                 const boundedX = Math.max(
-                    tableRect.left,
-                    Math.min(clientX, tableRect.right)
+                    currentTableRect.left,
+                    Math.min(newGuideLeft, currentTableRect.right)
                 );
 
-                // Update guide position using viewport coordinates
+                // Update guide position and height to match current table
                 resizeGuide.style.left = `${boundedX}px`;
+                resizeGuide.style.top = `${currentTableRect.top}px`;
+                resizeGuide.style.height = `${currentTableRect.height}px`;
 
                 // Clear the throttle timer
                 handlePointerMove.throttleTimer = null;
@@ -1280,19 +1288,39 @@ function autoSizePatientColumn(header, columnIndex) {
     });
 
     // Get the content type to optimize column width
-    const columnType = getPatientColumnType(header.textContent);
+    const columnType = getPatientColumnType(header.textContent); // Use canvas for more accurate text measurement
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) {
+        // Fallback to simple calculation if canvas is not available
+        const headerText = header.textContent;
+        let maxWidth = Math.max(headerText.length * 8 + 40, 80); // Rough estimation
 
-    // Create a hidden span to measure actual text width
-    const measureElement = document.createElement('span');
-    measureElement.style.visibility = 'hidden';
-    measureElement.style.position = 'absolute';
-    measureElement.style.whiteSpace = 'nowrap';
-    measureElement.style.font = window.getComputedStyle(header).font;
-    document.body.appendChild(measureElement);
+        // Apply the calculated width
+        header.style.width = `${maxWidth}px`;
+
+        // Save and announce
+        setTimeout(() => {
+            table.style.tableLayout = 'fixed';
+            savePatientColumnWidthPreferences();
+        }, 50);
+
+        announceForScreenReader(
+            `Column ${header.textContent.trim()} automatically sized`
+        );
+        return;
+    }
+
+    const headerStyle = window.getComputedStyle(header);
+    context.font = `${headerStyle.fontWeight} ${headerStyle.fontSize} ${headerStyle.fontFamily}`;
 
     // Measure header width
-    measureElement.textContent = header.textContent;
-    let maxWidth = measureElement.offsetWidth + 40; // Add padding    // Measure all cells in the column to find the widest content
+    let maxWidth = Math.max(
+        context.measureText(header.textContent).width + 40,
+        80
+    ); // Add padding, minimum 80px
+
+    // Measure all cells in the column to find the widest content
     cells.forEach((cell) => {
         // Get the actual text content from the cell or its children
         let cellText = '';
@@ -1306,15 +1334,17 @@ function autoSizePatientColumn(header, columnIndex) {
             cellText = cell.querySelector('.accepts-texts').textContent.trim();
         } else if (cell.querySelector('.patient-actions')) {
             // For action cells, measure the actual button content
-            cellText = '✏️ 🗑️'; // Represent the action buttons
+            cellText = '✏️ Edit 🗑️ Delete'; // More accurate representation
         } else {
             // Get the raw text content and clean it
             cellText = cell.textContent.trim();
         }
 
         if (cellText) {
-            measureElement.textContent = cellText;
-            const cellWidth = measureElement.offsetWidth + 40; // Add padding
+            // Use canvas to measure text width more accurately
+            const cellStyle = window.getComputedStyle(cell);
+            context.font = `${cellStyle.fontWeight} ${cellStyle.fontSize} ${cellStyle.fontFamily}`;
+            const cellWidth = context.measureText(cellText).width + 40; // Add padding
 
             // Find the maximum width needed
             maxWidth = Math.max(maxWidth, cellWidth);
@@ -1329,19 +1359,18 @@ function autoSizePatientColumn(header, columnIndex) {
         maxWidth = Math.min(maxWidth, 120); // Accepts Texts column max width
     } else if (columnType === 'actions') {
         maxWidth = 120; // Actions column fixed width
-    } else if (columnType === 'date') {
-        maxWidth = Math.min(maxWidth, 120); // Date column max width
     } else if (columnType === 'phone') {
         maxWidth = Math.min(maxWidth, 150); // Phone column max width
+        maxWidth = Math.max(maxWidth, 120); // Phone column min width
     } else {
-        maxWidth = Math.min(maxWidth, 200); // General max width
+        maxWidth = Math.min(maxWidth, 250); // General max width
+        maxWidth = Math.max(maxWidth, 100); // Minimum width for readability
     }
 
     // Apply the calculated width
     header.style.width = `${maxWidth}px`;
 
-    // Clean up
-    document.body.removeChild(measureElement); // Save the updated column widths to localStorage
+    // Save the updated column widths to localStorage
     setTimeout(() => {
         table.style.tableLayout = 'fixed';
         savePatientColumnWidthPreferences();
