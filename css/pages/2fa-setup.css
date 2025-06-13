@@ -290,3 +290,54 @@
     border-radius: 4px;
     margin: 1rem 0;
 }
+
+/* ================================
+   STEP 3 - VERIFICATION BUTTONS
+   ================================ */
+
+#step3 .btn {
+    margin: var(--space-sm);
+    min-width: 160px;
+    flex: 0 0 auto;
+}
+
+#step3 {
+    text-align: center;
+}
+
+#step3 .btn:first-of-type {
+    margin-right: var(--space-md);
+}
+
+/* Ensure buttons are same size and aligned properly */
+.verification-buttons {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+    margin-top: var(--space-lg);
+    flex-wrap: wrap;
+}
+
+.verification-buttons .btn {
+    flex: 0 0 auto;
+    min-width: 160px;
+}
+
+/* Mobile responsive adjustments for verification buttons */
+@media screen and (max-width: 480px) {
+    .verification-buttons {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+
+    .verification-buttons .btn {
+        width: 100%;
+        min-width: auto;
+    }
+
+    #step3 .btn {
+        min-width: auto;
+        width: 100%;
+        margin: var(--space-xs) 0;
+    }
+}
