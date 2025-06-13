@@ -711,11 +711,30 @@ function forceViewportPositioning() {
     console.log('🔍 Viewport size:', window.innerWidth, window.innerHeight); // TRUE VIEWPORT PINNING: Use fixed positioning relative to viewport
     console.log(
         '🧮 Setting viewport-pinned positions: sidebar (0,0), overlay (300,0)'
-    );
-
-    // NUCLEAR: Remove any interfering properties from all parent elements
+    ); // NUCLEAR: Remove any interfering properties from all parent elements
     const body = document.body;
     const html = document.documentElement;
+
+    // NUCLEAR: Remove any transforms from ALL elements that could interfere
+    console.log('🔧 NUCLEAR: Removing all transforms from document...');
+    const allElements = document.querySelectorAll('*');
+    allElements.forEach((el) => {
+        const computedStyle = window.getComputedStyle(el);
+        if (computedStyle.transform !== 'none') {
+            console.log(
+                '🧹 Removing transform from:',
+                el.tagName,
+                el.className
+            );
+            el.style.setProperty('transform', 'none', 'important');
+        }
+        if (computedStyle.contain !== 'none') {
+            el.style.setProperty('contain', 'none', 'important');
+        }
+        if (computedStyle.isolation !== 'auto') {
+            el.style.setProperty('isolation', 'auto', 'important');
+        }
+    });
 
     // Force clean state on html and body
     [html, body].forEach((el) => {
@@ -753,12 +772,9 @@ function forceViewportPositioning() {
         transition: none !important;
         border: none !important;
         outline: none !important;
-    `;
-
-    // Force reflow and re-apply positioning
+    `; // Force reflow and re-apply positioning multiple times
     sidebar.offsetHeight;
-    sidebar.style.setProperty('top', '0px', 'important');
-    sidebar.style.setProperty('left', '0px', 'important');
+
     overlay.style.cssText = `
         position: fixed !important;
         top: 0px !important;
@@ -782,10 +798,35 @@ function forceViewportPositioning() {
         outline: none !important;
     `;
 
-    // Force reflow and re-apply positioning
     overlay.offsetHeight;
-    overlay.style.setProperty('top', '0px', 'important');
-    overlay.style.setProperty('left', '300px', 'important');
+
+    // AGGRESSIVE: Set position multiple times with different methods
+    setTimeout(() => {
+        sidebar.style.setProperty('position', 'fixed', 'important');
+        sidebar.style.setProperty('top', '0px', 'important');
+        sidebar.style.setProperty('left', '0px', 'important');
+        overlay.style.setProperty('position', 'fixed', 'important');
+        overlay.style.setProperty('top', '0px', 'important');
+        overlay.style.setProperty('left', '300px', 'important');
+    }, 0);
+
+    setTimeout(() => {
+        sidebar.style.setProperty('position', 'fixed', 'important');
+        sidebar.style.setProperty('top', '0px', 'important');
+        sidebar.style.setProperty('left', '0px', 'important');
+        overlay.style.setProperty('position', 'fixed', 'important');
+        overlay.style.setProperty('top', '0px', 'important');
+        overlay.style.setProperty('left', '300px', 'important');
+    }, 10);
+
+    setTimeout(() => {
+        sidebar.style.setProperty('position', 'fixed', 'important');
+        sidebar.style.setProperty('top', '0px', 'important');
+        sidebar.style.setProperty('left', '0px', 'important');
+        overlay.style.setProperty('position', 'fixed', 'important');
+        overlay.style.setProperty('top', '0px', 'important');
+        overlay.style.setProperty('left', '300px', 'important');
+    }, 50);
     console.log('☢️  Fixed positioning applied for viewport pinning!');
 
     // Check final positioning

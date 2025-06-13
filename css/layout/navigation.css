@@ -272,7 +272,19 @@ html .side-menu,
     box-sizing: border-box !important;
     overflow-y: auto !important;
     transform: none !important;
+}
+
+/* When menu is NOT active, allow transition for smooth opening/closing */
+body:not(.menu-active) .side-menu,
+html:not(.menu-active) .side-menu {
     transition: left var(--transition-normal) var(--ease-out) !important;
+}
+
+/* When menu IS active, disable all transitions for JavaScript control */
+body.menu-active .side-menu,
+html.menu-active .side-menu,
+.menu-active .side-menu {
+    transition: none !important;
 }
 
 /* Closed state */
