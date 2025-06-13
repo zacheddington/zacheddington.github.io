@@ -3,6 +3,12 @@
 
 // Initialize profile page functionality
 function initializeProfilePage() {
+    // Check token validity first
+    if (!checkTokenValidity()) {
+        console.warn('Invalid or expired token detected on profile page');
+        // Still try to load from localStorage as fallback
+    }
+
     setupPasswordChangeForm();
     loadUserProfile();
     load2FAStatus(); // Add 2FA status loading
@@ -32,10 +38,37 @@ async function loadUserProfile() {
             const profile = result.data || result; // Handle both response formats
             displayUserProfile(profile);
         } else {
-            console.error(
-                'Failed to load user profile from API, trying localStorage fallback'
-            );
-            loadProfileFromLocalStorage();
+            if (response.status === 403) {
+                console.error(
+                    'Access denied when loading profile - insufficient permissions'
+                );
+                // Try localStorage fallback for profile data
+                loadProfileFromLocalStorage();
+            } else if (response.status === 401) {
+                console.error(
+                    'Authentication failed when loading profile - token expired'
+                );
+                // Show session expired message and redirect to login
+                if (window.modalManager) {
+                    window.modalManager.showModal(
+                        'error',
+                        'Your session has expired. Please log in again.'
+                    );
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                } else {
+                    // Fallback if modalManager not available
+                    alert('Your session has expired. Please log in again.');
+                    window.location.href = '/';
+                }
+                return;
+            } else {
+                console.error(
+                    'Failed to load user profile from API, trying localStorage fallback'
+                );
+                loadProfileFromLocalStorage();
+            }
         }
     } catch (error) {
         console.error(
@@ -292,7 +325,6 @@ async function changePassword() {
         });
 
         const result = await response.json();
-
         if (response.ok) {
             // Clear the form
             document.getElementById('passwordChangeForm').reset();
@@ -307,7 +339,17 @@ async function changePassword() {
                 'Password changed successfully!'
             );
         } else {
-            throw new Error(result.error || 'Failed to change password');
+            if (response.status === 403) {
+                throw new Error(
+                    'Access denied. You may not have permission to change passwords.'
+                );
+            } else if (response.status === 401) {
+                throw new Error(
+                    'Your session has expired. Please log in again.'
+                );
+            } else {
+                throw new Error(result.error || 'Failed to change password');
+            }
         }
     } catch (error) {
         console.error('Change password error:', error);
@@ -445,7 +487,6 @@ async function updateProfile() {
         });
 
         const result = await response.json();
-
         if (response.ok) {
             // Update the display sections with new data
             const profile = result.data || result;
@@ -457,7 +498,17 @@ async function updateProfile() {
                 'Profile updated successfully!'
             );
         } else {
-            throw new Error(result.error || 'Failed to update profile');
+            if (response.status === 403) {
+                throw new Error(
+                    'Access denied. You may not have permission to update your profile.'
+                );
+            } else if (response.status === 401) {
+                throw new Error(
+                    'Your session has expired. Please log in again.'
+                );
+            } else {
+                throw new Error(result.error || 'Failed to update profile');
+            }
         }
     } catch (error) {
         console.error('Update profile error:', error);
@@ -515,6 +566,48 @@ async function load2FAStatus() {
                 `;
             }
         } else {
+            if (response.status === 403) {
+                console.error(
+                    'Access denied when loading 2FA status - insufficient permissions'
+                );
+                // Show 2FA as unavailable due to permissions
+                const twofaStatus = document.getElementById('twofaStatus');
+                const twofaActions = document.getElementById('twofaActions');
+
+                if (twofaStatus) {
+                    twofaStatus.textContent = 'Unavailable';
+                    twofaStatus.className = 'status-badge disabled';
+                }
+
+                if (twofaActions) {
+                    twofaActions.innerHTML = `
+                        <p class="info-text" style="color: #6c757d; font-size: 0.9rem;">
+                            2FA management requires additional permissions.
+                        </p>
+                    `;
+                }
+                return;
+            } else if (response.status === 401) {
+                console.error('Authentication failed when loading 2FA status');
+                // Don't redirect here, as the profile page might still be useful
+                // Just show 2FA as unavailable
+                const twofaStatus = document.getElementById('twofaStatus');
+                const twofaActions = document.getElementById('twofaActions');
+
+                if (twofaStatus) {
+                    twofaStatus.textContent = 'Session Expired';
+                    twofaStatus.className = 'status-badge error';
+                }
+
+                if (twofaActions) {
+                    twofaActions.innerHTML = `
+                        <p class="info-text" style="color: #dc3545; font-size: 0.9rem;">
+                            Please refresh the page and log in again.
+                        </p>
+                    `;
+                }
+                return;
+            }
             throw new Error('Failed to load 2FA status');
         }
     } catch (error) {
@@ -667,6 +760,67 @@ async function disable2FA() {
     setTimeout(() => {
         document.getElementById('disable2faPassword').focus();
     }, 100);
+}
+
+// Utility function to check if token is expired or invalid
+function checkTokenValidity() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        console.warn('No authentication token found');
+        return false;
+    }
+
+    try {
+        // Basic JWT token structure check (not cryptographic verification)
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+            console.warn('Invalid token format');
+            return false;
+        }
+
+        // Decode payload to check expiration
+        const payload = JSON.parse(atob(parts[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+
+        if (payload.exp && payload.exp < currentTime) {
+            console.warn('Token has expired');
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.warn('Error checking token validity:', error);
+        return false;
+    }
+}
+
+// Helper function to handle common authentication errors
+function handleAuthError(response, context = '') {
+    if (response.status === 401) {
+        console.error(
+            `Authentication failed${
+                context ? ' for ' + context : ''
+            } - token may be expired`
+        );
+        if (window.modalManager) {
+            window.modalManager.showModal(
+                'error',
+                'Your session has expired. Please log in again.'
+            );
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
+        }
+        return true;
+    } else if (response.status === 403) {
+        console.error(
+            `Access denied${
+                context ? ' for ' + context : ''
+            } - insufficient permissions`
+        );
+        return true;
+    }
+    return false;
 }
 
 // Expose functions to global scope
