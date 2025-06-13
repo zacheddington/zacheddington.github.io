@@ -58,14 +58,21 @@ async function loadMenu() {
                 document.body.classList.remove('menu-active');
 
                 // Stop scroll monitoring
-                stopScrollMonitoring();
-
-                // Restore body properties
+                stopScrollMonitoring(); // Restore body properties
                 document.body.style.removeProperty('position');
                 document.body.style.removeProperty('display');
                 document.body.style.removeProperty('align-items');
                 document.body.style.removeProperty('justify-content');
                 document.body.style.removeProperty('flex-direction');
+                document.body.style.removeProperty('transform');
+                document.body.style.removeProperty('contain');
+                document.body.style.removeProperty('isolation');
+
+                // Restore html properties
+                document.documentElement.style.removeProperty('transform');
+                document.documentElement.style.removeProperty('position');
+                document.documentElement.style.removeProperty('contain');
+                document.documentElement.style.removeProperty('isolation');
 
                 // Reset sidebar positioning when closed
                 sideMenu.style.setProperty('left', '-300px', 'important');
@@ -135,6 +142,21 @@ async function loadMenu() {
                         'initial',
                         'important'
                     );
+                    document.body.style.setProperty(
+                        'transform',
+                        'none',
+                        'important'
+                    );
+                    document.body.style.setProperty(
+                        'contain',
+                        'none',
+                        'important'
+                    );
+                    document.body.style.setProperty(
+                        'isolation',
+                        'auto',
+                        'important'
+                    );
 
                     // CRITICAL: Ensure elements are positioned relative to viewport, not page
                     // Remove any transform on html and body that might interfere
@@ -148,8 +170,16 @@ async function loadMenu() {
                         'static',
                         'important'
                     );
-
-                    // Ensure viewport-relative positioning
+                    document.documentElement.style.setProperty(
+                        'contain',
+                        'none',
+                        'important'
+                    );
+                    document.documentElement.style.setProperty(
+                        'isolation',
+                        'auto',
+                        'important'
+                    ); // Ensure viewport-relative positioning
                     sideMenu.style.setProperty(
                         'position',
                         'fixed',
@@ -159,7 +189,11 @@ async function loadMenu() {
                     sideMenu.style.setProperty('left', '0px', 'important');
                     sideMenu.style.setProperty('height', '100vh', 'important');
                     sideMenu.style.setProperty('width', '300px', 'important');
-                    sideMenu.style.setProperty('z-index', '10001', 'important'); // Higher than overlay
+                    sideMenu.style.setProperty(
+                        'z-index',
+                        '1000',
+                        'important'
+                    ); /* Above overlay */
                     sideMenu.style.setProperty(
                         'overflow-y',
                         'auto',
@@ -181,6 +215,11 @@ async function loadMenu() {
                         'auto',
                         'important'
                     );
+                    sideMenu.style.setProperty(
+                        'pointer-events',
+                        'auto',
+                        'important'
+                    );
 
                     // Force overlay to cover full viewport with lower z-index than sidebar
                     menuOverlay.style.setProperty(
@@ -189,12 +228,16 @@ async function loadMenu() {
                         'important'
                     );
                     menuOverlay.style.setProperty('top', '0px', 'important');
-                    menuOverlay.style.setProperty('left', '0px', 'important');
+                    menuOverlay.style.setProperty(
+                        'left',
+                        '300px',
+                        'important'
+                    ); /* Start after sidebar */
                     menuOverlay.style.setProperty(
                         'width',
-                        '100vw',
+                        'calc(100vw - 300px)',
                         'important'
-                    );
+                    ); /* Width minus sidebar */
                     menuOverlay.style.setProperty(
                         'height',
                         '100vh',
@@ -202,9 +245,9 @@ async function loadMenu() {
                     );
                     menuOverlay.style.setProperty(
                         'z-index',
-                        '10000',
+                        '999',
                         'important'
-                    ); // Lower than sidebar but high enough
+                    ); /* Below sidebar */
                     menuOverlay.style.setProperty(
                         'contain',
                         'none',
@@ -220,6 +263,11 @@ async function loadMenu() {
                         'none',
                         'important'
                     );
+                    menuOverlay.style.setProperty(
+                        'pointer-events',
+                        'auto',
+                        'important'
+                    );
 
                     // Start monitoring to keep sidebar pinned
                     startScrollMonitoring();
@@ -227,9 +275,7 @@ async function loadMenu() {
                     // Stop monitoring when closing
                     stopScrollMonitoring();
                 }
-            });
-
-            // Close menu when clicking outside or on overlay
+            }); // Close menu when clicking outside or on overlay
             menuOverlay.addEventListener('click', closeMenu);
 
             document.addEventListener('click', function (e) {
@@ -399,21 +445,35 @@ function ensureSidebarPinned() {
         sidebar.style.setProperty('top', '0px', 'important');
         sidebar.style.setProperty('left', '0px', 'important');
         sidebar.style.setProperty('height', '100vh', 'important');
-        sidebar.style.setProperty('z-index', '10001', 'important'); // Higher than overlay
+        sidebar.style.setProperty(
+            'z-index',
+            '1000',
+            'important'
+        ); /* Above overlay */
         sidebar.style.setProperty('width', '300px', 'important');
         sidebar.style.setProperty('contain', 'none', 'important');
         sidebar.style.setProperty('isolation', 'auto', 'important');
-        sidebar.style.setProperty('transform', 'none', 'important');
-
-        // Also ensure overlay covers full viewport but stays below sidebar
+        sidebar.style.setProperty('transform', 'none', 'important'); // Also ensure overlay covers full viewport but stays below sidebar
         const overlay = document.querySelector('.menu-overlay');
         if (overlay && overlay.classList.contains('active')) {
             overlay.style.setProperty('position', 'fixed', 'important');
             overlay.style.setProperty('top', '0px', 'important');
-            overlay.style.setProperty('left', '0px', 'important');
-            overlay.style.setProperty('width', '100vw', 'important');
+            overlay.style.setProperty(
+                'left',
+                '300px',
+                'important'
+            ); /* Start after sidebar */
+            overlay.style.setProperty(
+                'width',
+                'calc(100vw - 300px)',
+                'important'
+            ); /* Width minus sidebar */
             overlay.style.setProperty('height', '100vh', 'important');
-            overlay.style.setProperty('z-index', '10000', 'important'); // Lower than sidebar
+            overlay.style.setProperty(
+                'z-index',
+                '999',
+                'important'
+            ); /* Below sidebar */
             overlay.style.setProperty('contain', 'none', 'important');
             overlay.style.setProperty('isolation', 'auto', 'important');
             overlay.style.setProperty('transform', 'none', 'important');

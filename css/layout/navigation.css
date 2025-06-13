@@ -79,12 +79,15 @@
     background: var(--color-white);
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     transition: left var(--transition-normal) var(--ease-out);
-    z-index: var(--z-modal) !important; /* Below hamburger button */
+    z-index: 1000 !important; /* Above overlay (999) and content */
     padding: 90px 20px 20px;
     overflow-y: auto !important; /* Allow scrolling within sidebar if content is long */
     box-sizing: border-box !important;
     margin: 0 !important;
     transform: none !important; /* Prevent any transform interference */
+    contain: none !important;
+    isolation: auto !important;
+    pointer-events: auto !important; /* Always interactive */
 }
 
 .side-menu.active,
@@ -94,6 +97,8 @@
     top: 0 !important;
     height: 100vh !important;
     transform: none !important; /* Prevent any transform interference */
+    z-index: 1000 !important; /* Ensure above overlay */
+    pointer-events: auto !important; /* Always interactive when open */
 }
 
 .side-menu ul {
@@ -122,27 +127,30 @@
    MENU OVERLAY
    ================================ */
 
-/* Overlay for dimming content when menu is open - covers entire viewport */
+/* Overlay for dimming content when menu is open - covers viewport except sidebar area */
 .menu-overlay {
     position: fixed !important;
     top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
+    left: 300px !important; /* Start after sidebar */
+    width: calc(100vw - 300px) !important; /* Width minus sidebar */
     height: 100vh !important;
     background: rgba(0, 0, 0, 0.3);
     opacity: 0;
     visibility: hidden;
     transition: var(--transition-all);
-    z-index: 100 !important; /* Below header (500) and sidebar (1000) - only above main content */
-    pointer-events: none;
+    z-index: 999 !important; /* Below sidebar but above content */
+    pointer-events: none !important; /* Never block sidebar interaction */
     margin: 0 !important;
     padding: 0 !important;
+    contain: none !important;
+    isolation: auto !important;
+    transform: none !important;
 }
 
 .menu-overlay.active {
     opacity: 1;
     visibility: visible;
-    pointer-events: auto;
+    pointer-events: auto !important; /* Only allow clicks to close menu */
 }
 
 /* Remove the global body overlay */
@@ -331,6 +339,26 @@ body.menu-active .main-content,
 body.menu-active .content-container,
 body.menu-active main {
     position: static !important;
+    transform: none !important;
+    contain: none !important;
+    isolation: auto !important;
+}
+
+/* Prevent body/html interference with fixed positioning when menu is active */
+body.menu-active,
+html:has(body.menu-active) {
+    position: static !important;
+    display: block !important;
+    transform: none !important;
+    contain: none !important;
+    isolation: auto !important;
+    overflow-x: hidden !important; /* Prevent horizontal scroll when sidebar is open */
+}
+
+/* Ensure the main content doesn't interfere with sidebar positioning */
+body.menu-active main,
+body.menu-active .container,
+body.menu-active .page-container {
     transform: none !important;
     contain: none !important;
     isolation: auto !important;
