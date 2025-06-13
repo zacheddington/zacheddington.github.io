@@ -1178,13 +1178,17 @@ function startPatientColumnResize(event, header, columnIndex) {
             e.pageX ||
             (e.touches && e.touches[0] ? e.touches[0].pageX : startX); // Calculate new width immediately for responsive feedback
         const deltaX = pageX - startX;
-        const newWidth = Math.max(80, Math.min(500, startWidth + deltaX));
-
-        // Debug log to verify the function is being called
+        const newWidth = Math.max(80, Math.min(500, startWidth + deltaX)); // Debug log to verify the function is being called
         console.log('Patient table resizing:', { pageX, deltaX, newWidth });
 
-        // Apply the new width immediately - no throttling for real-time response
-        header.style.width = `${newWidth}px`;
+        // Force immediate visual update by setting multiple properties
+        header.style.setProperty('width', `${newWidth}px`, 'important');
+        header.style.minWidth = `${newWidth}px`;
+        header.style.maxWidth = `${newWidth}px`;
+
+        // Force a reflow to ensure immediate visual update
+        header.offsetHeight;
+
         handle.setAttribute('aria-valuenow', newWidth);
     }
 

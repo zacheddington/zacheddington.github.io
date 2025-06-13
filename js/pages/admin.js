@@ -124,108 +124,16 @@ function initializeManageUsersPage() {
     console.log('Manage users page initialized');
 }
 
-// Function to adjust column widths based on content
+// Function to set up table for resizing (simplified)
 function adjustColumnWidths() {
     const table = document.querySelector('.users-table');
     if (!table) return;
 
-    // Set table-layout to auto to allow content-based sizing
-    table.style.tableLayout = 'auto';
+    // Set table to fixed layout for consistent sizing
+    table.style.tableLayout = 'fixed';
 
-    // Get all table headers
-    const headers = Array.from(table.querySelectorAll('th'));
-
-    // Use canvas for more accurate text measurement
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-
-    // Calculate optimal widths based on actual content
-    headers.forEach((header, index) => {
-        const cells = Array.from(
-            table.querySelectorAll(`tbody tr td:nth-child(${index + 1})`)
-        );
-
-        // Remove any previous width to get natural content width
-        header.style.width = '';
-        cells.forEach((cell) => {
-            cell.style.width = '';
-        });
-
-        // Get the content type to optimize column width
-        const columnType = getColumnType(header.textContent);
-
-        let maxWidth = 80; // Minimum width
-
-        if (context) {
-            // Measure header width with canvas
-            const headerStyle = window.getComputedStyle(header);
-            context.font = `${headerStyle.fontWeight} ${headerStyle.fontSize} ${headerStyle.fontFamily}`;
-            maxWidth = Math.max(
-                context.measureText(header.textContent).width + 40,
-                80
-            );
-
-            // Measure all cells in the column
-            cells.forEach((cell) => {
-                let cellText = '';
-
-                // Handle different cell types properly
-                if (cell.querySelector('.user-fullname')) {
-                    cellText = cell
-                        .querySelector('.user-fullname')
-                        .textContent.trim();
-                } else if (cell.querySelector('.role-select')) {
-                    const select = cell.querySelector('.role-select');
-                    cellText = select.options[select.selectedIndex].text.trim();
-                } else if (cell.querySelector('.user-actions')) {
-                    cellText = '🗑️ Delete'; // Representative text for action buttons
-                } else {
-                    cellText = cell.textContent.trim();
-                }
-
-                if (cellText) {
-                    const cellStyle = window.getComputedStyle(cell);
-                    context.font = `${cellStyle.fontWeight} ${cellStyle.fontSize} ${cellStyle.fontFamily}`;
-                    const cellWidth = context.measureText(cellText).width + 40; // Add padding
-                    maxWidth = Math.max(maxWidth, cellWidth);
-                }
-            });
-        } else {
-            // Fallback for browsers without canvas support
-            maxWidth = Math.max(header.textContent.length * 8 + 40, 80);
-            cells.forEach((cell) => {
-                const cellText = cell.textContent.trim();
-                if (cellText) {
-                    maxWidth = Math.max(maxWidth, cellText.length * 8 + 40);
-                }
-            });
-        }
-
-        // Apply constraints based on column type
-        if (columnType === 'email') {
-            maxWidth = Math.min(maxWidth, 300); // Email column max width
-            maxWidth = Math.max(maxWidth, 150); // Email column min width
-        } else if (columnType === 'role') {
-            maxWidth = Math.min(maxWidth, 140); // Role column max width
-        } else if (columnType === 'actions') {
-            maxWidth = 120; // Actions column fixed width
-        } else if (columnType === 'date') {
-            maxWidth = Math.min(maxWidth, 120); // Date column max width
-        } else {
-            maxWidth = Math.min(maxWidth, 250); // General max width
-            maxWidth = Math.max(maxWidth, 100); // General min width
-        }
-
-        // Apply the calculated width
-        header.style.width = `${maxWidth}px`;
-    });
-
-    // After a small delay, switch back to fixed layout for better performance
-    setTimeout(() => {
-        table.style.tableLayout = 'fixed';
-        // Add column resize handles after setting initial widths
-        addColumnResizeHandles();
-    }, 100);
+    // Add column resize handles
+    addColumnResizeHandles();
 }
 
 // Simple debounce function to limit how often a function is called
@@ -1246,27 +1154,6 @@ function updateCreateUserSubmitButton() {
     }
 }
 
-// After the debounce function, add these new functions
-
-// Helper function to determine column type based on header text
-function getColumnType(headerText) {
-    headerText = headerText.toLowerCase();
-
-    if (headerText.includes('email')) {
-        return 'email';
-    } else if (headerText.includes('role')) {
-        return 'role';
-    } else if (headerText.includes('actions')) {
-        return 'actions';
-    } else if (headerText.includes('created') || headerText.includes('date')) {
-        return 'date';
-    } else if (headerText.includes('name')) {
-        return 'name';
-    } else {
-        return 'general';
-    }
-}
-
 // Function to add resize handles to table columns
 function addColumnResizeHandles() {
     const table = document.querySelector('.users-table');
@@ -1379,13 +1266,17 @@ function startColumnResize(event, header, columnIndex) {
             e.pageX ||
             (e.touches && e.touches[0] ? e.touches[0].pageX : startX); // Calculate new width immediately for responsive feedback
         const deltaX = pageX - startX;
-        const newWidth = Math.max(80, Math.min(500, startWidth + deltaX));
-
-        // Debug log to verify the function is being called
+        const newWidth = Math.max(80, Math.min(500, startWidth + deltaX)); // Debug log to verify the function is being called
         console.log('Resizing:', { pageX, deltaX, newWidth });
 
-        // Apply the new width immediately - no throttling for real-time response
-        header.style.width = `${newWidth}px`;
+        // Force immediate visual update by setting multiple properties
+        header.style.setProperty('width', `${newWidth}px`, 'important');
+        header.style.minWidth = `${newWidth}px`;
+        header.style.maxWidth = `${newWidth}px`;
+
+        // Force a reflow to ensure immediate visual update
+        header.offsetHeight;
+
         handle.setAttribute('aria-valuenow', newWidth);
     }
 
@@ -1463,112 +1354,16 @@ function announceForScreenReader(message) {
     }, 1000);
 }
 
-// Function to auto-size a specific column
+// Simple auto-size function (just sets to auto width)
 function autoSizeColumn(header, columnIndex) {
-    const table = document.querySelector('.users-table');
-    if (!table) return;
+    // Remove fixed width to let content determine size
+    header.style.width = 'auto';
 
-    // Get all cells in this column
-    const cells = Array.from(
-        table.querySelectorAll(`tbody tr td:nth-child(${columnIndex + 1})`)
-    );
-
-    // Remove any previous width to get natural content width
-    header.style.width = '';
-    cells.forEach((cell) => {
-        cell.style.width = '';
-    });
-
-    // Get the content type to optimize column width
-    const columnType = getColumnType(header.textContent); // Use canvas for more accurate text measurement
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    if (!context) {
-        // Fallback to simple calculation if canvas is not available
-        const headerText = header.textContent;
-        let maxWidth = Math.max(headerText.length * 8 + 40, 80); // Rough estimation
-
-        // Apply the calculated width
-        header.style.width = `${maxWidth}px`;
-
-        // Save and announce
-        setTimeout(() => {
-            table.style.tableLayout = 'fixed';
-            saveColumnWidthPreferences();
-        }, 50);
-
-        announceForScreenReader(
-            `Column ${header.textContent.trim()} automatically sized`
-        );
-        return;
-    }
-
-    const headerStyle = window.getComputedStyle(header);
-    context.font = `${headerStyle.fontWeight} ${headerStyle.fontSize} ${headerStyle.fontFamily}`;
-
-    // Measure header width
-    let maxWidth = Math.max(
-        context.measureText(header.textContent).width + 40,
-        80
-    ); // Add padding, minimum 80px
-
-    // Measure all cells in the column to find the widest content
-    cells.forEach((cell) => {
-        // Get the actual text content from the cell or its children
-        let cellText = '';
-
-        // Handle different cell types properly
-        if (cell.querySelector('.user-fullname')) {
-            cellText = cell.querySelector('.user-fullname').textContent.trim();
-        } else if (cell.querySelector('.role-select')) {
-            // For role cells with dropdowns, measure the selected option text
-            const select = cell.querySelector('.role-select');
-            cellText = select.options[select.selectedIndex].text.trim();
-        } else if (cell.querySelector('.user-actions')) {
-            // For action cells, measure the actual button content
-            cellText = '🗑️ Delete'; // More accurate representation
-        } else {
-            // Get the raw text content and clean it
-            cellText = cell.textContent.trim();
-        }
-
-        if (cellText) {
-            // Use canvas to measure text width more accurately
-            const cellStyle = window.getComputedStyle(cell);
-            context.font = `${cellStyle.fontWeight} ${cellStyle.fontSize} ${cellStyle.fontFamily}`;
-            const cellWidth = context.measureText(cellText).width + 40; // Add padding
-
-            // Find the maximum width needed
-            maxWidth = Math.max(maxWidth, cellWidth);
-        }
-    });
-
-    // Apply constraints based on column type
-    if (columnType === 'email') {
-        maxWidth = Math.min(maxWidth, 300); // Email column max width
-        maxWidth = Math.max(maxWidth, 150); // Email column min width
-    } else if (columnType === 'role') {
-        maxWidth = Math.min(maxWidth, 140); // Role column max width
-    } else if (columnType === 'actions') {
-        maxWidth = 120; // Actions column fixed width
-    } else if (columnType === 'date') {
-        maxWidth = Math.min(maxWidth, 120); // Date column max width
-    } else {
-        maxWidth = Math.min(maxWidth, 200); // General max width
-        maxWidth = Math.max(maxWidth, 100); // Minimum width for readability
-    }
-
-    // Apply the calculated width
-    header.style.width = `${maxWidth}px`; // Save the updated column widths to localStorage
-    setTimeout(() => {
-        table.style.tableLayout = 'fixed';
-        saveColumnWidthPreferences();
-    }, 50);
+    // Save the updated column widths
+    saveColumnWidthPreferences();
 
     // Announce the change to screen readers
-    announceForScreenReader(
-        `Column ${header.textContent.trim()} automatically sized`
-    );
+    announceForScreenReader(`Column ${header.textContent.trim()} auto-sized`);
 }
 
 // Function to save column width preferences
