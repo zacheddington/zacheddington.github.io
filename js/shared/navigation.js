@@ -754,9 +754,7 @@ function startScrollMonitoring() {
                     parent = parent.parentElement;
                     depth++;
                 } // FORCE CORRECTION IMMEDIATELY
-                console.log('🚨 EMERGENCY POSITION CORRECTION');
-
-                // NUCLEAR OPTION: Move sidebar to body if it's not already there
+                console.log('🚨 EMERGENCY POSITION CORRECTION'); // NUCLEAR OPTION: Move sidebar to body if it's not already there
                 if (sidebar.parentElement !== document.body) {
                     console.log(
                         '🚨 MOVING SIDEBAR TO BODY TO ESCAPE STACKING CONTEXT'
@@ -764,17 +762,101 @@ function startScrollMonitoring() {
                     document.body.appendChild(sidebar);
                 }
 
-                sidebar.style.setProperty('position', 'fixed', 'important');
-                sidebar.style.setProperty('top', '0px', 'important');
-                sidebar.style.setProperty('left', '0px', 'important');
-                sidebar.style.setProperty('transform', 'none', 'important');
+                // ULTRA AGGRESSIVE POSITIONING
+                console.log('🔥 ULTRA AGGRESSIVE POSITION RESET');
 
-                // Double-check after correction
+                // Clear all existing styles and start fresh
+                sidebar.style.cssText = '';
+
+                // Apply ultra-aggressive fixed positioning
+                sidebar.style.cssText = `
+                    position: fixed !important;
+                    top: 0px !important;
+                    left: 0px !important;
+                    width: 300px !important;
+                    height: 100vh !important;
+                    z-index: 99999 !important;
+                    background: white !important;
+                    transform: none !important;
+                    margin: 0 !important;
+                    padding: 90px 20px 20px !important;
+                    box-sizing: border-box !important;
+                    overflow-y: auto !important;
+                    will-change: auto !important;
+                    contain: none !important;
+                    isolation: auto !important;
+                    perspective: none !important;
+                    filter: none !important;
+                    clip-path: none !important;
+                    mask: none !important;
+                    mix-blend-mode: normal !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    display: block !important;
+                    pointer-events: auto !important;
+                `;
+
+                // Force multiple reflows
+                sidebar.offsetHeight;
+                sidebar.getBoundingClientRect();
+
+                // Check what the browser ACTUALLY applied
+                const afterResetStyle = window.getComputedStyle(sidebar);
+                console.log('🔍 COMPUTED STYLES AFTER ULTRA RESET:', {
+                    position: afterResetStyle.position,
+                    top: afterResetStyle.top,
+                    left: afterResetStyle.left,
+                    transform: afterResetStyle.transform,
+                    willChange: afterResetStyle.willChange,
+                    contain: afterResetStyle.contain,
+                }); // Double-check after correction
                 setTimeout(() => {
                     const correctedRect = sidebar.getBoundingClientRect();
                     console.log(
                         `✅ After correction: top=${correctedRect.top}, left=${correctedRect.left}`
                     );
+
+                    // If STILL not fixed, try the absolute nuclear option
+                    if (correctedRect.top !== 0) {
+                        console.log(
+                            '💀 FINAL NUCLEAR OPTION: Creating brand new sidebar element'
+                        );
+
+                        // Hide the broken sidebar
+                        sidebar.style.display = 'none';
+
+                        // Create a completely new sidebar element
+                        const newSidebar = document.createElement('div');
+                        newSidebar.className = 'side-menu nuclear-sidebar';
+                        newSidebar.innerHTML = sidebar.innerHTML;
+
+                        // Apply positioning to the new element
+                        newSidebar.style.cssText = `
+                            position: fixed !important;
+                            top: 0px !important;
+                            left: 0px !important;
+                            width: 300px !important;
+                            height: 100vh !important;
+                            z-index: 99999 !important;
+                            background: white !important;
+                            transform: none !important;
+                            margin: 0 !important;
+                            padding: 90px 20px 20px !important;
+                            box-sizing: border-box !important;
+                            overflow-y: auto !important;
+                        `;
+
+                        // Add to body
+                        document.body.appendChild(newSidebar);
+
+                        setTimeout(() => {
+                            const nuclearRect =
+                                newSidebar.getBoundingClientRect();
+                            console.log(
+                                `💀 Nuclear sidebar position: top=${nuclearRect.top}, left=${nuclearRect.left}`
+                            );
+                        }, 10);
+                    }
                 }, 10);
             }
         }
