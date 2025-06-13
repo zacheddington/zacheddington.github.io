@@ -150,6 +150,35 @@ function debounce(func, wait) {
     };
 }
 
+// Helper function to show loading state during API operations
+function setUserActionLoading(userId, isLoading) {
+    const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+    if (!userRow) return;
+
+    const actionButtons = userRow.querySelectorAll('.user-actions button');
+    const roleSelect = userRow.querySelector('.role-select');
+
+    if (isLoading) {
+        actionButtons.forEach((btn) => {
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+        });
+        if (roleSelect) {
+            roleSelect.disabled = true;
+            roleSelect.style.opacity = '0.6';
+        }
+    } else {
+        actionButtons.forEach((btn) => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        });
+        if (roleSelect) {
+            roleSelect.disabled = false;
+            roleSelect.style.opacity = '1';
+        }
+    }
+}
+
 // Function to announce changes to screen readers
 function announceForScreenReader(message) {
     const announcement = document.createElement('div');
@@ -1089,7 +1118,7 @@ function setupUserFilter() {
 }
 
 // Function to handle user role editing
-function editUserRole(userId, newRoleKey) {
+async function editUserRole(userId, newRoleKey) {
     // If newRoleKey is provided, we're handling a dropdown change
     if (newRoleKey !== undefined) {
         console.log('Updating user role:', { userId, newRoleKey });
@@ -1104,14 +1133,64 @@ function editUserRole(userId, newRoleKey) {
         window.modalManager.showModal(
             'confirm',
             `Are you sure you want to change this user's role to ${roleName}?`,
-            () => {
-                // Here you would make an API call to update the user's role
-                // For now, we'll show a success message
-                console.log(`Role updated for user ${userId} to ${roleName}`);
-                window.modalManager.showModal(
-                    'success',
-                    `User role successfully updated to ${roleName}.`
-                );
+            async () => {
+                try {
+                    // Show loading state
+                    setUserActionLoading(userId, true);
+
+                    const API_URL = getAPIUrl();
+                    const token = localStorage.getItem('token');
+
+                    const response = await fetch(
+                        `${API_URL}/api/users/${userId}/role`,
+                        {
+                            method: 'PUT',
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                roleKey: newRoleKey,
+                            }),
+                        }
+                    );
+
+                    if (response.ok) {
+                        const result = await response.json();
+
+                        // Update the user in the local array
+                        const userIndex = allUsers.findIndex(
+                            (user) => user.user_key == userId
+                        );
+                        if (userIndex !== -1) {
+                            allUsers[userIndex].role_key = newRoleKey;
+                            allUsers[userIndex].role_name = roleName;
+                        }
+
+                        // Refresh the table display
+                        displayFilteredUsers();
+
+                        // Show success message
+                        window.modalManager.showModal(
+                            'success',
+                            `User role successfully updated to ${roleName}.`
+                        );
+                    } else {
+                        const errorData = await response.json();
+                        throw new Error(
+                            errorData.message || 'Failed to update user role'
+                        );
+                    }
+                } catch (error) {
+                    console.error('Error updating user role:', error);
+                    window.modalManager.showModal(
+                        'error',
+                        `Failed to update user role: ${error.message}`
+                    );
+                } finally {
+                    // Hide loading state
+                    setUserActionLoading(userId, false);
+                }
             }
         );
     } else {
@@ -1119,16 +1198,91 @@ function editUserRole(userId, newRoleKey) {
         console.log('Edit user role functionality for ID:', userId);
         window.modalManager.showModal(
             'info',
-            'User role editing functionality will be implemented in a future update.'
+            'Please use the role dropdown to change user roles.'
         );
     }
 }
 
-function deleteUser(userId, username) {
-    console.log('Delete user functionality for ID:', userId);
+async function deleteUser(userId, username) {
+    console.log(
+        'Delete user functionality for ID:',
+        userId,
+        'Username:',
+        username
+    );
+
+    // Show confirmation modal with strong warning
     window.modalManager.showModal(
-        'info',
-        'User deletion functionality will be implemented in a future update.'
+        'confirm',
+        `Are you sure you want to permanently delete user "${username}"? This action cannot be undone and will remove all associated data.`,
+        async () => {
+            try {
+                // Show loading state
+                setUserActionLoading(userId, true);
+
+                const API_URL = getAPIUrl();
+                const token = localStorage.getItem('token');
+
+                const response = await fetch(`${API_URL}/api/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    // Remove the user from the local array
+                    const userIndex = allUsers.findIndex(
+                        (user) => user.user_key == userId
+                    );
+                    if (userIndex !== -1) {
+                        allUsers.splice(userIndex, 1);
+                    }
+
+                    // Refresh the table display
+                    displayFilteredUsers();
+
+                    // Show success message
+                    window.modalManager.showModal(
+                        'success',
+                        `User "${username}" has been successfully deleted.`
+                    );
+                } else if (response.status === 404) {
+                    // Handle case where backend delete endpoint doesn't exist yet
+                    window.modalManager.showModal(
+                        'info',
+                        'User deletion functionality is not yet available on the server. Please contact your system administrator.'
+                    );
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(
+                        errorData.message || 'Failed to delete user'
+                    );
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+
+                if (
+                    error.message.includes('404') ||
+                    error.message.includes('Not Found')
+                ) {
+                    // Backend endpoint doesn't exist yet
+                    window.modalManager.showModal(
+                        'info',
+                        'User deletion functionality is not yet available on the server. Please contact your system administrator.'
+                    );
+                } else {
+                    window.modalManager.showModal(
+                        'error',
+                        `Failed to delete user: ${error.message}`
+                    );
+                }
+            } finally {
+                // Hide loading state
+                setUserActionLoading(userId, false);
+            }
+        }
     );
 }
 
