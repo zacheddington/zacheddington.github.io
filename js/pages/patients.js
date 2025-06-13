@@ -415,6 +415,11 @@ async function createPatient() {
                 window.location.href = '../';
             }, 2500);
         } else {
+            // Check for authentication/authorization errors first
+            if (response.status === 401 || response.status === 403) {
+                window.handleAuthError(response, 'creating patient');
+                return;
+            }
             throw new Error(result.error || 'Failed to create patient');
         }
     } catch (error) {
@@ -538,6 +543,11 @@ async function loadPatients() {
                 displayPatients(sortedPatients);
             }
         } else {
+            // Use global auth error handler for consistent experience
+            if (response.status === 401 || response.status === 403) {
+                window.handleAuthError(response, 'loading patients');
+                return;
+            }
             throw new Error('Failed to load patients');
         }
     } catch (error) {

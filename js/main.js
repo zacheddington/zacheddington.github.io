@@ -37,12 +37,27 @@ function initializeApp() {
     // Determine current page
     currentPage = getCurrentPage();
     console.log('Initializing app for page:', currentPage);
+
     // Check authentication for protected pages
     if (shouldCheckAuth(currentPage)) {
         if (!window.authUtils.isAuthenticated()) {
             console.log('User not authenticated, redirecting to login');
             window.location.href = '/';
             return;
+        }
+
+        // Initialize global token monitoring for authenticated pages
+        if (window.authUtils.initializeGlobalTokenMonitoring) {
+            const tokenValid =
+                window.authUtils.initializeGlobalTokenMonitoring();
+            if (!tokenValid) {
+                return; // Token expired, redirect handled by monitoring
+            }
+        }
+
+        // Set up global authenticated fetch wrapper
+        if (window.authUtils.createAuthenticatedFetch) {
+            window.authUtils.createAuthenticatedFetch();
         }
     }
 

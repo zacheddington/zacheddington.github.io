@@ -669,39 +669,11 @@ async function loadUsers() {
                 displayUsers(sortedUsers);
             }
         } else {
-            if (response.status === 403) {
-                // Handle authorization error
-                const errorMessage =
-                    'You do not have permission to view users. Admin access required.';
-                console.error('Authorization error:', errorMessage);
-
-                const usersTableBody =
-                    document.getElementById('usersTableBody');
-                if (usersTableBody) {
-                    usersTableBody.innerHTML = `
-                        <tr><td colspan="6" style="text-align: center; color: #dc3545; padding: 2rem;">
-                            <div>
-                                <h4>⚠️ Access Denied</h4>
-                                <p>You do not have permission to view user management.</p>
-                                <p>Please contact your administrator to request admin access.</p>
-                            </div>
-                        </td></tr>
-                    `;
-                }
-
+            // Use global auth error handler for consistent experience
+            if (response.status === 401 || response.status === 403) {
+                window.handleAuthError(response, 'loading users');
                 // Hide loading indicator
                 if (usersLoading) usersLoading.style.display = 'none';
-                return;
-            } else if (response.status === 401) {
-                // Handle authentication error
-                window.modalManager.showModal(
-                    'error',
-                    'Your session has expired. Please log in again.'
-                );
-                // Redirect to login
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 2000);
                 return;
             }
             throw new Error('Failed to load users');
@@ -732,15 +704,11 @@ async function loadRolesForUserManagement() {
         });
         if (response.ok) {
             const result = await response.json();
-            currentRoles = result.data; // Extract data from response object        } else {
-            if (response.status === 403) {
-                console.error(
-                    'Access denied when loading roles - user may not have admin privileges'
-                );
-                // Don't show error modal, just log it. The table will show without dropdowns.
-                currentRoles = [];
-            } else if (response.status === 401) {
-                console.error('Authentication failed when loading roles');
+            currentRoles = result.data; // Extract data from response object
+        } else {
+            // Use global auth error handler for consistent experience
+            if (response.status === 401 || response.status === 403) {
+                window.handleAuthError(response, 'loading roles');
                 currentRoles = [];
             } else {
                 console.error('Failed to load roles for user management');

@@ -433,7 +433,4 @@ const modalManager = {
 window.showModal = modalManager.showModal.bind(modalManager);
 window.closeModal = modalManager.closeModal.bind(modalManager);
 window.modalManager = modalManager;
-window.showLogoutModal = showLogoutModal;
-
-// Add the enhanced logout confirmation to modalManager (unified function)
-modalManager.showLogoutModal = showLogoutModal;
+window.showLogoutModal = modalManager.showLogoutModal.bind(modalManager);
