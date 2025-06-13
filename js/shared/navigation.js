@@ -666,15 +666,70 @@ function startScrollMonitoring() {
     // Apply initial fixed positioning
     forceViewportPositioning();
 
-    // Since we're using position: fixed, no monitoring is needed
-    // Fixed elements stay pinned to viewport automatically
-    console.log('✅ Menu opened with fixed positioning - no monitoring needed');
+    // ADD DIAGNOSTIC SCROLL MONITORING
+    // This is temporary to debug what's happening during scroll
+    console.log(
+        '🔍 Adding diagnostic scroll listener to track sidebar behavior...'
+    );
+
+    const diagnosticScrollHandler = () => {
+        const sidebar =
+            document.querySelector('.side-menu') ||
+            document.querySelector('#sideMenu');
+        if (sidebar) {
+            const rect = sidebar.getBoundingClientRect();
+            const computedStyle = window.getComputedStyle(sidebar);
+            console.log(
+                `📊 SCROLL DEBUG - ScrollY: ${window.scrollY}, Sidebar rect: top=${rect.top}, left=${rect.left}, position=${computedStyle.position}`
+            );
+
+            // If sidebar is not at correct position, log what's wrong
+            if (rect.top !== 0 || rect.left !== 0) {
+                console.warn(
+                    `⚠️ SIDEBAR POSITION INCORRECT - Expected (0,0), Got (${rect.left}, ${rect.top})`
+                );
+                console.log(`🔧 Sidebar computed styles:`, {
+                    position: computedStyle.position,
+                    top: computedStyle.top,
+                    left: computedStyle.left,
+                    transform: computedStyle.transform,
+                    zIndex: computedStyle.zIndex,
+                });
+
+                // FORCE CORRECTION IMMEDIATELY
+                console.log('🚨 EMERGENCY POSITION CORRECTION');
+                sidebar.style.setProperty('position', 'fixed', 'important');
+                sidebar.style.setProperty('top', '0px', 'important');
+                sidebar.style.setProperty('left', '0px', 'important');
+                sidebar.style.setProperty('transform', 'none', 'important');
+            }
+        }
+    };
+
+    // Add scroll listener for diagnostics
+    window.addEventListener('scroll', diagnosticScrollHandler, {
+        passive: true,
+    });
+
+    // Store reference to remove later
+    window.diagnosticScrollHandler = diagnosticScrollHandler;
+
+    console.log(
+        '✅ Menu opened with fixed positioning and diagnostic monitoring enabled'
+    );
 }
 
 function stopScrollMonitoring() {
     if (scrollMonitor) {
         clearInterval(scrollMonitor);
         scrollMonitor = null;
+    }
+
+    // Remove diagnostic scroll listener
+    if (window.diagnosticScrollHandler) {
+        window.removeEventListener('scroll', window.diagnosticScrollHandler);
+        delete window.diagnosticScrollHandler;
+        console.log('🧹 Diagnostic scroll monitoring stopped');
     }
 
     // Remove scroll and resize listeners
@@ -829,12 +884,25 @@ function forceViewportPositioning() {
     }, 50);
     console.log('☢️  Fixed positioning applied for viewport pinning!');
 
-    // Check final positioning
+    // Check final positioning multiple times to see if something changes it
     setTimeout(() => {
         const sidebarRect = sidebar.getBoundingClientRect();
         const overlayRect = overlay.getBoundingClientRect();
         console.log('📐 Sidebar rect (should be 0,0):', sidebarRect);
-        console.log('📐 Overlay rect (should be 300,0):', overlayRect); // Verify positioning is correct
+        console.log('📐 Overlay rect (should be 300,0):', overlayRect);
+
+        // Log computed styles for debugging
+        const sidebarComputed = window.getComputedStyle(sidebar);
+        console.log('🔍 Sidebar computed styles after 100ms:', {
+            position: sidebarComputed.position,
+            top: sidebarComputed.top,
+            left: sidebarComputed.left,
+            transform: sidebarComputed.transform,
+            zIndex: sidebarComputed.zIndex,
+            transition: sidebarComputed.transition,
+        });
+
+        // Verify positioning is correct
         if (sidebarRect.top === 0 && sidebarRect.left === 0) {
             console.log('✅ VIEWPORT PINNING SUCCESSFUL - Sidebar at (0,0)');
         } else {
@@ -980,6 +1048,53 @@ function forceViewportPositioning() {
             }, 50);
         }
     }, 100);
+
+    // Add a longer delayed check to see if something changes the position later
+    setTimeout(() => {
+        console.log(
+            '🕐 DELAYED CHECK (1 second) - Verifying sidebar position...'
+        );
+        const delayedSidebarRect = sidebar.getBoundingClientRect();
+        const delayedSidebarComputed = window.getComputedStyle(sidebar);
+
+        console.log('📐 Delayed sidebar rect:', delayedSidebarRect);
+        console.log('🔍 Delayed sidebar computed styles:', {
+            position: delayedSidebarComputed.position,
+            top: delayedSidebarComputed.top,
+            left: delayedSidebarComputed.left,
+            transform: delayedSidebarComputed.transform,
+            transition: delayedSidebarComputed.transition,
+        });
+
+        if (delayedSidebarRect.top !== 0 || delayedSidebarRect.left !== 0) {
+            console.error('🚨 DELAYED POSITION DRIFT DETECTED!');
+            console.log(
+                'Expected: (0,0), Actual: (' +
+                    delayedSidebarRect.left +
+                    ',' +
+                    delayedSidebarRect.top +
+                    ')'
+            );
+
+            // Check if any parent has transforms
+            let parent = sidebar.parentElement;
+            while (parent && parent !== document.body) {
+                const parentStyle = window.getComputedStyle(parent);
+                if (parentStyle.transform !== 'none') {
+                    console.warn(
+                        '🔍 Found transform on parent:',
+                        parent.tagName,
+                        parent.className,
+                        'transform:',
+                        parentStyle.transform
+                    );
+                }
+                parent = parent.parentElement;
+            }
+        } else {
+            console.log('✅ DELAYED CHECK PASSED - Sidebar still at (0,0)');
+        }
+    }, 1000);
 }
 
 // Diagnostic function to identify what's causing the positioning offset
