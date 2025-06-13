@@ -57,8 +57,16 @@ async function loadMenu() {
                 menuOverlay.classList.remove('active');
                 document.body.classList.remove('menu-active');
 
+                // Stop scroll monitoring
+                stopScrollMonitoring();
+
                 // Reset sidebar positioning when closed
-                sideMenu.style.left = '-300px';
+                sideMenu.style.setProperty('left', '-300px', 'important');
+
+                // Reset overlay
+                menuOverlay.style.opacity = '0';
+                menuOverlay.style.visibility = 'hidden';
+                menuOverlay.style.pointerEvents = 'none';
             }
 
             // Ensure menu is closed on page load (handles any cached state)
@@ -94,14 +102,63 @@ async function loadMenu() {
                 menuOverlay.classList.toggle('active', isOpening);
                 document.body.classList.toggle('menu-active', isOpening);
 
-                // Force sidebar positioning when opening
                 if (isOpening) {
-                    sideMenu.style.position = 'fixed';
-                    sideMenu.style.top = '0';
-                    sideMenu.style.left = '0';
-                    sideMenu.style.height = '100vh';
-                    sideMenu.style.zIndex = '1000';
-                    sideMenu.style.overflowY = 'auto';
+                    // Force sidebar positioning when opening with maximum enforcement
+                    sideMenu.style.setProperty(
+                        'position',
+                        'fixed',
+                        'important'
+                    );
+                    sideMenu.style.setProperty('top', '0px', 'important');
+                    sideMenu.style.setProperty('left', '0px', 'important');
+                    sideMenu.style.setProperty('height', '100vh', 'important');
+                    sideMenu.style.setProperty('width', '300px', 'important');
+                    sideMenu.style.setProperty('z-index', '1000', 'important');
+                    sideMenu.style.setProperty(
+                        'overflow-y',
+                        'auto',
+                        'important'
+                    );
+                    sideMenu.style.setProperty(
+                        'transform',
+                        'none',
+                        'important'
+                    );
+                    sideMenu.style.setProperty(
+                        'will-change',
+                        'auto',
+                        'important'
+                    );
+
+                    // Force overlay to cover full viewport
+                    menuOverlay.style.setProperty(
+                        'position',
+                        'fixed',
+                        'important'
+                    );
+                    menuOverlay.style.setProperty('top', '0px', 'important');
+                    menuOverlay.style.setProperty('left', '0px', 'important');
+                    menuOverlay.style.setProperty(
+                        'width',
+                        '100vw',
+                        'important'
+                    );
+                    menuOverlay.style.setProperty(
+                        'height',
+                        '100vh',
+                        'important'
+                    );
+                    menuOverlay.style.setProperty(
+                        'z-index',
+                        '100',
+                        'important'
+                    );
+
+                    // Start monitoring to keep sidebar pinned
+                    startScrollMonitoring();
+                } else {
+                    // Stop monitoring when closing
+                    stopScrollMonitoring();
                 }
             });
 
@@ -247,3 +304,51 @@ window.navigation = {
 window.loadMenu = loadMenu;
 window.setupFadeNavigation = setupFadeNavigation;
 window.setupPatientNumberValidation = setupPatientNumberValidation;
+
+// Add scroll monitoring to keep sidebar pinned
+let scrollMonitor;
+
+function ensureSidebarPinned() {
+    const sidebar = document.querySelector('.side-menu');
+    if (
+        sidebar &&
+        (sidebar.classList.contains('open') ||
+            sidebar.classList.contains('active'))
+    ) {
+        // Force positioning on every scroll if sidebar is open
+        sidebar.style.setProperty('position', 'fixed', 'important');
+        sidebar.style.setProperty('top', '0px', 'important');
+        sidebar.style.setProperty('left', '0px', 'important');
+        sidebar.style.setProperty('height', '100vh', 'important');
+        sidebar.style.setProperty('z-index', '1000', 'important');
+
+        // Also ensure overlay covers full viewport
+        const overlay = document.querySelector('.menu-overlay');
+        if (overlay && overlay.classList.contains('active')) {
+            overlay.style.setProperty('position', 'fixed', 'important');
+            overlay.style.setProperty('top', '0px', 'important');
+            overlay.style.setProperty('left', '0px', 'important');
+            overlay.style.setProperty('width', '100vw', 'important');
+            overlay.style.setProperty('height', '100vh', 'important');
+        }
+    }
+}
+
+// Monitor scroll events when sidebar is open
+function startScrollMonitoring() {
+    if (scrollMonitor) {
+        clearInterval(scrollMonitor);
+    }
+    scrollMonitor = setInterval(ensureSidebarPinned, 100);
+    window.addEventListener('scroll', ensureSidebarPinned, { passive: true });
+    window.addEventListener('resize', ensureSidebarPinned, { passive: true });
+}
+
+function stopScrollMonitoring() {
+    if (scrollMonitor) {
+        clearInterval(scrollMonitor);
+        scrollMonitor = null;
+    }
+    window.removeEventListener('scroll', ensureSidebarPinned);
+    window.removeEventListener('resize', ensureSidebarPinned);
+}
