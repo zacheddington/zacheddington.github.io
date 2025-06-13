@@ -83,10 +83,11 @@
 /* During resizing, optimize for performance */
 .users-table.resizing th,
 #patientsTable.resizing th {
-    transition: none;
+    transition: none !important;
     will-change: width;
-    /* Force hardware acceleration for smooth resizing */
+    /* Force hardware acceleration and disable subpixel rendering for performance */
     transform: translateZ(0);
+    contain: layout style;
 }
 
 /* Add visual indicator when columns are being resized */
@@ -133,9 +134,10 @@
 }
 
 /* Performance optimizations for smooth resizing */
-.users-table.resizing *,
-#patientsTable.resizing * {
+.users-table.resizing,
+#patientsTable.resizing {
     pointer-events: none; /* Prevent unwanted hover effects during resize */
+    contain: layout style; /* Optimize repaints */
 }
 
 .users-table.resizing .column-resize-handle,

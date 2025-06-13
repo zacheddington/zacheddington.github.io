@@ -1257,31 +1257,41 @@ function startColumnResize(event, header, columnIndex) {
     handle.setAttribute('aria-valuenow', startWidth); // Add resizing class to table
     table.classList.add('resizing');
     // Mark the handle as active
-    handle.classList.add('active');
-
-    // Function to handle mouse/touch movement during resize
+    handle.classList.add('active'); // Function to handle mouse/touch movement during resize
     function handlePointerMove(e) {
         // Get pageX for calculations
         const pageX =
             e.pageX ||
-            (e.touches && e.touches[0] ? e.touches[0].pageX : startX); // Calculate new width immediately for responsive feedback
+            (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
+
+        // Calculate new width immediately for responsive feedback
         const deltaX = pageX - startX;
-        const newWidth = Math.max(80, Math.min(500, startWidth + deltaX)); // Debug log to verify the function is being called
-        console.log('Resizing:', { pageX, deltaX, newWidth });
+        const newWidth = Math.max(80, Math.min(500, startWidth + deltaX));
 
-        // Force immediate visual update by setting multiple properties
-        header.style.setProperty('width', `${newWidth}px`, 'important');
-        header.style.minWidth = `${newWidth}px`;
-        header.style.maxWidth = `${newWidth}px`;
+        // Use requestAnimationFrame for smooth updates
+        if (!handlePointerMove.rafId) {
+            handlePointerMove.rafId = requestAnimationFrame(() => {
+                header.style.width = `${newWidth}px`;
+                handlePointerMove.rafId = null;
+            });
+        }
 
-        // Force a reflow to ensure immediate visual update
-        header.offsetHeight;
-
-        handle.setAttribute('aria-valuenow', newWidth);
-    }
-
-    // Function to handle mouse/touch up (end of resize)
+        // Only update ARIA value periodically to reduce overhead
+        if (
+            !handlePointerMove.lastAriaUpdate ||
+            Date.now() - handlePointerMove.lastAriaUpdate > 100
+        ) {
+            handle.setAttribute('aria-valuenow', newWidth);
+            handlePointerMove.lastAriaUpdate = Date.now();
+        }
+    } // Function to handle mouse/touch up (end of resize)
     function handlePointerUp(e) {
+        // Cancel any pending animation frame
+        if (handlePointerMove.rafId) {
+            cancelAnimationFrame(handlePointerMove.rafId);
+            handlePointerMove.rafId = null;
+        }
+
         // Remove event listeners
         document.removeEventListener('mousemove', handlePointerMove);
         document.removeEventListener('mouseup', handlePointerUp);
@@ -1302,8 +1312,7 @@ function startColumnResize(event, header, columnIndex) {
             Math.min(500, startWidth + (pageX - startX))
         ); // Min 80px, Max 500px
 
-        // Apply the new width to the column with a transition for smoothness
-        header.style.transition = 'width 0.1s ease-out';
+        // Apply the final width immediately
         header.style.width = `${newWidth}px`;
 
         // Update ARIA value for accessibility
@@ -1314,11 +1323,6 @@ function startColumnResize(event, header, columnIndex) {
 
         // Remove active from handle
         handle.classList.remove('active');
-
-        // Reset transition after width is applied
-        setTimeout(() => {
-            header.style.transition = '';
-        }, 100);
 
         // Save column width in localStorage for persistence
         saveColumnWidthPreferences();
