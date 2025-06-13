@@ -341,10 +341,9 @@ async function loadMenu() {
                         'auto',
                         'important'
                     ); // Start monitoring to keep sidebar pinned
-                    startScrollMonitoring();
-
-                    // Nuclear option: Force viewport positioning after a brief delay
+                    startScrollMonitoring(); // Nuclear option: Force viewport positioning after a brief delay
                     setTimeout(() => {
+                        diagnosticCheck();
                         forceViewportPositioning();
                     }, 100);
                 } else {
@@ -602,31 +601,54 @@ function forceViewportPositioning() {
         return;
     }
 
+    console.log('🔍 Current scroll position:', window.scrollX, window.scrollY);
+    console.log('🔍 Viewport size:', window.innerWidth, window.innerHeight);
+
+    // ULTRA NUCLEAR: Force elements to document body if they're not already there
+    if (sidebar.parentNode !== document.body) {
+        console.log('🚨 Moving sidebar to document body...');
+        document.body.appendChild(sidebar);
+    }
+    if (overlay.parentNode !== document.body) {
+        console.log('🚨 Moving overlay to document body...');
+        document.body.appendChild(overlay);
+    }
+
     // Force remove any CSS that might interfere with fixed positioning on ALL elements
     const allElements = document.querySelectorAll('*');
     allElements.forEach((el) => {
         if (el === sidebar || el === overlay) return; // Skip sidebar and overlay
 
         // Remove transforms that might create new stacking contexts
-        if (window.getComputedStyle(el).transform !== 'none') {
+        const computedStyle = window.getComputedStyle(el);
+        if (computedStyle.transform !== 'none') {
             el.style.setProperty('transform', 'none', 'important');
+            console.log('🔧 Removed transform from:', el.tagName, el.className);
         }
 
         // Remove will-change that might affect positioning
-        if (window.getComputedStyle(el).willChange !== 'auto') {
+        if (computedStyle.willChange !== 'auto') {
             el.style.setProperty('will-change', 'auto', 'important');
         }
 
         // Remove contain that might create new containing blocks
-        if (window.getComputedStyle(el).contain !== 'none') {
+        if (computedStyle.contain !== 'none') {
             el.style.setProperty('contain', 'none', 'important');
         }
 
         // Remove isolation that might create new stacking contexts
-        if (window.getComputedStyle(el).isolation !== 'auto') {
+        if (computedStyle.isolation !== 'auto') {
             el.style.setProperty('isolation', 'auto', 'important');
         }
+
+        // Remove perspective that might create new stacking contexts
+        if (computedStyle.perspective !== 'none') {
+            el.style.setProperty('perspective', 'none', 'important');
+        }
     });
+
+    // ULTRA-NUCLEAR: Use absolute positioning with explicit coordinates
+    console.log('🎯 Applying ULTRA NUCLEAR positioning...');
 
     // Ultra-aggressive sidebar positioning
     sidebar.style.cssText = `
@@ -634,8 +656,8 @@ function forceViewportPositioning() {
         top: 0px !important;
         left: 0px !important;
         width: 300px !important;
-        height: 100vh !important;
-        z-index: 1000 !important;
+        height: ${window.innerHeight}px !important;
+        z-index: 10001 !important;
         background: white !important;
         box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1) !important;
         padding: 90px 20px 20px !important;
@@ -647,6 +669,7 @@ function forceViewportPositioning() {
         contain: none !important;
         isolation: auto !important;
         pointer-events: auto !important;
+        perspective: none !important;
     `;
 
     // Ultra-aggressive overlay positioning
@@ -654,9 +677,9 @@ function forceViewportPositioning() {
         position: fixed !important;
         top: 0px !important;
         left: 300px !important;
-        width: calc(100vw - 300px) !important;
-        height: 100vh !important;
-        z-index: 999 !important;
+        width: ${window.innerWidth - 300}px !important;
+        height: ${window.innerHeight}px !important;
+        z-index: 10000 !important;
         background: rgba(0, 0, 0, 0.3) !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -667,9 +690,99 @@ function forceViewportPositioning() {
         pointer-events: auto !important;
         opacity: 1 !important;
         visibility: visible !important;
+        perspective: none !important;
     `;
 
+    // Force recalculation
+    sidebar.offsetHeight;
+    overlay.offsetHeight;
+
     console.log('☢️  Nuclear positioning applied!');
-    console.log('📐 Sidebar final rect:', sidebar.getBoundingClientRect());
-    console.log('📐 Overlay final rect:', overlay.getBoundingClientRect());
+
+    // Check final positioning after a tick
+    setTimeout(() => {
+        const sidebarRect = sidebar.getBoundingClientRect();
+        const overlayRect = overlay.getBoundingClientRect();
+        console.log('📐 Sidebar final rect:', sidebarRect);
+        console.log('📐 Overlay final rect:', overlayRect);
+
+        // If still not at 0,0, try one more time with even more force
+        if (sidebarRect.top !== 0 || overlayRect.top !== 0) {
+            console.log(
+                '🚨 STILL NOT POSITIONED CORRECTLY - Trying ultimate fix...'
+            );
+
+            // Use style.setProperty with highest specificity
+            sidebar.style.setProperty('position', 'fixed', 'important');
+            sidebar.style.setProperty('top', '0px', 'important');
+            sidebar.style.setProperty('left', '0px', 'important');
+
+            overlay.style.setProperty('position', 'fixed', 'important');
+            overlay.style.setProperty('top', '0px', 'important');
+            overlay.style.setProperty('left', '300px', 'important');
+
+            // Force another recalculation
+            sidebar.offsetHeight;
+            overlay.offsetHeight;
+
+            console.log(
+                '📐 After ultimate fix - Sidebar rect:',
+                sidebar.getBoundingClientRect()
+            );
+            console.log(
+                '📐 After ultimate fix - Overlay rect:',
+                overlay.getBoundingClientRect()
+            );
+        }
+    }, 10);
+}
+
+// Diagnostic function to identify what's causing the positioning offset
+function diagnosticCheck() {
+    console.log('🔍 DIAGNOSTIC CHECK - Analyzing positioning context...');
+
+    // Check document and body styles
+    const docStyle = window.getComputedStyle(document.documentElement);
+    const bodyStyle = window.getComputedStyle(document.body);
+
+    console.log('📋 Document element styles:', {
+        transform: docStyle.transform,
+        position: docStyle.position,
+        contain: docStyle.contain,
+        isolation: docStyle.isolation,
+        perspective: docStyle.perspective,
+    });
+
+    console.log('📋 Body styles:', {
+        transform: bodyStyle.transform,
+        position: bodyStyle.position,
+        contain: bodyStyle.contain,
+        isolation: bodyStyle.isolation,
+        perspective: bodyStyle.perspective,
+    });
+
+    // Check for any elements with transforms
+    const elementsWithTransforms = [];
+    document.querySelectorAll('*').forEach((el) => {
+        const style = window.getComputedStyle(el);
+        if (style.transform !== 'none') {
+            elementsWithTransforms.push({
+                element: el,
+                tag: el.tagName,
+                class: el.className,
+                transform: style.transform,
+            });
+        }
+    });
+
+    console.log('🔧 Elements with transforms:', elementsWithTransforms);
+
+    // Check viewport vs page coordinates
+    console.log('📐 Viewport info:', {
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        scrollX: window.scrollX,
+        scrollY: window.scrollY,
+        devicePixelRatio: window.devicePixelRatio,
+    });
 }
