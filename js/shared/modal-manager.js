@@ -175,7 +175,6 @@ const modalManager = {
         // Remove body scroll prevention
         document.body.classList.remove('modal-open');
     },
-
     showLogoutConfirmation: function (onConfirm) {
         return new Promise((resolve) => {
             // Prevent duplicate modals
@@ -204,17 +203,43 @@ const modalManager = {
 
             document.body.appendChild(logoutModal);
 
-            // Focus on the modal for accessibility
-            logoutModal.focus();
+            // Prevent body scrolling
+            document.body.classList.add('modal-open');
 
-            // Set up event handlers
+            // Force modal to center in viewport with inline styles
+            logoutModal.style.display = 'flex';
+            logoutModal.style.position = 'fixed';
+            logoutModal.style.top = '0';
+            logoutModal.style.left = '0';
+            logoutModal.style.width = '100%';
+            logoutModal.style.height = '100%';
+            logoutModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            logoutModal.style.justifyContent = 'center';
+            logoutModal.style.alignItems = 'center';
+            logoutModal.style.zIndex = '10000';
+            logoutModal.style.margin = '0';
+            logoutModal.style.padding = '0';
+
+            // Ensure it's above everything else with !important
+            logoutModal.style.setProperty('position', 'fixed', 'important');
+            logoutModal.style.setProperty('z-index', '10000', 'important');
+            logoutModal.style.setProperty('display', 'flex', 'important');
+            logoutModal.style.setProperty('top', '0', 'important');
+            logoutModal.style.setProperty('left', '0', 'important');
+            logoutModal.style.setProperty('width', '100%', 'important');
+            logoutModal.style.setProperty('height', '100%', 'important');
+
+            // Focus on the modal for accessibility
+            logoutModal.focus(); // Set up event handlers
             const cancelHandler = () => {
                 document.body.removeChild(logoutModal);
+                document.body.classList.remove('modal-open');
                 resolve(false);
             };
 
             const confirmHandler = () => {
                 document.body.removeChild(logoutModal);
+                document.body.classList.remove('modal-open');
                 if (onConfirm) {
                     onConfirm();
                 }
@@ -424,8 +449,33 @@ const modalManager = {
                     </div>
                 </div>
             `;
-
             document.body.appendChild(logoutModal);
+
+            // Prevent body scrolling
+            document.body.classList.add('modal-open');
+
+            // Force modal to center in viewport with inline styles
+            logoutModal.style.display = 'flex';
+            logoutModal.style.position = 'fixed';
+            logoutModal.style.top = '0';
+            logoutModal.style.left = '0';
+            logoutModal.style.width = '100%';
+            logoutModal.style.height = '100%';
+            logoutModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            logoutModal.style.justifyContent = 'center';
+            logoutModal.style.alignItems = 'center';
+            logoutModal.style.zIndex = '10000';
+            logoutModal.style.margin = '0';
+            logoutModal.style.padding = '0';
+
+            // Ensure it's above everything else with !important
+            logoutModal.style.setProperty('position', 'fixed', 'important');
+            logoutModal.style.setProperty('z-index', '10000', 'important');
+            logoutModal.style.setProperty('display', 'flex', 'important');
+            logoutModal.style.setProperty('top', '0', 'important');
+            logoutModal.style.setProperty('left', '0', 'important');
+            logoutModal.style.setProperty('width', '100%', 'important');
+            logoutModal.style.setProperty('height', '100%', 'important');
 
             // Focus on the modal for accessibility
             logoutModal.focus(); // Set up event handlers
