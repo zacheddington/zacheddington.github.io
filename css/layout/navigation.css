@@ -90,6 +90,11 @@
     pointer-events: auto !important; /* Always interactive */
 }
 
+/* Disable transitions when menu is active for immediate JavaScript positioning */
+.menu-active .side-menu {
+    transition: none !important; /* JavaScript handles positioning when active */
+}
+
 .side-menu.active,
 .side-menu.open {
     left: 0 !important;
@@ -99,6 +104,7 @@
     transform: none !important; /* Prevent any transform interference */
     z-index: 1000 !important; /* Ensure above overlay */
     pointer-events: auto !important; /* Always interactive when open */
+    transition: none !important; /* No animation when JavaScript is controlling position */
 }
 
 .side-menu ul {
