@@ -37,11 +37,25 @@ async function loadMenu() {
         if (!response.ok) {
             throw new Error(`Failed to load menu: ${response.status}`);
         }
-
         const menuHTML = await response.text();
-        hamburgerContainer.innerHTML = menuHTML; // Add hamburger menu functionality
+        hamburgerContainer.innerHTML = menuHTML;
+
+        // CRITICAL FIX: Move sidebar outside the header to avoid stacking context issues
         const hamburgerBtn = document.getElementById('hamburgerBtn');
         const sideMenu = document.getElementById('sideMenu');
+
+        if (sideMenu) {
+            // Remove sidebar from header and append directly to body
+            console.log(
+                '🔧 MOVING SIDEBAR OUTSIDE HEADER to avoid stacking context...'
+            );
+            const sideMenuClone = sideMenu.cloneNode(true);
+            sideMenu.remove(); // Remove from header
+            document.body.appendChild(sideMenuClone); // Add directly to body
+            console.log(
+                '✅ SIDEBAR MOVED TO BODY - No longer constrained by header stacking context'
+            );
+        }
 
         // Create overlay element for better menu interaction
         const menuOverlay = document.createElement('div');
@@ -49,7 +63,9 @@ async function loadMenu() {
         menuOverlay.id = 'menuOverlay';
         document.body.appendChild(menuOverlay);
 
-        if (hamburgerBtn && sideMenu) {
+        if (hamburgerBtn && document.getElementById('sideMenu')) {
+            // Get the moved sidebar (now in body, not in header)
+            const sideMenu = document.getElementById('sideMenu');
             // Close menu function
             function closeMenu() {
                 sideMenu.classList.remove('open');
@@ -416,11 +432,12 @@ async function loadMenu() {
                         'auto',
                         'important'
                     ); // Start monitoring to keep sidebar pinned
-                    startScrollMonitoring(); // Nuclear option: Force viewport positioning after a brief delay
+                    startScrollMonitoring();
+
+                    // Single diagnostic check after positioning is complete
                     setTimeout(() => {
                         diagnosticCheck();
-                        forceViewportPositioning();
-                    }, 100);
+                    }, 200);
                 } else {
                     // Stop monitoring when closing
                     stopScrollMonitoring();
