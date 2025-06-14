@@ -205,9 +205,16 @@ function setupAutocompleteEvents(input, container, config) {
     let debounceTimer = null;
     let currentRequest = null;
     let selectedIndex = -1;
+    let isSelectingAddress = false; // Flag to prevent autocomplete after selection
 
     // Input event handler with debouncing
     input.addEventListener('input', function (e) {
+        // Skip if we're in the middle of selecting an address
+        if (isSelectingAddress) {
+            isSelectingAddress = false;
+            return;
+        }
+
         const query = e.target.value.trim();
 
         clearTimeout(debounceTimer);
@@ -229,6 +236,11 @@ function setupAutocompleteEvents(input, container, config) {
                 });
         }, config.debounceMs);
     });
+
+    // Store the flag setter on the container so selectAddress can access it
+    container._setSelectingFlag = function () {
+        isSelectingAddress = true;
+    };
 
     // Handle keyboard navigation
     input.addEventListener('keydown', function (e) {
@@ -421,6 +433,7 @@ function showAutocompleteResults(container, results, config, input) {
             border-bottom: 1px solid #eee;
             font-size: 14px;
             line-height: 1.4;
+            background-color: white;
         `;
 
         // Format the address display
@@ -469,11 +482,17 @@ function showAutocompleteResults(container, results, config, input) {
 // Handle address selection
 function selectAddress(item, input, container, config, result = null) {
     const description = item.dataset.description || item.textContent.trim();
+
+    // Set flag to prevent autocomplete from triggering
+    if (container._setSelectingFlag) {
+        container._setSelectingFlag();
+    }
+
     input.value = description;
 
     hideAutocomplete(container);
 
-    // Trigger input event to update any validation
+    // Trigger input event to update any validation (but autocomplete won't trigger due to flag)
     const event = new Event('input', { bubbles: true });
     input.dispatchEvent(event);
 
