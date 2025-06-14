@@ -1228,12 +1228,7 @@ async function editUserRole(userId, newRoleKey) {
 }
 
 async function deleteUser(userId, username) {
-    console.log(
-        'Delete user functionality for ID:',
-        userId,
-        'Username:',
-        username
-    ); // Show confirmation modal with strong warning
+    // Show confirmation modal with strong warning
     window.modalManager.showConfirmModal(
         '🗑️ Delete User',
         `Are you sure you want to permanently delete user "${username}"? This action cannot be undone and will remove all associated data.`,
@@ -1270,20 +1265,52 @@ async function deleteUser(userId, username) {
                         'success',
                         `User "${username}" has been successfully deleted.`
                     );
-                } else if (response.status === 404) {
-                    // Handle case where backend delete endpoint doesn't exist yet
-                    window.modalManager.showModal(
-                        'info',
-                        'User deletion functionality is not yet available on the server. Please contact your system administrator.'
-                    );
                 } else {
-                    const errorData = await response.json();
-                    throw new Error(
-                        errorData.message || 'Failed to delete user'
-                    );
+                    // Enhanced error handling for different scenarios
+                    let errorMessage = 'Failed to delete user';
+
+                    try {
+                        const errorData = await response.json();
+                        errorMessage =
+                            errorData.message ||
+                            errorData.error ||
+                            errorMessage;
+                    } catch (jsonError) {
+                        // If we can't parse JSON, use status-based messages
+                        switch (response.status) {
+                            case 400:
+                                errorMessage =
+                                    'Cannot delete this user. You may be trying to delete your own account.';
+                                break;
+                            case 403:
+                                errorMessage =
+                                    'You do not have permission to delete users.';
+                                break;
+                            case 404:
+                                errorMessage =
+                                    'User not found or already deleted.';
+                                break;
+                            case 500:
+                                errorMessage =
+                                    'Server error occurred. This may be due to database constraints or the user having associated data that prevents deletion.';
+                                break;
+                            default:
+                                errorMessage = `Server error (${response.status}). Please try again or contact your administrator.`;
+                        }
+                    }
+
+                    if (response.status === 404) {
+                        // Handle case where backend delete endpoint doesn't exist yet
+                        window.modalManager.showModal(
+                            'info',
+                            'User deletion functionality is not yet available on the server. Please contact your system administrator.'
+                        );
+                    } else {
+                        window.modalManager.showModal('error', errorMessage);
+                    }
                 }
             } catch (error) {
-                console.error('Error deleting user:', error);
+                let errorMessage = 'An error occurred while deleting the user.';
 
                 if (
                     error.message.includes('404') ||
@@ -1294,12 +1321,20 @@ async function deleteUser(userId, username) {
                         'info',
                         'User deletion functionality is not yet available on the server. Please contact your system administrator.'
                     );
+                    return;
+                } else if (
+                    error.message.includes('Network') ||
+                    error.message.includes('fetch')
+                ) {
+                    errorMessage =
+                        'Network error. Please check your connection and try again.';
+                } else if (error.message.includes('timeout')) {
+                    errorMessage = 'Request timed out. Please try again.';
                 } else {
-                    window.modalManager.showModal(
-                        'error',
-                        `Failed to delete user: ${error.message}`
-                    );
+                    errorMessage = `Failed to delete user: ${error.message}`;
                 }
+
+                window.modalManager.showModal('error', errorMessage);
             } finally {
                 // Hide loading state
                 setUserActionLoading(userId, false);
