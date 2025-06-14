@@ -60,11 +60,17 @@ function initializeApp() {
         // Prevent back navigation to auth pages
         if (window.authUtils.preventAuthPageBackNavigation) {
             window.authUtils.preventAuthPageBackNavigation();
-        }
-
-        // Secure history replacement
+        }        // Secure history replacement
         if (window.authUtils.secureHistoryReplacement) {
             window.authUtils.secureHistoryReplacement();
+        }
+
+        // Load navigation menu for authenticated pages
+        if (window.navigation && window.navigation.loadMenu) {
+            console.log('🔧 Loading navigation menu...');
+            window.navigation.loadMenu();
+        } else {
+            console.warn('⚠️ Navigation module not available');
         }
     }
 
