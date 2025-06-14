@@ -39,8 +39,19 @@ const startServer = async () => {
     try {
         console.log('Starting server initialization...');
 
-        // Run database migrations
-        await runDatabaseMigrations();
+        // Test database connection first
+        const { checkDatabaseConnection } = require('./config/database');
+        const dbStatus = await checkDatabaseConnection();
+        
+        if (dbStatus.connected) {
+            console.log('✅ Database connection successful');
+            // Run database migrations
+            await runDatabaseMigrations();
+            console.log('✅ Database migrations completed');
+        } else {
+            console.error('❌ Database connection failed:', dbStatus.error);
+            console.log('⚠️  Starting server without migrations...');
+        }
 
         // Start the server
         app.listen(config.PORT, () => {
@@ -48,7 +59,7 @@ const startServer = async () => {
             console.log(`📊 Environment: ${config.NODE_ENV}`);
             console.log(
                 `🗄️  Database: ${
-                    config.isLocalTest ? 'Local Test Mode' : 'Connected'
+                    config.isLocalTest ? 'Local Test Mode' : dbStatus.connected ? 'Connected' : 'Connection Failed'
                 }`
             );
             console.log(
@@ -59,20 +70,26 @@ const startServer = async () => {
         });
     } catch (err) {
         console.error('❌ Failed to start server:', err.message);
+        console.error('❌ Stack trace:', err.stack);
 
-        // Try to start server anyway for local development
+        // Try to start server anyway for debugging
         console.log(
             '⚠️  Attempting to start server without database migrations...'
         );
-        app.listen(config.PORT, () => {
-            console.log(
-                `🚀 Server running on port ${config.PORT} (database migrations skipped)`
-            );
-            console.log(`📊 Environment: ${config.NODE_ENV}`);
-            console.log(
-                `⚠️  Database: Migration failed, some features may not work`
-            );
-        });
+        try {
+            app.listen(config.PORT, () => {
+                console.log(
+                    `🚀 Server running on port ${config.PORT} (database migrations skipped)`
+                );
+                console.log(`📊 Environment: ${config.NODE_ENV}`);
+                console.log(
+                    `⚠️  Database: Migration failed, some features may not work`
+                );
+            });
+        } catch (serverErr) {
+            console.error('💥 Cannot start server at all:', serverErr);
+            process.exit(1);
+        }
     }
 };
 
