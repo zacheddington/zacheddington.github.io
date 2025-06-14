@@ -60,7 +60,7 @@ function initializeApp() {
         // Prevent back navigation to auth pages
         if (window.authUtils.preventAuthPageBackNavigation) {
             window.authUtils.preventAuthPageBackNavigation();
-        }        // Secure history replacement
+        } // Secure history replacement
         if (window.authUtils.secureHistoryReplacement) {
             window.authUtils.secureHistoryReplacement();
         }
