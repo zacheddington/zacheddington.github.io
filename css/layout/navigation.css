@@ -147,7 +147,7 @@
     position: absolute;
     top: 100%;
     left: 0;
-    background: rgba(var(--color-primary-rgb), 0.95);
+    background: rgba(var(--color-primary-rgb), 0.8);
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--border-radius);
