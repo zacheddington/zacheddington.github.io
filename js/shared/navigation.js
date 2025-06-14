@@ -48,13 +48,13 @@ async function loadTopNavigation() {
 
         // Insert navigation directly into the header
         headerContainer.insertAdjacentHTML('beforeend', menuHTML);
-        setupTopNavigation();
-
-        // Update admin menu visibility based on user role
+        setupTopNavigation(); // Update admin menu visibility based on user role
         if (window.authUtils && window.authUtils.updateAdminMenuItem) {
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
-            // For demo purposes, any logged-in user is admin
-            const isAdmin = userData && Object.keys(userData).length > 0;
+            // Use proper admin detection
+            const isAdmin = window.authUtils.isUserAdmin
+                ? window.authUtils.isUserAdmin(userData)
+                : false;
             window.authUtils.updateAdminMenuItem(isAdmin);
         }
 
@@ -81,8 +81,7 @@ function createFallbackNavigation() {
                         <polyline points="9,22 9,12 15,12 15,22"/>
                     </svg>
                     Home
-                </a></li>
-                <li><a href="/patients/" data-page="patients">
+                </a></li>                <li class="nav-dropdown"><a href="/patients/" data-page="patients" class="dropdown-trigger">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
                         <circle cx="9" cy="7" r="4"/>
@@ -90,21 +89,64 @@ function createFallbackNavigation() {
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                     </svg>
                     Patients
-                </a></li>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="dropdown-arrow">
+                        <polyline points="6,9 12,15 18,9"></polyline>
+                    </svg>
+                </a>
+                <div class="dropdown-content">
+                    <a href="/patients/create-patient/">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M20 8v6M23 11h-6"/>
+                        </svg>
+                        Create New Patient
+                    </a>
+                    <a href="/patients/manage-patients/">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        Manage Patients
+                    </a>
+                </div></li>
                 <li><a href="/profile/" data-page="profile">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
                     Profile
-                </a></li>                <li class="admin-only">
-                    <a href="/admin/" data-page="admin">
+                </a></li>                <li class="nav-dropdown admin-only">
+                    <a href="/admin/" data-page="admin" class="dropdown-trigger">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="3"/>
                             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                         </svg>
                         Administration
-                    </a>                </li>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="dropdown-arrow">
+                            <polyline points="6,9 12,15 18,9"></polyline>
+                        </svg>
+                    </a>
+                    <div class="dropdown-content">
+                        <a href="/admin/create-user/">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M22 11h-6m3-3v6"/>
+                            </svg>
+                            Create New User
+                        </a>
+                        <a href="/admin/manage-users/">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            Manage Users
+                        </a>
+                    </div>
+                </li>
             </ul>
         </nav>
         <div class="user-profile">
@@ -122,8 +164,10 @@ function createFallbackNavigation() {
     setupTopNavigation(); // Update admin menu visibility for fallback navigation too
     if (window.authUtils && window.authUtils.updateAdminMenuItem) {
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
-        // For demo purposes, any logged-in user is admin
-        const isAdmin = userData && Object.keys(userData).length > 0;
+        // Use proper admin detection
+        const isAdmin = window.authUtils.isUserAdmin
+            ? window.authUtils.isUserAdmin(userData)
+            : false;
         window.authUtils.updateAdminMenuItem(isAdmin);
     }
 

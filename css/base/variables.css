@@ -8,6 +8,7 @@
 
     /* Primary Colors */
     --color-primary: #009688; /* Teal - primary brand color */
+    --color-primary-rgb: 0, 150, 136; /* RGB values for rgba usage */
     --color-primary-dark: #00796b; /* Dark teal for gradients/hover */
     --color-primary-light: #b2dfdb; /* Light teal for borders */
     --color-primary-bg: #e0f7fa; /* Very light teal for backgrounds */
