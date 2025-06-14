@@ -532,9 +532,7 @@ router.delete(
                 throw err;
             } finally {
                 client.release();
-            }
-        } catch (err) {
-            console.error('Delete user error:', err);
+            }        } catch (err) {
             return errorResponse(res, 'Failed to delete user', 500);
         }
     }
