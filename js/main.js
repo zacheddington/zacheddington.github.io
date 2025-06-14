@@ -167,17 +167,29 @@ function initializePage(page) {
             if (window.adminPage) {
                 window.adminPage.initializeAdminPage();
             }
+            // Load navigation for admin pages
+            if (window.navigation) {
+                window.navigation.loadMenu();
+            }
             break;
 
         case 'patients.html':
             if (window.patientsPage) {
                 window.patientsPage.initializePatientsPage();
             }
+            // Load navigation for patient pages
+            if (window.navigation) {
+                window.navigation.loadMenu();
+            }
             break;
 
         case 'profile.html':
             if (window.profilePage) {
                 window.profilePage.initializeProfilePage();
+            }
+            // Load navigation for profile pages
+            if (window.navigation) {
+                window.navigation.loadMenu();
             }
             break;
         default:

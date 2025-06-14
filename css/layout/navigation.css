@@ -22,21 +22,21 @@
     position: relative;
 }
 
+/* Default state: like the current logout button - minimal styling */
 .top-nav-menu a {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.25rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
     font-weight: 500;
     border-radius: var(--border-radius);
     transition: all 0.3s ease;
     white-space: nowrap;
     font-size: 0.95rem;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: transparent;
+    border: 1px solid transparent;
 }
 
 .top-nav-menu a svg {
@@ -46,9 +46,12 @@
     transition: all 0.3s ease;
 }
 
+/* Hover state: elevated with glassmorphism effect */
 .top-nav-menu a:hover {
     color: white;
     background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -61,13 +64,13 @@
     transform: translateY(0);
 }
 
-/* Active page styling */
+/* Active page styling: looks like the old non-hovered state */
 .top-nav-menu a.active {
-    color: white;
-    background: rgba(255, 255, 255, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     font-weight: 600;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .top-nav-menu a.active svg {
@@ -82,46 +85,6 @@
     color: var(--color-warning);
 }
 
-/* Dropdown Styles */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-content {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: var(--color-background-primary);
-    min-width: 180px;
-    box-shadow: var(--shadow-medium);
-    border-radius: var(--border-radius);
-    border: 1px solid var(--color-border);
-    z-index: var(--z-dropdown);
-    overflow: hidden;
-    margin-top: 0.5rem;
-}
-
-.dropdown-content a {
-    display: block;
-    padding: 0.75rem 1rem;
-    color: var(--color-text-primary);
-    text-decoration: none;
-    border-radius: 0;
-    transition: background-color 0.2s ease;
-}
-
-.dropdown-content a:hover {
-    background-color: var(--color-background-tertiary);
-    color: var(--color-primary);
-    transform: none;
-}
-
-.dropdown:hover .dropdown-content {
-    display: block;
-    animation: fadeIn 0.2s ease;
-}
-
 /* User Profile Section */
 .user-profile {
     display: flex;
@@ -131,21 +94,39 @@
 }
 
 .logout-btn {
-    background-color: var(--color-danger);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid transparent;
+    padding: 0.75rem 1.25rem;
     border-radius: var(--border-radius);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    white-space: nowrap;
+}
+
+.logout-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5;
+    transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
-    background-color: var(--color-danger-dark);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-small);
+    color: white;
+    background: rgba(220, 53, 69, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+}
+
+.logout-btn:hover svg {
+    transform: scale(1.1);
 }
 
 .logout-btn:active {
@@ -211,47 +192,19 @@ body.admin-user .admin-only {
         padding: 0.5rem;
     }
 
-    .dropdown-content {
-        position: static;
-        display: block;
-        box-shadow: none;
-        border: none;
-        background-color: var(--color-background-secondary);
-        margin-top: 0;
-        border-radius: 0;
+    .logout-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
     }
-
-    .dropdown:hover .dropdown-content {
-        animation: none;
-    }
-}
-
-/* Animation */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Active page highlighting */
-.top-nav-menu a.active {
-    color: var(--color-primary);
-    background-color: var(--color-background-tertiary);
-    font-weight: 600;
 }
 
 /* Focus styles for accessibility */
 .top-nav-menu a:focus {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid rgba(255, 255, 255, 0.5);
     outline-offset: 2px;
 }
 
 .logout-btn:focus {
-    outline: 2px solid var(--color-danger);
+    outline: 2px solid rgba(220, 53, 69, 0.5);
     outline-offset: 2px;
 }
