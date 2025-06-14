@@ -501,6 +501,7 @@ async function logout(reason = 'User logout') {
 window.authUtils = {
     isAuthenticated,
     isAdmin: isUserAdmin,
+    isUserAdmin: isUserAdmin, // Add this for navigation.js compatibility
     updateAdminUI,
     updateAdminMenuItem,
     addSessionStatusIndicator,
