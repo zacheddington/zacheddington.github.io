@@ -3,11 +3,12 @@
 
 // Load top navigation menu
 async function loadTopNavigation() {
-    try {        const headerContainer = document.querySelector('.app-header');
+    try {
+        const headerContainer = document.querySelector('.app-header');
         if (!headerContainer) {
             console.warn('Header container not found');
             return;
-        }// Check if navigation is already loaded
+        } // Check if navigation is already loaded
         const existingNav = headerContainer.querySelector('.top-nav-menu');
         console.log('🔧 NAV: Existing navigation found:', !!existingNav);
         if (existingNav) {

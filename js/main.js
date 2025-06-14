@@ -149,7 +149,8 @@ function initializePage(page) {
             } else {
                 console.error('❌ window.loginPage not available!');
             }
-            break;        case 'welcome.html':
+            break;
+        case 'welcome.html':
             console.log('🏠 Detected welcome page, initializing...');
             // Welcome page initialization can go here if needed
             // Navigation is loaded centrally above, no need to call it again
@@ -164,7 +165,8 @@ function initializePage(page) {
             if (window.tfaSetupPage) {
                 window.tfaSetupPage.initialize2FASetupPage();
             }
-            break;        case 'admin.html':
+            break;
+        case 'admin.html':
             if (window.adminPage) {
                 window.adminPage.initializeAdminPage();
             }
