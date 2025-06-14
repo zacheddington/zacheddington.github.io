@@ -30,9 +30,9 @@ function initializeProfilePage() {
     loadUserProfile();
     load2FAStatus(); // Add 2FA status loading
 
-    // Load hamburger menu
-    if (document.getElementById('hamburger-menu')) {
-        loadMenu();
+    // Load navigation menu
+    if (window.navigation) {
+        window.navigation.loadMenu();
     }
 }
 

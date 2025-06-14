@@ -22,8 +22,8 @@ function initializeAdminPage() {
         default:
             initializeAdminIndexPage();
             break;
-    } // Load hamburger menu for all admin pages
-    if (document.getElementById('hamburger-menu') && window.navigation) {
+    } // Load navigation menu for all admin pages
+    if (window.navigation) {
         window.navigation.loadMenu();
     }
 }

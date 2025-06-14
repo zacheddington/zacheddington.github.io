@@ -157,10 +157,7 @@ function initializePage(page) {
         case 'welcome.html':
             console.log('🏠 Detected welcome page, initializing...');
             // Welcome page initialization can go here if needed
-            if (
-                document.getElementById('hamburger-menu') &&
-                window.navigation
-            ) {
+            if (window.navigation) {
                 window.navigation.loadMenu();
             }
             break;
@@ -193,14 +190,10 @@ function initializePage(page) {
                 window.profilePage.initializeProfilePage();
             }
             break;
-
         default:
             console.log('No specific initialization for page:', page);
-            // Load basic menu functionality if hamburger menu exists
-            if (
-                document.getElementById('hamburger-menu') &&
-                window.navigation
-            ) {
+            // Load basic menu functionality
+            if (window.navigation) {
                 window.navigation.loadMenu();
             }
             break;

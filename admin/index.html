@@ -18,10 +18,10 @@
         <link rel="icon" type="image/png" href="../favicon.png" />
     </head>
     <body class="content-page">
-        <!-- Header Bar -->
+        <!-- Header Bar with Top Navigation -->
         <header class="app-header">
-            <div id="hamburger-menu" class="hamburger-container"></div>
             <h1 class="page-title">User Management</h1>
+            <!-- Navigation will be loaded here by JavaScript -->
         </header>
 
         <div class="admin-container">
@@ -55,13 +55,5 @@
         <script src="../js/pages/admin.js"></script>
         <!-- Load main controller -->
         <script src="../js/main.js"></script>
-        <script>
-            // Ensure hamburger menu is loaded on page load
-            document.addEventListener('DOMContentLoaded', function () {
-                if (window.navigation) {
-                    window.navigation.loadMenu();
-                }
-            });
-        </script>
     </body>
 </html>
