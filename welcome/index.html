@@ -6,7 +6,7 @@
             name="viewport"
             content="width=device-width, initial-scale=1.0, viewport-fit=cover"
         />
-        <title>Welcome - EEG Data Entry</title>
+        <title>Welcome - IntegrisNeuro</title>
 
         <!-- Security: Prevent caching of authenticated pages -->
         <meta
@@ -35,13 +35,16 @@
                         <h3>Patients</h3>
                         <p>Manage patient records</p>
                     </a>
-                    <a href="/view_eeg/" class="choice-btn primary fade-nav">
-                        <h3>View Entered EEG Information</h3>
-                        <p>Access EEG data records</p>
-                    </a>
                     <a href="/profile/" class="choice-btn primary fade-nav">
                         <h3>Access Profile</h3>
                         <p>View and edit your profile</p>
+                    </a>
+                    <a
+                        href="/admin/"
+                        class="choice-btn primary fade-nav admin-only"
+                    >
+                        <h3>Administration</h3>
+                        <p>User management and system settings</p>
                     </a>
                 </div>
             </div>

@@ -13,7 +13,7 @@
     list-style: none;
     margin: 0;
     padding: 0;
-    gap: 1.5rem;
+    gap: 2rem;
     align-items: center;
     flex-wrap: wrap;
 }
@@ -25,28 +25,53 @@
 .top-nav-menu a {
     display: flex;
     align-items: center;
-    padding: 0.75rem 1rem;
-    color: var(--color-text-secondary);
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
     font-weight: 500;
     border-radius: var(--border-radius);
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     white-space: nowrap;
     font-size: 0.95rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.top-nav-menu a svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5;
+    transition: all 0.3s ease;
 }
 
 .top-nav-menu a:hover {
-    color: var(--color-primary);
-    background-color: var(--color-background-tertiary);
-    transform: translateY(-1px);
+    color: white;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.top-nav-menu a:hover svg {
+    transform: scale(1.1);
 }
 
 .top-nav-menu a:active {
     transform: translateY(0);
 }
 
-.top-nav-menu a[data-page='welcome']:hover {
-    color: var(--color-success);
+/* Active page styling */
+.top-nav-menu a.active {
+    color: white;
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.top-nav-menu a.active svg {
+    transform: scale(1.05);
 }
 
 .top-nav-menu a[data-page='patients']:hover {

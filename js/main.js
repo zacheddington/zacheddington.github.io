@@ -110,16 +110,6 @@ function getCurrentPage() {
             '→ Page detected: 2fa-setup.html'
         );
         return '2fa-setup.html';
-    } else if (path.startsWith('/enter_eeg/')) {
-        console.log(
-            '🔍 Current path:',
-            path,
-            '→ Page detected: enter_eeg.html'
-        );
-        return 'enter_eeg.html';
-    } else if (path.startsWith('/view_eeg/')) {
-        console.log('🔍 Current path:', path, '→ Page detected: view_eeg.html');
-        return 'view_eeg.html';
     } else {
         // Fallback to filename for other cases
         const page = path.split('/').pop() || 'index.html';
