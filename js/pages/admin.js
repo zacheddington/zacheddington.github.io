@@ -714,13 +714,8 @@ async function loadRolesForUserManagement() {
     }
 }
 
-// Setup table sorting
+// Setup table sorting using shared utility
 function setupTableSorting() {
-    const table = document.getElementById('usersTable');
-    if (!table) return;
-
-    const headers = table.querySelectorAll('thead th');
-
     // Define sortable columns (exclude Actions column)
     const sortableColumns = [
         { index: 0, key: 'username', label: 'Username' },
@@ -729,28 +724,37 @@ function setupTableSorting() {
         { index: 3, key: 'role', label: 'Role' },
         { index: 4, key: 'created', label: 'Created' },
     ];
-    sortableColumns.forEach((column) => {
-        const header = headers[column.index];
-        if (header) {
-            header.style.cursor = 'default'; // Remove pointer cursor from entire header
-            header.classList.add('sortable-column');
-            header.innerHTML = `${column.label} <span class="sort-indicator" data-column="${column.key}"></span>`;
 
-            // Only add click handler to the sort indicator, not the entire header
-            const sortIndicator = header.querySelector('.sort-indicator');
-            if (sortIndicator) {
-                sortIndicator.style.cursor = 'pointer';
-                sortIndicator.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent event bubbling
-                    handleSort(column.key);
-                });
-            }
-        }
-    });
+    // Use shared table sorting utility
+    if (window.tableUtils) {
+        window.tableUtils.setupTableSorting({
+            tableId: 'usersTable',
+            sortableColumns: sortableColumns,
+            currentSort: currentSort,
+            handleSort: handleSort,
+            updateSortIndicators: updateSortIndicators,
+        });
+    }
 }
 
-// Handle table sorting
+// Handle table sorting using shared utility
 function handleSort(columnKey) {
+    // Use shared table sorting utility for logic
+    if (window.tableUtils) {
+        window.tableUtils.handleTableSort(
+            columnKey,
+            currentSort,
+            updateSortIndicators,
+            refreshUsersDisplay
+        );
+    } else {
+        // Fallback to original logic
+        handleSortFallback(columnKey);
+    }
+}
+
+// Fallback sort handler for when shared utility isn't available
+function handleSortFallback(columnKey) {
     // Determine new sort direction
     if (currentSort.column === columnKey) {
         // Same column clicked
@@ -768,7 +772,17 @@ function handleSort(columnKey) {
     }
 
     // Update sort indicators
-    updateSortIndicators(); // Update reset sort button visibility
+    updateSortIndicators();
+    // Update reset sort button visibility
+    updateResetSortButton();
+
+    // Refresh display
+    refreshUsersDisplay();
+}
+
+// Refresh users display while preserving column widths
+function refreshUsersDisplay() {
+    // Update reset sort button visibility
     updateResetSortButton();
 
     // Capture current column widths before making any changes
@@ -786,24 +800,29 @@ function handleSort(columnKey) {
     displayUsersPreserveWidths(sortedUsers, columnWidths);
 }
 
-// Update sort indicators
+// Update sort indicators using shared utility with fallback
 function updateSortIndicators() {
-    const indicators = document.querySelectorAll('.sort-indicator');
+    if (window.tableUtils) {
+        window.tableUtils.updateTableSortIndicators('usersTable', currentSort);
+    } else {
+        // Fallback to original logic
+        const indicators = document.querySelectorAll('.sort-indicator');
 
-    indicators.forEach((indicator) => {
-        const column = indicator.dataset.column;
-        if (column === currentSort.column) {
-            if (currentSort.direction === 'asc') {
-                indicator.textContent = ' ↑';
-            } else if (currentSort.direction === 'desc') {
-                indicator.textContent = ' ↓';
+        indicators.forEach((indicator) => {
+            const column = indicator.dataset.column;
+            if (column === currentSort.column) {
+                if (currentSort.direction === 'asc') {
+                    indicator.textContent = ' ↑';
+                } else if (currentSort.direction === 'desc') {
+                    indicator.textContent = ' ↓';
+                } else {
+                    indicator.textContent = '';
+                }
             } else {
                 indicator.textContent = '';
             }
-        } else {
-            indicator.textContent = '';
-        }
-    });
+        });
+    }
 }
 
 // Update reset sort button visibility
@@ -814,8 +833,42 @@ function updateResetSortButton() {
     }
 }
 
-// Get sorted users
+// Get sorted users using shared utility with fallback
 function getSortedUsers() {
+    if (window.tableUtils) {
+        return window.tableUtils.sortTableData(
+            allUsers,
+            currentSort,
+            getUserValueForSort
+        );
+    } else {
+        // Fallback to original logic
+        return getSortedUsersFallback();
+    }
+}
+
+// Extract sortable value from user object for shared utility
+function getUserValueForSort(user, columnKey) {
+    switch (columnKey) {
+        case 'username':
+            return user.username?.toLowerCase() || '';
+        case 'fullName':
+            return `${user.first_name} ${user.last_name}`.toLowerCase();
+        case 'email':
+            return user.email?.toLowerCase() || '';
+        case 'role':
+            return user.roles && user.roles[0]
+                ? user.roles[0].toLowerCase()
+                : '';
+        case 'created':
+            return new Date(user.created_at);
+        default:
+            return '';
+    }
+}
+
+// Fallback sort function for when shared utility isn't available
+function getSortedUsersFallback() {
     if (!currentSort.column || !currentSort.direction) {
         return allUsers;
     }

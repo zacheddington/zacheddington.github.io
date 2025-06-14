@@ -560,13 +560,8 @@ async function loadPatients() {
     }
 }
 
-// Set up patient table sorting functionality
+// Set up patient table sorting functionality using shared utility
 function setupPatientTableSorting() {
-    const table = document.getElementById('patientsTable');
-    if (!table) return;
-
-    const headers = table.querySelectorAll('thead th');
-
     // Define sortable columns
     const sortableColumns = [
         { index: 0, key: 'fullName', label: 'Name' },
@@ -575,28 +570,37 @@ function setupPatientTableSorting() {
         { index: 3, key: 'acceptsTexts', label: 'Accepts Texts' },
         { index: 4, key: 'created', label: 'Created' },
     ];
-    sortableColumns.forEach((column) => {
-        const header = headers[column.index];
-        if (header) {
-            header.style.cursor = 'default'; // Remove pointer cursor from entire header
-            header.classList.add('sortable-column'); // Add sortable-column class for styling
-            header.innerHTML = `${column.label} <span class="sort-indicator" data-column="${column.key}"></span>`;
 
-            // Only add click handler to the sort indicator, not the entire header
-            const sortIndicator = header.querySelector('.sort-indicator');
-            if (sortIndicator) {
-                sortIndicator.style.cursor = 'pointer';
-                sortIndicator.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent event bubbling
-                    handlePatientSort(column.key);
-                });
-            }
-        }
-    });
+    // Use shared table sorting utility
+    if (window.tableUtils) {
+        window.tableUtils.setupTableSorting({
+            tableId: 'patientsTable',
+            sortableColumns: sortableColumns,
+            currentSort: currentPatientSort,
+            handleSort: handlePatientSort,
+            updateSortIndicators: updatePatientSortIndicators,
+        });
+    }
 }
 
-// Handle patient table sorting
+// Handle patient table sorting using shared utility
 function handlePatientSort(columnKey) {
+    // Use shared table sorting utility for logic
+    if (window.tableUtils) {
+        window.tableUtils.handleTableSort(
+            columnKey,
+            currentPatientSort,
+            updatePatientSortIndicators,
+            refreshPatientsDisplay
+        );
+    } else {
+        // Fallback to original logic
+        handlePatientSortFallback(columnKey);
+    }
+}
+
+// Fallback sort handler for when shared utility isn't available
+function handlePatientSortFallback(columnKey) {
     // Determine new sort direction
     if (currentPatientSort.column === columnKey) {
         if (currentPatientSort.direction === null) {
@@ -609,8 +613,18 @@ function handlePatientSort(columnKey) {
     } else {
         currentPatientSort.column = columnKey;
         currentPatientSort.direction = 'asc';
-    } // Update sort indicators
-    updatePatientSortIndicators(); // Capture current column widths before making any changes
+    }
+
+    // Update sort indicators
+    updatePatientSortIndicators();
+
+    // Refresh display
+    refreshPatientsDisplay();
+}
+
+// Refresh patients display while preserving column widths
+function refreshPatientsDisplay() {
+    // Capture current column widths before making any changes
     const table = document.querySelector('#patientsTable');
     let columnWidths = [];
 
@@ -627,28 +641,68 @@ function handlePatientSort(columnKey) {
     displayPatientsPreserveWidths(sortedPatients, columnWidths);
 }
 
-// Update visual sort indicators
+// Update visual sort indicators using shared utility with fallback
 function updatePatientSortIndicators() {
-    const indicators = document.querySelectorAll('.sort-indicator');
+    if (window.tableUtils) {
+        window.tableUtils.updateTableSortIndicators(
+            'patientsTable',
+            currentPatientSort
+        );
+    } else {
+        // Fallback to original logic
+        const indicators = document.querySelectorAll('.sort-indicator');
 
-    indicators.forEach((indicator) => {
-        const column = indicator.dataset.column;
-        if (column === currentPatientSort.column) {
-            if (currentPatientSort.direction === 'asc') {
-                indicator.textContent = ' ↑';
-            } else if (currentPatientSort.direction === 'desc') {
-                indicator.textContent = ' ↓';
+        indicators.forEach((indicator) => {
+            const column = indicator.dataset.column;
+            if (column === currentPatientSort.column) {
+                if (currentPatientSort.direction === 'asc') {
+                    indicator.textContent = ' ↑';
+                } else if (currentPatientSort.direction === 'desc') {
+                    indicator.textContent = ' ↓';
+                } else {
+                    indicator.textContent = '';
+                }
             } else {
                 indicator.textContent = '';
             }
-        } else {
-            indicator.textContent = '';
-        }
-    });
+        });
+    }
 }
 
-// Get sorted patient list
+// Get sorted patient list using shared utility with fallback
 function getSortedPatients() {
+    if (window.tableUtils) {
+        return window.tableUtils.sortTableData(
+            allPatients,
+            currentPatientSort,
+            getPatientValueForSort
+        );
+    } else {
+        // Fallback to original logic
+        return getSortedPatientsFallback();
+    }
+}
+
+// Extract sortable value from patient object for shared utility
+function getPatientValueForSort(patient, columnKey) {
+    switch (columnKey) {
+        case 'fullName':
+            return `${patient.first_name} ${patient.last_name}`.toLowerCase();
+        case 'address':
+            return patient.address?.toLowerCase() || '';
+        case 'phone':
+            return patient.phone || '';
+        case 'acceptsTexts':
+            return patient.accepts_texts ? 'yes' : 'no';
+        case 'created':
+            return new Date(patient.created_at);
+        default:
+            return '';
+    }
+}
+
+// Fallback sort function for when shared utility isn't available
+function getSortedPatientsFallback() {
     if (!currentPatientSort.column || !currentPatientSort.direction) {
         return allPatients;
     }

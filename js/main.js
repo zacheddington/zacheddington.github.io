@@ -10,9 +10,7 @@ const APP_CONFIG = {
         'admin.html': ['admin'],
         'patients.html': ['patients'],
         'profile.html': ['profile'],
-    },
-
-    // Shared modules required by all pages
+    }, // Shared modules required by all pages
     sharedModules: [
         'api-client',
         'modal-manager',
@@ -20,6 +18,7 @@ const APP_CONFIG = {
         'field-validation',
         'auth-utils',
         'navigation',
+        'table-utils',
     ],
 };
 
