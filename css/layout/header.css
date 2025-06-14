@@ -23,7 +23,7 @@
     backdrop-filter: blur(10px);
     min-height: var(--header-height);
     flex-wrap: nowrap; /* Prevent wrapping */
-    overflow-x: auto; /* Allow horizontal scroll if needed */
+    overflow: visible; /* Allow dropdowns to overflow */
 }
 
 .page-title {

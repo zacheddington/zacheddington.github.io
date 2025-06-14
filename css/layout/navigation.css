@@ -6,6 +6,7 @@
     display: flex;
     justify-content: center;
     margin: 0 2rem;
+    overflow: visible; /* Allow dropdowns to overflow */
 }
 
 .top-nav-menu ul {
@@ -16,6 +17,7 @@
     gap: 2rem;
     align-items: center;
     flex-wrap: wrap;
+    overflow: visible; /* Allow dropdowns to overflow */
 }
 
 .top-nav-menu li {
@@ -129,6 +131,7 @@
 /* Dropdown Navigation Styles */
 .nav-dropdown {
     position: relative;
+    overflow: visible;
 }
 
 .dropdown-trigger {
@@ -150,25 +153,23 @@
     border-radius: var(--border-radius);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     min-width: 200px;
-    z-index: 1000;
+    z-index: var(--z-modal);
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s ease;
     margin-top: 0.5rem;
+    /* Ensure dropdown is not clipped */
+    overflow: visible;
 }
 
-/* TEMPORARY DEBUG STYLES - Remove after fixing */
+/* TEMPORARY DEBUG STYLES FOR DROPDOWN VISIBILITY - Remove after testing */
 .dropdown-content {
-    border: 3px solid red !important;
-    background: yellow !important;
-    min-height: 100px !important;
-}
-
-.dropdown-content a {
-    background: lightblue !important;
-    color: black !important;
-    border: 1px solid blue !important;
+    background: #ff0000 !important; /* Bright red background */
+    border: 3px solid #000000 !important; /* Black border */
+    color: #ffffff !important; /* White text */
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.8) !important; /* Red glow */
+    z-index: 9999 !important; /* Very high z-index */
 }
 
 .dropdown-content a {
@@ -216,7 +217,7 @@
 
 /* Ensure dropdown appears above other content */
 .nav-dropdown:hover {
-    z-index: 1001;
+    z-index: calc(var(--z-modal) + 1);
 }
 
 /* Admin-only elements visibility */
@@ -365,3 +366,5 @@ body.is-admin .admin-only {
     outline: 2px solid rgba(220, 53, 69, 0.5);
     outline-offset: 2px;
 }
+
+/* End temporary debug styles */
