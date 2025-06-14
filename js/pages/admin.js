@@ -273,7 +273,8 @@ async function loadRoles() {
                     option.textContent = role.role_name;
                     roleSelect.appendChild(option);
                 });
-            }        } else {
+            }
+        } else {
             // Failed to load roles
         }
     } catch (error) {
@@ -418,7 +419,8 @@ async function checkUsernameAvailability(username) {
                 errorMsg.className = 'error-message';
                 errorMsg.textContent = 'Username is already taken';
                 usernameGroup.appendChild(errorMsg);
-            }        } else {
+            }
+        } else {
             // Handle API error
             usernameGroup.classList.add('error');
             const errorMsg = document.createElement('div');
@@ -428,7 +430,8 @@ async function checkUsernameAvailability(username) {
         }
 
         // Update submit button state
-        updateCreateUserSubmitButton();    } catch (error) {
+        updateCreateUserSubmitButton();
+    } catch (error) {
         // Show error state on network/API failure
         const usernameInput = document.getElementById('newUsername');
         const usernameGroup = usernameInput.closest('.form-group');
@@ -587,7 +590,8 @@ async function createUser() {
             }, 2500);
         } else {
             throw new Error(result.error || 'Failed to create user');
-        }    } catch (error) {
+        }
+    } catch (error) {
         // Use enhanced error categorization
         const errorInfo = categorizeError(error, response);
 
@@ -650,7 +654,8 @@ async function loadUsers() {
                     // No saved preferences, just display and auto-adjust
                     displayUsers(sortedUsers);
                 }
-            } catch (e) {                // Error applying column widths after loading users
+            } catch (e) {
+                // Error applying column widths after loading users
                 displayUsers(sortedUsers);
             }
         } else {
@@ -662,7 +667,8 @@ async function loadUsers() {
                 return;
             }
             throw new Error('Failed to load users');
-        }    } catch (error) {
+        }
+    } catch (error) {
         const usersTableBody = document.getElementById('usersTableBody');
         if (usersTableBody) {
             usersTableBody.innerHTML =
@@ -697,7 +703,8 @@ async function loadRolesForUserManagement() {
             // Use global auth error handler for consistent experience
             if (response.status === 401 || response.status === 403) {
                 window.handleAuthError(response, 'loading roles');
-                currentRoles = [];            } else {
+                currentRoles = [];
+            } else {
                 // Failed to load roles for user management
                 currentRoles = [];
             }
@@ -1148,7 +1155,8 @@ async function editUserRole(userId, newRoleKey) {
             '🔄 Change User Role',
             `Are you sure you want to change this user's role to ${roleName}?`,
             async () => {
-                try {                    // Show loading state
+                try {
+                    // Show loading state
                     setUserActionLoading(userId, true);
                     const userCheck = await checkUserDependencies(userId);
 
@@ -1245,7 +1253,7 @@ async function deleteUser(userId, username) {
         async () => {
             try {
                 // Show loading state
-                setUserActionLoading(userId, true);                // Note: Proceeding directly to delete since individual user GET endpoint doesn't exist
+                setUserActionLoading(userId, true); // Note: Proceeding directly to delete since individual user GET endpoint doesn't exist
                 const API_URL = getAPIUrl();
                 const token = localStorage.getItem('token');
                 const response = await fetch(`${API_URL}/api/users/${userId}`, {
@@ -1253,7 +1261,8 @@ async function deleteUser(userId, username) {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json',
-                    },                });
+                    },
+                });
 
                 if (response.ok) {
                     // Remove the user from the local array
@@ -1271,14 +1280,21 @@ async function deleteUser(userId, username) {
                     window.modalManager.showModal(
                         'success',
                         `User "${username}" has been successfully deleted.`
-                    );                } else {
+                    );
+                } else {
                     // Enhanced error handling for different scenarios
                     let errorMessage = 'Failed to delete user';
 
                     // Temporary debugging - log the response
-                    console.log('Delete failed - Response status:', response.status);
-                    console.log('Delete failed - Response headers:', Object.fromEntries(response.headers.entries()));
-                    
+                    console.log(
+                        'Delete failed - Response status:',
+                        response.status
+                    );
+                    console.log(
+                        'Delete failed - Response headers:',
+                        Object.fromEntries(response.headers.entries())
+                    );
+
                     try {
                         const errorData = await response.json();
                         console.log('Delete failed - Error data:', errorData);
@@ -1300,7 +1316,8 @@ async function deleteUser(userId, username) {
                             case 404:
                                 errorMessage =
                                     'User not found or already deleted.';
-                                break;                            case 500:
+                                break;
+                            case 500:
                                 errorMessage = `Cannot delete user "${username}" (ID: ${userId}) due to database constraints.\n\nThis user likely has:\n• Role assignments in tbl_user_role\n• Associated name data in tbl_name_data\n• Other linked records preventing deletion\n\nThe server should handle these relationships automatically, but there may be a database constraint issue.\n\nPlease contact your system administrator to:\n1. Check database foreign key constraints\n2. Verify the deletion logic handles all relationships\n3. Review server logs for specific constraint violations`;
                                 break;
                             default:
@@ -1365,7 +1382,8 @@ async function checkUserDependencies(userId) {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
-        });        if (response.ok) {
+        });
+        if (response.ok) {
             const userData = await response.json();
             return { exists: true, data: userData };
         } else if (response.status === 404) {
@@ -1765,7 +1783,8 @@ function loadColumnWidthPreferences() {
         } else {
             // No saved preferences, run auto-sizing algorithm
             adjustColumnWidths();
-        }    } catch (error) {
+        }
+    } catch (error) {
         // Error loading column width preferences
         adjustColumnWidths();
     }

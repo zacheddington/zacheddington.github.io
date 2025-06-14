@@ -42,7 +42,7 @@ const startServer = async () => {
         // Test database connection first
         const { checkDatabaseConnection } = require('./config/database');
         const dbStatus = await checkDatabaseConnection();
-        
+
         if (dbStatus.connected) {
             console.log('✅ Database connection successful');
             // Run database migrations
@@ -59,7 +59,11 @@ const startServer = async () => {
             console.log(`📊 Environment: ${config.NODE_ENV}`);
             console.log(
                 `🗄️  Database: ${
-                    config.isLocalTest ? 'Local Test Mode' : dbStatus.connected ? 'Connected' : 'Connection Failed'
+                    config.isLocalTest
+                        ? 'Local Test Mode'
+                        : dbStatus.connected
+                        ? 'Connected'
+                        : 'Connection Failed'
                 }`
             );
             console.log(
