@@ -19,6 +19,14 @@ const corsConfig = {
     optionsSuccessStatus: 200,
 };
 
+// CORS debugging middleware
+const corsDebugMiddleware = (req, res, next) => {
+    console.log(`🌐 CORS REQUEST: ${req.method} ${req.url}`);
+    console.log(`🌐 Origin: ${req.headers.origin}`);
+    console.log(`🌐 User-Agent: ${req.headers['user-agent']}`);
+    next();
+};
+
 // Security middleware to prevent caching of authenticated content
 const securityMiddleware = (req, res, next) => {
     // Set cache control headers to prevent caching
@@ -28,8 +36,15 @@ const securityMiddleware = (req, res, next) => {
 
 // Apply all common middleware to Express app
 const applyMiddleware = (app) => {
+    console.log('🟢 Applying CORS middleware...');
+    console.log('🟢 CORS origins:', corsConfig.origin);
+    
+    // Add debugging middleware first
+    app.use(corsDebugMiddleware);
+    
     // CORS configuration
     app.use(cors(corsConfig));
+    console.log('🟢 CORS middleware applied');
 
     // JSON parsing
     app.use(express.json());
@@ -40,7 +55,7 @@ const applyMiddleware = (app) => {
     // Serve static files from the current directory
     app.use(express.static('.'));
 
-    console.log('Common middleware applied successfully');
+    console.log('🟢 Common middleware applied successfully');
 };
 
 module.exports = {
