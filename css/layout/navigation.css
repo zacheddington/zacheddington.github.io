@@ -171,7 +171,8 @@
     text-decoration: none;
     font-weight: 500;
     font-size: 0.9rem;
-    border-radius: 0;    background: transparent;
+    border-radius: 0;
+    background: transparent;
     border: none;
     white-space: nowrap;
 }

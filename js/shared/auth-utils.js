@@ -204,28 +204,33 @@ function isUserAdmin(userData) {
         return false;
     }
 
-    // Use server-determined admin status with fallback for old data
-    let isAdminUser = userData.isAdmin === true;
-    console.log('🔍 isUserAdmin: userData.isAdmin === true?', isAdminUser);
-
-    // Fallback: If role data is missing and username is admin, assume admin
-    if (userData.isAdmin === undefined && userData.username === 'admin') {
-        isAdminUser = true;
-        console.log('🔍 isUserAdmin: Fallback 1 - username is "admin"');
+    // Primary check: Use server-determined admin status
+    if (userData.isAdmin === true) {
+        console.log('✅ isUserAdmin: userData.isAdmin is true');
+        return true;
     }
 
-    // Additional fallback: if username contains 'admin' (case insensitive)
-    if (
-        !isAdminUser &&
-        userData.username &&
-        userData.username.toLowerCase().includes('admin')
-    ) {
-        isAdminUser = true;
-        console.log('🔍 isUserAdmin: Fallback 2 - username contains "admin"');
+    // Secondary check: Check roles array for Administrator
+    if (userData.roles && Array.isArray(userData.roles)) {
+        const hasAdminRole = userData.roles.some(
+            (role) => role && role.toLowerCase().includes('administrator')
+        );
+        if (hasAdminRole) {
+            console.log(
+                '✅ isUserAdmin: Found Administrator role in roles array'
+            );
+            return true;
+        }
     }
 
-    console.log('✅ isUserAdmin: Final result:', isAdminUser);
-    return isAdminUser;
+    // Fallback: If username is 'admin'
+    if (userData.username === 'admin') {
+        console.log('✅ isUserAdmin: Fallback - username is "admin"');
+        return true;
+    }
+
+    console.log('❌ isUserAdmin: No admin privileges found');
+    return false;
 }
 
 function updateAdminUI(isAdmin) {
