@@ -207,6 +207,15 @@ function isUserAdmin(userData) {
         isAdminUser = true;
     }
 
+    // Additional fallback: if username contains 'admin' (case insensitive)
+    if (
+        !isAdminUser &&
+        userData.username &&
+        userData.username.toLowerCase().includes('admin')
+    ) {
+        isAdminUser = true;
+    }
+
     return isAdminUser;
 }
 

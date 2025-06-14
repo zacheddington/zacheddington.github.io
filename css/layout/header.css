@@ -21,6 +21,9 @@
     z-index: var(--z-fixed);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
+    min-height: var(--header-height);
+    flex-wrap: nowrap; /* Prevent wrapping */
+    overflow-x: auto; /* Allow horizontal scroll if needed */
 }
 
 .page-title {

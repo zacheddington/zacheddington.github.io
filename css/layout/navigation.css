@@ -135,10 +135,30 @@ body.is-admin .admin-only {
     display: block;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
+/* Responsive Design - Better zoom handling */
+@media (max-width: 1200px) {
     .top-nav-menu {
         margin: 0 1rem;
+    }
+
+    .top-nav-menu ul {
+        gap: 1.5rem;
+    }
+
+    .top-nav-menu a {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .logout-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .top-nav-menu {
+        margin: 0 0.75rem;
     }
 
     .top-nav-menu ul {
@@ -147,47 +167,98 @@ body.is-admin .admin-only {
 
     .top-nav-menu a {
         padding: 0.5rem 0.75rem;
-        font-size: 0.9rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .top-nav-menu {
-        margin: 0 0.5rem;
-    }
-
-    .top-nav-menu ul {
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .top-nav-menu a {
-        padding: 0.4rem 0.6rem;
         font-size: 0.85rem;
-    }
-
-    .dropdown-content {
-        min-width: 150px;
-    }
-}
-
-@media (max-width: 600px) {
-    .top-nav-menu ul {
-        flex-direction: column;
-        gap: 0.25rem;
-        width: 100%;
-    }
-
-    .top-nav-menu a {
-        width: 100%;
-        justify-content: center;
-        padding: 0.5rem;
     }
 
     .logout-btn {
         padding: 0.5rem 0.75rem;
         font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .top-nav-menu {
+        margin: 0 0.5rem;
+    }
+
+    .top-nav-menu ul {
+        gap: 0.75rem;
+    }
+
+    .top-nav-menu a {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .logout-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    /* Hide text on smaller screens, show only icons */
+    .top-nav-menu a {
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: auto;
+    }
+
+    .top-nav-menu a svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .logout-btn {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .logout-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .top-nav-menu ul {
+        gap: 0.5rem;
+    }
+
+    .top-nav-menu a {
+        padding: 0.3rem 0.4rem;
+        font-size: 0.75rem;
+    }
+
+    .logout-btn {
+        padding: 0.3rem 0.4rem;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 600px) {
+    /* Prevent wrapping by making text smaller */
+    .top-nav-menu a {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.3rem;
+    }
+
+    .logout-btn {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.3rem;
+    }
+
+    .top-nav-menu ul {
+        gap: 0.25rem;
+    }
+
+    /* Ensure navigation doesn't wrap */
+    .app-header {
+        overflow-x: auto;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+    }
+
+    .app-header::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
     }
 }
 
