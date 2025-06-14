@@ -41,12 +41,30 @@
 @import 'pages/2fa-setup.css';
 @import 'pages/force-password.css';
 
-/* ================================
-   5. UTILITIES & RESPONSIVE
+/* ================================   5. UTILITIES & RESPONSIVE
    ================================ */
 @import 'utils/responsive.css';
 @import 'utils/animations.css';
-@import 'utils/zoom-fix.css';
+/* @import 'utils/zoom-fix.css'; */
+
+/* ZOOM FIX - SIMPLIFIED - Inlined to avoid 404 */
+@media (min-device-pixel-ratio: 2), (-webkit-min-device-pixel-ratio: 2) {
+    html,
+    body {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: pixelated;
+    }
+}
+
+/* Ensure no transforms are applied that could break fixed positioning */
+html,
+body {
+    transform: none !important;
+    contain: none !important;
+    isolation: auto !important;
+    will-change: auto !important;
+    perspective: none !important;
+}
 
 /* ================================
    TEMPORARY: Legacy styles.css
