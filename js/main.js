@@ -149,13 +149,10 @@ function initializePage(page) {
             } else {
                 console.error('❌ window.loginPage not available!');
             }
-            break;
-        case 'welcome.html':
+            break;        case 'welcome.html':
             console.log('🏠 Detected welcome page, initializing...');
             // Welcome page initialization can go here if needed
-            if (window.navigation) {
-                window.navigation.loadMenu();
-            }
+            // Navigation is loaded centrally above, no need to call it again
             break;
         case 'force-password.html':
             if (window.forcePasswordPage) {
@@ -167,43 +164,29 @@ function initializePage(page) {
             if (window.tfaSetupPage) {
                 window.tfaSetupPage.initialize2FASetupPage();
             }
-            break;
-
-        case 'admin.html':
+            break;        case 'admin.html':
             if (window.adminPage) {
                 window.adminPage.initializeAdminPage();
             }
-            // Load navigation for admin pages
-            if (window.navigation) {
-                window.navigation.loadMenu();
-            }
+            // Navigation is loaded centrally above, no need to call it again
             break;
 
         case 'patients.html':
             if (window.patientsPage) {
                 window.patientsPage.initializePatientsPage();
             }
-            // Load navigation for patient pages
-            if (window.navigation) {
-                window.navigation.loadMenu();
-            }
+            // Navigation is loaded centrally above, no need to call it again
             break;
 
         case 'profile.html':
             if (window.profilePage) {
                 window.profilePage.initializeProfilePage();
             }
-            // Load navigation for profile pages
-            if (window.navigation) {
-                window.navigation.loadMenu();
-            }
+            // Navigation is loaded centrally above, no need to call it again
             break;
         default:
             console.log('No specific initialization for page:', page);
-            // Load basic menu functionality
-            if (window.navigation) {
-                window.navigation.loadMenu();
-            }
+            // Navigation is loaded centrally above for authenticated pages
             break;
     }
 }
