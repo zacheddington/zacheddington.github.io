@@ -488,7 +488,7 @@ router.delete(
                 if (userCheck.rows.length === 0) {
                     await client.query('ROLLBACK');
                     return notFoundResponse(res, 'User');
-                }                // Get the user's name_key before deletion for cleanup
+                } // Get the user's name_key before deletion for cleanup
                 const userResult = await client.query(
                     'SELECT name_key FROM tbl_user WHERE user_key = $1',
                     [userId]
@@ -541,14 +541,15 @@ router.delete(
             } finally {
                 client.release();
             }
-        } catch (err) {            console.error('🔥 DELETE USER ERROR:', {
+        } catch (err) {
+            console.error('🔥 DELETE USER ERROR:', {
                 userId,
                 error: err.message,
                 code: err.code,
                 detail: err.detail,
                 constraint: err.constraint,
                 table: err.table,
-                stack: err.stack
+                stack: err.stack,
             });
             return errorResponse(
                 res,

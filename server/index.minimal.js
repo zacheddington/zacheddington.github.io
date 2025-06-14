@@ -37,7 +37,9 @@ app.use(errorHandler);
 const startServer = () => {
     try {
         app.listen(config.PORT, () => {
-            console.log(`🚀 Server running on port ${config.PORT} (minimal mode)`);
+            console.log(
+                `🚀 Server running on port ${config.PORT} (minimal mode)`
+            );
             console.log(`📊 Environment: ${config.NODE_ENV}`);
         });
     } catch (err) {

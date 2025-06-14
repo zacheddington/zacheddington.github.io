@@ -42,7 +42,7 @@ const startServer = async () => {
         // Test database connection first
         const { checkDatabaseConnection } = require('./config/database');
         const dbStatus = await checkDatabaseConnection();
-        
+
         if (dbStatus.connected) {
             console.log('✅ Database connection successful');
             // Run database migrations
@@ -57,8 +57,16 @@ const startServer = async () => {
         app.listen(config.PORT, () => {
             console.log(`🚀 Server running on port ${config.PORT}`);
             console.log(`📊 Environment: ${config.NODE_ENV}`);
-            console.log(`🗄️  Database: ${dbStatus.connected ? 'Connected' : 'Connection Failed'}`);
-            console.log(`🔒 Security: ${config.isProduction ? 'Production' : 'Development'}`);
+            console.log(
+                `🗄️  Database: ${
+                    dbStatus.connected ? 'Connected' : 'Connection Failed'
+                }`
+            );
+            console.log(
+                `🔒 Security: ${
+                    config.isProduction ? 'Production' : 'Development'
+                }`
+            );
         });
     } catch (err) {
         console.error('❌ Failed to start server:', err.message);
@@ -66,9 +74,13 @@ const startServer = async () => {
         // Start server anyway for debugging
         console.log('⚠️  Starting server without database migrations...');
         app.listen(config.PORT, () => {
-            console.log(`🚀 Server running on port ${config.PORT} (database migrations skipped)`);
+            console.log(
+                `🚀 Server running on port ${config.PORT} (database migrations skipped)`
+            );
             console.log(`📊 Environment: ${config.NODE_ENV}`);
-            console.log(`⚠️  Database: Migration failed, some features may not work`);
+            console.log(
+                `⚠️  Database: Migration failed, some features may not work`
+            );
         });
     }
 };
