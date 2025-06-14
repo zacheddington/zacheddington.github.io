@@ -1160,13 +1160,31 @@ async function editUserRole(userId, newRoleKey) {
             async () => {
                 try {
                     // Show loading state
-                    setUserActionLoading(userId, true);
-
-                    // First, check user dependencies for debugging
+                    setUserActionLoading(userId, true); // First, check user dependencies for debugging
                     console.log(
                         `Attempting to delete user ${userId} (${username})`
                     );
-                    await checkUserDependencies(userId);
+                    const userCheck = await checkUserDependencies(userId);
+
+                    // If user doesn't exist, handle it gracefully
+                    if (!userCheck.exists) {
+                        // Remove the user from the local array since it doesn't exist on server
+                        const userIndex = allUsers.findIndex(
+                            (user) => user.user_key == userId
+                        );
+                        if (userIndex !== -1) {
+                            allUsers.splice(userIndex, 1);
+                        }
+
+                        // Refresh the table display
+                        displayFilteredUsers();
+
+                        window.modalManager.showModal(
+                            'info',
+                            `User "${username}" was not found on the server (may have been already deleted). Removed from local display.`
+                        );
+                        return;
+                    }
 
                     const API_URL = getAPIUrl();
                     const token = localStorage.getItem('token');
@@ -1390,12 +1408,24 @@ async function checkUserDependencies(userId) {
             const userData = await response.json();
             // Log user data to help diagnose the issue
             console.log('User data before deletion attempt:', userData);
-            return userData;
+            return { exists: true, data: userData };
+        } else if (response.status === 404) {
+            console.log(
+                'User not found during dependency check - user may already be deleted'
+            );
+            return { exists: false, error: 'User not found' };
+        } else {
+            console.log(
+                'Error checking user dependencies:',
+                response.status,
+                response.statusText
+            );
+            return { exists: false, error: `HTTP ${response.status}` };
         }
     } catch (error) {
         console.log('Could not fetch user dependencies:', error);
+        return { exists: false, error: error.message };
     }
-    return null;
 }
 
 // Update submit button state based on form validation
