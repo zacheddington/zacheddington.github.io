@@ -1259,15 +1259,25 @@ async function deleteUser(userId, username) {
         async () => {
             try {
                 // Show loading state
-                setUserActionLoading(userId, true);
+                setUserActionLoading(userId, true); // Check if user exists first
+                const userCheck = await checkUserDependencies(userId);
 
-                // Check if user has any dependencies
-                const userDependencies = await checkUserDependencies(userId);
-                if (userDependencies) {
-                    // If dependencies exist, show info modal with details
+                // If user doesn't exist, handle it gracefully
+                if (!userCheck.exists) {
+                    // Remove the user from the local array since it doesn't exist on server
+                    const userIndex = allUsers.findIndex(
+                        (user) => user.user_key == userId
+                    );
+                    if (userIndex !== -1) {
+                        allUsers.splice(userIndex, 1);
+                    }
+
+                    // Refresh the table display
+                    displayFilteredUsers();
+
                     window.modalManager.showModal(
                         'info',
-                        `User "${username}" has associated data that prevents deletion. Please remove or reassign this data before deleting the user.`
+                        `User "${username}" was not found on the server (may have been already deleted). Removed from local display.`
                     );
                     return;
                 }
@@ -1338,7 +1348,7 @@ async function deleteUser(userId, username) {
                                     status: response.status,
                                     statusText: response.statusText,
                                 });
-                                errorMessage = `Server error while deleting user "${username}" (ID: ${userId}). This is likely due to:\n\n• Database constraints (user has associated data)\n• Foreign key relationships preventing deletion\n• Server-side database issues\n\nPlease contact your system administrator with this error information.`;
+                                errorMessage = `Cannot delete user "${username}" (ID: ${userId}) due to database constraints.\n\nThis user likely has:\n• Role assignments in tbl_user_role\n• Associated name data in tbl_name_data\n• Other linked records preventing deletion\n\nThe server should handle these relationships automatically, but there may be a database constraint issue.\n\nPlease contact your system administrator to:\n1. Check database foreign key constraints\n2. Verify the deletion logic handles all relationships\n3. Review server logs for specific constraint violations`;
                                 break;
                             default:
                                 errorMessage = `Server error (${response.status}). Please try again or contact your administrator.`;
@@ -1425,6 +1435,54 @@ async function checkUserDependencies(userId) {
     } catch (error) {
         console.log('Could not fetch user dependencies:', error);
         return { exists: false, error: error.message };
+    }
+}
+
+// Check for specific foreign key constraints that might prevent deletion
+async function analyzeUserConstraints(userId, username) {
+    try {
+        const API_URL = getAPIUrl();
+        const token = localStorage.getItem('token');
+
+        console.group(
+            `🔍 Analyzing constraints for user ${userId} (${username})`
+        );
+
+        // Try to get detailed user information
+        const userResponse = await fetch(`${API_URL}/api/users/${userId}`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (userResponse.ok) {
+            const userData = await userResponse.json();
+            console.log('📋 User data:', userData);
+
+            // Check if user has name_key reference
+            if (userData.name_key) {
+                console.log(
+                    `🔗 User has name_key reference: ${userData.name_key}`
+                );
+                console.log(
+                    '   This links to tbl_name_data and may prevent deletion'
+                );
+            }
+
+            // Note about role assignments
+            console.log(
+                '🎭 User role assignments should be handled by server deletion logic'
+            );
+            console.log('   Server should delete from tbl_user_role first');
+        } else {
+            console.log(`❌ Cannot fetch user details: ${userResponse.status}`);
+        }
+
+        console.groupEnd();
+    } catch (error) {
+        console.log('❌ Error analyzing user constraints:', error);
     }
 }
 
