@@ -174,6 +174,10 @@ function setupCreatePatientForm() {
 
     // Character limit validation for create patient form fields
     setupCreatePatientFieldValidation();
+
+    // Setup address autocomplete
+    setupPatientAddressAutocomplete();
+
     // Handle form submission
     createPatientForm.addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -299,6 +303,146 @@ function setupPatientPhoneFormatting() {
     });
 }
 
+// Set up address autocomplete for patient address field
+function setupPatientAddressAutocomplete() {
+    // Check if address validation module is available
+    if (typeof window.addressValidation === 'undefined') {
+        console.warn(
+            '⚠️ Address validation module not available. Autocomplete disabled.'
+        );
+        return;
+    } // Initialize with API key (you can set this via environment variables or config)
+    // For demo purposes, we'll use a placeholder. In production, this should come from config.
+    const apiKey = getAddressAPIKey();
+
+    // Initialize address validation (will use demo mode if no API key)
+    const provider = apiKey ? 'google' : 'demo';
+
+    // Handle async initialization for Google Places API
+    const initPromise = window.addressValidation.initializeAddressValidation(
+        provider,
+        apiKey
+    );
+
+    if (initPromise && typeof initPromise.then === 'function') {
+        // Google Places API loading is async
+        initPromise
+            .then((initialized) => {
+                if (initialized) {
+                    setupAddressAutocompleteUI();
+                }
+            })
+            .catch((error) => {
+                console.error(
+                    'Failed to initialize address validation:',
+                    error
+                );
+                console.log('📍 Falling back to demo mode');
+                // Fallback to demo mode
+                window.addressValidation.initializeAddressValidation(
+                    'demo',
+                    null
+                );
+                setupAddressAutocompleteUI();
+            });
+    } else {
+        // Demo mode or already loaded
+        setupAddressAutocompleteUI();
+    }
+}
+
+// Setup the address autocomplete UI
+function setupAddressAutocompleteUI() {
+    // Setup autocomplete for the patient address field
+    window.addressValidation.setupAddressAutocomplete('patientAddress', {
+        minLength: 3,
+        debounceMs: 300,
+        maxResults: 5,
+        types: ['address'],
+        componentRestrictions: { country: 'us' }, // Restrict to US addresses
+        onSelect: function (addressData) {
+            console.log('📍 Address selected:', addressData.description);
+
+            // Trigger validation to clear any previous errors
+            const addressInput = document.getElementById('patientAddress');
+            if (addressInput) {
+                const event = new Event('blur', { bubbles: true });
+                addressInput.dispatchEvent(event);
+            }
+        },
+        onError: function (error) {
+            console.error('Address autocomplete error:', error);
+            // Optionally show user-friendly error message
+            if (window.modalManager) {
+                window.modalManager.showModal(
+                    'warning',
+                    'Address autocomplete is temporarily unavailable. You can still enter addresses manually.'
+                );
+            }
+        },
+    });
+}
+
+// Get address API key from configuration
+function getAddressAPIKey() {
+    // Check various sources for the API key
+
+    // 1. Check if set via environment/config (recommended for production)
+    if (window.APP_CONFIG && window.APP_CONFIG.googlePlacesApiKey) {
+        return window.APP_CONFIG.googlePlacesApiKey;
+    }
+
+    // 2. Check localStorage (for development/testing)
+    const storedKey = localStorage.getItem('googlePlacesApiKey');
+    if (storedKey) {
+        return storedKey;
+    } // 3. For demo purposes, you can uncomment and add your key here
+    // IMPORTANT: Never commit real API keys to version control!
+    // Development/Demo API key - replace with proper configuration in production
+    return 'AIzaSyD5izsMcadbEXooybBUr735nDY_JuJMROg';
+}
+
+// Development helper function to set API key for testing
+function setAddressAPIKeyForTesting(apiKey) {
+    if (!apiKey) {
+        console.error('❌ Please provide an API key');
+        return false;
+    }
+
+    localStorage.setItem('googlePlacesApiKey', apiKey);
+    console.log(
+        '✅ API key set for testing. Refresh the page to activate address autocomplete.'
+    );
+    console.log(
+        '💡 To test: Go to Create Patient page and type in the address field'
+    );
+    return true;
+}
+
+// Development helper to check if address autocomplete is working
+function testAddressAutocomplete() {
+    const hasApiKey = !!getAddressAPIKey();
+    const hasModule = typeof window.addressValidation !== 'undefined';
+    const hasInput = !!document.getElementById('patientAddress');
+
+    console.log('📍 Address Autocomplete Status:');
+    console.log('   API Key Available:', hasApiKey ? '✅' : '❌');
+    console.log('   Module Loaded:', hasModule ? '✅' : '❌');
+    console.log('   Address Input Found:', hasInput ? '✅' : '❌');
+
+    if (!hasApiKey) {
+        console.log('💡 To set API key for testing:');
+        console.log('   setAddressAPIKeyForTesting("YOUR_API_KEY")');
+    }
+
+    if (hasApiKey && hasModule && hasInput) {
+        console.log('🎉 Address autocomplete should be working!');
+        console.log('   Try typing in the address field...');
+    }
+
+    return hasApiKey && hasModule && hasInput;
+}
+
 // Create new patient
 async function createPatient() {
     const submitBtn = document.getElementById('createPatientSubmitBtn');
@@ -350,6 +494,28 @@ async function createPatient() {
         }
         if (formData.address.length > 100) {
             throw new Error('Address must be 100 characters or less.');
+        }
+
+        // Enhanced address validation using shared validation
+        if (
+            window.addressValidation &&
+            window.addressValidation.validateAddress
+        ) {
+            const addressValidation =
+                await window.addressValidation.validateAddress(
+                    formData.address
+                );
+            if (!addressValidation.isValid) {
+                if (addressValidation.warning) {
+                    // Show warning but allow submission
+                    console.warn(
+                        'Address validation warning:',
+                        addressValidation.error
+                    );
+                } else {
+                    throw new Error(addressValidation.error);
+                }
+            }
         }
 
         // Validate phone number using shared validation function
@@ -1269,5 +1435,6 @@ window.patientsPage = {
     initializeCreatePatientPage,
     initializeManagePatientsPage,
     setupPatientPhoneFormatting,
+    setupPatientAddressAutocomplete,
     createPatient,
 };

@@ -19,6 +19,7 @@ const APP_CONFIG = {
         'auth-utils',
         'navigation',
         'table-utils',
+        'address-validation',
     ],
 };
 
