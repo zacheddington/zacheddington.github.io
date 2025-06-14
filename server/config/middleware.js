@@ -8,7 +8,6 @@ const config = require('./environment');
 // Configure CORS middleware
 const corsConfig = {
     origin: [
-        config.CORS_ORIGIN,
         'https://indataentry.com',
         'https://integrisneuro-eec31e4aaab1.herokuapp.com',
     ],

@@ -488,16 +488,30 @@ router.delete(
                 if (userCheck.rows.length === 0) {
                     await client.query('ROLLBACK');
                     return notFoundResponse(res, 'User');
-                }
-
-                // Get the user's name_key before deletion for cleanup
+                }                // Get the user's name_key before deletion for cleanup
                 const userResult = await client.query(
                     'SELECT name_key FROM tbl_user WHERE user_key = $1',
                     [userId]
                 );
                 const nameKey = userResult.rows[0]?.name_key;
 
-                // Delete user role assignments first (foreign key constraint)
+                // CRITICAL: Delete from tbl_name_data FIRST (if only this user references it)
+                if (nameKey) {
+                    const nameUsageCheck = await client.query(
+                        'SELECT COUNT(*) FROM tbl_user WHERE name_key = $1',
+                        [nameKey]
+                    );
+
+                    if (parseInt(nameUsageCheck.rows[0].count) === 1) {
+                        // Only this user references this name_key, safe to delete from tbl_name_data first
+                        await client.query(
+                            'DELETE FROM tbl_name_data WHERE name_key = $1',
+                            [nameKey]
+                        );
+                    }
+                }
+
+                // Delete user role assignments (foreign key constraint)
                 await client.query(
                     'DELETE FROM tbl_user_role WHERE user_key = $1',
                     [userId]
@@ -509,26 +523,10 @@ router.delete(
                     [userId]
                 );
 
-                // Delete the user
+                // FINALLY: Delete the user (after tbl_name_data is cleaned up)
                 await client.query('DELETE FROM tbl_user WHERE user_key = $1', [
                     userId,
                 ]);
-
-                // Clean up name_data if no other users reference it
-                if (nameKey) {
-                    const nameUsageCheck = await client.query(
-                        'SELECT COUNT(*) FROM tbl_user WHERE name_key = $1',
-                        [nameKey]
-                    );
-
-                    if (parseInt(nameUsageCheck.rows[0].count) === 0) {
-                        // No other users reference this name_key, safe to delete
-                        await client.query(
-                            'DELETE FROM tbl_name_data WHERE name_key = $1',
-                            [nameKey]
-                        );
-                    }
-                }
 
                 await client.query('COMMIT');
 
@@ -543,12 +541,14 @@ router.delete(
             } finally {
                 client.release();
             }
-        } catch (err) {
-            console.error('Delete user error details:', {
+        } catch (err) {            console.error('🔥 DELETE USER ERROR:', {
                 userId,
                 error: err.message,
-                stack: err.stack,
                 code: err.code,
+                detail: err.detail,
+                constraint: err.constraint,
+                table: err.table,
+                stack: err.stack
             });
             return errorResponse(
                 res,
