@@ -22,9 +22,6 @@ function initializeAdminPage() {
         default:
             initializeAdminIndexPage();
             break;
-    } // Load navigation menu for all admin pages
-    if (window.navigation) {
-        window.navigation.loadMenu();
     }
 }
 

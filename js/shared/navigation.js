@@ -49,9 +49,7 @@ async function loadTopNavigation() {
         // Insert navigation directly into the header
         headerContainer.insertAdjacentHTML('beforeend', menuHTML);
 
-        setupTopNavigation();
-
-        // Update admin menu visibility based on user role
+        setupTopNavigation(); // Update admin menu visibility based on user role
         if (window.authUtils && window.authUtils.updateAdminMenuItem) {
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
             const isAdmin = window.authUtils.isUserAdmin
@@ -121,9 +119,7 @@ function createFallbackNavigation() {
         </div>
     `;
     headerContainer.insertAdjacentHTML('beforeend', fallbackNav);
-    setupTopNavigation();
-
-    // Update admin menu visibility for fallback navigation too
+    setupTopNavigation(); // Update admin menu visibility for fallback navigation too
     if (window.authUtils && window.authUtils.updateAdminMenuItem) {
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         const isAdmin = window.authUtils.isUserAdmin

@@ -21,9 +21,6 @@ function initializePatientsPage() {
         default:
             initializePatientsIndexPage();
             break;
-    } // Load navigation menu for all patient pages
-    if (window.navigation) {
-        window.navigation.loadMenu();
     }
 }
 

@@ -25,15 +25,9 @@ function initializeProfilePage() {
         loadProfileFromLocalStorage();
         return; // Don't proceed with API calls that will fail
     }
-
     setupPasswordChangeForm();
     loadUserProfile();
     load2FAStatus(); // Add 2FA status loading
-
-    // Load navigation menu
-    if (window.navigation) {
-        window.navigation.loadMenu();
-    }
 }
 
 // Load user profile information

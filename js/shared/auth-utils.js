@@ -219,16 +219,11 @@ function updateAdminUI(isAdmin) {
 }
 
 function updateAdminMenuItem(isAdmin) {
-    const adminLink = document.querySelector(
-        'a[data-page="admin"]'
-    )?.parentElement;
-    if (adminLink) {
-        if (isAdmin) {
-            adminLink.style.display = 'block';
-            adminLink.classList.remove('admin-only');
-        } else {
-            adminLink.style.display = 'none';
-        }
+    // Update body class to control admin-only elements via CSS
+    if (isAdmin) {
+        document.body.classList.add('is-admin');
+    } else {
+        document.body.classList.remove('is-admin');
     }
 }
 

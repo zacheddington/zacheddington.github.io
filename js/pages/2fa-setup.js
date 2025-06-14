@@ -8,15 +8,8 @@ let backupCodes = [];
 // Initialize 2FA setup page
 function initialize2FASetupPage() {
     // Reset page state first
-    resetPageState();
-
-    // Setup event listeners for navigation buttons
+    resetPageState(); // Setup event listeners for navigation buttons
     setupNavigationEventListeners();
-
-    // Load hamburger menu if available
-    if (document.getElementById('hamburger-menu') && window.navigation) {
-        window.navigation.loadMenu();
-    }
 
     // Setup event listeners for verification input
     const verificationInput = document.getElementById('verificationCode');
