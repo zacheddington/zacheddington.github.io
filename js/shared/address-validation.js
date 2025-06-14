@@ -8,7 +8,7 @@ const ADDRESS_PROVIDERS = {
         requiresApiKey: true,
         requiresScript: true,
         scriptUrl:
-            'https://maps.googleapis.com/maps/api/js?key={API_KEY}&libraries=places',
+            'https://maps.googleapis.com/maps/api/js?key={API_KEY}&libraries=places&loading=async',
     },
     mapbox: {
         name: 'MapBox Geocoding API',
@@ -95,39 +95,38 @@ function loadGooglePlacesAPI() {
             return;
         }
 
-        // Create and load the script
+        // Use the proper callback method for Google Maps API loading
+        const callbackName = 'initGoogleMapsCallback_' + Date.now();
+        window[callbackName] = function () {
+            console.log('📍 Google Places API loaded successfully');
+            delete window[callbackName]; // Clean up
+            resolve(true);
+        };
+
+        // Create and load the script with callback
         const script = document.createElement('script');
-        const scriptUrl = ADDRESS_PROVIDERS.google.scriptUrl.replace(
-            '{API_KEY}',
-            apiKey
-        );
+        const scriptUrl =
+            ADDRESS_PROVIDERS.google.scriptUrl.replace('{API_KEY}', apiKey) +
+            '&callback=' +
+            callbackName;
         script.src = scriptUrl;
         script.async = true;
         script.defer = true;
 
-        script.onload = () => {
-            // Wait a moment for the API to fully initialize
-            setTimeout(() => {
-                if (
-                    window.google &&
-                    window.google.maps &&
-                    window.google.maps.places
-                ) {
-                    console.log('📍 Google Places API loaded successfully');
-                    resolve(true);
-                } else {
-                    console.error(
-                        '❌ Google Places API not available after script load'
-                    );
-                    reject(new Error('Google Places API not available'));
-                }
-            }, 100);
-        };
-
         script.onerror = () => {
             console.error('❌ Failed to load Google Places API script');
+            delete window[callbackName]; // Clean up
             reject(new Error('Failed to load Google Places API script'));
         };
+
+        // Timeout fallback
+        setTimeout(() => {
+            if (window[callbackName]) {
+                console.error('❌ Google Places API failed to load (timeout)');
+                delete window[callbackName];
+                reject(new Error('Google Places API load timeout'));
+            }
+        }, 10000);
 
         document.head.appendChild(script);
     });
@@ -217,11 +216,10 @@ function setupAutocompleteEvents(input, container, config) {
             hideAutocomplete(container);
             return;
         }
-
         debounceTimer = setTimeout(() => {
             searchAddresses(query, config)
                 .then((results) => {
-                    showAutocompleteResults(container, results, config);
+                    showAutocompleteResults(container, results, config, input);
                 })
                 .catch((error) => {
                     console.error('Address search error:', error);
@@ -303,44 +301,119 @@ async function searchGooglePlaces(query, config) {
             return;
         }
 
-        // Create AutocompleteService
-        const service = new window.google.maps.places.AutocompleteService();
+        // Use the new AutocompleteSuggestion API if available, fallback to AutocompleteService
+        if (window.google.maps.places.AutocompleteSuggestion) {
+            // New API
+            const request = {
+                input: query,
+                includedPrimaryTypes: config.types || ['street_address'],
+                includedRegionCodes: config.componentRestrictions?.country
+                    ? [config.componentRestrictions.country.toUpperCase()]
+                    : ['US'],
+                maxResultCount: config.maxResults,
+            };
 
-        // Prepare request options
-        const request = {
-            input: query,
-            types: config.types || ['address'],
-        };
-
-        // Add component restrictions if specified
-        if (config.componentRestrictions) {
-            request.componentRestrictions = config.componentRestrictions;
+            window.google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(
+                request
+            )
+                .then((response) => {
+                    if (
+                        response.suggestions &&
+                        response.suggestions.length > 0
+                    ) {
+                        // Convert to our expected format
+                        const results = response.suggestions
+                            .slice(0, config.maxResults)
+                            .map((suggestion) => {
+                                const placePrediction =
+                                    suggestion.placePrediction;
+                                if (placePrediction) {
+                                    return {
+                                        description:
+                                            placePrediction.text?.text ||
+                                            placePrediction.text,
+                                        place_id: placePrediction.placeId,
+                                        structured_formatting: {
+                                            main_text:
+                                                placePrediction.structuredFormat
+                                                    ?.mainText?.text ||
+                                                placePrediction.text?.text,
+                                            secondary_text:
+                                                placePrediction.structuredFormat
+                                                    ?.secondaryText?.text || '',
+                                        },
+                                    };
+                                } else {
+                                    // Fallback for other suggestion types
+                                    return {
+                                        description: suggestion.text || query,
+                                        place_id: `demo_${Math.random()}`,
+                                        structured_formatting: {
+                                            main_text: suggestion.text || query,
+                                            secondary_text: '',
+                                        },
+                                    };
+                                }
+                            });
+                        resolve(results);
+                    } else {
+                        resolve([]);
+                    }
+                })
+                .catch((error) => {
+                    console.warn(
+                        'New Google Places API failed, falling back to legacy API:',
+                        error
+                    );
+                    // Fallback to legacy API
+                    fallbackToLegacyAPI();
+                });
+        } else {
+            // Use legacy API directly
+            fallbackToLegacyAPI();
         }
 
-        // Make the request
-        service.getPlacePredictions(request, (predictions, status) => {
-            if (
-                status === window.google.maps.places.PlacesServiceStatus.OK &&
-                predictions
-            ) {
-                // Convert to our expected format
-                const results = predictions
-                    .slice(0, config.maxResults)
-                    .map((prediction) => ({
-                        description: prediction.description,
-                        place_id: prediction.place_id,
-                        structured_formatting: prediction.structured_formatting,
-                    }));
-                resolve(results);
-            } else if (
-                status ===
-                window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS
-            ) {
-                resolve([]);
-            } else {
-                reject(new Error(`Google Places API error: ${status}`));
+        function fallbackToLegacyAPI() {
+            const service = new window.google.maps.places.AutocompleteService();
+
+            // Prepare request options
+            const request = {
+                input: query,
+                types: config.types || ['address'],
+            };
+
+            // Add component restrictions if specified
+            if (config.componentRestrictions) {
+                request.componentRestrictions = config.componentRestrictions;
             }
-        });
+
+            // Make the request
+            service.getPlacePredictions(request, (predictions, status) => {
+                if (
+                    status ===
+                        window.google.maps.places.PlacesServiceStatus.OK &&
+                    predictions
+                ) {
+                    // Convert to our expected format
+                    const results = predictions
+                        .slice(0, config.maxResults)
+                        .map((prediction) => ({
+                            description: prediction.description,
+                            place_id: prediction.place_id,
+                            structured_formatting:
+                                prediction.structured_formatting,
+                        }));
+                    resolve(results);
+                } else if (
+                    status ===
+                    window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS
+                ) {
+                    resolve([]);
+                } else {
+                    reject(new Error(`Google Places API error: ${status}`));
+                }
+            });
+        }
     });
 }
 
@@ -405,7 +478,7 @@ function searchDemoAddresses(query, config) {
 }
 
 // Display autocomplete results
-function showAutocompleteResults(container, results, config) {
+function showAutocompleteResults(container, results, config, input) {
     container.innerHTML = '';
 
     if (results.length === 0) {
@@ -447,17 +520,9 @@ function showAutocompleteResults(container, results, config) {
         });
         item.addEventListener('mouseleave', function () {
             item.style.backgroundColor = 'white';
-        });
-
-        // Handle click selection
+        }); // Handle click selection
         item.addEventListener('click', function () {
-            selectAddress(
-                item,
-                container.previousElementSibling,
-                container,
-                config,
-                result
-            );
+            selectAddress(item, input, container, config, result);
         });
 
         // Store result data

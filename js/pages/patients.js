@@ -358,7 +358,7 @@ function setupAddressAutocompleteUI() {
         minLength: 3,
         debounceMs: 300,
         maxResults: 5,
-        types: ['address'],
+        types: ['street_address'], // Use new API type format
         componentRestrictions: { country: 'us' }, // Restrict to US addresses
         onSelect: function (addressData) {
             console.log('📍 Address selected:', addressData.description);
