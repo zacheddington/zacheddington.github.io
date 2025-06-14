@@ -71,9 +71,7 @@ function initializeApp() {
         } else {
             console.warn('⚠️ Navigation module not available');
         }
-    }
-
-    // Initialize page-specific functionality
+    } // Initialize page-specific functionality
     initializePage(currentPage);
 }
 

@@ -16,6 +16,7 @@ function initializeAdminPage() {
             initializeCreateUserPage();
             break;
         case 'manage-users':
+            // Handle async initialization without making the function async
             initializeManageUsersPage();
             break;
         case 'admin-index':
@@ -57,9 +58,12 @@ function initializeCreateUserPage() {
 
 // Initialize the manage users page
 function initializeManageUsersPage() {
-    // Load users and setup user management
-    loadUsers();
-    loadRolesForUserManagement();
+    // Load roles first, then users - handle async internally
+    (async () => {
+        await loadRolesForUserManagement();
+        await loadUsers();
+    })();
+
     setupUserFilter();
 
     // Apply column preferences or auto-size if no preferences exist
@@ -678,7 +682,9 @@ async function loadRolesForUserManagement() {
         if (response.ok) {
             const result = await response.json();
             currentRoles = result.data; // Extract data from response object
+            console.log('Roles loaded:', currentRoles); // Debug log
         } else {
+            console.error('Failed to load roles, status:', response.status);
             // Use global auth error handler for consistent experience
             if (response.status === 401 || response.status === 403) {
                 window.handleAuthError(response, 'loading roles');
@@ -689,7 +695,8 @@ async function loadRolesForUserManagement() {
             }
         }
     } catch (error) {
-        // Error loading roles for user management
+        console.error('Error loading roles for user management:', error);
+        currentRoles = [];
     }
 }
 
