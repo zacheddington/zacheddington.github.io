@@ -93,27 +93,6 @@ function initializeManagePatientsPage() {
         }, 250)
     );
 
-    // Add a reset columns button to the filter actions
-    const filterActions = document.querySelector('.filter-actions');
-    if (filterActions) {
-        const resetColumnsBtn = document.createElement('button');
-        resetColumnsBtn.type = 'button';
-        resetColumnsBtn.className = 'secondary-btn';
-        resetColumnsBtn.id = 'resetPatientColumns';
-        resetColumnsBtn.textContent = 'Reset Columns';
-        resetColumnsBtn.title =
-            'Reset all column widths to optimal size based on content';
-        resetColumnsBtn.addEventListener('click', function () {
-            localStorage.removeItem('patientTableColumnWidths');
-            adjustPatientColumnWidths();
-            // Announce to screen readers
-            announceForScreenReader(
-                'Table columns have been reset to optimal width'
-            );
-        });
-        filterActions.appendChild(resetColumnsBtn);
-    }
-
     console.log('Manage patients page initialized');
 }
 
@@ -999,135 +978,51 @@ function deletePatient(patientId, patientName) {
     );
 }
 
-// Function to adjust column widths based on content
+// Load patient column width preferences from localStorage
+function loadPatientColumnWidthPreferences() {
+    try {
+        const savedWidths = JSON.parse(
+            localStorage.getItem('patientTableColumnWidths')
+        );
+        if (savedWidths && Array.isArray(savedWidths)) {
+            const table = document.querySelector('#patientsTable');
+            if (table) {
+                const headers = Array.from(table.querySelectorAll('th'));
+                headers.forEach((header, index) => {
+                    if (savedWidths[index]) {
+                        header.style.width = savedWidths[index];
+                    }
+                });
+                addPatientColumnResizeHandles();
+            }
+        }
+    } catch (e) {
+        console.error('Error loading patient column preferences:', e);
+        adjustPatientColumnWidths();
+    }
+}
+
+// Adjust patient table column widths automatically
 function adjustPatientColumnWidths() {
     const table = document.querySelector('#patientsTable');
     if (!table) return;
 
-    // Set table-layout to auto to allow content-based sizing
-    table.style.tableLayout = 'auto';
-
-    // Get all table headers
     const headers = Array.from(table.querySelectorAll('th'));
 
-    // Use canvas for more accurate text measurement
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+    // Define optimal widths for each column
+    const columnWidths = ['200px', '250px', '150px', '120px', '120px', '100px']; // Name, Address, Phone, Accepts Texts, Created, Actions
 
-    // Calculate optimal widths based on actual content
     headers.forEach((header, index) => {
-        const cells = Array.from(
-            table.querySelectorAll(`tbody tr td:nth-child(${index + 1})`)
-        );
-
-        // Remove any previous width to get natural content width
-        header.style.width = '';
-        cells.forEach((cell) => {
-            cell.style.width = '';
-        });
-
-        // Get the content type to optimize column width
-        const columnType = getPatientColumnType(header.textContent);
-
-        let maxWidth = 80; // Minimum width
-
-        if (context) {
-            // Measure header width with canvas
-            const headerStyle = window.getComputedStyle(header);
-            context.font = `${headerStyle.fontWeight} ${headerStyle.fontSize} ${headerStyle.fontFamily}`;
-            maxWidth = Math.max(
-                context.measureText(header.textContent).width + 40,
-                80
-            );
-
-            // Measure all cells in the column
-            cells.forEach((cell) => {
-                let cellText = '';
-
-                // Handle different cell types properly
-                if (cell.querySelector('.patient-full-name')) {
-                    cellText = cell
-                        .querySelector('.patient-full-name')
-                        .textContent.trim();
-                } else if (cell.querySelector('.accepts-texts')) {
-                    cellText = cell
-                        .querySelector('.accepts-texts')
-                        .textContent.trim();
-                } else if (cell.querySelector('.patient-actions')) {
-                    cellText = '✏️ Edit 🗑️ Delete'; // Representative text for action buttons
-                } else {
-                    cellText = cell.textContent.trim();
-                }
-
-                if (cellText) {
-                    const cellStyle = window.getComputedStyle(cell);
-                    context.font = `${cellStyle.fontWeight} ${cellStyle.fontSize} ${cellStyle.fontFamily}`;
-                    const cellWidth = context.measureText(cellText).width + 40; // Add padding
-                    maxWidth = Math.max(maxWidth, cellWidth);
-                }
-            });
-        } else {
-            // Fallback for browsers without canvas support
-            maxWidth = Math.max(header.textContent.length * 8 + 40, 80);
-            cells.forEach((cell) => {
-                const cellText = cell.textContent.trim();
-                if (cellText) {
-                    maxWidth = Math.max(maxWidth, cellText.length * 8 + 40);
-                }
-            });
+        if (columnWidths[index]) {
+            header.style.width = columnWidths[index];
         }
+    });
 
-        // Apply constraints based on column type
-        if (columnType === 'address') {
-            maxWidth = Math.min(maxWidth, 300); // Address column max width
-            maxWidth = Math.max(maxWidth, 150); // Address column min width
-        } else if (columnType === 'accepts-texts') {
-            maxWidth = Math.min(maxWidth, 120); // Accepts Texts column max width
-        } else if (columnType === 'actions') {
-            maxWidth = 120; // Actions column fixed width
-        } else if (columnType === 'phone') {
-            maxWidth = Math.min(maxWidth, 150); // Phone column max width
-            maxWidth = Math.max(maxWidth, 120); // Phone column min width
-        } else {
-            maxWidth = Math.min(maxWidth, 250); // General max width
-            maxWidth = Math.max(maxWidth, 100); // General min width
-        }
-
-        // Apply the calculated width
-        header.style.width = `${maxWidth}px`;
-    }); // After a small delay, switch to auto layout for better expansion
-    setTimeout(() => {
-        table.style.tableLayout = 'auto';
-        table.style.minWidth = 'max-content';
-        // Add column resize handles after setting initial widths
-        addPatientColumnResizeHandles();
-    }, 100);
+    addPatientColumnResizeHandles();
+    savePatientColumnWidthPreferences();
 }
 
-// Function to determine the column type based on header text
-function getPatientColumnType(headerText) {
-    headerText = headerText.toLowerCase();
-
-    if (headerText.includes('address')) {
-        return 'address';
-    } else if (headerText.includes('accepts texts')) {
-        return 'accepts-texts';
-    } else if (headerText.includes('actions')) {
-        return 'actions';
-    } else if (headerText.includes('created') || headerText.includes('date')) {
-        return 'date';
-    } else if (headerText.includes('phone')) {
-        return 'phone';
-    } else if (headerText.includes('email')) {
-        return 'email';
-    } else if (headerText.includes('name')) {
-        return 'name';
-    } else {
-        return 'general';
-    }
-}
-
-// Function to add resize handles to table columns
+// Add column resize handles to patient table
 function addPatientColumnResizeHandles() {
     const table = document.querySelector('#patientsTable');
     if (!table) return;
@@ -1135,7 +1030,7 @@ function addPatientColumnResizeHandles() {
     const headers = Array.from(table.querySelectorAll('th'));
 
     // Remove any existing resize handles
-    table.querySelectorAll('.column-resize-handle').forEach((handle) => {
+    document.querySelectorAll('.column-resize-handle').forEach((handle) => {
         handle.remove();
     });
 
@@ -1174,12 +1069,15 @@ function addPatientColumnResizeHandles() {
                     startPatientColumnResize(touch, header, index);
                 },
                 { passive: false }
-            ); // Add double-click to auto-size functionality (on both handle and header)
+            );
+
+            // Add double-click to auto-size functionality
             resizeHandle.addEventListener('dblclick', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 autoSizePatientColumn(header, index);
             });
+
             // Also add double-click to the header itself for better UX
             header.addEventListener('dblclick', function (e) {
                 // Only trigger if not clicking on sort indicator or other interactive elements
@@ -1216,21 +1114,24 @@ function addPatientColumnResizeHandles() {
     });
 }
 
-// Function to handle column resizing
+// Function to handle patient column resizing
 function startPatientColumnResize(event, header, columnIndex) {
     // Accept both mouse and touch events
     if (event.preventDefault) event.preventDefault();
 
     const table = document.querySelector('#patientsTable');
-    const startX = event.pageX || event.clientX; // For calculations
+    const startX = event.pageX || event.clientX;
     const startWidth = header.offsetWidth;
     const handle = event.target;
 
     // Update ARIA attributes for accessibility
-    handle.setAttribute('aria-valuenow', startWidth); // Add resizing class to table
+    handle.setAttribute('aria-valuenow', startWidth);
+    // Add resizing class to table
     table.classList.add('resizing');
     // Mark the handle as active
-    handle.classList.add('active'); // Function to handle mouse/touch movement during resize
+    handle.classList.add('active');
+
+    // Function to handle mouse/touch movement during resize
     function handlePointerMove(e) {
         // Get pageX for calculations
         const pageX =
@@ -1257,7 +1158,9 @@ function startPatientColumnResize(event, header, columnIndex) {
             handle.setAttribute('aria-valuenow', newWidth);
             handlePointerMove.lastAriaUpdate = Date.now();
         }
-    } // Function to handle mouse/touch up (end of resize)
+    }
+
+    // Function to handle mouse/touch up (end of resize)
     function handlePointerUp(e) {
         // Cancel any pending animation frame
         if (handlePointerMove.rafId) {
@@ -1270,213 +1173,92 @@ function startPatientColumnResize(event, header, columnIndex) {
         document.removeEventListener('mouseup', handlePointerUp);
         document.removeEventListener('touchmove', handlePointerMove);
         document.removeEventListener('touchend', handlePointerUp);
-        document.removeEventListener('touchcancel', handlePointerUp);
 
-        // Get pageX from mouse or touch event
-        const pageX =
-            e.pageX ||
-            (e.changedTouches && e.changedTouches[0]
-                ? e.changedTouches[0].pageX
-                : startX);
-
-        // Calculate the final width with constraints
-        const newWidth = Math.max(
-            80,
-            Math.min(500, startWidth + (pageX - startX))
-        ); // Min 80px, Max 500px
-
-        // Apply the final width immediately
-        header.style.width = `${newWidth}px`;
-
-        // Update ARIA value for accessibility
-        handle.setAttribute('aria-valuenow', newWidth);
-
-        // Remove the resizing class
+        // Clean up classes
         table.classList.remove('resizing');
-
-        // Remove active from handle
         handle.classList.remove('active');
 
-        // Save column width in localStorage for persistence
+        // Save the new column widths to localStorage
         savePatientColumnWidthPreferences();
 
-        // Announce resize completion for screen readers
-        announceForScreenReader(`Column ${header.textContent.trim()} resized`);
-    } // Add event listeners for mouse/touch movement and release
-    document.addEventListener('mousemove', handlePointerMove, {
-        passive: false,
-    });
-    document.addEventListener('mouseup', handlePointerUp);
+        // Remove tracking properties
+        delete handlePointerMove.rafId;
+        delete handlePointerMove.lastAriaUpdate;
+    }
 
-    // Add touch event handlers
+    // Add event listeners for move and up
+    document.addEventListener('mousemove', handlePointerMove);
+    document.addEventListener('mouseup', handlePointerUp);
     document.addEventListener('touchmove', handlePointerMove, {
         passive: false,
     });
     document.addEventListener('touchend', handlePointerUp);
-    document.addEventListener('touchcancel', handlePointerUp);
 }
 
-// Function to announce changes to screen readers
-function announceForScreenReader(message) {
-    const announcement = document.createElement('div');
-    announcement.setAttribute('aria-live', 'polite');
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.classList.add('sr-only'); // Screen reader only
-    announcement.textContent = message;
-    document.body.appendChild(announcement);
-
-    // Remove after announcement is made
-    setTimeout(() => {
-        document.body.removeChild(announcement);
-    }, 1000);
-}
-
-// Function to auto-size a specific column
+// Auto-size patient column based on content
 function autoSizePatientColumn(header, columnIndex) {
     const table = document.querySelector('#patientsTable');
     if (!table) return;
 
     // Get all cells in this column
     const cells = Array.from(
-        table.querySelectorAll(`tbody tr td:nth-child(${columnIndex + 1})`)
+        table.querySelectorAll(
+            `tr td:nth-child(${columnIndex + 1}), tr th:nth-child(${
+                columnIndex + 1
+            })`
+        )
     );
 
-    // Get the content type to optimize column width
-    const columnType = getPatientColumnType(header.textContent); // Use canvas for more accurate text measurement
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    if (!context) {
-        // Fallback to simple calculation if canvas is not available
-        const headerText = header.textContent;
-        let maxWidth = Math.max(headerText.length * 8 + 40, 80); // Rough estimation        // Apply the calculated width
-        header.style.width = `${maxWidth}px`;
-
-        // Save and announce
-        setTimeout(() => {
-            table.style.tableLayout = 'auto';
-            table.style.minWidth = 'max-content';
-            savePatientColumnWidthPreferences();
-        }, 50);
-
-        announceForScreenReader(
-            `Column ${header.textContent.trim()} automatically sized`
-        );
-        return;
-    }
-
-    const headerStyle = window.getComputedStyle(header);
-    context.font = `${headerStyle.fontWeight} ${headerStyle.fontSize} ${headerStyle.fontFamily}`;
-
-    // Measure header width
-    let maxWidth = Math.max(
-        context.measureText(header.textContent).width + 40,
-        80
-    ); // Add padding, minimum 80px
-
-    // Measure all cells in the column to find the widest content
+    // Calculate the maximum content width
+    let maxWidth = 100; // Minimum width
     cells.forEach((cell) => {
-        // Get the actual text content from the cell or its children
-        let cellText = '';
-
-        // Handle different cell types properly
-        if (cell.querySelector('.patient-full-name')) {
-            cellText = cell
-                .querySelector('.patient-full-name')
-                .textContent.trim();
-        } else if (cell.querySelector('.accepts-texts')) {
-            cellText = cell.querySelector('.accepts-texts').textContent.trim();
-        } else if (cell.querySelector('.patient-actions')) {
-            // For action cells, measure the actual button content
-            cellText = '✏️ Edit 🗑️ Delete'; // More accurate representation
-        } else {
-            // Get the raw text content and clean it
-            cellText = cell.textContent.trim();
-        }
-
-        if (cellText) {
-            // Use canvas to measure text width more accurately
-            const cellStyle = window.getComputedStyle(cell);
-            context.font = `${cellStyle.fontWeight} ${cellStyle.fontSize} ${cellStyle.fontFamily}`;
-            const cellWidth = context.measureText(cellText).width + 40; // Add padding
-
-            // Find the maximum width needed
-            maxWidth = Math.max(maxWidth, cellWidth);
-        }
-    }); // Apply constraints based on column type
-    if (columnType === 'address') {
-        maxWidth = Math.min(maxWidth, 350); // Address column max width for long addresses
-        maxWidth = Math.max(maxWidth, 150); // Address column min width
-    } else if (columnType === 'accepts-texts') {
-        maxWidth = Math.min(maxWidth, 120); // Accepts Texts column max width
-    } else if (columnType === 'actions') {
-        maxWidth = 140; // Actions column fixed width
-    } else if (columnType === 'phone') {
-        maxWidth = Math.min(maxWidth, 150); // Phone column max width
-        maxWidth = Math.max(maxWidth, 120); // Phone column min width
-    } else if (columnType === 'name') {
-        maxWidth = Math.min(maxWidth, 250); // Name column max width
-        maxWidth = Math.max(maxWidth, 150); // Name column min width
-    } else if (columnType === 'email') {
-        maxWidth = Math.min(maxWidth, 400); // Email column max width for long emails
-        maxWidth = Math.max(maxWidth, 200); // Email column min width
-    } else {
-        maxWidth = Math.min(maxWidth, 300); // General max width (increased)
-        maxWidth = Math.max(maxWidth, 100); // Minimum width for readability
-    } // Apply the calculated width
-    header.style.width = `${maxWidth}px`;
-
-    // Save the updated column widths to localStorage
-    setTimeout(() => {
-        table.style.tableLayout = 'auto';
-        table.style.minWidth = 'max-content';
-        savePatientColumnWidthPreferences();
-    }, 50);
-
-    // Announce the change to screen readers
-    announceForScreenReader(
-        `Column ${header.textContent.trim()} automatically sized`
-    );
-}
-
-// Function to save column width preferences
-function savePatientColumnWidthPreferences() {
-    const table = document.querySelector('#patientsTable');
-    if (!table) return;
-
-    const headers = Array.from(table.querySelectorAll('th'));
-    const widths = headers.map((header) => header.style.width);
-
-    localStorage.setItem('patientTableColumnWidths', JSON.stringify(widths));
-}
-
-// Function to load column width preferences
-function loadPatientColumnWidthPreferences() {
-    const table = document.querySelector('#patientsTable');
-    if (!table) return;
-
-    try {
-        const savedWidths = JSON.parse(
-            localStorage.getItem('patientTableColumnWidths')
+        const textWidth = getTextWidth(
+            cell.textContent || cell.innerText,
+            getComputedStyle(cell)
         );
+        maxWidth = Math.max(maxWidth, textWidth + 20); // Add padding
+    });
 
-        if (savedWidths && Array.isArray(savedWidths)) {
-            const headers = Array.from(table.querySelectorAll('th'));
+    // Apply the new width
+    const newWidth = Math.min(maxWidth, 500); // Cap at maximum width
+    header.style.width = newWidth + 'px';
 
-            headers.forEach((header, index) => {
-                if (savedWidths[index]) {
-                    header.style.width = savedWidths[index];
-                }
-            });
-            table.style.tableLayout = 'auto';
-            table.style.minWidth = 'max-content';
-            // Add resize handles after applying saved widths
-            addPatientColumnResizeHandles();
-        } else {
-            // No saved preferences, run auto-sizing algorithm
-            adjustPatientColumnWidths();
-        }
-    } catch (error) {
-        console.error('Error loading patient column width preferences:', error);
-        adjustPatientColumnWidths();
+    // Save preferences
+    savePatientColumnWidthPreferences();
+
+    // Update ARIA value
+    const resizeHandle = header.querySelector('.column-resize-handle');
+    if (resizeHandle) {
+        resizeHandle.setAttribute('aria-valuenow', newWidth);
     }
+}
+
+// Save patient column width preferences to localStorage
+function savePatientColumnWidthPreferences() {
+    try {
+        const table = document.querySelector('#patientsTable');
+        if (table) {
+            const headers = Array.from(table.querySelectorAll('th'));
+            const widths = headers.map(
+                (header) => header.style.width || 'auto'
+            );
+            localStorage.setItem(
+                'patientTableColumnWidths',
+                JSON.stringify(widths)
+            );
+        }
+    } catch (e) {
+        console.error('Error saving patient column preferences:', e);
+    }
+}
+
+// Helper function to calculate text width
+function getTextWidth(text, font) {
+    const canvas =
+        getTextWidth.canvas ||
+        (getTextWidth.canvas = document.createElement('canvas'));
+    const context = canvas.getContext('2d');
+    context.font = `${font.fontSize} ${font.fontFamily}`;
+    const metrics = context.measureText(text);
+    return metrics.width;
 }

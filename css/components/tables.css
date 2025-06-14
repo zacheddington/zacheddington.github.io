@@ -221,7 +221,7 @@
     width: 100%; /* Full width but can expand beyond container */
     border-collapse: collapse;
     font-size: 0.9rem;
-    table-layout: auto; /* Auto layout allows content to determine column width */
+    table-layout: fixed; /* Fixed layout prevents adjacent columns from resizing */
     display: table;
     min-width: max-content; /* Allow table to expand to fit content */
 }
