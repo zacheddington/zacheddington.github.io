@@ -457,14 +457,14 @@ router.delete(
         console.log(
             `DELETE USER: Starting deletion for user ${req.params.userId}`
         );
-        console.log(`DELETE USER: Request from origin: ${req.headers.origin}`);        console.log(
+        console.log(`DELETE USER: Request from origin: ${req.headers.origin}`);
+        console.log(
             `DELETE USER: User making request: ${req.user?.userId}, isAdmin: ${req.user?.isAdmin}`
         );
 
         const userId = req.params.userId;
 
         try {
-
             if (config.isLocalTest) {
                 // For local testing, just return success
                 return deletedResponse(
@@ -488,7 +488,7 @@ router.delete(
                 if (userCheck.rows.length === 0) {
                     await client.query('ROLLBACK');
                     return notFoundResponse(res, 'User');
-                }                // Get the user's name_key before deletion for cleanup
+                } // Get the user's name_key before deletion for cleanup
                 const userResult = await client.query(
                     'SELECT name_key FROM tbl_user WHERE user_key = $1',
                     [userId]
@@ -496,11 +496,11 @@ router.delete(
                 const nameKey = userResult.rows[0]?.name_key;
 
                 // CORRECT ORDER: Delete child tables first, parent tables last
-                  // 1. Delete user role assignments first (child of tbl_user)
+                // 1. Delete user role assignments first (child of tbl_user)
                 await client.query(
                     'DELETE FROM tbl_user_role WHERE user_key = $1',
                     [userId]
-                );                // 2. Delete the user (child of tbl_name_data)
+                ); // 2. Delete the user (child of tbl_name_data)
                 await client.query('DELETE FROM tbl_user WHERE user_key = $1', [
                     userId,
                 ]);
