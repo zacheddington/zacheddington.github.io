@@ -457,13 +457,13 @@ router.delete(
         console.log(
             `DELETE USER: Starting deletion for user ${req.params.userId}`
         );
-        console.log(`DELETE USER: Request from origin: ${req.headers.origin}`);
-        console.log(
+        console.log(`DELETE USER: Request from origin: ${req.headers.origin}`);        console.log(
             `DELETE USER: User making request: ${req.user?.userId}, isAdmin: ${req.user?.isAdmin}`
         );
 
+        const userId = req.params.userId;
+
         try {
-            const userId = req.params.userId;
 
             if (config.isLocalTest) {
                 // For local testing, just return success
