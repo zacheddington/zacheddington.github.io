@@ -688,6 +688,11 @@ async function loadUsers() {
     }
 }
 
+// Alias function for backward compatibility
+function displayFilteredUsers() {
+    loadUsers();
+}
+
 // Load roles for user management
 async function loadRolesForUserManagement() {
     try {
