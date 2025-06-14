@@ -313,45 +313,140 @@ async function searchGooglePlaces(query, config) {
             return;
         }
 
-        // Use the legacy AutocompleteService API for stability
-        // The new AutocompleteSuggestion API has parameter compatibility issues
-        const service = new window.google.maps.places.AutocompleteService();
+        // Try to use the new AutocompleteSuggestion API first
+        if (
+            window.google.maps.places.AutocompleteSuggestion &&
+            window.google.maps.places.AutocompleteSuggestion
+                .fetchAutocompleteSuggestions
+        ) {
+            // New API implementation
+            const request = {
+                input: query,
+                // Use proper field for location restriction
+                locationRestriction: config.componentRestrictions?.country
+                    ? {
+                          country:
+                              config.componentRestrictions.country.toUpperCase(),
+                      }
+                    : undefined,
+                // Include types - use the newer format
+                includedPrimaryTypes:
+                    config.types && config.types.includes('address')
+                        ? ['street_address', 'route', 'premise']
+                        : config.types,
+                // Set language if needed
+                languageCode: 'en',
+            };
 
-        // Prepare request options
-        const request = {
-            input: query,
-            types: config.types || ['address'],
-        };
+            // Remove undefined properties
+            Object.keys(request).forEach((key) => {
+                if (request[key] === undefined) {
+                    delete request[key];
+                }
+            });
 
-        // Add component restrictions if specified
-        if (config.componentRestrictions) {
-            request.componentRestrictions = config.componentRestrictions;
+            window.google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(
+                request
+            )
+                .then((response) => {
+                    if (
+                        response.suggestions &&
+                        response.suggestions.length > 0
+                    ) {
+                        // Convert to our expected format
+                        const results = response.suggestions
+                            .slice(0, config.maxResults)
+                            .map((suggestion) => {
+                                const placePrediction =
+                                    suggestion.placePrediction;
+                                if (placePrediction) {
+                                    return {
+                                        description:
+                                            placePrediction.text?.text ||
+                                            placePrediction.text,
+                                        place_id: placePrediction.placeId,
+                                        structured_formatting: {
+                                            main_text:
+                                                placePrediction.structuredFormat
+                                                    ?.mainText?.text ||
+                                                placePrediction.text?.text,
+                                            secondary_text:
+                                                placePrediction.structuredFormat
+                                                    ?.secondaryText?.text || '',
+                                        },
+                                    };
+                                } else {
+                                    // Handle other suggestion types
+                                    return {
+                                        description: suggestion.text || query,
+                                        place_id: `generated_${Math.random()
+                                            .toString(36)
+                                            .substr(2, 9)}`,
+                                        structured_formatting: {
+                                            main_text: suggestion.text || query,
+                                            secondary_text: '',
+                                        },
+                                    };
+                                }
+                            });
+                        resolve(results);
+                    } else {
+                        resolve([]);
+                    }
+                })
+                .catch((error) => {
+                    console.warn(
+                        'New AutocompleteSuggestion API failed, falling back to legacy API:',
+                        error
+                    );
+                    fallbackToLegacyAPI();
+                });
+        } else {
+            // Fallback to legacy API
+            fallbackToLegacyAPI();
         }
 
-        // Make the request
-        service.getPlacePredictions(request, (predictions, status) => {
-            if (
-                status === window.google.maps.places.PlacesServiceStatus.OK &&
-                predictions
-            ) {
-                // Convert to our expected format
-                const results = predictions
-                    .slice(0, config.maxResults)
-                    .map((prediction) => ({
-                        description: prediction.description,
-                        place_id: prediction.place_id,
-                        structured_formatting: prediction.structured_formatting,
-                    }));
-                resolve(results);
-            } else if (
-                status ===
-                window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS
-            ) {
-                resolve([]);
-            } else {
-                reject(new Error(`Google Places API error: ${status}`));
+        function fallbackToLegacyAPI() {
+            const service = new window.google.maps.places.AutocompleteService();
+
+            // Prepare request options
+            const request = {
+                input: query,
+                types: config.types || ['address'],
+            };
+
+            // Add component restrictions if specified
+            if (config.componentRestrictions) {
+                request.componentRestrictions = config.componentRestrictions;
             }
-        });
+
+            // Make the request
+            service.getPlacePredictions(request, (predictions, status) => {
+                if (
+                    status ===
+                        window.google.maps.places.PlacesServiceStatus.OK &&
+                    predictions
+                ) {
+                    // Convert to our expected format
+                    const results = predictions
+                        .slice(0, config.maxResults)
+                        .map((prediction) => ({
+                            description: prediction.description,
+                            place_id: prediction.place_id,
+                            structured_formatting:
+                                prediction.structured_formatting,
+                        }));
+                    resolve(results);
+                } else if (
+                    status ===
+                    window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS
+                ) {
+                    resolve([]);
+                } else {
+                    reject(new Error(`Google Places API error: ${status}`));
+                }
+            });
+        }
     });
 }
 
