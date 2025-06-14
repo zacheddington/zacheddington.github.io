@@ -46,7 +46,8 @@ async function loadTopNavigation() {
         }
         const menuHTML = await response.text();
 
-        // Insert navigation directly into the header        headerContainer.insertAdjacentHTML('beforeend', menuHTML);
+        // Insert navigation directly into the header
+        headerContainer.insertAdjacentHTML('beforeend', menuHTML);
 
         setupTopNavigation();
 
