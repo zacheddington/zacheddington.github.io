@@ -46,22 +46,29 @@ async function loadTopNavigation() {
 
         console.log('🔧 NAV: Fetching menu from:', menuPath);
         const response = await fetch(menuPath);
-        console.log('🔧 NAV: Fetch response status:', response.status, response.ok);
+        console.log(
+            '🔧 NAV: Fetch response status:',
+            response.status,
+            response.ok
+        );
         if (!response.ok) {
             throw new Error(`Failed to load menu: ${response.status}`);
         }
         const menuHTML = await response.text();
         console.log('🔧 NAV: Menu HTML length:', menuHTML.length);
-        console.log('🔧 NAV: Menu HTML preview:', menuHTML.substring(0, 100) + '...');
+        console.log(
+            '🔧 NAV: Menu HTML preview:',
+            menuHTML.substring(0, 100) + '...'
+        );
 
         // Insert navigation directly into the header
         console.log('🔧 NAV: Inserting menu HTML into header...');
         headerContainer.insertAdjacentHTML('beforeend', menuHTML);
-        
+
         // Verify insertion
         const insertedNav = headerContainer.querySelector('.top-nav-menu');
         console.log('🔧 NAV: Navigation inserted successfully:', !!insertedNav);
-        
+
         console.log('🔧 NAV: Setting up navigation...');
         setupTopNavigation();
 
@@ -75,13 +82,14 @@ async function loadTopNavigation() {
                 ? window.authUtils.isUserAdmin(userData)
                 : false;
 
-            window.authUtils.updateAdminMenuItem(isAdmin);        }
+            window.authUtils.updateAdminMenuItem(isAdmin);
+        }
         console.log('🔧 NAV: Navigation loading completed successfully');
     } catch (err) {
         console.error('❌ NAV: Error loading top navigation:', err);
         console.error('❌ NAV: Error details:', {
             message: err.message,
-            stack: err.stack
+            stack: err.stack,
         });
 
         // Fallback: create a simple navigation inline if loading fails
@@ -197,7 +205,7 @@ function createFallbackNavigation() {
 // Setup top navigation functionality
 function setupTopNavigation() {
     console.log('🔧 NAV: setupTopNavigation() called');
-    
+
     // Set active page
     console.log('🔧 NAV: Setting active nav item...');
     setActiveNavItem();
