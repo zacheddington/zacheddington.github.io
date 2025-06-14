@@ -1262,3 +1262,12 @@ function getTextWidth(text, font) {
     const metrics = context.measureText(text);
     return metrics.width;
 }
+
+// Make patients functions available globally
+window.patientsPage = {
+    initializePatientsPage,
+    initializeCreatePatientPage,
+    initializeManagePatientsPage,
+    setupPatientPhoneFormatting,
+    createPatient,
+};
