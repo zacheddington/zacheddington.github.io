@@ -1176,13 +1176,17 @@ function setupUserFilter() {
 async function editUserRole(userId, newRoleKey) {
     // If newRoleKey is provided, we're handling a dropdown change
     if (newRoleKey !== undefined) {
-        // Updating user role
+        // Get the user data to access username
+        const user = allUsers.find((u) => u.user_key == userId);
+        const username = user ? user.username : `User ${userId}`;
 
         // Find the role name from currentRoles array
         const selectedRole = currentRoles.find(
             (role) => role.role_key == newRoleKey
         );
-        const roleName = selectedRole ? selectedRole.role_name : 'Unknown'; // Show confirmation modal
+        const roleName = selectedRole ? selectedRole.role_name : 'Unknown';
+
+        // Show confirmation modal
         window.modalManager.showConfirmModal(
             '🔄 Change User Role',
             `Are you sure you want to change this user's role to ${roleName}?`,
@@ -1190,38 +1194,18 @@ async function editUserRole(userId, newRoleKey) {
                 try {
                     // Show loading state
                     setUserActionLoading(userId, true);
-                    const userCheck = await checkUserDependencies(userId);
 
-                    // If user doesn't exist, handle it gracefully
-                    if (!userCheck.exists) {
-                        // Remove the user from the local array since it doesn't exist on server
-                        const userIndex = allUsers.findIndex(
-                            (user) => user.user_key == userId
-                        );
-                        if (userIndex !== -1) {
-                            allUsers.splice(userIndex, 1);
-                        }
-
-                        // Refresh the table display
-                        displayFilteredUsers();
-
-                        window.modalManager.showModal(
-                            'info',
-                            `User "${username}" was not found on the server (may have been already deleted). Removed from local display.`
-                        );
-                        return;
-                    }
-
-                    const API_URL = getAPIUrl();
+                    // Update user role directly - the server will handle validation
                     const token = localStorage.getItem('token');
+                    const API_URL = getAPIUrl();
 
                     const response = await fetch(
                         `${API_URL}/api/users/${userId}/role`,
                         {
                             method: 'PUT',
                             headers: {
-                                Authorization: `Bearer ${token}`,
                                 'Content-Type': 'application/json',
+                                Authorization: `Bearer ${token}`,
                             },
                             body: JSON.stringify({
                                 roleKey: newRoleKey,
@@ -1230,24 +1214,24 @@ async function editUserRole(userId, newRoleKey) {
                     );
 
                     if (response.ok) {
-                        const result = await response.json();
-
-                        // Update the user in the local array
-                        const userIndex = allUsers.findIndex(
-                            (user) => user.user_key == userId
-                        );
-                        if (userIndex !== -1) {
-                            allUsers[userIndex].role_key = newRoleKey;
-                            allUsers[userIndex].role_name = roleName;
-                        }
-
-                        // Refresh the table display
-                        displayFilteredUsers();
-
-                        // Show success message
+                        // Update successful - refresh user data
+                        await loadUsers();
                         window.modalManager.showModal(
                             'success',
-                            `User role successfully updated to ${roleName}.`
+                            'User role updated successfully!'
+                        );
+                    } else if (response.status === 404) {
+                        // User not found - remove from local display
+                        const userIndex = allUsers.findIndex(
+                            (u) => u.user_key == userId
+                        );
+                        if (userIndex !== -1) {
+                            allUsers.splice(userIndex, 1);
+                        }
+                        displayFilteredUsers();
+                        window.modalManager.showModal(
+                            'info',
+                            `User "${username}" was not found on the server (may have been already deleted). Removed from local display.`
                         );
                     } else {
                         const errorData = await response.json();
@@ -1269,7 +1253,6 @@ async function editUserRole(userId, newRoleKey) {
         );
     } else {
         // Legacy single parameter call - show info modal
-        // Edit user role functionality
         window.modalManager.showModal(
             'info',
             'Please use the role dropdown to change user roles.'
