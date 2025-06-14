@@ -496,25 +496,16 @@ router.delete(
                 const nameKey = userResult.rows[0]?.name_key;
 
                 // CORRECT ORDER: Delete child tables first, parent tables last
-                
-                // 1. Delete user role assignments first (child of tbl_user)
+                  // 1. Delete user role assignments first (child of tbl_user)
                 await client.query(
                     'DELETE FROM tbl_user_role WHERE user_key = $1',
                     [userId]
-                );
-
-                // 2. Delete user sessions/tokens if they exist (child of tbl_user)
-                await client.query(
-                    'DELETE FROM tbl_user_session WHERE user_key = $1',
-                    [userId]
-                );
-
-                // 3. Delete the user (child of tbl_name_data)
+                );                // 2. Delete the user (child of tbl_name_data)
                 await client.query('DELETE FROM tbl_user WHERE user_key = $1', [
                     userId,
                 ]);
 
-                // 4. FINALLY: Clean up tbl_name_data if no other users reference it (parent table)
+                // 3. FINALLY: Clean up tbl_name_data if no other users reference it (parent table)
                 if (nameKey) {
                     const nameUsageCheck = await client.query(
                         'SELECT COUNT(*) FROM tbl_user WHERE name_key = $1',
