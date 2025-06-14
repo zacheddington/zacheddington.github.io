@@ -163,13 +163,24 @@
     overflow: visible;
 }
 
-/* TEMPORARY DEBUG STYLES FOR DROPDOWN VISIBILITY - Remove after testing */
 .dropdown-content {
-    background: #ff0000 !important; /* Bright red background */
-    border: 3px solid #000000 !important; /* Black border */
-    color: #ffffff !important; /* White text */
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.8) !important; /* Red glow */
-    z-index: 9999 !important; /* Very high z-index */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    z-index: var(--z-modal);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+    /* Ensure dropdown is not clipped */
+    overflow: visible;
 }
 
 .dropdown-content a {
@@ -366,5 +377,3 @@ body.is-admin .admin-only {
     outline: 2px solid rgba(220, 53, 69, 0.5);
     outline-offset: 2px;
 }
-
-/* End temporary debug styles */

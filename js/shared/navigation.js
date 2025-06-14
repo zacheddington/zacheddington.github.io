@@ -65,20 +65,10 @@ async function loadTopNavigation() {
                 Object.keys(userData)
             );
             console.log('🔍 Navigation: userData.isAdmin:', userData.isAdmin);
-            console.log('🔍 Navigation: userData.username:', userData.username);
-
-            // Use proper admin detection
+            console.log('🔍 Navigation: userData.username:', userData.username); // Use proper admin detection
             let isAdmin = window.authUtils.isUserAdmin
                 ? window.authUtils.isUserAdmin(userData)
                 : false;
-
-            // TEMPORARY: Override for testing - make any logged-in user admin
-            if (userData && Object.keys(userData).length > 0) {
-                console.log(
-                    '🧪 Navigation: TEMPORARY OVERRIDE - Making logged-in user admin for testing'
-                );
-                isAdmin = true;
-            }
 
             console.log('🔍 Navigation: Final admin status:', isAdmin);
 
