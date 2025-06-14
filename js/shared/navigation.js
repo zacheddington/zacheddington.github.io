@@ -3,20 +3,27 @@
 
 // Load top navigation menu
 async function loadTopNavigation() {
+    console.log('🔧 NAV: loadTopNavigation() called');
     try {
         const headerContainer = document.querySelector('.app-header');
+        console.log('🔧 NAV: Header container found:', !!headerContainer);
         if (!headerContainer) {
-            console.warn('Header container not found');
+            console.warn('❌ NAV: Header container not found');
             return;
-        } // Check if navigation is already loaded
+        }
+
+        // Check if navigation is already loaded
         const existingNav = headerContainer.querySelector('.top-nav-menu');
+        console.log('🔧 NAV: Existing navigation found:', !!existingNav);
         if (existingNav) {
+            console.log('🔧 NAV: Navigation already exists, setting up...');
             setupTopNavigation();
             return;
         }
 
         // Determine the correct path to menu.html based on current location
         const path = window.location.pathname;
+        console.log('🔧 NAV: Current path:', path);
         let menuPath = '/html/menu.html';
 
         // If we're in a subfolder, adjust the path
@@ -29,6 +36,7 @@ async function loadTopNavigation() {
             path.includes('/2fa-setup/')
         ) {
             const depth = (path.match(/\//g) || []).length - 1;
+            console.log('🔧 NAV: Path depth:', depth);
             if (depth > 1) {
                 menuPath = '../../html/menu.html';
             } else {
@@ -36,13 +44,25 @@ async function loadTopNavigation() {
             }
         }
 
+        console.log('🔧 NAV: Fetching menu from:', menuPath);
         const response = await fetch(menuPath);
+        console.log('🔧 NAV: Fetch response status:', response.status, response.ok);
         if (!response.ok) {
             throw new Error(`Failed to load menu: ${response.status}`);
         }
         const menuHTML = await response.text();
+        console.log('🔧 NAV: Menu HTML length:', menuHTML.length);
+        console.log('🔧 NAV: Menu HTML preview:', menuHTML.substring(0, 100) + '...');
 
-        // Insert navigation directly into the header        headerContainer.insertAdjacentHTML('beforeend', menuHTML);
+        // Insert navigation directly into the header
+        console.log('🔧 NAV: Inserting menu HTML into header...');
+        headerContainer.insertAdjacentHTML('beforeend', menuHTML);
+        
+        // Verify insertion
+        const insertedNav = headerContainer.querySelector('.top-nav-menu');
+        console.log('🔧 NAV: Navigation inserted successfully:', !!insertedNav);
+        
+        console.log('🔧 NAV: Setting up navigation...');
         setupTopNavigation();
 
         // Update admin menu visibility based on user role
@@ -55,10 +75,14 @@ async function loadTopNavigation() {
                 ? window.authUtils.isUserAdmin(userData)
                 : false;
 
-            window.authUtils.updateAdminMenuItem(isAdmin);
-        }
+            window.authUtils.updateAdminMenuItem(isAdmin);        }
+        console.log('🔧 NAV: Navigation loading completed successfully');
     } catch (err) {
-        console.error('Error loading top navigation:', err);
+        console.error('❌ NAV: Error loading top navigation:', err);
+        console.error('❌ NAV: Error details:', {
+            message: err.message,
+            stack: err.stack
+        });
 
         // Fallback: create a simple navigation inline if loading fails
         createFallbackNavigation();
@@ -172,11 +196,15 @@ function createFallbackNavigation() {
 
 // Setup top navigation functionality
 function setupTopNavigation() {
+    console.log('🔧 NAV: setupTopNavigation() called');
+    
     // Set active page
+    console.log('🔧 NAV: Setting active nav item...');
     setActiveNavItem();
 
     // Setup logout button
     const logoutBtn = document.getElementById('logoutBtn');
+    console.log('🔧 NAV: Logout button found:', !!logoutBtn);
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function () {
             if (window.authUtils && window.authUtils.logout) {
@@ -189,11 +217,14 @@ function setupTopNavigation() {
             }
         });
     }
+    console.log('🔧 NAV: setupTopNavigation() completed');
 }
 
 // Set active navigation item based on current page
 function setActiveNavItem() {
+    console.log('🔧 NAV: setActiveNavItem() called');
     const currentPath = window.location.pathname;
+    console.log('🔧 NAV: Current path for active nav:', currentPath);
     const navLinks = document.querySelectorAll('.top-nav-menu a[data-page]');
 
     navLinks.forEach((link) => {
