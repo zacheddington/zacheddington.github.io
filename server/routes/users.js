@@ -480,7 +480,9 @@ router.delete(
                 if (userCheck.rows.length === 0) {
                     await client.query('ROLLBACK');
                     return notFoundResponse(res, 'User');
-                } // Get the user's name_key before deletion for cleanup
+                }
+
+                // Get the user's name_key before deletion for cleanup
                 const userResult = await client.query(
                     'SELECT name_key FROM tbl_user WHERE user_key = $1',
                     [userId]
@@ -532,8 +534,15 @@ router.delete(
                 throw err;
             } finally {
                 client.release();
-            }        } catch (err) {
-            return errorResponse(res, 'Failed to delete user', 500);
+            }
+        } catch (err) {
+            console.error('Delete user error details:', {
+                userId,
+                error: err.message,
+                stack: err.stack,
+                code: err.code
+            });
+            return errorResponse(res, `Failed to delete user: ${err.message}`, 500);
         }
     }
 );

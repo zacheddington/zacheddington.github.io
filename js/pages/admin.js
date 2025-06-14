@@ -1271,13 +1271,17 @@ async function deleteUser(userId, username) {
                     window.modalManager.showModal(
                         'success',
                         `User "${username}" has been successfully deleted.`
-                    );
-                } else {
+                    );                } else {
                     // Enhanced error handling for different scenarios
                     let errorMessage = 'Failed to delete user';
 
+                    // Temporary debugging - log the response
+                    console.log('Delete failed - Response status:', response.status);
+                    console.log('Delete failed - Response headers:', Object.fromEntries(response.headers.entries()));
+                    
                     try {
                         const errorData = await response.json();
+                        console.log('Delete failed - Error data:', errorData);
                         errorMessage =
                             errorData.message ||
                             errorData.error ||
