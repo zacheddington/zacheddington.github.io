@@ -1264,28 +1264,12 @@ async function deleteUser(userId, username) {
         async () => {
             try {
                 // Show loading state
-                setUserActionLoading(userId, true); // Check if user exists first
-                const userCheck = await checkUserDependencies(userId);
+                setUserActionLoading(userId, true);
 
-                // If user doesn't exist, handle it gracefully
-                if (!userCheck.exists) {
-                    // Remove the user from the local array since it doesn't exist on server
-                    const userIndex = allUsers.findIndex(
-                        (user) => user.user_key == userId
-                    );
-                    if (userIndex !== -1) {
-                        allUsers.splice(userIndex, 1);
-                    }
-
-                    // Refresh the table display
-                    displayFilteredUsers();
-
-                    window.modalManager.showModal(
-                        'info',
-                        `User "${username}" was not found on the server (may have been already deleted). Removed from local display.`
-                    );
-                    return;
-                }
+                // Note: Proceeding directly to delete since individual user GET endpoint doesn't exist
+                console.log(
+                    `Attempting to delete user ${userId} (${username})`
+                );
 
                 const API_URL = getAPIUrl();
                 const token = localStorage.getItem('token');
