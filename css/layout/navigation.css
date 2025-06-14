@@ -1,0 +1,232 @@
+/* Top Navigation Styles */
+/* Modern horizontal navigation bar integrated into the header */
+
+.top-nav-menu {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    margin: 0 2rem;
+}
+
+.top-nav-menu ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.top-nav-menu li {
+    position: relative;
+}
+
+.top-nav-menu a {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: var(--border-radius);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    font-size: 0.95rem;
+}
+
+.top-nav-menu a:hover {
+    color: var(--color-primary);
+    background-color: var(--color-background-tertiary);
+    transform: translateY(-1px);
+}
+
+.top-nav-menu a:active {
+    transform: translateY(0);
+}
+
+.top-nav-menu a[data-page='welcome']:hover {
+    color: var(--color-success);
+}
+
+.top-nav-menu a[data-page='patients']:hover {
+    color: var(--color-info);
+}
+
+.top-nav-menu a[data-page='admin']:hover {
+    color: var(--color-warning);
+}
+
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: var(--color-background-primary);
+    min-width: 180px;
+    box-shadow: var(--shadow-medium);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--color-border);
+    z-index: var(--z-dropdown);
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.dropdown-content a {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    border-radius: 0;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-content a:hover {
+    background-color: var(--color-background-tertiary);
+    color: var(--color-primary);
+    transform: none;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+/* User Profile Section */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
+}
+
+.logout-btn {
+    background-color: var(--color-danger);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.logout-btn:hover {
+    background-color: var(--color-danger-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-small);
+}
+
+.logout-btn:active {
+    transform: translateY(0);
+}
+
+/* Admin-only elements visibility */
+.admin-only {
+    display: none;
+}
+
+body.admin-user .admin-only {
+    display: block;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .top-nav-menu {
+        margin: 0 1rem;
+    }
+
+    .top-nav-menu ul {
+        gap: 1rem;
+    }
+
+    .top-nav-menu a {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .top-nav-menu {
+        margin: 0 0.5rem;
+    }
+
+    .top-nav-menu ul {
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .top-nav-menu a {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    .dropdown-content {
+        min-width: 150px;
+    }
+}
+
+@media (max-width: 600px) {
+    .top-nav-menu ul {
+        flex-direction: column;
+        gap: 0.25rem;
+        width: 100%;
+    }
+
+    .top-nav-menu a {
+        width: 100%;
+        justify-content: center;
+        padding: 0.5rem;
+    }
+
+    .dropdown-content {
+        position: static;
+        display: block;
+        box-shadow: none;
+        border: none;
+        background-color: var(--color-background-secondary);
+        margin-top: 0;
+        border-radius: 0;
+    }
+
+    .dropdown:hover .dropdown-content {
+        animation: none;
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Active page highlighting */
+.top-nav-menu a.active {
+    color: var(--color-primary);
+    background-color: var(--color-background-tertiary);
+    font-weight: 600;
+}
+
+/* Focus styles for accessibility */
+.top-nav-menu a:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.logout-btn:focus {
+    outline: 2px solid var(--color-danger);
+    outline-offset: 2px;
+}

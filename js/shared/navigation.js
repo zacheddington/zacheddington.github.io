@@ -231,6 +231,7 @@ function setupPatientNumberValidation() {
 // Make navigation utilities available globally
 window.navigation = {
     loadTopNavigation,
+    loadMenu: loadTopNavigation, // Add loadMenu for backward compatibility
     setupFadeNavigation,
     setupPatientNumberValidation,
 };
