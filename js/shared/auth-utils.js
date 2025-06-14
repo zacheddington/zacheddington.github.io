@@ -197,14 +197,21 @@ function isAuthenticated() {
 
 // Utility functions for admin detection and menu management
 function isUserAdmin(userData) {
-    if (!userData) return false;
+    console.log('🔍 isUserAdmin: Input userData:', userData);
+
+    if (!userData) {
+        console.log('❌ isUserAdmin: No userData provided');
+        return false;
+    }
 
     // Use server-determined admin status with fallback for old data
     let isAdminUser = userData.isAdmin === true;
+    console.log('🔍 isUserAdmin: userData.isAdmin === true?', isAdminUser);
 
     // Fallback: If role data is missing and username is admin, assume admin
     if (userData.isAdmin === undefined && userData.username === 'admin') {
         isAdminUser = true;
+        console.log('🔍 isUserAdmin: Fallback 1 - username is "admin"');
     }
 
     // Additional fallback: if username contains 'admin' (case insensitive)
@@ -214,8 +221,10 @@ function isUserAdmin(userData) {
         userData.username.toLowerCase().includes('admin')
     ) {
         isAdminUser = true;
+        console.log('🔍 isUserAdmin: Fallback 2 - username contains "admin"');
     }
 
+    console.log('✅ isUserAdmin: Final result:', isAdminUser);
     return isAdminUser;
 }
 
@@ -228,12 +237,21 @@ function updateAdminUI(isAdmin) {
 }
 
 function updateAdminMenuItem(isAdmin) {
+    console.log('🔍 updateAdminMenuItem: Called with isAdmin:', isAdmin);
     // Update body class to control admin-only elements via CSS
     if (isAdmin) {
         document.body.classList.add('is-admin');
+        console.log('✅ updateAdminMenuItem: Added is-admin class to body');
     } else {
         document.body.classList.remove('is-admin');
+        console.log('❌ updateAdminMenuItem: Removed is-admin class from body');
     }
+
+    // Log current body classes
+    console.log(
+        '🔍 updateAdminMenuItem: Current body classes:',
+        document.body.className
+    );
 }
 
 // Add session status indicator

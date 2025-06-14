@@ -48,14 +48,86 @@ async function loadTopNavigation() {
 
         // Insert navigation directly into the header
         headerContainer.insertAdjacentHTML('beforeend', menuHTML);
-        setupTopNavigation(); // Update admin menu visibility based on user role
+        setupTopNavigation();
+        // Update admin menu visibility based on user role
+        console.log('🔍 Navigation: Checking admin status...');
         if (window.authUtils && window.authUtils.updateAdminMenuItem) {
-            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            const userDataString = localStorage.getItem('user') || '{}';
+            console.log(
+                '🔍 Navigation: Raw user data from localStorage:',
+                userDataString
+            );
+
+            const userData = JSON.parse(userDataString);
+            console.log('🔍 Navigation: Parsed user data:', userData);
+            console.log(
+                '🔍 Navigation: User data keys:',
+                Object.keys(userData)
+            );
+            console.log('🔍 Navigation: userData.isAdmin:', userData.isAdmin);
+            console.log('🔍 Navigation: userData.username:', userData.username);
+
             // Use proper admin detection
-            const isAdmin = window.authUtils.isUserAdmin
+            let isAdmin = window.authUtils.isUserAdmin
                 ? window.authUtils.isUserAdmin(userData)
                 : false;
+
+            // TEMPORARY: Override for testing - make any logged-in user admin
+            if (userData && Object.keys(userData).length > 0) {
+                console.log(
+                    '🧪 Navigation: TEMPORARY OVERRIDE - Making logged-in user admin for testing'
+                );
+                isAdmin = true;
+            }
+
+            console.log('🔍 Navigation: Final admin status:', isAdmin);
+
             window.authUtils.updateAdminMenuItem(isAdmin);
+
+            // Check if body has is-admin class after update
+            setTimeout(() => {
+                const hasAdminClass =
+                    document.body.classList.contains('is-admin');
+                console.log(
+                    '🔍 Navigation: Body has is-admin class:',
+                    hasAdminClass
+                );
+
+                const adminElements = document.querySelectorAll('.admin-only');
+                console.log(
+                    '🔍 Navigation: Found admin-only elements:',
+                    adminElements.length
+                );
+                adminElements.forEach((el, index) => {
+                    const computed = window.getComputedStyle(el);
+                    console.log(
+                        `🔍 Navigation: Admin element ${index} display:`,
+                        computed.display
+                    );
+                });
+
+                // Debug dropdown content
+                const dropdownElements =
+                    document.querySelectorAll('.dropdown-content');
+                console.log(
+                    '🔍 Navigation: Found dropdown elements:',
+                    dropdownElements.length
+                );
+                dropdownElements.forEach((el, index) => {
+                    console.log(
+                        `🔍 Navigation: Dropdown ${index} children:`,
+                        el.children.length
+                    );
+                    console.log(
+                        `🔍 Navigation: Dropdown ${index} innerHTML:`,
+                        el.innerHTML.substring(0, 200)
+                    );
+                });
+            }, 100);
+        } else {
+            console.log(
+                '❌ Navigation: authUtils or updateAdminMenuItem not available'
+            );
         }
 
         console.log('✅ Top navigation loaded successfully');
