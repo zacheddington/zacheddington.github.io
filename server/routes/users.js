@@ -488,45 +488,47 @@ router.delete(
                 if (userCheck.rows.length === 0) {
                     await client.query('ROLLBACK');
                     return notFoundResponse(res, 'User');
-                } // Get the user's name_key before deletion for cleanup
+                }                // Get the user's name_key before deletion for cleanup
                 const userResult = await client.query(
                     'SELECT name_key FROM tbl_user WHERE user_key = $1',
                     [userId]
                 );
                 const nameKey = userResult.rows[0]?.name_key;
 
-                // CRITICAL: Delete from tbl_name_data FIRST (if only this user references it)
+                // CORRECT ORDER: Delete child tables first, parent tables last
+                
+                // 1. Delete user role assignments first (child of tbl_user)
+                await client.query(
+                    'DELETE FROM tbl_user_role WHERE user_key = $1',
+                    [userId]
+                );
+
+                // 2. Delete user sessions/tokens if they exist (child of tbl_user)
+                await client.query(
+                    'DELETE FROM tbl_user_session WHERE user_key = $1',
+                    [userId]
+                );
+
+                // 3. Delete the user (child of tbl_name_data)
+                await client.query('DELETE FROM tbl_user WHERE user_key = $1', [
+                    userId,
+                ]);
+
+                // 4. FINALLY: Clean up tbl_name_data if no other users reference it (parent table)
                 if (nameKey) {
                     const nameUsageCheck = await client.query(
                         'SELECT COUNT(*) FROM tbl_user WHERE name_key = $1',
                         [nameKey]
                     );
 
-                    if (parseInt(nameUsageCheck.rows[0].count) === 1) {
-                        // Only this user references this name_key, safe to delete from tbl_name_data first
+                    if (parseInt(nameUsageCheck.rows[0].count) === 0) {
+                        // No other users reference this name_key, safe to delete
                         await client.query(
                             'DELETE FROM tbl_name_data WHERE name_key = $1',
                             [nameKey]
                         );
                     }
                 }
-
-                // Delete user role assignments (foreign key constraint)
-                await client.query(
-                    'DELETE FROM tbl_user_role WHERE user_key = $1',
-                    [userId]
-                );
-
-                // Delete user sessions/tokens if they exist
-                await client.query(
-                    'DELETE FROM tbl_user_session WHERE user_key = $1',
-                    [userId]
-                );
-
-                // FINALLY: Delete the user (after tbl_name_data is cleaned up)
-                await client.query('DELETE FROM tbl_user WHERE user_key = $1', [
-                    userId,
-                ]);
 
                 await client.query('COMMIT');
 
