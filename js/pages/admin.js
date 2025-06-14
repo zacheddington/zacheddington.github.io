@@ -1162,6 +1162,12 @@ async function editUserRole(userId, newRoleKey) {
                     // Show loading state
                     setUserActionLoading(userId, true);
 
+                    // First, check user dependencies for debugging
+                    console.log(
+                        `Attempting to delete user ${userId} (${username})`
+                    );
+                    await checkUserDependencies(userId);
+
                     const API_URL = getAPIUrl();
                     const token = localStorage.getItem('token');
 
@@ -1237,9 +1243,19 @@ async function deleteUser(userId, username) {
                 // Show loading state
                 setUserActionLoading(userId, true);
 
+                // Check if user has any dependencies
+                const userDependencies = await checkUserDependencies(userId);
+                if (userDependencies) {
+                    // If dependencies exist, show info modal with details
+                    window.modalManager.showModal(
+                        'info',
+                        `User "${username}" has associated data that prevents deletion. Please remove or reassign this data before deleting the user.`
+                    );
+                    return;
+                }
+
                 const API_URL = getAPIUrl();
                 const token = localStorage.getItem('token');
-
                 const response = await fetch(`${API_URL}/api/users/${userId}`, {
                     method: 'DELETE',
                     headers: {
@@ -1247,6 +1263,13 @@ async function deleteUser(userId, username) {
                         'Content-Type': 'application/json',
                     },
                 });
+
+                // Log response details for debugging
+                console.log('Delete response status:', response.status);
+                console.log(
+                    'Delete response headers:',
+                    Object.fromEntries(response.headers.entries())
+                );
 
                 if (response.ok) {
                     // Remove the user from the local array
@@ -1291,8 +1314,13 @@ async function deleteUser(userId, username) {
                                     'User not found or already deleted.';
                                 break;
                             case 500:
-                                errorMessage =
-                                    'Server error occurred. This may be due to database constraints or the user having associated data that prevents deletion.';
+                                console.error('Server error details:', {
+                                    userId,
+                                    username,
+                                    status: response.status,
+                                    statusText: response.statusText,
+                                });
+                                errorMessage = `Server error while deleting user "${username}" (ID: ${userId}). This is likely due to:\n\n• Database constraints (user has associated data)\n• Foreign key relationships preventing deletion\n• Server-side database issues\n\nPlease contact your system administrator with this error information.`;
                                 break;
                             default:
                                 errorMessage = `Server error (${response.status}). Please try again or contact your administrator.`;
@@ -1341,6 +1369,33 @@ async function deleteUser(userId, username) {
             }
         }
     );
+}
+
+// Check if user has any dependencies that might prevent deletion
+async function checkUserDependencies(userId) {
+    try {
+        const API_URL = getAPIUrl();
+        const token = localStorage.getItem('token');
+
+        // Try to get user details to see if they have associated data
+        const response = await fetch(`${API_URL}/api/users/${userId}`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+            // Log user data to help diagnose the issue
+            console.log('User data before deletion attempt:', userData);
+            return userData;
+        }
+    } catch (error) {
+        console.log('Could not fetch user dependencies:', error);
+    }
+    return null;
 }
 
 // Update submit button state based on form validation
