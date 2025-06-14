@@ -197,16 +197,12 @@ function isAuthenticated() {
 
 // Utility functions for admin detection and menu management
 function isUserAdmin(userData) {
-    console.log('🔍 isUserAdmin: Input userData:', userData);
-
     if (!userData) {
-        console.log('❌ isUserAdmin: No userData provided');
         return false;
     }
 
     // Primary check: Use server-determined admin status
     if (userData.isAdmin === true) {
-        console.log('✅ isUserAdmin: userData.isAdmin is true');
         return true;
     }
 
@@ -216,20 +212,15 @@ function isUserAdmin(userData) {
             (role) => role && role.toLowerCase().includes('administrator')
         );
         if (hasAdminRole) {
-            console.log(
-                '✅ isUserAdmin: Found Administrator role in roles array'
-            );
             return true;
         }
     }
 
     // Fallback: If username is 'admin'
     if (userData.username === 'admin') {
-        console.log('✅ isUserAdmin: Fallback - username is "admin"');
         return true;
     }
 
-    console.log('❌ isUserAdmin: No admin privileges found');
     return false;
 }
 
@@ -242,21 +233,12 @@ function updateAdminUI(isAdmin) {
 }
 
 function updateAdminMenuItem(isAdmin) {
-    console.log('🔍 updateAdminMenuItem: Called with isAdmin:', isAdmin);
     // Update body class to control admin-only elements via CSS
     if (isAdmin) {
         document.body.classList.add('is-admin');
-        console.log('✅ updateAdminMenuItem: Added is-admin class to body');
     } else {
         document.body.classList.remove('is-admin');
-        console.log('❌ updateAdminMenuItem: Removed is-admin class from body');
     }
-
-    // Log current body classes
-    console.log(
-        '🔍 updateAdminMenuItem: Current body classes:',
-        document.body.className
-    );
 }
 
 // Add session status indicator
@@ -310,14 +292,6 @@ function addSessionStatusIndicator() {
 function setupSecureHistoryManagement() {
     // Prevent back button access to authenticated pages after logout
     window.addEventListener('beforeunload', function () {
-        console.log('🟠 BEFOREUNLOAD triggered', {
-            currentPath: window.location.pathname,
-            successfulLoginNavigation: sessionStorage.getItem(
-                'successfulLoginNavigation'
-            ),
-            token: localStorage.getItem('token') ? 'EXISTS' : 'MISSING',
-        });
-
         // Only clear auth data if:
         // 1. We're on the login page AND
         // 2. No successful login navigation is in progress
@@ -326,17 +300,10 @@ function setupSecureHistoryManagement() {
                 window.location.pathname === '/index.html') &&
             !sessionStorage.getItem('successfulLoginNavigation')
         ) {
-            console.log(
-                '🟠 CLEARING AUTH DATA ON BEFOREUNLOAD - User leaving login page'
-            );
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             localStorage.removeItem('activeSession');
             sessionStorage.clear();
-        } else {
-            console.log(
-                '🟠 PRESERVING AUTH DATA ON BEFOREUNLOAD - Successful login navigation in progress'
-            );
         }
     });
 
@@ -349,12 +316,6 @@ function setupSecureHistoryManagement() {
     window.addEventListener('popstate', function (event) {
         const token = localStorage.getItem('token');
         const currentPath = window.location.pathname;
-
-        console.log('🟡 POPSTATE - Browser navigation detected', {
-            currentPath,
-            hasToken: !!token,
-            state: event.state,
-        });
 
         // If user navigated back to an authenticated page without a token, redirect to login
         const authenticatedPages = [
@@ -372,9 +333,6 @@ function setupSecureHistoryManagement() {
         );
 
         if (isAuthenticatedPage && !token) {
-            console.log(
-                '🔴 UNAUTHORIZED ACCESS ATTEMPT - Redirecting to login'
-            );
             window.location.replace('/');
         }
     });
@@ -448,8 +406,6 @@ function preventAuthPageBackNavigation() {
 // Perform secure logout
 async function logout(reason = 'User logout') {
     try {
-        console.log('🔓 Logging out user:', reason);
-
         // Attempt to notify server of logout
         const token = localStorage.getItem('token');
         if (token) {
