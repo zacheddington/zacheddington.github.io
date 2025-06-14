@@ -97,27 +97,6 @@ function initializeManageUsersPage() {
         }, 250)
     );
 
-    // Add a reset columns button to the filter actions
-    const filterActions = document.querySelector('.filter-actions');
-    if (filterActions) {
-        const resetColumnsBtn = document.createElement('button');
-        resetColumnsBtn.type = 'button';
-        resetColumnsBtn.className = 'secondary-btn';
-        resetColumnsBtn.id = 'resetColumns';
-        resetColumnsBtn.textContent = 'Reset Columns';
-        resetColumnsBtn.title =
-            'Reset all column widths to optimal size based on content';
-        resetColumnsBtn.addEventListener('click', function () {
-            localStorage.removeItem('userTableColumnWidths');
-            adjustColumnWidths();
-            // Announce to screen readers
-            announceForScreenReader(
-                'Table columns have been reset to optimal width'
-            );
-        });
-        filterActions.appendChild(resetColumnsBtn);
-    }
-
     // Manage users page initialized
 }
 
