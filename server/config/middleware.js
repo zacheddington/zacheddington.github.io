@@ -7,10 +7,16 @@ const config = require("./environment");
 
 // Configure CORS middleware
 const corsConfig = {
-  origin: config.CORS_ORIGIN,
+  origin: [
+    config.CORS_ORIGIN,
+    "https://indataentry.com",
+    "https://integrisneuro-eec31e4aaab1.herokuapp.com"
+  ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  preflightContinue: false,
+  optionsSuccessStatus: 200
 };
 
 // Security middleware to prevent caching of authenticated content

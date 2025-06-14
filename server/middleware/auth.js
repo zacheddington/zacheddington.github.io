@@ -6,19 +6,23 @@ const config = require("../config/environment");
 
 // Middleware to authenticate JWT tokens
 const authenticateToken = (req, res, next) => {
+  console.log(`AUTH: ${req.method} ${req.path} from origin: ${req.headers.origin}`);
+  
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
+    console.log("AUTH: No token provided");
     return res.status(401).json({ error: "Access denied. No token provided." });
   }
 
   try {
     const verified = jwt.verify(token, config.JWT_SECRET);
     req.user = verified;
+    console.log(`AUTH: User authenticated - ID: ${verified.userId}, Admin: ${verified.isAdmin}`);
     next();
   } catch (err) {
-    console.error("Token validation failed:", err.message);
+    console.error("AUTH: Token validation failed:", err.message);
     res.status(403).json({ error: "Invalid token." });
   }
 };
