@@ -1054,9 +1054,7 @@ function displayUsersPreserveWidths(users, columnWidths = []) {
         }
     });
 
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-
-    // Generate the HTML for the table rows
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}'); // Generate the HTML for the table rows
     usersTableBody.innerHTML = users
         .map((user) => {
             const fullName = user.middle_name
@@ -1074,6 +1072,8 @@ function displayUsersPreserveWidths(users, columnWidths = []) {
                 ? new Date(user.created_at).toLocaleDateString()
                 : '';
 
+            const isCurrentUser = currentUser.username === user.username;
+
             return `
             <tr data-user-id="${user.user_key}">
                 <td class="user-username" title="${user.username}">${
@@ -1082,13 +1082,14 @@ function displayUsersPreserveWidths(users, columnWidths = []) {
                 <td class="user-fullname" title="${fullName}">${fullName}</td>
                 <td class="user-email" title="${user.email || ''}">${
                 user.email || ''
-            }</td>
-                <td class="user-role" title="${primaryRole}">
+            }</td>                <td class="user-role" title="${primaryRole}">
                     ${
                         currentRoles.length > 0
                             ? `<select class="role-select" onchange="window.adminPage.editUserRole(${
                                   user.user_key
-                              }, this.value)">
+                              }, this.value)" ${
+                                  isCurrentUser ? 'disabled' : ''
+                              }>
                             ${currentRoles
                                 .map(
                                     (role) => `
@@ -1106,11 +1107,10 @@ function displayUsersPreserveWidths(users, columnWidths = []) {
                             : primaryRole
                     }
                 </td>
-                <td class="user-created" title="${createdDate}">${createdDate}</td>
-                <td>
+                <td class="user-created" title="${createdDate}">${createdDate}</td>                <td>
                     <div class="user-actions">
                         ${
-                            currentUser.user_key !== user.user_key
+                            !isCurrentUser
                                 ? `<button class="btn-icon btn-delete" onclick="window.adminPage.deleteUser(${user.user_key}, '${user.username}')" title="Delete User">
                                 🗑️
                             </button>`
@@ -1181,10 +1181,32 @@ function setupUserFilter() {
 
 // Function to handle user role editing
 async function editUserRole(userId, newRoleKey) {
+    // Check if user is trying to edit their own role
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = allUsers.find((u) => u.user_key == userId);
+
+    if (user && currentUser.username === user.username) {
+        window.modalManager.showModal(
+            'error',
+            'You cannot change your own role.'
+        );
+        // Reset the dropdown to its original value
+        const roleSelect = document.querySelector(
+            `select[onchange*="${userId}"]`
+        );
+        if (roleSelect) {
+            const currentRoleKey =
+                user.role_keys && user.role_keys.length > 0
+                    ? user.role_keys[0]
+                    : 2;
+            roleSelect.value = currentRoleKey;
+        }
+        return;
+    }
+
     // If newRoleKey is provided, we're handling a dropdown change
     if (newRoleKey !== undefined) {
         // Get the user data to access username
-        const user = allUsers.find((u) => u.user_key == userId);
         const username = user ? user.username : `User ${userId}`;
 
         // Find the role name from currentRoles array
@@ -1268,6 +1290,17 @@ async function editUserRole(userId, newRoleKey) {
 }
 
 async function deleteUser(userId, username) {
+    // Check if user is trying to delete their own account
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+    if (currentUser.username === username) {
+        window.modalManager.showModal(
+            'error',
+            'You cannot delete your own account.'
+        );
+        return;
+    }
+
     // Show confirmation modal with strong warning
     window.modalManager.showConfirmModal(
         '🗑️ Delete User',
