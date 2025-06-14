@@ -205,11 +205,11 @@
 
 /* Admin-only elements visibility */
 .admin-only {
-    display: none;
+    display: none !important;
 }
 
 body.is-admin .admin-only {
-    display: block;
+    display: block !important;
 }
 
 /* Responsive Design - Better zoom handling */

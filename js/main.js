@@ -151,6 +151,20 @@ function initializePage(page) {
             console.log('🏠 Detected welcome page, initializing...');
             // Welcome page initialization can go here if needed
             // Navigation is loaded centrally above, no need to call it again
+
+            // Ensure admin-only elements are properly hidden/shown based on user role
+            // Use setTimeout to ensure DOM elements are fully rendered
+            setTimeout(() => {
+                if (window.authUtils && window.authUtils.updateAdminMenuItem) {
+                    const userData = JSON.parse(
+                        localStorage.getItem('user') || '{}'
+                    );
+                    const isAdmin = window.authUtils.isUserAdmin
+                        ? window.authUtils.isUserAdmin(userData)
+                        : false;
+                    window.authUtils.updateAdminMenuItem(isAdmin);
+                }
+            }, 100);
             break;
         case 'force-password.html':
             if (window.forcePasswordPage) {
