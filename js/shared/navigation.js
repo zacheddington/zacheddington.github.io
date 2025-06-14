@@ -46,10 +46,19 @@ async function loadTopNavigation() {
         }
         const menuHTML = await response.text();
 
-        // Insert navigation directly into the header
-        headerContainer.insertAdjacentHTML('beforeend', menuHTML);
+        // Insert navigation directly into the header        headerContainer.insertAdjacentHTML('beforeend', menuHTML);
 
         setupTopNavigation();
+
+        // Update admin menu visibility based on user role
+        if (window.authUtils && window.authUtils.updateAdminMenuItem) {
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            const isAdmin = window.authUtils.isUserAdmin
+                ? window.authUtils.isUserAdmin(userData)
+                : false;
+            window.authUtils.updateAdminMenuItem(isAdmin);
+        }
+
         console.log('✅ Top navigation loaded successfully');
     } catch (err) {
         console.error('Error loading top navigation:', err);
@@ -110,9 +119,18 @@ function createFallbackNavigation() {
             </button>
         </div>
     `;
-
     headerContainer.insertAdjacentHTML('beforeend', fallbackNav);
     setupTopNavigation();
+
+    // Update admin menu visibility for fallback navigation too
+    if (window.authUtils && window.authUtils.updateAdminMenuItem) {
+        const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        const isAdmin = window.authUtils.isUserAdmin
+            ? window.authUtils.isUserAdmin(userData)
+            : false;
+        window.authUtils.updateAdminMenuItem(isAdmin);
+    }
+
     console.log('✅ Fallback navigation created');
 }
 

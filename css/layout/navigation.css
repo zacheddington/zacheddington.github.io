@@ -47,8 +47,9 @@
 }
 
 /* Hover state: elevated with glassmorphism effect */
-.top-nav-menu a:hover {
-    color: white;
+.top-nav-menu a:hover,
+.top-nav-menu a:hover:visited {
+    color: white !important;
     background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -75,14 +76,6 @@
 
 .top-nav-menu a.active svg {
     transform: scale(1.05);
-}
-
-.top-nav-menu a[data-page='patients']:hover {
-    color: var(--color-info);
-}
-
-.top-nav-menu a[data-page='admin']:hover {
-    color: var(--color-warning);
 }
 
 /* User Profile Section */
@@ -117,12 +110,12 @@
 }
 
 .logout-btn:hover {
-    color: white;
-    background: rgba(220, 53, 69, 0.2);
+    color: white !important;
+    background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(220, 53, 69, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .logout-btn:hover svg {
@@ -138,7 +131,7 @@
     display: none;
 }
 
-body.admin-user .admin-only {
+body.is-admin .admin-only {
     display: block;
 }
 
