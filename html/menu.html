@@ -1,21 +1,22 @@
-<button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">
-    <span></span>
-    <span></span>
-    <span></span>
-</button>
-<nav class="side-menu" id="sideMenu">
+<!-- Top Navigation Menu -->
+<nav class="top-nav-menu">
     <ul>
-        <li><a href="/welcome/" data-page="welcome">Home</a></li>
-        <li><a href="/patients/" data-page="patients">Patients</a></li>
-        <li>
-            <a href="/view_eeg/" data-page="view_eeg"
-                >View Entered EEG Information</a
-            >
+        <li><a href="/welcome/" data-page="welcome">🏠 Home</a></li>
+        <li><a href="/patients/" data-page="patients">👥 Patients</a></li>
+        <li><a href="/enter_eeg/" data-page="enter_eeg">📊 Enter EEG</a></li>
+        <li><a href="/view_eeg/" data-page="view_eeg">📈 View EEG</a></li>
+        <li><a href="/profile/" data-page="profile">👤 Profile</a></li>
+        <li class="admin-only dropdown">
+            <a href="/admin/" data-page="admin">⚙️ Admin</a>
+            <div class="dropdown-content">
+                <a href="/admin/manage-users/">Manage Users</a>
+                <a href="/admin/create-user/">Create User</a>
+            </div>
         </li>
-        <li><a href="/profile/" data-page="profile">My Profile</a></li>
-        <li class="admin-only">
-            <a href="/admin/" data-page="admin">User Management</a>
-        </li>
-        <li><a href="#" id="logoutLink">Logout</a></li>
     </ul>
 </nav>
+
+<!-- User Profile Section -->
+<div class="user-profile">
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+</div>

@@ -46,6 +46,7 @@
    ================================ */
 @import 'utils/responsive.css';
 @import 'utils/animations.css';
+@import 'utils/zoom-fix.css';
 
 /* ================================
    TEMPORARY: Legacy styles.css

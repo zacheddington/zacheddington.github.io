@@ -1,5 +1,5 @@
 /* ================================
-   APP HEADER BAR
+   APP HEADER BAR (UPDATED FOR TOP NAV)
    ================================ */
 
 .app-header {
@@ -8,31 +8,30 @@
     left: 0;
     width: 100%;
     height: var(--header-height);
-    background: var(--color-white);
-    background-image: linear-gradient(
-        180deg,
-        var(--color-white) 0%,
-        rgba(248, 249, 250, 0.95) 100%
+    background: linear-gradient(
+        135deg,
+        var(--color-primary),
+        var(--color-primary-dark)
     );
     box-shadow: var(--shadow-lg);
     display: flex;
-    align-items: center; /* Center items vertically */
-    justify-content: space-between; /* Space between hamburger and title */
+    align-items: center;
+    justify-content: space-between; /* Space between title and navigation */
     padding: 0 var(--space-lg);
     z-index: var(--z-fixed);
-    border-bottom: var(--border-medium) solid var(--color-border-dark);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
 }
 
 .page-title {
     margin: 0;
     font-size: var(--font-size-2xl);
-    color: var(--color-primary);
+    color: var(--color-white);
     font-weight: var(--font-weight-semibold);
-    text-align: right; /* Right-align the text */
+    letter-spacing: 0.5px;
     display: flex;
     align-items: center;
-    height: 100%; /* Ensure the title takes the full height of the header */
+    height: 100%;
 }
 
 /* ================================
@@ -43,6 +42,10 @@
 @media screen and (max-width: 768px) {
     .page-title {
         font-size: var(--font-size-lg);
+    }
+
+    .app-header {
+        padding: 0 var(--space-md);
     }
 }
 
