@@ -173,8 +173,7 @@ function setupCreatePatientForm() {
     if (!createPatientForm) return;
 
     // Character limit validation for create patient form fields
-    setupCreatePatientFieldValidation(); // Setup structured address autocomplete
-    setupStructuredPatientAddress();
+    setupCreatePatientFieldValidation();
 
     // Handle form submission
     createPatientForm.addEventListener('submit', async function (e) {
@@ -251,7 +250,9 @@ function setupCreatePatientFieldValidation() {
 // Set up phone number formatting for patient phone field
 function setupPatientPhoneFormatting() {
     const phoneInput = document.getElementById('patientPhone');
-    if (!phoneInput) return;
+    if (!phoneInput) {
+        return;
+    }
 
     // Format phone number as user types
     phoneInput.addEventListener('input', function (e) {
@@ -305,196 +306,6 @@ function setupPatientPhoneFormatting() {
 }
 
 // Set up structured address autocomplete for patient address fields
-function setupStructuredPatientAddress() {
-    // Check if structured address module is available
-    if (typeof window.structuredAddress === 'undefined') {
-        console.warn(
-            '⚠️ Structured address module not available. Falling back to basic validation.'
-        );
-        return;
-    }
-
-    // Check if base address validation module is available
-    if (typeof window.addressValidation === 'undefined') {
-        console.warn(
-            '⚠️ Address validation module not available. Autocomplete disabled.'
-        );
-        return;
-    } // Initialize with API key
-    const apiKey = getAddressAPIKey();
-    // const provider = apiKey ? 'google' : 'demo';
-
-    // For testing, force demo mode to ensure autocomplete is working
-    const provider = 'demo';
-    console.log(
-        '🔧 FORCED TO DEMO MODE FOR TESTING - Remove this once working!'
-    );
-
-    console.log('🔧 Initializing with provider:', provider);
-    console.log('🔧 API key available:', !!apiKey);
-
-    // Handle async initialization for Google Places API
-    const initPromise = window.addressValidation.initializeAddressValidation(
-        provider,
-        apiKey
-    );
-
-    if (initPromise && typeof initPromise.then === 'function') {
-        // Google Places API loading is async
-        initPromise
-            .then((initialized) => {
-                if (initialized) {
-                    setupStructuredAddressUI();
-                }
-            })
-            .catch((error) => {
-                console.error(
-                    'Failed to initialize address validation:',
-                    error
-                );
-                console.log('📍 Falling back to demo mode');
-                // Fallback to demo mode
-                window.addressValidation.initializeAddressValidation(
-                    'demo',
-                    null
-                );
-                setupStructuredAddressUI();
-            });
-    } else {
-        // Demo mode or already loaded
-        setupStructuredAddressUI();
-    }
-}
-
-// Setup the structured address autocomplete UI
-function setupStructuredAddressUI() {
-    // Configure structured address fields
-    const config = {
-        enableAutoPopulation: true,
-        enablePOBoxDetection: true,
-        enableAddressValidation: true,
-        fields: {
-            address1: 'patientAddress1',
-            address2: 'patientAddress2',
-            city: 'patientCity',
-            state: 'patientState',
-            zip: 'patientZip',
-        },
-    };
-
-    // Setup structured address autocomplete
-    window.structuredAddress.setupStructuredAddressAutocomplete(config);
-
-    console.log('📍 Structured address autocomplete setup complete');
-}
-
-// Get address API key from configuration
-function getAddressAPIKey() {
-    // Check various sources for the API key
-
-    // 1. Check if set via environment/config (recommended for production)
-    if (window.APP_CONFIG && window.APP_CONFIG.googlePlacesApiKey) {
-        return window.APP_CONFIG.googlePlacesApiKey;
-    }
-
-    // 2. Check localStorage (for development/testing)
-    const storedKey = localStorage.getItem('googlePlacesApiKey');
-    if (storedKey) {
-        return storedKey;
-    } // 3. For demo purposes, you can uncomment and add your key here
-    // IMPORTANT: Never commit real API keys to version control!
-    // Development/Demo API key - replace with proper configuration in production
-    return 'AIzaSyD5izsMcadbEXooybBUr735nDY_JuJMROg';
-}
-
-// Development helper function to set API key for testing
-function setAddressAPIKeyForTesting(apiKey) {
-    if (!apiKey) {
-        console.error('❌ Please provide an API key');
-        return false;
-    }
-
-    localStorage.setItem('googlePlacesApiKey', apiKey);
-    console.log(
-        '✅ API key set for testing. Refresh the page to activate address autocomplete.'
-    );
-    console.log(
-        '💡 To test: Go to Create Patient page and type in the address field'
-    );
-    return true;
-}
-
-// Development helper to check if address autocomplete is working
-function testAddressAutocomplete() {
-    console.log('🔍 TESTING ADDRESS AUTOCOMPLETE');
-    console.log('===============================');
-
-    const hasApiKey = !!getAddressAPIKey();
-    const hasModule = typeof window.addressValidation !== 'undefined';
-    const hasStructuredModule = typeof window.structuredAddress !== 'undefined';
-    const hasInput = !!document.getElementById('patientAddress1');
-    const hasGoogle = !!(
-        window.google &&
-        window.google.maps &&
-        window.google.maps.places
-    );
-
-    console.log('📍 Address Autocomplete Status:');
-    console.log('   API Key Available:', hasApiKey ? '✅' : '❌');
-    console.log('   Address Validation Module:', hasModule ? '✅' : '❌');
-    console.log(
-        '   Structured Address Module:',
-        hasStructuredModule ? '✅' : '❌'
-    );
-    console.log('   Address Input Found:', hasInput ? '✅' : '❌');
-    console.log('   Google Places API:', hasGoogle ? '✅' : '❌');
-
-    if (hasApiKey) {
-        const apiKey = getAddressAPIKey();
-        console.log(
-            '   API Key (first 10 chars):',
-            apiKey.substring(0, 10) + '...'
-        );
-    }
-
-    if (!hasApiKey) {
-        console.log('💡 To set a valid API key for testing:');
-        console.log(
-            '   setAddressAPIKeyForTesting("YOUR_GOOGLE_PLACES_API_KEY")'
-        );
-        console.log('   Then refresh the page');
-    }
-
-    if (hasApiKey && hasModule && hasInput) {
-        console.log('🎉 Address autocomplete should be working!');
-        console.log('   Try typing "123 Main Street" in the address field...');
-
-        // Try to trigger the diagnostic function
-        if (typeof window.diagnoseAddressAutocomplete === 'function') {
-            console.log('🔧 Running full diagnostic...');
-            window.diagnoseAddressAutocomplete();
-        }
-    } else {
-        console.log('❌ Address autocomplete setup incomplete');
-    }
-
-    console.log('===============================');
-
-    return {
-        hasApiKey,
-        hasModule,
-        hasStructuredModule,
-        hasInput,
-        hasGoogle,
-        ready: hasApiKey && hasModule && hasInput,
-    };
-}
-
-// Make test function available globally for console testing
-if (typeof window !== 'undefined') {
-    window.testAddressAutocomplete = testAddressAutocomplete;
-}
-
 // Create new patient
 async function createPatient() {
     const submitBtn = document.getElementById('createPatientSubmitBtn');

@@ -76,12 +76,11 @@
                                 >
                             </div>
                         </div>
-
-                        <!-- Enhanced Structured Address Section -->
+                        <!-- Address Section -->
                         <div class="form-section">
                             <h3>Patient Address</h3>
 
-                            <!-- Primary Address with Autocomplete -->
+                            <!-- Primary Address -->
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="patientAddress1"
@@ -94,11 +93,10 @@
                                         required
                                         maxlength="100"
                                         autocomplete="address-line1"
-                                        placeholder="Start typing for address suggestions..."
+                                        placeholder="123 Main Street"
                                     />
                                     <small class="field-note">
-                                        Street number and name (autocomplete
-                                        enabled, supports PO Boxes)
+                                        Street number and name
                                     </small>
                                 </div>
                             </div>
@@ -119,8 +117,7 @@
                                         placeholder="Apt 4B, Suite 200, Unit #12..."
                                     />
                                     <small class="field-note">
-                                        Additional address information (manually
-                                        entered)
+                                        Additional address information
                                     </small>
                                 </div>
                             </div>
@@ -138,10 +135,9 @@
                                         autocomplete="address-level2"
                                         placeholder="City name"
                                     />
-                                    <small class="field-note"
-                                        >Auto-filled from address
-                                        selection</small
-                                    >
+                                    <small class="field-note">
+                                        City name
+                                    </small>
                                 </div>
                                 <div class="form-group">
                                     <label for="patientState">State</label>
@@ -269,7 +265,7 @@
                                         </option>
                                     </select>
                                     <small class="field-note"
-                                        >Auto-selected from address</small
+                                        >Select state</small
                                     >
                                 </div>
                                 <div class="form-group">
@@ -285,8 +281,7 @@
                                         placeholder="12345 or 12345-6789"
                                     />
                                     <small class="field-note"
-                                        >Auto-filled from address
-                                        selection</small
+                                        >5-digit ZIP code (or ZIP+4)</small
                                     >
                                 </div>
                             </div>
@@ -348,8 +343,6 @@
         <script src="../../js/shared/password-utils.js"></script>
         <script src="../../js/shared/field-validation.js"></script>
         <script src="../../js/shared/auth-utils.js"></script>
-        <script src="../../js/shared/address-validation.js"></script>
-        <script src="../../js/shared/structured-address.js"></script>
         <script src="../../js/shared/page-transitions.js"></script>
         <script src="../../js/shared/navigation.js"></script>
         <script src="../../js/pages/patients.js"></script>
