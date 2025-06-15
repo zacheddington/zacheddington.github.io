@@ -241,10 +241,11 @@ function setupCreatePatientFieldValidation() {
                 }, 0);
             });
         }
-    });
-
-    // Set up phone number formatting
+    }); // Set up phone number formatting
     setupPatientPhoneFormatting();
+
+    // Set up ZIP code formatting
+    setupZipCodeFormatting();
 }
 
 // Set up phone number formatting for patient phone field
@@ -258,7 +259,7 @@ function setupPatientPhoneFormatting() {
     phoneInput.addEventListener('input', function (e) {
         let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
 
-        // Limit to 10 digits
+        // Limit to 10 digits maximum
         if (value.length > 10) {
             value = value.slice(0, 10);
         }
@@ -273,6 +274,8 @@ function setupPatientPhoneFormatting() {
             e.target.value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
         } else if (value.length > 0) {
             e.target.value = value;
+        } else {
+            e.target.value = '';
         }
     });
 
@@ -290,15 +293,111 @@ function setupPatientPhoneFormatting() {
                 )}-${value.slice(6)}`;
             } else if (value.length >= 3) {
                 e.target.value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+            } else {
+                e.target.value = value;
             }
         }, 0);
     });
 
-    // Prevent non-numeric keypress except backspace, delete, tab, escape, enter
+    // Prevent non-numeric input on keydown (more reliable than keypress)
+    phoneInput.addEventListener('keydown', function (e) {
+        const allowedKeys = [
+            'Backspace',
+            'Delete',
+            'Tab',
+            'Escape',
+            'Enter',
+            'ArrowLeft',
+            'ArrowRight',
+            'ArrowUp',
+            'ArrowDown',
+            'Home',
+            'End',
+        ];
+
+        // Allow control keys
+        if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) {
+            return;
+        }
+
+        // Only allow digits
+        if (!/[0-9]/.test(e.key)) {
+            e.preventDefault();
+        }
+    });
+
+    // Also prevent keypress for extra security
     phoneInput.addEventListener('keypress', function (e) {
         const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter'];
         if (allowedKeys.includes(e.key)) return;
 
+        if (!/[0-9]/.test(e.key)) {
+            e.preventDefault();
+        }
+    });
+}
+
+// Set up ZIP code formatting for patient ZIP field
+function setupZipCodeFormatting() {
+    const zipInput = document.getElementById('patientZip');
+    if (!zipInput) {
+        return;
+    }
+
+    // Format ZIP code as user types
+    zipInput.addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+
+        // Limit to 9 digits maximum (for ZIP+4)
+        if (value.length > 9) {
+            value = value.slice(0, 9);
+        }
+
+        // Format as XXXXX-XXXX if more than 5 digits
+        if (value.length > 5) {
+            e.target.value = `${value.slice(0, 5)}-${value.slice(5)}`;
+        } else {
+            e.target.value = value;
+        }
+    });
+
+    // Handle paste events
+    zipInput.addEventListener('paste', function (e) {
+        setTimeout(() => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 9) {
+                value = value.slice(0, 9);
+            }
+            if (value.length > 5) {
+                e.target.value = `${value.slice(0, 5)}-${value.slice(5)}`;
+            } else {
+                e.target.value = value;
+            }
+        }, 0);
+    });
+
+    // Prevent non-numeric input
+    zipInput.addEventListener('keydown', function (e) {
+        const allowedKeys = [
+            'Backspace',
+            'Delete',
+            'Tab',
+            'Escape',
+            'Enter',
+            'ArrowLeft',
+            'ArrowRight',
+            'ArrowUp',
+            'ArrowDown',
+            'Home',
+            'End',
+        ];
+
+        // Allow control keys
+        if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) {
+            return;
+        }
+
+        // Only allow digits
         if (!/[0-9]/.test(e.key)) {
             e.preventDefault();
         }
