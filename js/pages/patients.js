@@ -1796,21 +1796,11 @@ async function deletePatient(patientId, patientName) {
                 // Close modal and show loading
                 modal.style.display = 'none';
 
-                // Debug user information
-                const userStr = localStorage.getItem('user');
-                const token = localStorage.getItem('token');
-                console.log(
-                    '🔍 User data:',
-                    userStr ? JSON.parse(userStr) : 'No user data'
-                );
-                console.log('🔍 Token exists:', !!token);
-                console.log(
-                    '🔍 Token (first 50 chars):',
-                    token ? token.substring(0, 50) + '...' : 'No token'
-                ); // Make DELETE request to API using fetch
+                // Make DELETE request to API using fetch
                 const API_URL = window.getAPIUrl
                     ? window.getAPIUrl()
                     : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+                const token = localStorage.getItem('token');
 
                 const response = await fetch(
                     `${API_URL}/api/patients/${patientId}`,
