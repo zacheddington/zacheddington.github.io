@@ -1648,9 +1648,37 @@ async function editPatient(patientId) {
         document.getElementById('editPatientMiddleName').value =
             patient.middle_name || '';
         document.getElementById('editPatientLastName').value =
-            patient.last_name || '';
-        document.getElementById('editPatientDateOfBirth').value =
-            patient.date_of_birth ? patient.date_of_birth.split('T')[0] : '';
+            patient.last_name || ''; // Format date properly for input field
+        let dateValue = '';
+        if (patient.date_of_birth) {
+            try {
+                // Handle different date formats that might come from backend
+                let dateStr = patient.date_of_birth;
+
+                // If it contains 'T', split on that first
+                if (dateStr.includes('T')) {
+                    dateStr = dateStr.split('T')[0];
+                }
+
+                // Ensure the date format is valid YYYY-MM-DD
+                const dateParts = dateStr.split('-');
+                if (dateParts.length === 3) {
+                    // Ensure year is only 4 digits
+                    const year = dateParts[0].substring(0, 4);
+                    const month = dateParts[1].padStart(2, '0');
+                    const day = dateParts[2].padStart(2, '0');
+                    dateValue = `${year}-${month}-${day}`;
+                }
+            } catch (error) {
+                console.warn(
+                    'Invalid date format for patient:',
+                    patient.date_of_birth,
+                    error
+                );
+                dateValue = '';
+            }
+        }
+        document.getElementById('editPatientDateOfBirth').value = dateValue;
         document.getElementById('editPatientPhone').value = patient.phone || '';
 
         // Format the phone number after setting it
@@ -2358,19 +2386,21 @@ function setupEditFormDateValidation() {
     dateInput.addEventListener('input', function (e) {
         e.target.setCustomValidity('');
 
-        // Limit year to 4 digits max
         let value = e.target.value;
-        if (value.length > 10) {
-            e.target.value = value.substring(0, 10);
-        }
 
-        // Check if year part is getting too long
-        const yearPart = value.split('-')[0];
-        if (yearPart && yearPart.length > 4) {
-            // Truncate the year to 4 digits
-            const parts = value.split('-');
-            parts[0] = parts[0].substring(0, 4);
-            e.target.value = parts.join('-');
+        // Only process if we have a reasonable length to avoid interfering with normal typing
+        if (value.length >= 5) {
+            // Check if year part is getting too long (more than 4 digits before first hyphen)
+            const firstHyphenIndex = value.indexOf('-');
+            if (firstHyphenIndex > 4) {
+                // The year part is too long, truncate it to 4 digits
+                const yearPart = value.substring(0, 4);
+                const remainingPart = value.substring(firstHyphenIndex);
+                e.target.value = yearPart + remainingPart;
+            } else if (firstHyphenIndex === -1 && value.length > 4) {
+                // No hyphen yet but year is getting long, truncate to 4 digits
+                e.target.value = value.substring(0, 4);
+            }
         }
     });
 }
