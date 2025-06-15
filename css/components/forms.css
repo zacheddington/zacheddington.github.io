@@ -1102,6 +1102,25 @@ textarea:disabled:focus {
     min-width: 0;
 }
 
+/* Equal width fields that split the row evenly */
+.form-group.equal-width {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Names row - three equal width fields */
+.form-row.names-row {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.form-row.names-row .form-group {
+    flex: 1;
+    min-width: 150px; /* Minimum width for mobile */
+}
+
 /* Personal info row - optimized for names and date */
 .form-row.personal-info {
     display: flex;
