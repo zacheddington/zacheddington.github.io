@@ -39,7 +39,7 @@ router.get('/patients', authenticateToken, async (req, res) => {
                         phone: '5551234567',
                         accepts_texts: true,
                         date_of_birth: '1990-01-15',
-                        date_when: '2024-01-01T00:00:00.000Z',
+                        created_at: '2024-01-01T00:00:00.000Z',
                     },
                     {
                         patient_key: 2,
@@ -48,13 +48,13 @@ router.get('/patients', authenticateToken, async (req, res) => {
                         last_name: 'Smith',
                         street_1: '456 Oak Ave',
                         street_2: null,
-                        city: 'Somewhere',
-                        state: 'NY',
-                        zip: '67890',
-                        phone: '5555678901',
+                        city: 'Springfield',
+                        state: 'IL',
+                        zip: '62701',
+                        phone: '5559876543',
                         accepts_texts: false,
-                        date_of_birth: '1985-07-22',
-                        date_when: '2024-01-02T00:00:00.000Z',
+                        date_of_birth: '1985-05-20',
+                        created_at: '2024-01-02T00:00:00.000Z',
                     },
                 ],
                 'Patients retrieved successfully'
@@ -78,16 +78,39 @@ router.get('/patients', authenticateToken, async (req, res) => {
                     p.phone,
                     p.accepts_texts,
                     p.date_of_birth,
-                    p.date_when
+                    p.date_when as created_at
                 FROM tbl_patient p
                 LEFT JOIN tbl_name_data n ON p.name_key = n.name_key
                 LEFT JOIN tbl_address_data a ON p.address_key = a.address_key
                 ORDER BY n.last_name, n.first_name
             `);
 
+            // Format the data for frontend consumption
+            const formattedPatients = result.rows.map((patient) => {
+                // Construct full address
+                let address = patient.street_1 || '';
+                if (patient.street_2) {
+                    address += `, ${patient.street_2}`;
+                }
+                if (patient.city) {
+                    address += `, ${patient.city}`;
+                }
+                if (patient.state) {
+                    address += `, ${patient.state}`;
+                }
+                if (patient.zip) {
+                    address += ` ${patient.zip}`;
+                }
+
+                return {
+                    ...patient,
+                    address: address.trim() || 'No address on file',
+                };
+            });
+
             return successResponse(
                 res,
-                result.rows,
+                formattedPatients,
                 'Patients retrieved successfully'
             );
         } finally {
@@ -176,6 +199,83 @@ router.get('/patients/:patientKey', authenticateToken, async (req, res) => {
                 WHERE p.patient_key = $1
             `,
                 [patientKey]
+            );
+
+            if (result.rows.length === 0) {
+                return notFoundResponse(res, 'Patient');
+            }
+
+            return successResponse(
+                res,
+                result.rows[0],
+                'Patient retrieved successfully'
+            );
+        } finally {
+            client.release();
+        }
+    } catch (err) {
+        console.error('Get patient error:', err);
+        return errorResponse(res, 'Failed to fetch patient', 500);
+    }
+});
+
+// Get single patient by ID for editing
+router.get('/:id', authenticateToken, async (req, res) => {
+    try {
+        const patientId = parseInt(req.params.id);
+
+        if (isNaN(patientId)) {
+            return errorResponse(res, 'Invalid patient ID', 400);
+        }
+        if (config.isLocalTest) {
+            // Local test mode - return mock data
+            const mockPatient = {
+                patient_key: patientId,
+                first_name: 'John',
+                middle_name: 'A',
+                last_name: 'Doe',
+                street_1: '123 Main Street',
+                street_2: 'Apt 4B',
+                city: 'Anytown',
+                state: 'CA',
+                zip: '12345',
+                phone: '(555) 123-4567',
+                accepts_texts: true,
+                date_of_birth: '1990-01-15',
+                created_at: new Date().toISOString(),
+            };
+
+            return successResponse(
+                res,
+                mockPatient,
+                'Patient retrieved successfully'
+            );
+        }
+
+        const client = await pool.connect();
+        try {
+            const result = await client.query(
+                `
+                SELECT 
+                    p.patient_key,
+                    n.first_name,
+                    n.middle_name,
+                    n.last_name,
+                    a.street_1,
+                    a.street_2,
+                    a.city,
+                    a.state,
+                    a.zip,
+                    p.phone,
+                    p.accepts_texts,
+                    p.date_of_birth,
+                    p.date_when as created_at
+                FROM tbl_patient p
+                LEFT JOIN tbl_name_data n ON p.name_key = n.name_key
+                LEFT JOIN tbl_address_data a ON p.address_key = a.address_key
+                WHERE p.patient_key = $1
+            `,
+                [patientId]
             );
 
             if (result.rows.length === 0) {
@@ -350,7 +450,7 @@ router.post(
 
 // Update patient endpoint
 router.put(
-    '/patients/:patientKey',
+    '/:patientKey',
     authenticateToken,
     sanitizeInput,
     validateRequiredFields([

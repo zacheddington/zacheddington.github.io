@@ -54,9 +54,10 @@
                             <thead>
                                 <tr>
                                     <th>Name</th>
-                                    <th>Address</th>
+                                    <th>Date of Birth</th>
                                     <th>Phone</th>
                                     <th>Accepts Texts</th>
+                                    <th>Address</th>
                                     <th>Created</th>
                                     <th>Actions</th>
                                 </tr>
@@ -73,10 +74,346 @@
                 </div>
             </div>
         </div>
+
+        <!-- Edit Patient Modal -->
+        <div id="editPatientModal" class="modal">
+            <div class="modal-content wide-modal">
+                <div class="modal-header">
+                    <h2>Edit Patient</h2>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="editPatientForm" class="patient-form">
+                        <div class="form-section">
+                            <h3>Patient Information</h3>
+
+                            <!-- Names Row -->
+                            <div class="form-row names">
+                                <div class="form-group equal-width">
+                                    <label for="editPatientFirstName"
+                                        >First Name</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="editPatientFirstName"
+                                        name="firstName"
+                                        required
+                                        maxlength="50"
+                                        autocomplete="given-name"
+                                    />
+                                    <small class="field-note">Required</small>
+                                </div>
+                                <div class="form-group equal-width">
+                                    <label for="editPatientMiddleName"
+                                        >Middle Name</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="editPatientMiddleName"
+                                        name="middleName"
+                                        maxlength="50"
+                                        autocomplete="additional-name"
+                                    />
+                                    <small class="field-note">Optional</small>
+                                </div>
+                                <div class="form-group equal-width">
+                                    <label for="editPatientLastName"
+                                        >Last Name</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="editPatientLastName"
+                                        name="lastName"
+                                        required
+                                        maxlength="50"
+                                        autocomplete="family-name"
+                                    />
+                                    <small class="field-note">Required</small>
+                                </div>
+                            </div>
+
+                            <!-- Personal Details & Contact Row -->
+                            <div class="form-row contact-info">
+                                <div class="form-group small">
+                                    <label for="editPatientDateOfBirth"
+                                        >Date of Birth</label
+                                    >
+                                    <input
+                                        type="date"
+                                        id="editPatientDateOfBirth"
+                                        name="dateOfBirth"
+                                        required
+                                        autocomplete="bday"
+                                        max=""
+                                        min="1900-01-01"
+                                    />
+                                    <small class="field-note">Required</small>
+                                </div>
+                                <div class="form-group small">
+                                    <label for="editPatientPhone"
+                                        >Phone Number</label
+                                    >
+                                    <input
+                                        type="tel"
+                                        id="editPatientPhone"
+                                        name="phone"
+                                        required
+                                        placeholder="(555) 123-4567"
+                                        pattern="[\(\)\d\s\-]+"
+                                        autocomplete="tel"
+                                        inputmode="numeric"
+                                    />
+                                    <small class="field-note"
+                                        >Auto-formatted</small
+                                    >
+                                </div>
+                                <div class="form-group small">
+                                    <label for="editAcceptsTexts"
+                                        >Text Messages</label
+                                    >
+                                    <select
+                                        id="editAcceptsTexts"
+                                        name="acceptsTexts"
+                                        required
+                                        autocomplete="off"
+                                    >
+                                        <option value="">Select...</option>
+                                        <option value="yes">Yes</option>
+                                        <option value="no">No</option>
+                                    </select>
+                                    <small class="field-note"
+                                        >Consent required</small
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- Address Fields -->
+                            <div class="form-row">
+                                <div class="form-group large">
+                                    <label for="editPatientAddress1"
+                                        >Street Address</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="editPatientAddress1"
+                                        name="address1"
+                                        required
+                                        maxlength="100"
+                                        autocomplete="address-line1"
+                                        placeholder="123 Main Street"
+                                    />
+                                    <small class="field-note"
+                                        >Street number and name</small
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group large">
+                                    <label for="editPatientAddress2"
+                                        >Apartment, Suite, Unit
+                                        (Optional)</label
+                                    >
+                                    <input
+                                        type="text"
+                                        id="editPatientAddress2"
+                                        name="address2"
+                                        maxlength="50"
+                                        autocomplete="address-line2"
+                                        placeholder="Apt 4B, Suite 200, Unit #12..."
+                                    />
+                                    <small class="field-note"
+                                        >Additional address information</small
+                                    >
+                                </div>
+                            </div>
+
+                            <!-- City, State, ZIP Row -->
+                            <div class="form-row address-location">
+                                <div class="form-group medium">
+                                    <label for="editPatientCity">City</label>
+                                    <input
+                                        type="text"
+                                        id="editPatientCity"
+                                        name="city"
+                                        required
+                                        maxlength="50"
+                                        autocomplete="address-level2"
+                                        placeholder="City name"
+                                    />
+                                    <small class="field-note">Required</small>
+                                </div>
+                                <div class="form-group small">
+                                    <label for="editPatientState">State</label>
+                                    <select
+                                        id="editPatientState"
+                                        name="state"
+                                        required
+                                        autocomplete="address-level1"
+                                    >
+                                        <option value="">Select</option>
+                                        <option value="AL">AL - Alabama</option>
+                                        <option value="AK">AK - Alaska</option>
+                                        <option value="AZ">AZ - Arizona</option>
+                                        <option value="AR">
+                                            AR - Arkansas
+                                        </option>
+                                        <option value="CA">
+                                            CA - California
+                                        </option>
+                                        <option value="CO">
+                                            CO - Colorado
+                                        </option>
+                                        <option value="CT">
+                                            CT - Connecticut
+                                        </option>
+                                        <option value="DE">
+                                            DE - Delaware
+                                        </option>
+                                        <option value="FL">FL - Florida</option>
+                                        <option value="GA">GA - Georgia</option>
+                                        <option value="HI">HI - Hawaii</option>
+                                        <option value="ID">ID - Idaho</option>
+                                        <option value="IL">
+                                            IL - Illinois
+                                        </option>
+                                        <option value="IN">IN - Indiana</option>
+                                        <option value="IA">IA - Iowa</option>
+                                        <option value="KS">KS - Kansas</option>
+                                        <option value="KY">
+                                            KY - Kentucky
+                                        </option>
+                                        <option value="LA">
+                                            LA - Louisiana
+                                        </option>
+                                        <option value="ME">ME - Maine</option>
+                                        <option value="MD">
+                                            MD - Maryland
+                                        </option>
+                                        <option value="MA">
+                                            MA - Massachusetts
+                                        </option>
+                                        <option value="MI">
+                                            MI - Michigan
+                                        </option>
+                                        <option value="MN">
+                                            MN - Minnesota
+                                        </option>
+                                        <option value="MS">
+                                            MS - Mississippi
+                                        </option>
+                                        <option value="MO">
+                                            MO - Missouri
+                                        </option>
+                                        <option value="MT">MT - Montana</option>
+                                        <option value="NE">
+                                            NE - Nebraska
+                                        </option>
+                                        <option value="NV">NV - Nevada</option>
+                                        <option value="NH">
+                                            NH - New Hampshire
+                                        </option>
+                                        <option value="NJ">
+                                            NJ - New Jersey
+                                        </option>
+                                        <option value="NM">
+                                            NM - New Mexico
+                                        </option>
+                                        <option value="NY">
+                                            NY - New York
+                                        </option>
+                                        <option value="NC">
+                                            NC - North Carolina
+                                        </option>
+                                        <option value="ND">
+                                            ND - North Dakota
+                                        </option>
+                                        <option value="OH">OH - Ohio</option>
+                                        <option value="OK">
+                                            OK - Oklahoma
+                                        </option>
+                                        <option value="OR">OR - Oregon</option>
+                                        <option value="PA">
+                                            PA - Pennsylvania
+                                        </option>
+                                        <option value="RI">
+                                            RI - Rhode Island
+                                        </option>
+                                        <option value="SC">
+                                            SC - South Carolina
+                                        </option>
+                                        <option value="SD">
+                                            SD - South Dakota
+                                        </option>
+                                        <option value="TN">
+                                            TN - Tennessee
+                                        </option>
+                                        <option value="TX">TX - Texas</option>
+                                        <option value="UT">UT - Utah</option>
+                                        <option value="VT">VT - Vermont</option>
+                                        <option value="VA">
+                                            VA - Virginia
+                                        </option>
+                                        <option value="WA">
+                                            WA - Washington
+                                        </option>
+                                        <option value="WV">
+                                            WV - West Virginia
+                                        </option>
+                                        <option value="WI">
+                                            WI - Wisconsin
+                                        </option>
+                                        <option value="WY">WY - Wyoming</option>
+                                        <option value="DC">
+                                            DC - District of Columbia
+                                        </option>
+                                    </select>
+                                    <small class="field-note">Required</small>
+                                </div>
+                                <div class="form-group small">
+                                    <label for="editPatientZip">ZIP Code</label>
+                                    <input
+                                        type="text"
+                                        id="editPatientZip"
+                                        name="zip"
+                                        required
+                                        pattern="[0-9]{5}(-[0-9]{4})?"
+                                        maxlength="10"
+                                        autocomplete="postal-code"
+                                        placeholder="12345"
+                                        inputmode="numeric"
+                                    />
+                                    <small class="field-note"
+                                        >5 or 9 digits</small
+                                    >
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button
+                                type="button"
+                                class="secondary-btn"
+                                onclick="closeEditPatientModal()"
+                            >
+                                Cancel
+                            </button>
+                            <button type="submit" class="primary-btn">
+                                <span class="btn-text">Update Patient</span>
+                                <span class="btn-loading hidden"
+                                    >Updating...</span
+                                >
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         <script src="../../js/shared/api-client.js"></script>
         <script src="../../js/shared/modal-manager.js"></script>
         <script src="../../js/shared/password-utils.js"></script>
         <script src="../../js/shared/field-validation.js"></script>
+        <script src="../../js/shared/structured-address.js"></script>
         <script src="../../js/shared/auth-utils.js"></script>
         <script src="../../js/shared/page-transitions.js"></script>
         <script src="../../js/shared/navigation.js"></script>

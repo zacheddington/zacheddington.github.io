@@ -57,6 +57,9 @@ function initializeManagePatientsPage() {
     loadPatients();
     setupPatientFilter();
 
+    // Setup edit patient modal
+    setupEditPatientModal();
+
     // Apply column preferences or auto-size if no preferences exist
     try {
         loadPatientColumnWidthPreferences();
@@ -915,9 +918,7 @@ function displayPatients(patients) {
     // Reset scroll position when displaying new data
     if (tableContainer) {
         tableContainer.scrollLeft = 0;
-    }
-
-    // Make sure tooltips are added to column headers
+    } // Make sure tooltips are added to column headers
     addColumnResizeTooltips();
     patientsTableBody.innerHTML = patients
         .map((patient) => {
@@ -932,14 +933,17 @@ function displayPatients(patients) {
                 patient.created_at
             ).toLocaleDateString();
 
+            // Format date of birth
+            const dateOfBirth = patient.date_of_birth
+                ? new Date(patient.date_of_birth).toLocaleDateString()
+                : 'Not provided';
+
             return `
             <tr data-patient-id="${patient.patient_key}">
                 <td class="patient-name" title="${fullName}">
                     <div class="patient-full-name">${fullName}</div>
                 </td>
-                <td class="patient-address" title="${patient.address || ''}">${
-                patient.address || ''
-            }</td>
+                <td class="patient-dob" title="${dateOfBirth}">${dateOfBirth}</td>
                 <td class="patient-phone" title="${patient.phone || ''}">${
                 patient.phone || ''
             }</td>
@@ -948,6 +952,9 @@ function displayPatients(patients) {
                         ${acceptsTexts}
                     </span>
                 </td>
+                <td class="patient-address" title="${patient.address || ''}">${
+                patient.address || ''
+            }</td>
                 <td class="patient-created" title="${createdDate}">${createdDate}</td>
                 <td>
                     <div class="patient-actions">
@@ -958,7 +965,10 @@ function displayPatients(patients) {
                         </button>
                         <button class="btn-icon btn-delete" onclick="deletePatient(${
                             patient.patient_key
-                        }, '${fullName}')" title="Delete Patient">
+                        }, '${fullName.replace(
+                /'/g,
+                "\\'"
+            )}' )" title="Delete Patient">
                             🗑️
                         </button>
                     </div>
@@ -998,9 +1008,7 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
         tableContainer.scrollLeft = 0;
     } // Set the table to auto layout to allow proper expansion
     table.style.tableLayout = 'auto';
-    table.style.minWidth = 'max-content'; // Allow table to expand as needed
-
-    // Update the table body with new data
+    table.style.minWidth = 'max-content'; // Allow table to expand as needed    // Update the table body with new data
     patientsTableBody.innerHTML = patients
         .map((patient) => {
             const fullName = patient.middle_name
@@ -1014,14 +1022,17 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
                 patient.created_at
             ).toLocaleDateString();
 
+            // Format date of birth
+            const dateOfBirth = patient.date_of_birth
+                ? new Date(patient.date_of_birth).toLocaleDateString()
+                : 'Not provided';
+
             return `
             <tr data-patient-id="${patient.patient_key}">
                 <td class="patient-name" title="${fullName}">
                     <div class="patient-full-name">${fullName}</div>
                 </td>
-                <td class="patient-address" title="${patient.address || ''}">${
-                patient.address || ''
-            }</td>
+                <td class="patient-dob" title="${dateOfBirth}">${dateOfBirth}</td>
                 <td class="patient-phone" title="${patient.phone || ''}">${
                 patient.phone || ''
             }</td>
@@ -1030,6 +1041,9 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
                         ${acceptsTexts}
                     </span>
                 </td>
+                <td class="patient-address" title="${patient.address || ''}">${
+                patient.address || ''
+            }</td>
                 <td class="patient-created" title="${createdDate}">${createdDate}</td>
                 <td>
                     <div class="patient-actions">
@@ -1040,7 +1054,10 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
                         </button>
                         <button class="btn-icon btn-delete" onclick="deletePatient(${
                             patient.patient_key
-                        }, '${fullName}')" title="Delete Patient">
+                        }, '${fullName.replace(
+                /'/g,
+                "\\'"
+            )}' )" title="Delete Patient">
                             🗑️
                         </button>
                     </div>
@@ -1129,27 +1146,157 @@ function setupPatientFilter() {
     }
 }
 
-// Placeholder functions for patient editing and deletion
-function editPatient(patientId) {
-    console.log(
-        'Edit patient functionality not yet implemented for ID:',
-        patientId
-    );
-    window.modalManager.showModal(
-        'info',
-        'Patient editing functionality will be implemented in a future update.'
-    );
+// Edit patient functionality
+async function editPatient(patientId) {
+    console.log('Editing patient ID:', patientId);
+
+    try {
+        // Fetch patient data
+        const response = await apiClient.get(`/api/patients/${patientId}`);
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to fetch patient data');
+        }
+
+        const patient = response.data;
+        console.log('Patient data:', patient);
+
+        // Fill the form with patient data
+        document.getElementById('editPatientFirstName').value =
+            patient.first_name || '';
+        document.getElementById('editPatientMiddleName').value =
+            patient.middle_name || '';
+        document.getElementById('editPatientLastName').value =
+            patient.last_name || '';
+        document.getElementById('editPatientDateOfBirth').value =
+            patient.date_of_birth ? patient.date_of_birth.split('T')[0] : '';
+        document.getElementById('editPatientPhone').value = patient.phone || '';
+        document.getElementById('editAcceptsTexts').value =
+            patient.accepts_texts ? 'yes' : 'no';
+        document.getElementById('editPatientAddress1').value =
+            patient.street_1 || '';
+        document.getElementById('editPatientAddress2').value =
+            patient.street_2 || '';
+        document.getElementById('editPatientCity').value = patient.city || '';
+        document.getElementById('editPatientState').value = patient.state || '';
+        document.getElementById('editPatientZip').value = patient.zip || '';
+
+        // Store patient ID for form submission
+        document
+            .getElementById('editPatientForm')
+            .setAttribute('data-patient-id', patientId);
+
+        // Show the modal
+        const modal = document.getElementById('editPatientModal');
+        modal.style.display = 'block';
+
+        // Initialize structured address for the edit form
+        if (window.StructuredAddress) {
+            window.StructuredAddress.initialize('edit');
+        }
+
+        // Apply field validation
+        if (window.FieldValidation) {
+            window.FieldValidation.applyPhoneFormatting('editPatientPhone');
+            window.FieldValidation.applyZipValidation('editPatientZip');
+        }
+    } catch (error) {
+        console.error('Error fetching patient data:', error);
+        window.modalManager.showModal(
+            'error',
+            'Failed to load patient data. Please try again.'
+        );
+    }
 }
 
-function deletePatient(patientId, patientName) {
-    console.log(
-        'Delete patient functionality not yet implemented for ID:',
-        patientId
-    );
-    window.modalManager.showModal(
-        'info',
-        'Patient deletion functionality will be implemented in a future update.'
-    );
+// Close edit patient modal
+function closeEditPatientModal() {
+    const modal = document.getElementById('editPatientModal');
+    if (modal) {
+        modal.style.display = 'none';
+
+        // Clear form data
+        const form = document.getElementById('editPatientForm');
+        if (form) {
+            form.reset();
+            form.removeAttribute('data-patient-id');
+        }
+    }
+}
+
+// Handle edit patient form submission
+async function handleEditPatientSubmit(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const patientId = form.getAttribute('data-patient-id');
+
+    if (!patientId) {
+        window.modalManager.showModal(
+            'error',
+            'Patient ID not found. Please try again.'
+        );
+        return;
+    }
+
+    // Get form data
+    const formData = new FormData(form);
+    const patientData = {
+        firstName: formData.get('firstName'),
+        middleName: formData.get('middleName') || '',
+        lastName: formData.get('lastName'),
+        dateOfBirth: formData.get('dateOfBirth'),
+        phone: formData.get('phone'),
+        acceptsTexts: formData.get('acceptsTexts'),
+        address1: formData.get('address1'),
+        address2: formData.get('address2') || '',
+        city: formData.get('city'),
+        state: formData.get('state'),
+        zip: formData.get('zip'),
+    };
+
+    console.log('Updating patient:', patientId, patientData);
+
+    // Show loading state
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoading = submitBtn.querySelector('.btn-loading');
+
+    btnText.classList.add('hidden');
+    btnLoading.classList.remove('hidden');
+    submitBtn.disabled = true;
+
+    try {
+        const response = await apiClient.put(
+            `/api/patients/${patientId}`,
+            patientData
+        );
+
+        if (response.success) {
+            window.modalManager.showModal(
+                'success',
+                'Patient updated successfully'
+            );
+
+            closeEditPatientModal();
+
+            // Refresh the patients list
+            loadPatients();
+        } else {
+            throw new Error(response.message || 'Failed to update patient');
+        }
+    } catch (error) {
+        console.error('Error updating patient:', error);
+        window.modalManager.showModal(
+            'error',
+            'Failed to update patient. Please try again.'
+        );
+    } finally {
+        // Reset button state
+        btnText.classList.remove('hidden');
+        btnLoading.classList.add('hidden');
+        submitBtn.disabled = false;
+    }
 }
 
 // Load patient column width preferences from localStorage
@@ -1181,10 +1328,16 @@ function adjustPatientColumnWidths() {
     const table = document.querySelector('#patientsTable');
     if (!table) return;
 
-    const headers = Array.from(table.querySelectorAll('th'));
-
-    // Define optimal widths for each column
-    const columnWidths = ['200px', '250px', '150px', '120px', '120px', '100px']; // Name, Address, Phone, Accepts Texts, Created, Actions
+    const headers = Array.from(table.querySelectorAll('th')); // Define optimal widths for each column
+    const columnWidths = [
+        '200px',
+        '120px',
+        '150px',
+        '120px',
+        '250px',
+        '120px',
+        '100px',
+    ]; // Name, DOB, Phone, Accepts Texts, Address, Created, Actions
 
     headers.forEach((header, index) => {
         if (columnWidths[index]) {
@@ -1437,11 +1590,33 @@ function getTextWidth(text, font) {
     return metrics.width;
 }
 
-// Make patients functions available globally
-window.patientsPage = {
-    initializePatientsPage,
-    initializeCreatePatientPage,
-    initializeManagePatientsPage,
-    setupPatientPhoneFormatting,
-    createPatient,
-};
+// Setup edit patient modal functionality
+function setupEditPatientModal() {
+    const modal = document.getElementById('editPatientModal');
+    const closeBtn = modal.querySelector('.close');
+    const editPatientForm = document.getElementById('editPatientForm');
+
+    if (!modal || !closeBtn || !editPatientForm) return;
+
+    // Close modal when clicking the X button
+    closeBtn.addEventListener('click', closeEditPatientModal);
+
+    // Close modal when clicking outside of it
+    window.addEventListener('click', function (event) {
+        if (event.target === modal) {
+            closeEditPatientModal();
+        }
+    });
+
+    // Handle form submission
+    editPatientForm.addEventListener('submit', handleEditPatientSubmit);
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && modal.style.display === 'block') {
+            closeEditPatientModal();
+        }
+    });
+}
+
+// Initialize filter functionality for patients
