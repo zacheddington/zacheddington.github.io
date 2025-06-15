@@ -906,13 +906,26 @@ async function loadPatients() {
                 );
                 console.log('🔍 Saved column widths:', savedWidths);
 
-                if (savedWidths && Array.isArray(savedWidths)) {
+                // Check if saved column widths match current table structure (7 columns)
+                if (
+                    savedWidths &&
+                    Array.isArray(savedWidths) &&
+                    savedWidths.length === 7
+                ) {
                     // Display patients with saved column widths
                     console.log('🔍 Using saved column widths');
                     displayPatientsPreserveWidths(sortedPatients, savedWidths);
                 } else {
-                    // No saved preferences, just display and auto-adjust
-                    console.log('🔍 No saved widths, using default display');
+                    // No saved preferences or column count mismatch, clear old data and use default display
+                    console.log(
+                        '🔍 No saved widths or column mismatch, using default display'
+                    );
+                    if (savedWidths && savedWidths.length !== 7) {
+                        console.log(
+                            '🔍 Clearing outdated column width preferences'
+                        );
+                        localStorage.removeItem('patientTableColumnWidths');
+                    }
                     displayPatients(sortedPatients);
                 }
             } catch (e) {
@@ -1210,7 +1223,7 @@ function displayPatients(patients) {
     if (tableContainer) {
         tableContainer.scrollLeft = 0;
     } // Make sure tooltips are added to column headers
-    addColumnResizeTooltips();
+    addColumnResizeTooltips(); // Update the table body with new data
     patientsTableBody.innerHTML = patients
         .map((patient) => {
             const fullName = patient.middle_name
@@ -1220,9 +1233,14 @@ function displayPatients(patients) {
             const acceptsTexts = patient.accepts_texts ? 'Yes' : 'No';
             const acceptsTextsClass = patient.accepts_texts ? 'yes' : 'no';
 
-            const createdDate = new Date(
-                patient.created_at
-            ).toLocaleDateString();
+            // Format phone number
+            const formattedPhone = patient.phone
+                ? formatPhoneNumber(patient.phone)
+                : '';
+
+            const createdDate = patient.created_at
+                ? new Date(patient.created_at).toLocaleDateString()
+                : 'No date';
 
             // Format date of birth
             const dateOfBirth = patient.date_of_birth
@@ -1235,14 +1253,16 @@ function displayPatients(patients) {
                     <div class="patient-full-name">${fullName}</div>
                 </td>
                 <td class="patient-dob" title="${dateOfBirth}">${dateOfBirth}</td>
-                <td class="patient-phone" title="${patient.phone || ''}">${
-                patient.phone || ''
-            }</td>
+                <td class="patient-phone" title="${formattedPhone}">${formattedPhone}</td>
                 <td>
                     <span class="accepts-texts ${acceptsTextsClass}" title="${acceptsTexts}">
                         ${acceptsTexts}
                     </span>
                 </td>
+                <td class="patient-address" title="${patient.address || ''}">${
+                patient.address || ''
+            }</td>
+                <td class="patient-created" title="${createdDate}">${createdDate}</td>
                 <td class="patient-address" title="${patient.address || ''}">${
                 patient.address || ''
             }</td>
