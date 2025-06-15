@@ -1198,8 +1198,8 @@ function displayPatients(patients) {
         tableContainer.scrollLeft = 0;
     } // Make sure tooltips are added to column headers
     addColumnResizeTooltips(); // Update the table body with new data
-    patientsTableBody.innerHTML = patients
-        .map((patient) => {
+    const htmlRows = patients
+        .map((patient, index) => {
             const fullName = patient.middle_name
                 ? `${patient.first_name} ${patient.middle_name} ${patient.last_name}`
                 : `${patient.first_name} ${patient.last_name}`;
@@ -1221,7 +1221,7 @@ function displayPatients(patients) {
                 ? new Date(patient.date_of_birth).toLocaleDateString()
                 : 'Not provided';
 
-            return `
+            const rowHtml = `
             <tr data-patient-id="${patient.patient_key}">
                 <td class="patient-name" title="${fullName}">
                     <div class="patient-full-name">${fullName}</div>
@@ -1232,9 +1232,10 @@ function displayPatients(patients) {
                     <span class="accepts-texts ${acceptsTextsClass}" title="${acceptsTexts}">
                         ${acceptsTexts}
                     </span>
-                </td>                <td class="patient-address" title="${
-                    patient.address || ''
-                }">${patient.address || ''}</td>
+                </td>
+                <td class="patient-address" title="${patient.address || ''}">${
+                patient.address || ''
+            }</td>
                 <td class="patient-created" title="${createdDate}">${createdDate}</td>
                 <td>
                     <div class="patient-actions">
@@ -1255,8 +1256,59 @@ function displayPatients(patients) {
                 </td>
             </tr>
         `;
+
+            // Debug first row
+            if (index === 0) {
+                console.log('🔍 First row HTML:', rowHtml);
+                console.log('🔍 Row data:', {
+                    fullName,
+                    dateOfBirth,
+                    formattedPhone,
+                    acceptsTexts,
+                    address: patient.address,
+                    createdDate,
+                });
+            }
+
+            return rowHtml;
         })
         .join('');
+
+    console.log('🔍 Setting table HTML...');
+    patientsTableBody.innerHTML = htmlRows;
+    // Check final result
+    setTimeout(() => {
+        console.log(
+            '🔍 Final DOM check - Table rows created:',
+            patientsTableBody.children.length
+        );
+        if (patientsTableBody.children.length > 0) {
+            const firstRow = patientsTableBody.children[0];
+            console.log('🔍 Final check - First row HTML:', firstRow.outerHTML);
+            console.log(
+                '🔍 Final check - Cell contents:',
+                Array.from(firstRow.children).map((cell, index) => ({
+                    index,
+                    className: cell.className,
+                    textContent: cell.textContent.trim().substring(0, 50),
+                }))
+            );
+        }
+        if (patientsTableBody.children.length > 0) {
+            const firstRow = patientsTableBody.children[0];
+            console.log(
+                '🔍 Final first row cell count:',
+                firstRow.children.length
+            );
+            console.log(
+                '🔍 Final first row cells:',
+                Array.from(firstRow.children).map(
+                    (cell, index) =>
+                        `${index}: ${cell.textContent.trim().substring(0, 30)}`
+                )
+            );
+        }
+    }, 100);
 
     // Adjust column widths after rendering
     setTimeout(adjustPatientColumnWidths, 100);
