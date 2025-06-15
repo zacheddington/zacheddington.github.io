@@ -73,8 +73,10 @@ async function initializeManagePatientsPage() {
     const patientsTableBody = document.getElementById('patientsTableBody');
     const patientsLoading = document.getElementById('patientsLoading');
     const patientsTable = document.getElementById('patientsTable');
-    const managePatientsSection = document.getElementById('managePatientsSection');
-    
+    const managePatientsSection = document.getElementById(
+        'managePatientsSection'
+    );
+
     console.log('🔍 Required elements:', {
         patientsTableBody: !!patientsTableBody,
         patientsLoading: !!patientsLoading,
@@ -86,7 +88,7 @@ async function initializeManagePatientsPage() {
     if (!patientsTableBody) {
         console.error('❌ patientsTableBody element not found!');
         console.log('🔍 Available elements with "patients" in ID:');
-        document.querySelectorAll('[id*="patients"]').forEach(el => {
+        document.querySelectorAll('[id*="patients"]').forEach((el) => {
             console.log('   -', el.id, el.tagName);
         });
     }
@@ -104,7 +106,7 @@ async function initializeManagePatientsPage() {
         console.error('❌ Error calling loadPatients:', error);
         console.error('❌ Error stack:', error.stack);
     }
-    
+
     try {
         setupPatientFilter();
         console.log('🔍 setupPatientFilter completed successfully');
@@ -736,14 +738,17 @@ async function loadPatients() {
 
         console.log('🔍 API URL:', API_URL);
         console.log('🔍 Token exists:', !!token);
-        console.log('🔍 Token value (first 20 chars):', token ? token.substring(0, 20) + '...' : 'null');
+        console.log(
+            '🔍 Token value (first 20 chars):',
+            token ? token.substring(0, 20) + '...' : 'null'
+        );
 
         const patientsLoading = document.getElementById('patientsLoading');
         const patientsTableBody = document.getElementById('patientsTableBody');
 
         console.log('🔍 DOM elements:', {
             patientsLoading: !!patientsLoading,
-            patientsTableBody: !!patientsTableBody
+            patientsTableBody: !!patientsTableBody,
         });
 
         if (patientsLoading) {
@@ -755,12 +760,15 @@ async function loadPatients() {
             console.log('🔍 Cleared table body');
         }
 
-        console.log('🔍 Making fetch request to:', `${API_URL}/api/patients`);        console.log('🔍 About to start fetch request...');
-        
+        console.log('🔍 Making fetch request to:', `${API_URL}/api/patients`);
+        console.log('🔍 About to start fetch request...');
+
         // Add a test to simulate data if database is unavailable
         if (API_URL.includes('localhost') && !window.FORCE_REAL_API) {
-            console.log('🔍 Local development detected, checking if we should use test data...');
-            
+            console.log(
+                '🔍 Local development detected, checking if we should use test data...'
+            );
+
             // Test if API is actually available
             try {
                 const testResponse = await fetch(`${API_URL}/api/health`, {
@@ -783,21 +791,24 @@ async function loadPatients() {
                             city: 'Anytown',
                             state: 'CA',
                             zip: '12345',
-                            created_at: new Date().toISOString()
-                        }
+                            created_at: new Date().toISOString(),
+                        },
                     ];
-                    
+
                     console.log('🔍 Using test patients:', testPatients);
                     allPatients = testPatients;
                     console.log('🔍 Setting up patient table sorting...');
                     setupPatientTableSorting();
                     console.log('🔍 Getting sorted patients...');
                     const sortedPatients = getSortedPatients();
-                    console.log('🔍 Sorted patients:', sortedPatients?.length || 0);
-                    
+                    console.log(
+                        '🔍 Sorted patients:',
+                        sortedPatients?.length || 0
+                    );
+
                     console.log('🔍 Using default display for test data');
                     displayPatients(sortedPatients);
-                    
+
                     if (patientsLoading) {
                         patientsLoading.style.display = 'none';
                         console.log('🔍 Hid loading indicator (test data)');
@@ -805,12 +816,14 @@ async function loadPatients() {
                     return;
                 }
             } catch (healthError) {
-                console.log('🔍 Health check failed, continuing with normal flow...');
+                console.log(
+                    '🔍 Health check failed, continuing with normal flow...'
+                );
             }
         }
-        
+
         console.log('🔍 About to start fetch request...');
-        
+
         const response = await fetch(`${API_URL}/api/patients`, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -837,7 +850,7 @@ async function loadPatients() {
             setupPatientTableSorting();
             console.log('🔍 Getting sorted patients...');
             const sortedPatients = getSortedPatients();
-            console.log('🔍 Sorted patients:', sortedPatients?.length || 0);// Check if we have saved column widths
+            console.log('🔍 Sorted patients:', sortedPatients?.length || 0); // Check if we have saved column widths
             try {
                 const savedWidths = JSON.parse(
                     localStorage.getItem('patientTableColumnWidths')
@@ -906,7 +919,7 @@ function showDebugInfo(message, data = null) {
         `;
         document.body.appendChild(debugDiv);
     }
-    
+
     const timestamp = new Date().toLocaleTimeString();
     const logEntry = document.createElement('div');
     logEntry.style.marginBottom = '5px';
@@ -1103,8 +1116,12 @@ function getSortedPatientsFallback() {
 
 // Display patients in the table
 function displayPatients(patients) {
-    console.log('🔍 displayPatients called with:', patients?.length || 0, 'patients');
-    
+    console.log(
+        '🔍 displayPatients called with:',
+        patients?.length || 0,
+        'patients'
+    );
+
     const patientsTableBody = document.getElementById('patientsTableBody');
     const noPatientsFound = document.getElementById('noPatientsFound');
     const tableContainer = document.querySelector('.table-responsive');
@@ -1112,7 +1129,7 @@ function displayPatients(patients) {
     console.log('🔍 displayPatients DOM elements:', {
         patientsTableBody: !!patientsTableBody,
         noPatientsFound: !!noPatientsFound,
-        tableContainer: !!tableContainer
+        tableContainer: !!tableContainer,
     });
 
     if (!patientsTableBody) {
@@ -1418,6 +1435,47 @@ async function editPatient(patientId) {
         window.modalManager.showModal(
             'error',
             'Failed to load patient data. Please try again.'
+        );
+    }
+}
+
+// Delete patient functionality
+async function deletePatient(patientId) {
+    console.log('🔍 DeletePatient function called with ID:', patientId);
+
+    try {
+        // Show confirmation dialog
+        const confirmed = confirm(
+            'Are you sure you want to delete this patient? This action cannot be undone.'
+        );
+
+        if (!confirmed) {
+            console.log('🔍 User cancelled delete operation');
+            return;
+        }
+
+        // Make DELETE request to API
+        const response = await apiClient.delete(`/api/patients/${patientId}`);
+
+        if (!response.success) {
+            throw new Error(response.message || 'Failed to delete patient');
+        }
+
+        console.log('✅ Patient deleted successfully');
+
+        // Show success message
+        window.modalManager.showModal(
+            'success',
+            'Patient deleted successfully.'
+        );
+
+        // Reload the patients list to reflect the change
+        await loadPatients();
+    } catch (error) {
+        console.error('❌ Error deleting patient:', error);
+        window.modalManager.showModal(
+            'error',
+            'Failed to delete patient. Please try again.'
         );
     }
 }
@@ -1868,6 +1926,12 @@ if (typeof window !== 'undefined') {
         deletePatient,
         closeEditPatientModal,
     };
-    console.log('🔍 PATIENTS.JS: Successfully exported window.patientsPage:', window.patientsPage);
-    console.log('🔍 PATIENTS.JS: Available functions:', Object.keys(window.patientsPage));
+    console.log(
+        '🔍 PATIENTS.JS: Successfully exported window.patientsPage:',
+        window.patientsPage
+    );
+    console.log(
+        '🔍 PATIENTS.JS: Available functions:',
+        Object.keys(window.patientsPage)
+    );
 }

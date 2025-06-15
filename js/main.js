@@ -184,20 +184,32 @@ function initializePage(page) {
             }
             // Navigation is loaded centrally above, no need to call it again            break;        case 'patients.html':
             console.log('🔍 MAIN.JS: About to check window.patientsPage...');
-            console.log('🔍 MAIN.JS: window.patientsPage exists:', !!window.patientsPage);
-            console.log('🔍 MAIN.JS: window.patientsPage value:', window.patientsPage);
+            console.log(
+                '🔍 MAIN.JS: window.patientsPage exists:',
+                !!window.patientsPage
+            );
+            console.log(
+                '🔍 MAIN.JS: window.patientsPage value:',
+                window.patientsPage
+            );
             if (window.patientsPage) {
                 console.log('🔍 Calling patientsPage.initializePatientsPage()');
                 try {
                     // Handle both sync and async initialization
                     const result = window.patientsPage.initializePatientsPage();
                     if (result && typeof result.then === 'function') {
-                        result.catch(error => {
-                            console.error('❌ Error in patients page initialization:', error);
+                        result.catch((error) => {
+                            console.error(
+                                '❌ Error in patients page initialization:',
+                                error
+                            );
                         });
                     }
                 } catch (error) {
-                    console.error('❌ Error calling patientsPage.initializePatientsPage():', error);
+                    console.error(
+                        '❌ Error calling patientsPage.initializePatientsPage():',
+                        error
+                    );
                 }
             } else {
                 console.error('❌ window.patientsPage not found');
