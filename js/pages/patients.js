@@ -1,9 +1,13 @@
 // Patients Page Module
 // Contains all patient-related functionality including create/manage/navigation
 
+console.log('🔍 PATIENTS.JS: Starting to load patients.js module...');
+
 // Global state for patient management
 let allPatients = [];
 let currentPatientSort = { column: null, direction: null };
+
+console.log('🔍 PATIENTS.JS: Global variables initialized');
 
 // Initialize patients page functionality
 function initializePatientsPage() {
@@ -1864,4 +1868,6 @@ if (typeof window !== 'undefined') {
         deletePatient,
         closeEditPatientModal,
     };
+    console.log('🔍 PATIENTS.JS: Successfully exported window.patientsPage:', window.patientsPage);
+    console.log('🔍 PATIENTS.JS: Available functions:', Object.keys(window.patientsPage));
 }

@@ -182,8 +182,10 @@ function initializePage(page) {
             if (window.adminPage) {
                 window.adminPage.initializeAdminPage();
             }
-            // Navigation is loaded centrally above, no need to call it again
-            break;        case 'patients.html':
+            // Navigation is loaded centrally above, no need to call it again            break;        case 'patients.html':
+            console.log('🔍 MAIN.JS: About to check window.patientsPage...');
+            console.log('🔍 MAIN.JS: window.patientsPage exists:', !!window.patientsPage);
+            console.log('🔍 MAIN.JS: window.patientsPage value:', window.patientsPage);
             if (window.patientsPage) {
                 console.log('🔍 Calling patientsPage.initializePatientsPage()');
                 try {
