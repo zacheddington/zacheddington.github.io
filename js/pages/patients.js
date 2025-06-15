@@ -1793,14 +1793,23 @@ async function handleEditPatientSubmit(event) {
     btnText.classList.add('hidden');
     btnLoading.classList.remove('hidden');
     submitBtn.disabled = true;
-
     try {
-        const response = await apiClient.put(
-            `/api/patients/${patientId}`,
-            patientData
-        );
+        const response = await fetch(`${API_URL}/api/patients/${patientId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify(patientData),
+        });
 
-        if (response.success) {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
             window.modalManager.showModal(
                 'success',
                 'Patient updated successfully'
@@ -1811,7 +1820,7 @@ async function handleEditPatientSubmit(event) {
             // Refresh the patients list
             loadPatients();
         } else {
-            throw new Error(response.message || 'Failed to update patient');
+            throw new Error(result.message || 'Failed to update patient');
         }
     } catch (error) {
         console.error('Error updating patient:', error);
@@ -2159,34 +2168,39 @@ function setupEditPatientModal() {
     // Track mouseup to know where click ended
     window.addEventListener('mouseup', function (event) {
         mouseUpTarget = event.target;
-        
+
         // Only close modal if both mousedown AND mouseup happened on the modal background
         // This prevents closing when user drags from inside form to outside
-        if (modal.style.display === 'block' && 
-            mouseDownTarget === modal && 
-            mouseUpTarget === modal) {
-            console.log('🔍 Click outside modal detected (both down and up on modal background)');
+        if (
+            modal.style.display === 'block' &&
+            mouseDownTarget === modal &&
+            mouseUpTarget === modal
+        ) {
+            console.log(
+                '🔍 Click outside modal detected (both down and up on modal background)'
+            );
             closeEditPatientModal();
         }
-        
+
         // Reset tracking variables
         mouseDownTarget = null;
         mouseUpTarget = null;
     });
 
     // Handle form submission
-    editPatientForm.addEventListener('submit', handleEditPatientSubmit); 
-    
+    editPatientForm.addEventListener('submit', handleEditPatientSubmit);
+
     // Close modal on Escape key
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape' && modal.style.display === 'block') {
             console.log('🔍 Escape key pressed');
             closeEditPatientModal();
         }
-    });
-
-    // Setup phone number formatting for edit form
+    }); // Setup phone number formatting for edit form
     setupEditFormPhoneFormatting();
+
+    // Setup date validation for edit form
+    setupEditFormDateValidation();
 }
 
 // Set up phone number formatting for the edit patient form
@@ -2200,33 +2214,39 @@ function setupEditFormPhoneFormatting() {
     console.log('🔍 Setting up phone formatting for edit form');
 
     // Format phone number as user types
-    phoneInput.addEventListener('input', function(e) {
+    phoneInput.addEventListener('input', function (e) {
         let value = e.target.value;
-        
+
         // Remove all non-digit characters
         const digits = value.replace(/\D/g, '');
-        
+
         // Limit to 10 digits
         const limitedDigits = digits.substring(0, 10);
-        
+
         // Format as (XXX) XXX-XXXX
         let formattedValue = '';
         if (limitedDigits.length > 0) {
             if (limitedDigits.length <= 3) {
                 formattedValue = `(${limitedDigits}`;
             } else if (limitedDigits.length <= 6) {
-                formattedValue = `(${limitedDigits.slice(0, 3)}) ${limitedDigits.slice(3)}`;
+                formattedValue = `(${limitedDigits.slice(
+                    0,
+                    3
+                )}) ${limitedDigits.slice(3)}`;
             } else {
-                formattedValue = `(${limitedDigits.slice(0, 3)}) ${limitedDigits.slice(3, 6)}-${limitedDigits.slice(6)}`;
+                formattedValue = `(${limitedDigits.slice(
+                    0,
+                    3
+                )}) ${limitedDigits.slice(3, 6)}-${limitedDigits.slice(6)}`;
             }
         }
-        
+
         // Update the input value
         e.target.value = formattedValue;
     });
 
     // Handle paste events
-    phoneInput.addEventListener('paste', function(e) {
+    phoneInput.addEventListener('paste', function (e) {
         setTimeout(() => {
             // Trigger the input event to format the pasted content
             phoneInput.dispatchEvent(new Event('input'));
@@ -2235,20 +2255,137 @@ function setupEditFormPhoneFormatting() {
 
     // Prevent non-numeric input (except backspace, delete, tab, etc.)
 
-    phoneInput.addEventListener('keydown', function(e) {
+    phoneInput.addEventListener('keydown', function (e) {
         // Allow: backspace, delete, tab, escape, enter
-        if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+        if (
+            [8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
             // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
             (e.keyCode === 65 && e.ctrlKey === true) ||
             (e.keyCode === 67 && e.ctrlKey === true) ||
             (e.keyCode === 86 && e.ctrlKey === true) ||
             (e.keyCode === 88 && e.ctrlKey === true) ||
             // Allow: home, end, left, right
-            (e.keyCode >= 35 && e.keyCode <= 39)) {
+            (e.keyCode >= 35 && e.keyCode <= 39)
+        ) {
             return;
         }
         // Ensure that it is a number and stop the keypress
-        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+        if (
+            (e.shiftKey || e.keyCode < 48 || e.keyCode > 57) &&
+            (e.keyCode < 96 || e.keyCode > 105)
+        ) {
+            e.preventDefault();
+        }
+    });
+}
+
+// Setup date validation for edit form
+function setupEditFormDateValidation() {
+    const dateInput = document.getElementById('editPatientDateOfBirth');
+    if (!dateInput) {
+        console.warn('⚠️ Date of birth input not found in edit form');
+        return;
+    }
+
+    console.log('🔍 Setting up date validation for edit form');
+
+    // Add input event to validate date format
+    dateInput.addEventListener('input', function (e) {
+        let value = e.target.value;
+
+        // Basic validation for date format YYYY-MM-DD
+        if (value.length === 10) {
+            const parts = value.split('-');
+            if (parts.length === 3) {
+                const year = parts[0];
+                const month = parts[1];
+                const day = parts[2];
+
+                // Validate year (4 digits only)
+                if (year.length !== 4 || !/^\d{4}$/.test(year)) {
+                    // If year is more than 4 digits, truncate it
+                    if (year.length > 4) {
+                        const truncatedYear = year.substring(0, 4);
+                        e.target.value = `${truncatedYear}-${month}-${day}`;
+                    }
+                }
+
+                // Validate month (01-12)
+                const monthNum = parseInt(month, 10);
+                if (monthNum < 1 || monthNum > 12) {
+                    e.target.setCustomValidity(
+                        'Please enter a valid month (01-12)'
+                    );
+                } else {
+                    e.target.setCustomValidity('');
+                }
+
+                // Validate day (01-31, basic check)
+                const dayNum = parseInt(day, 10);
+                if (dayNum < 1 || dayNum > 31) {
+                    e.target.setCustomValidity(
+                        'Please enter a valid day (01-31)'
+                    );
+                } else {
+                    e.target.setCustomValidity('');
+                }
+            }
+        }
+    });
+
+    // Add change event for final validation
+    dateInput.addEventListener('change', function (e) {
+        const value = e.target.value;
+        if (value) {
+            const date = new Date(value);
+            const today = new Date();
+
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+                e.target.setCustomValidity('Please enter a valid date');
+                return;
+            }
+
+            // Check if date is not in the future
+            if (date > today) {
+                e.target.setCustomValidity(
+                    'Date of birth cannot be in the future'
+                );
+                return;
+            }
+
+            // Check if date is reasonable (not too far in the past)
+            const minDate = new Date();
+            minDate.setFullYear(minDate.getFullYear() - 150);
+            if (date < minDate) {
+                e.target.setCustomValidity(
+                    'Please enter a reasonable date of birth'
+                );
+                return;
+            }
+
+            // Clear any custom validity if all checks pass
+            e.target.setCustomValidity('');
+        }
+    });
+
+    // Prevent manual entry of invalid year lengths
+    dateInput.addEventListener('keydown', function (e) {
+        // If we're in the year part and it's already 4 digits, prevent more digits
+        const value = e.target.value;
+        const cursorPos = e.target.selectionStart;
+
+        // Check if we're typing in the year section (positions 0-3)
+        if (
+            cursorPos <= 3 &&
+            value.length >= 4 &&
+            e.key >= '0' &&
+            e.key <= '9' &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            e.target.selectionStart === e.target.selectionEnd
+        ) {
+            // Prevent adding more digits to the year
             e.preventDefault();
         }
     });

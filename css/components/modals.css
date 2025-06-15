@@ -512,7 +512,7 @@ body.menu-active .modal-overlay {
         max-width: 95vw;
         padding: var(--space-lg);
     }
-    
+
     .wide-modal .form-row {
         flex-direction: column;
         gap: var(--space-md);
@@ -527,11 +527,11 @@ body.menu-active .modal-overlay {
         padding: var(--space-md);
         margin: var(--space-sm) auto !important;
     }
-    
+
     .wide-modal .modal-header {
         margin-bottom: var(--space-md);
     }
-    
+
     .wide-modal .modal-header h2 {
         font-size: var(--font-size-lg);
     }
