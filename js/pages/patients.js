@@ -122,10 +122,11 @@ async function initializeManagePatientsPage() {
         console.log('🔍 setupPatientFilter completed successfully');
     } catch (error) {
         console.error('❌ Error calling setupPatientFilter:', error);
-    }
-
-    // Setup edit patient modal
+    } // Setup edit patient modal
     setupEditPatientModal();
+
+    // Setup delete patient modal
+    setupDeletePatientModal();
 
     // Apply column preferences or auto-size if no preferences exist
     try {
@@ -1728,45 +1729,97 @@ async function editPatient(patientId) {
 }
 
 // Delete patient functionality
-async function deletePatient(patientId) {
+async function deletePatient(patientId, patientName) {
     console.log('🔍 DeletePatient function called with ID:', patientId);
 
     try {
-        // Show confirmation dialog
-        const confirmed = confirm(
-            'Are you sure you want to delete this patient? This action cannot be undone.'
-        );
+        // Show styled confirmation modal instead of browser confirm
+        const modal = document.getElementById('deletePatientModal');
+        const patientNameSpan = document.getElementById('deletePatientName');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
 
-        if (!confirmed) {
-            console.log('🔍 User cancelled delete operation');
+        if (!modal || !patientNameSpan || !confirmBtn) {
+            console.error('Delete modal elements not found');
             return;
         }
 
-        // Make DELETE request to API
-        const response = await apiClient.delete(`/api/patients/${patientId}`);
+        // Set patient name in modal
+        patientNameSpan.textContent = patientName || 'this patient';
 
-        if (!response.success) {
-            throw new Error(response.message || 'Failed to delete patient');
-        }
+        // Show the modal
+        modal.style.display = 'block';
 
-        console.log('✅ Patient deleted successfully');
+        // Set up the confirm button click handler
+        confirmBtn.onclick = async () => {
+            try {
+                // Close modal and show loading
+                modal.style.display = 'none';
 
-        // Show success message
-        window.modalManager.showModal(
-            'success',
-            'Patient deleted successfully.'
-        );
+                // Make DELETE request to API using fetch
+                const API_URL = window.getAPIUrl
+                    ? window.getAPIUrl()
+                    : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+                const token = localStorage.getItem('authToken');
 
-        // Reload the patients list to reflect the change
-        await loadPatients();
+                const response = await fetch(
+                    `${API_URL}/api/patients/${patientId}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to delete patient');
+                }
+
+                console.log('✅ Patient deleted successfully');
+
+                // Show success message
+                if (window.modalManager && window.modalManager.showModal) {
+                    window.modalManager.showModal(
+                        'success',
+                        'Patient deleted successfully.'
+                    );
+                }
+
+                // Reload the patients list to reflect the change
+                await loadPatients();
+            } catch (error) {
+                console.error('❌ Error deleting patient:', error);
+
+                if (window.modalManager && window.modalManager.showModal) {
+                    window.modalManager.showModal(
+                        'error',
+                        'Failed to delete patient. Please try again.'
+                    );
+                }
+            }
+        };
     } catch (error) {
-        console.error('❌ Error deleting patient:', error);
-        window.modalManager.showModal(
-            'error',
-            'Failed to delete patient. Please try again.'
-        );
+        console.error('❌ Error setting up delete confirmation:', error);
     }
 }
+
+// Close delete patient modal
+function closeDeletePatientModal() {
+    const modal = document.getElementById('deletePatientModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Make closeDeletePatientModal globally available
+window.closeDeletePatientModal = closeDeletePatientModal;
 
 // Close edit patient modal
 function closeEditPatientModal() {
@@ -2476,6 +2529,51 @@ function setupEditFormZipFormatting() {
     });
 }
 
+// Setup delete patient modal
+function setupDeletePatientModal() {
+    const modal = document.getElementById('deletePatientModal');
+    if (!modal) {
+        console.warn('⚠️ Delete patient modal not found');
+        return;
+    }
+
+    const closeBtn = modal.querySelector('.close');
+
+    // Variables to track mouse events for proper click-outside detection
+    let mouseDownTarget = null;
+    let mouseUpTarget = null;
+
+    // Close modal when clicking the X button
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function () {
+            closeDeletePatientModal();
+        });
+    }
+
+    // Track mousedown to know where click started
+    window.addEventListener('mousedown', function (event) {
+        mouseDownTarget = event.target;
+    });
+
+    // Track mouseup to know where click ended
+    window.addEventListener('mouseup', function (event) {
+        mouseUpTarget = event.target;
+
+        // Only close modal if both mousedown AND mouseup happened on the modal background
+        if (
+            modal.style.display === 'block' &&
+            mouseDownTarget === modal &&
+            mouseUpTarget === modal
+        ) {
+            closeDeletePatientModal();
+        }
+
+        // Reset tracking variables
+        mouseDownTarget = null;
+        mouseUpTarget = null;
+    });
+}
+
 // Export functions to window object for main.js to access
 if (typeof window !== 'undefined') {
     window.patientsPage = {
@@ -2486,6 +2584,7 @@ if (typeof window !== 'undefined') {
         editPatient,
         deletePatient,
         closeEditPatientModal,
+        closeDeletePatientModal,
     };
     console.log(
         '🔍 PATIENTS.JS: Successfully exported window.patientsPage:',

@@ -409,6 +409,45 @@
                 </div>
             </div>
         </div>
+
+        <!-- Delete Patient Confirmation Modal -->
+        <div id="deletePatientModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Delete Patient</h2>
+                    <span class="close" onclick="closeDeletePatientModal()"
+                        >&times;</span
+                    >
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Are you sure you want to delete
+                        <strong id="deletePatientName"></strong>?
+                    </p>
+                    <p class="warning-text">
+                        This action cannot be undone and will permanently remove
+                        all patient data.
+                    </p>
+                </div>
+                <div class="modal-actions">
+                    <button
+                        type="button"
+                        class="secondary-btn"
+                        onclick="closeDeletePatientModal()"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        class="primary-btn danger-btn"
+                        id="confirmDeleteBtn"
+                    >
+                        Delete Patient
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <script src="../../js/shared/api-client.js"></script>
         <script src="../../js/shared/modal-manager.js"></script>
         <script src="../../js/shared/password-utils.js"></script>

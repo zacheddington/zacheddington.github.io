@@ -191,6 +191,27 @@
     border-color: var(--color-gray-400);
 }
 
+/* Danger button for destructive actions */
+.modal-actions .danger-btn,
+.form-actions .danger-btn {
+    background: #dc3545;
+    color: var(--color-white);
+    border: none;
+}
+
+.modal-actions .danger-btn:hover,
+.form-actions .danger-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+/* Warning text in modals */
+.warning-text {
+    color: #dc3545;
+    font-weight: var(--font-weight-medium);
+    margin-top: var(--space-sm);
+}
+
 /* Modal hint styling */
 .modal-hint {
     font-size: var(--font-size-sm);
