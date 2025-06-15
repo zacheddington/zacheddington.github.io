@@ -1217,20 +1217,38 @@ function displayPatients(patients) {
 
 // Display patients in the table while preserving column widths
 function displayPatientsPreserveWidths(patients, columnWidths = []) {
+    console.log('🔍 displayPatientsPreserveWidths called with:', {
+        patientsCount: patients?.length || 0,
+        columnWidthsCount: columnWidths?.length || 0,
+        patients: patients,
+    });
+
     const patientsTableBody = document.getElementById('patientsTableBody');
     const noPatientsFound = document.getElementById('noPatientsFound');
     const tableContainer = document.querySelector('.table-responsive');
     const table = document.querySelector('#patientsTable');
 
-    if (!patientsTableBody || !table) return;
+    console.log('🔍 DOM elements for display:', {
+        patientsTableBody: !!patientsTableBody,
+        table: !!table,
+        tableContainer: !!tableContainer,
+        noPatientsFound: !!noPatientsFound,
+    });
+
+    if (!patientsTableBody || !table) {
+        console.error('❌ Required DOM elements missing for patient display');
+        return;
+    }
 
     // Check for empty results
     if (patients.length === 0) {
+        console.log('🔍 No patients to display, showing no results message');
         patientsTableBody.innerHTML = '';
         if (noPatientsFound) noPatientsFound.classList.remove('hidden');
         return;
     }
 
+    console.log('🔍 Displaying patients, hiding no results message');
     if (noPatientsFound) noPatientsFound.classList.add('hidden');
 
     // Reset scroll position when displaying new data
@@ -1239,7 +1257,7 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
     } // Set the table to auto layout to allow proper expansion
     table.style.tableLayout = 'auto';
     table.style.minWidth = 'max-content'; // Allow table to expand as needed    // Update the table body with new data
-    patientsTableBody.innerHTML = patients
+    const patientRows = patients
         .map((patient) => {
             const fullName = patient.middle_name
                 ? `${patient.first_name} ${patient.middle_name} ${patient.last_name}`
@@ -1296,6 +1314,23 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
         `;
         })
         .join('');
+
+    console.log(
+        '🔍 Generated patient rows HTML (first 200 chars):',
+        patientRows.substring(0, 200)
+    );
+    console.log('🔍 Total HTML length:', patientRows.length);
+
+    patientsTableBody.innerHTML = patientRows;
+
+    console.log(
+        '🔍 Table body innerHTML set, current content length:',
+        patientsTableBody.innerHTML.length
+    );
+    console.log(
+        '🔍 Table body child count:',
+        patientsTableBody.children.length
+    );
 
     // Reapply column widths if provided
     if (columnWidths.length > 0) {
