@@ -247,6 +247,14 @@ function setupCreatePatientFieldValidation() {
         }
     });
 
+    // Set up date of birth field
+    const dobInput = document.getElementById('patientDateOfBirth');
+    if (dobInput) {
+        // Set max date to today
+        const today = new Date().toISOString().split('T')[0];
+        dobInput.setAttribute('max', today);
+    }
+
     // Set up phone number formatting
     setupPatientPhoneFormatting();
 
@@ -429,32 +437,35 @@ async function createPatient() {
         const connectivity = await window.apiClient.checkConnectivity();
         if (!connectivity.connected) {
             throw new Error(`Connection failed: ${connectivity.error}`);
-        }
-
-        // Get form data
+        } // Get form data
         const formData = {
             firstName: document.getElementById('patientFirstName').value.trim(),
             middleName: document
                 .getElementById('patientMiddleName')
                 .value.trim(),
             lastName: document.getElementById('patientLastName').value.trim(),
-            address: document.getElementById('patientAddress').value.trim(),
+            dateOfBirth: document.getElementById('patientDateOfBirth').value,
+            address1: document.getElementById('patientAddress1').value.trim(),
+            address2: document.getElementById('patientAddress2').value.trim(),
+            city: document.getElementById('patientCity').value.trim(),
+            state: document.getElementById('patientState').value,
+            zip: document.getElementById('patientZip').value.trim(),
             phone: document.getElementById('patientPhone').value.trim(),
             acceptsTexts: document.getElementById('acceptsTexts').value,
-        };
-
-        // Validate required fields
+        }; // Validate required fields
         if (
             !formData.firstName ||
             !formData.lastName ||
-            !formData.address ||
+            !formData.dateOfBirth ||
+            !formData.address1 ||
+            !formData.city ||
+            !formData.state ||
+            !formData.zip ||
             !formData.phone ||
             !formData.acceptsTexts
         ) {
-            throw new Error('All fields except middle name are required.');
-        }
-
-        // Validate character limits
+            throw new Error('All required fields must be filled out.');
+        } // Validate character limits
         if (formData.firstName.length > 50) {
             throw new Error('First name must be 50 characters or less.');
         }
@@ -464,8 +475,32 @@ async function createPatient() {
         if (formData.lastName.length > 50) {
             throw new Error('Last name must be 50 characters or less.');
         }
-        if (formData.address.length > 100) {
-            throw new Error('Address must be 100 characters or less.');
+        if (formData.address1.length > 100) {
+            throw new Error('Street address must be 100 characters or less.');
+        }
+        if (formData.address2 && formData.address2.length > 50) {
+            throw new Error('Unit/Apartment must be 50 characters or less.');
+        }
+        if (formData.city.length > 50) {
+            throw new Error('City must be 50 characters or less.');
+        }
+
+        // Validate date of birth
+        const today = new Date();
+        const birthDate = new Date(formData.dateOfBirth);
+
+        if (isNaN(birthDate.getTime())) {
+            throw new Error('Please enter a valid date of birth.');
+        }
+
+        if (birthDate >= today) {
+            throw new Error('Date of birth must be in the past.');
+        }
+
+        // Check if age is reasonable (not more than 150 years old)
+        const age = today.getFullYear() - birthDate.getFullYear();
+        if (age > 150) {
+            throw new Error('Please enter a valid date of birth.');
         }
 
         // Enhanced address validation using shared validation
@@ -473,10 +508,11 @@ async function createPatient() {
             window.addressValidation &&
             window.addressValidation.validateAddress
         ) {
+            const fullAddress = `${formData.address1}${
+                formData.address2 ? ' ' + formData.address2 : ''
+            }, ${formData.city}, ${formData.state} ${formData.zip}`;
             const addressValidation =
-                await window.addressValidation.validateAddress(
-                    formData.address
-                );
+                await window.addressValidation.validateAddress(fullAddress);
             if (!addressValidation.isValid) {
                 if (addressValidation.warning) {
                     // Show warning but allow submission
@@ -1071,7 +1107,7 @@ function filterPatients() {
     const filteredPatients = allPatients.filter((patient) => {
         const fullName = patient.middle_name
             ? `${patient.first_name} ${patient.middle_name} ${patient.last_name}`
-            : `${patient.first_name} ${patient.last_name}`;
+            : `${patient.first_name} ${patient.lastName}`;
 
         return (
             fullName.toLowerCase().includes(filterValue) ||
