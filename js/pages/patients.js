@@ -155,6 +155,37 @@ async function initializeManagePatientsPage() {
 
     console.log('🔍 Manage patients page initialized');
 
+    // Check final state after a short delay
+    setTimeout(() => {
+        const patientsLoading = document.getElementById('patientsLoading');
+        const patientsTableBody = document.getElementById('patientsTableBody');
+        const table = document.getElementById('patientsTable');
+
+        console.log('🔍 FINAL STATE CHECK:');
+        console.log('🔍 Loading element:', {
+            exists: !!patientsLoading,
+            display: patientsLoading?.style.display,
+            computedDisplay: patientsLoading
+                ? window.getComputedStyle(patientsLoading).display
+                : 'N/A',
+            visible: patientsLoading
+                ? !patientsLoading.classList.contains('hidden')
+                : 'N/A',
+        });
+        console.log('🔍 Table body:', {
+            exists: !!patientsTableBody,
+            childCount: patientsTableBody?.children.length || 0,
+            innerHTML: patientsTableBody?.innerHTML.substring(0, 100) || 'N/A',
+        });
+        console.log('🔍 Table:', {
+            exists: !!table,
+            display: table?.style.display,
+            computedDisplay: table
+                ? window.getComputedStyle(table).display
+                : 'N/A',
+        });
+    }, 1000);
+
     // Check if modal is visible on page load
     setTimeout(() => {
         const modal = document.getElementById('editPatientModal');
@@ -179,6 +210,24 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+// Format phone number for display
+function formatPhoneNumber(phone) {
+    if (!phone) return '';
+
+    // Remove all non-digit characters
+    const digits = phone.replace(/\D/g, '');
+
+    // Format as (XXX) XXX-XXXX for 10 digit numbers
+    if (digits.length === 10) {
+        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(
+            6
+        )}`;
+    }
+
+    // For other lengths, just return the original
+    return phone;
 }
 
 // Set up navigation between patient sections
@@ -893,7 +942,19 @@ async function loadPatients() {
     } finally {
         console.log('🔍 Hiding loading indicator');
         const patientsLoading = document.getElementById('patientsLoading');
-        if (patientsLoading) patientsLoading.style.display = 'none';
+        if (patientsLoading) {
+            console.log(
+                '🔍 Loading element found, current display:',
+                patientsLoading.style.display
+            );
+            patientsLoading.style.display = 'none';
+            console.log(
+                '🔍 Loading element display set to none, new display:',
+                patientsLoading.style.display
+            );
+        } else {
+            console.error('❌ Loading element not found!');
+        }
     }
 }
 
@@ -1259,7 +1320,15 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
     table.style.tableLayout = 'auto';
     table.style.minWidth = 'max-content'; // Allow table to expand as needed    // Update the table body with new data
     const patientRows = patients
-        .map((patient) => {
+        .map((patient, index) => {
+            // Debug log for first patient
+            if (index === 0) {
+                console.log('🔍 First patient data:', patient);
+                console.log('🔍 Address field:', patient.address);
+                console.log('🔍 Created at field:', patient.created_at);
+                console.log('🔍 Phone field:', patient.phone);
+            }
+
             const fullName = patient.middle_name
                 ? `${patient.first_name} ${patient.middle_name} ${patient.last_name}`
                 : `${patient.first_name} ${patient.last_name}`;
@@ -1267,9 +1336,14 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
             const acceptsTexts = patient.accepts_texts ? 'Yes' : 'No';
             const acceptsTextsClass = patient.accepts_texts ? 'yes' : 'no';
 
-            const createdDate = new Date(
-                patient.created_at
-            ).toLocaleDateString();
+            // Format phone number
+            const formattedPhone = patient.phone
+                ? formatPhoneNumber(patient.phone)
+                : '';
+
+            const createdDate = patient.created_at
+                ? new Date(patient.created_at).toLocaleDateString()
+                : 'No date';
 
             // Format date of birth
             const dateOfBirth = patient.date_of_birth
@@ -1416,16 +1490,29 @@ function setupPatientFilter() {
 async function editPatient(patientId) {
     console.log('🔍 EditPatient function called with ID:', patientId);
     console.log('🔍 Call stack:', new Error().stack);
-
     try {
-        // Fetch patient data
-        const response = await apiClient.get(`/api/patients/${patientId}`);
+        // Fetch patient data using standard fetch API
+        const API_URL = window.apiClient.getAPIUrl();
+        const token = localStorage.getItem('token');
 
-        if (!response.success) {
-            throw new Error(response.message || 'Failed to fetch patient data');
+        const response = await fetch(`${API_URL}/api/patients/${patientId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch patient data: ${response.status}`);
         }
 
-        const patient = response.data;
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.message || 'Failed to fetch patient data');
+        }
+
+        const patient = result.data;
         console.log('Patient data:', patient);
 
         // Fill the form with patient data
