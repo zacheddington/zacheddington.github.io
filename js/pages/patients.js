@@ -1232,14 +1232,9 @@ function displayPatients(patients) {
                     <span class="accepts-texts ${acceptsTextsClass}" title="${acceptsTexts}">
                         ${acceptsTexts}
                     </span>
-                </td>
-                <td class="patient-address" title="${patient.address || ''}">${
-                patient.address || ''
-            }</td>
-                <td class="patient-created" title="${createdDate}">${createdDate}</td>
-                <td class="patient-address" title="${patient.address || ''}">${
-                patient.address || ''
-            }</td>
+                </td>                <td class="patient-address" title="${
+                    patient.address || ''
+                }">${patient.address || ''}</td>
                 <td class="patient-created" title="${createdDate}">${createdDate}</td>
                 <td>
                     <div class="patient-actions">
