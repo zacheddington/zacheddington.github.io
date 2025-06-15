@@ -381,3 +381,165 @@ body.menu-active .modal-overlay {
 .modal-overlay * {
     transform-style: flat !important;
 }
+
+/* ================================
+   WIDE MODAL STYLES (for forms like edit patient)
+   ================================ */
+
+/* Wide modal for complex forms */
+.modal-content.wide-modal {
+    max-width: 90vw;
+    width: 800px;
+    min-width: 600px;
+    max-height: 90vh;
+    padding: var(--space-xl);
+    text-align: left;
+    overflow-y: auto;
+    transform: translateY(0); /* Reset default transform */
+    margin: var(--space-md) auto !important; /* Add margin for breathing room */
+}
+
+/* Ensure wide modal centers properly */
+#editPatientModal {
+    align-items: flex-start !important; /* Align to top instead of center */
+    padding: var(--space-lg) 0; /* Add padding to prevent cutoff */
+}
+
+/* Wide modal header */
+.wide-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: var(--border-thin) solid var(--color-border);
+}
+
+.wide-modal .modal-header h2 {
+    margin: 0;
+    color: var(--color-primary);
+    font-size: var(--font-size-xl);
+}
+
+.wide-modal .modal-header .close {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--color-gray-500);
+    cursor: pointer;
+    transition: var(--transition-all);
+    line-height: 1;
+    padding: var(--space-sm);
+    margin: calc(-1 * var(--space-sm));
+}
+
+.wide-modal .modal-header .close:hover {
+    color: var(--color-primary);
+    transform: scale(1.1);
+}
+
+/* Wide modal body */
+.wide-modal .modal-body {
+    padding: 0;
+}
+
+/* Form styling within wide modal */
+.wide-modal .patient-form {
+    width: 100%;
+}
+
+.wide-modal .form-section {
+    margin-bottom: var(--space-xl);
+}
+
+.wide-modal .form-section h3 {
+    color: var(--color-primary);
+    margin-bottom: var(--space-lg);
+    font-size: var(--font-size-lg);
+    border-bottom: var(--border-thin) solid var(--color-border);
+    padding-bottom: var(--space-sm);
+}
+
+/* Form rows in wide modal */
+.wide-modal .form-row {
+    display: flex;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-lg);
+}
+
+.wide-modal .form-row.names .form-group {
+    flex: 1;
+}
+
+.wide-modal .form-row.equal-width .form-group {
+    flex: 1;
+}
+
+/* Form groups in wide modal */
+.wide-modal .form-group {
+    margin-bottom: var(--space-lg);
+}
+
+.wide-modal .form-group label {
+    display: block;
+    margin-bottom: var(--space-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+}
+
+.wide-modal .form-group input,
+.wide-modal .form-group select {
+    width: 100%;
+    padding: var(--space-md);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    transition: var(--transition-all);
+    box-sizing: border-box;
+}
+
+.wide-modal .form-group input:focus,
+.wide-modal .form-group select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.1);
+}
+
+/* Responsive adjustments for wide modal */
+@media screen and (max-width: 900px) {
+    .modal-content.wide-modal {
+        width: 95vw;
+        min-width: 320px;
+        max-width: 95vw;
+        padding: var(--space-lg);
+    }
+    
+    .wide-modal .form-row {
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .modal-content.wide-modal {
+        width: 95vw;
+        max-width: 95vw;
+        min-width: 280px;
+        padding: var(--space-md);
+        margin: var(--space-sm) auto !important;
+    }
+    
+    .wide-modal .modal-header {
+        margin-bottom: var(--space-md);
+    }
+    
+    .wide-modal .modal-header h2 {
+        font-size: var(--font-size-lg);
+    }
+}
+
+@media screen and (max-height: 700px) {
+    .modal-content.wide-modal {
+        max-height: 95vh;
+        margin: var(--space-sm) auto !important;
+    }
+}
