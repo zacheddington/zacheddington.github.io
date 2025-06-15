@@ -1220,6 +1220,7 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
     console.log('🔍 displayPatientsPreserveWidths called with:', {
         patientsCount: patients?.length || 0,
         columnWidthsCount: columnWidths?.length || 0,
+        firstPatient: patients?.[0] || null,
         patients: patients,
     });
 
