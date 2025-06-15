@@ -7,18 +7,24 @@ let currentPatientSort = { column: null, direction: null };
 
 // Initialize patients page functionality
 function initializePatientsPage() {
+    console.log('🔍 Initializing patients page...');
+
     // Determine which page we're on and initialize accordingly
     const currentPage = getCurrentPageType();
+    console.log('🔍 Current page type:', currentPage);
 
     switch (currentPage) {
         case 'create-patient':
+            console.log('🔍 Initializing create patient page');
             initializeCreatePatientPage();
             break;
         case 'manage-patients':
+            console.log('🔍 Initializing manage patients page');
             initializeManagePatientsPage();
             break;
         case 'patients-index':
         default:
+            console.log('🔍 Initializing patients index page');
             initializePatientsIndexPage();
             break;
     }
@@ -55,7 +61,17 @@ function initializeCreatePatientPage() {
 function initializeManagePatientsPage() {
     console.log('🔍 Initializing manage patients page...');
 
+    // Check if required elements exist
+    const patientsTableBody = document.getElementById('patientsTableBody');
+    const patientsLoading = document.getElementById('patientsLoading');
+    console.log('🔍 Required elements:', {
+        patientsTableBody: !!patientsTableBody,
+        patientsLoading: !!patientsLoading,
+        apiClient: !!window.apiClient,
+    });
+
     // Load patients and setup patient management
+    console.log('🔍 About to call loadPatients()...');
     loadPatients();
     setupPatientFilter();
 
@@ -669,9 +685,14 @@ function clearCreatePatientErrors() {
 
 // Load all patients from the server
 async function loadPatients() {
+    console.log('🔍 Starting to load patients...');
+
     try {
         const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
+
+        console.log('🔍 API URL:', API_URL);
+        console.log('🔍 Token exists:', !!token);
 
         const patientsLoading = document.getElementById('patientsLoading');
         const patientsTableBody = document.getElementById('patientsTableBody');
@@ -679,27 +700,43 @@ async function loadPatients() {
         if (patientsLoading) patientsLoading.style.display = 'block';
         if (patientsTableBody) patientsTableBody.innerHTML = '';
 
+        console.log('🔍 Making fetch request to:', `${API_URL}/api/patients`);
+
         const response = await fetch(`${API_URL}/api/patients`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         });
+
+        console.log('🔍 Response status:', response.status);
+        console.log('🔍 Response ok:', response.ok);
+
         if (response.ok) {
             const result = await response.json();
-            allPatients = result.data; // Extract data from response object
-            setupPatientTableSorting();
-            const sortedPatients = getSortedPatients();
+            console.log('🔍 Response data:', result);
 
-            // Check if we have saved column widths
+            allPatients = result.data; // Extract data from response object
+            console.log(
+                '🔍 All patients loaded:',
+                allPatients?.length || 0,
+                'patients'
+            );
+
+            setupPatientTableSorting();
+            const sortedPatients = getSortedPatients(); // Check if we have saved column widths
             try {
                 const savedWidths = JSON.parse(
                     localStorage.getItem('patientTableColumnWidths')
                 );
+                console.log('🔍 Saved column widths:', savedWidths);
+
                 if (savedWidths && Array.isArray(savedWidths)) {
                     // Display patients with saved column widths
+                    console.log('🔍 Using saved column widths');
                     displayPatientsPreserveWidths(sortedPatients, savedWidths);
                 } else {
                     // No saved preferences, just display and auto-adjust
+                    console.log('🔍 No saved widths, using default display');
                     displayPatients(sortedPatients);
                 }
             } catch (e) {
@@ -707,9 +744,11 @@ async function loadPatients() {
                     'Error applying column widths after loading patients:',
                     e
                 );
+                console.log('🔍 Fallback to default display due to error');
                 displayPatients(sortedPatients);
             }
         } else {
+            console.log('🔍 Response not ok, status:', response.status);
             // Use global auth error handler for consistent experience
             if (response.status === 401 || response.status === 403) {
                 window.handleAuthError(response, 'loading patients');
@@ -718,13 +757,14 @@ async function loadPatients() {
             throw new Error('Failed to load patients');
         }
     } catch (error) {
-        console.error('Error loading patients:', error);
+        console.error('❌ Error loading patients:', error);
         const patientsTableBody = document.getElementById('patientsTableBody');
         if (patientsTableBody) {
             patientsTableBody.innerHTML =
-                '<tr><td colspan="6" style="text-align: center; color: #dc3545;">Error loading patients. Please try again.</td></tr>';
+                '<tr><td colspan="7" style="text-align: center; color: #dc3545;">Error loading patients. Please try again.</td></tr>';
         }
     } finally {
+        console.log('🔍 Hiding loading indicator');
         const patientsLoading = document.getElementById('patientsLoading');
         if (patientsLoading) patientsLoading.style.display = 'none';
     }
@@ -1658,4 +1698,15 @@ function setupEditPatientModal() {
     });
 }
 
-// Initialize filter functionality for patients
+// Export functions to window object for main.js to access
+if (typeof window !== 'undefined') {
+    window.patientsPage = {
+        initializePatientsPage,
+        initializeCreatePatientPage,
+        initializeManagePatientsPage,
+        initializePatientsIndexPage,
+        editPatient,
+        deletePatient,
+        closeEditPatientModal,
+    };
+}
