@@ -1273,9 +1273,30 @@ function displayPatients(patients) {
             return rowHtml;
         })
         .join('');
-
     console.log('🔍 Setting table HTML...');
     patientsTableBody.innerHTML = htmlRows;
+
+    // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE
+    const table = document.getElementById('patientsTable');
+    if (table) {
+        console.log('🔍 FORCING table layout reset...');
+        table.style.tableLayout = 'auto';
+        table.style.width = '100%';
+
+        // Force recalculation by temporarily changing display
+        table.style.display = 'none';
+        table.offsetHeight; // Force reflow
+        table.style.display = 'table';
+
+        // Clear any saved column widths that might be causing issues
+        const headers = table.querySelectorAll('th');
+        headers.forEach((th) => {
+            th.style.width = 'auto';
+            th.style.minWidth = '';
+        });
+
+        console.log('🔍 Table layout reset completed');
+    }
     // Check final result
     setTimeout(() => {
         console.log(
@@ -1307,6 +1328,37 @@ function displayPatients(patients) {
                         `${index}: ${cell.textContent.trim().substring(0, 30)}`
                 )
             );
+
+            // Check table header structure vs cells
+            const table = document.getElementById('patientsTable');
+            const headers = table.querySelectorAll('thead th');
+            console.log('🔍 Table headers count:', headers.length);
+            console.log(
+                '🔍 Table headers:',
+                Array.from(headers).map(
+                    (th, index) => `${index}: ${th.textContent.trim()}`
+                )
+            );
+
+            // Check if headers and cells match
+            console.log('🔍 CRITICAL: Header vs Cell mapping:');
+            Array.from(headers).forEach((header, index) => {
+                const cell = firstRow.children[index];
+                console.log(
+                    `   ${index}: Header="${header.textContent.trim()}" → Cell="${
+                        cell
+                            ? cell.textContent.trim().substring(0, 30)
+                            : 'MISSING'
+                    }"`
+                );
+            });
+
+            // Check for potential CSS layout issues
+            console.log('🔍 Table computed styles:', {
+                tableLayout: getComputedStyle(table).tableLayout,
+                borderCollapse: getComputedStyle(table).borderCollapse,
+                width: getComputedStyle(table).width,
+            });
         }
     }, 100);
 
@@ -1440,7 +1492,24 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
             : 'No patients'
     );
 
-    patientsTableBody.innerHTML = patientRows;
+    patientsTableBody.innerHTML = patientRows; // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE (same as displayPatients)
+    const patientTable = document.querySelector('#patientsTable');
+    if (patientTable) {
+        console.log(
+            '🔍 FORCING table layout reset in displayPatientsPreserveWidths...'
+        );
+        patientTable.style.tableLayout = 'auto';
+        patientTable.style.width = '100%';
+
+        // Force recalculation by temporarily changing display
+        patientTable.style.display = 'none';
+        patientTable.offsetHeight; // Force reflow
+        patientTable.style.display = 'table';
+
+        console.log(
+            '🔍 Table layout reset completed in displayPatientsPreserveWidths'
+        );
+    }
 
     console.log(
         '🔍 Table body innerHTML set, current content length:',
