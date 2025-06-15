@@ -981,13 +981,14 @@ function showDebugInfo(message, data = null) {
 
 // Set up patient table sorting functionality using shared utility
 function setupPatientTableSorting() {
-    // Define sortable columns
+    // Define sortable columns - CORRECTED to match actual table structure
     const sortableColumns = [
         { index: 0, key: 'fullName', label: 'Name' },
-        { index: 1, key: 'address', label: 'Address' },
+        { index: 1, key: 'dateOfBirth', label: 'Date of Birth' },
         { index: 2, key: 'phone', label: 'Phone' },
         { index: 3, key: 'acceptsTexts', label: 'Accepts Texts' },
-        { index: 4, key: 'created', label: 'Created' },
+        { index: 4, key: 'address', label: 'Address' },
+        { index: 5, key: 'created', label: 'Created' },
     ];
 
     // Use shared table sorting utility
