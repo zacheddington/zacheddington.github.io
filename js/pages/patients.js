@@ -1652,6 +1652,13 @@ async function editPatient(patientId) {
         document.getElementById('editPatientDateOfBirth').value =
             patient.date_of_birth ? patient.date_of_birth.split('T')[0] : '';
         document.getElementById('editPatientPhone').value = patient.phone || '';
+
+        // Format the phone number after setting it
+        const phoneInput = document.getElementById('editPatientPhone');
+        if (phoneInput.value) {
+            // Format the phone number display
+            phoneInput.value = formatPhoneNumber(phoneInput.value);
+        }
         document.getElementById('editAcceptsTexts').value =
             patient.accepts_texts ? 'yes' : 'no';
         document.getElementById('editPatientAddress1').value =
@@ -1782,8 +1789,10 @@ async function handleEditPatientSubmit(event) {
         state: formData.get('state'),
         zip: formData.get('zip'),
     };
-
     console.log('Updating patient:', patientId, patientData);
+
+    // Get API URL
+    const API_URL = window.apiClient.getAPIUrl();
 
     // Show loading state
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -2289,51 +2298,7 @@ function setupEditFormDateValidation() {
 
     console.log('🔍 Setting up date validation for edit form');
 
-    // Add input event to validate date format
-    dateInput.addEventListener('input', function (e) {
-        let value = e.target.value;
-
-        // Basic validation for date format YYYY-MM-DD
-        if (value.length === 10) {
-            const parts = value.split('-');
-            if (parts.length === 3) {
-                const year = parts[0];
-                const month = parts[1];
-                const day = parts[2];
-
-                // Validate year (4 digits only)
-                if (year.length !== 4 || !/^\d{4}$/.test(year)) {
-                    // If year is more than 4 digits, truncate it
-                    if (year.length > 4) {
-                        const truncatedYear = year.substring(0, 4);
-                        e.target.value = `${truncatedYear}-${month}-${day}`;
-                    }
-                }
-
-                // Validate month (01-12)
-                const monthNum = parseInt(month, 10);
-                if (monthNum < 1 || monthNum > 12) {
-                    e.target.setCustomValidity(
-                        'Please enter a valid month (01-12)'
-                    );
-                } else {
-                    e.target.setCustomValidity('');
-                }
-
-                // Validate day (01-31, basic check)
-                const dayNum = parseInt(day, 10);
-                if (dayNum < 1 || dayNum > 31) {
-                    e.target.setCustomValidity(
-                        'Please enter a valid day (01-31)'
-                    );
-                } else {
-                    e.target.setCustomValidity('');
-                }
-            }
-        }
-    });
-
-    // Add change event for final validation
+    // Simple validation on change (when user finishes editing)
     dateInput.addEventListener('change', function (e) {
         const value = e.target.value;
         if (value) {
@@ -2369,25 +2334,9 @@ function setupEditFormDateValidation() {
         }
     });
 
-    // Prevent manual entry of invalid year lengths
-    dateInput.addEventListener('keydown', function (e) {
-        // If we're in the year part and it's already 4 digits, prevent more digits
-        const value = e.target.value;
-        const cursorPos = e.target.selectionStart;
-
-        // Check if we're typing in the year section (positions 0-3)
-        if (
-            cursorPos <= 3 &&
-            value.length >= 4 &&
-            e.key >= '0' &&
-            e.key <= '9' &&
-            !e.ctrlKey &&
-            !e.metaKey &&
-            e.target.selectionStart === e.target.selectionEnd
-        ) {
-            // Prevent adding more digits to the year
-            e.preventDefault();
-        }
+    // Clear custom validity when user starts typing
+    dateInput.addEventListener('input', function (e) {
+        e.target.setCustomValidity('');
     });
 }
 
