@@ -722,6 +722,46 @@ textarea:disabled:focus {
 }
 
 /* ================================
+   RESPONSIVE FORM BEHAVIOR
+   ================================ */
+
+/* Mobile adjustments for field sizes */
+@media (max-width: 768px) {
+    .form-row.personal-info,
+    .form-row.contact-info,
+    .form-row.address-location {
+        flex-direction: column;
+    }
+
+    .form-group.small,
+    .form-group.medium,
+    .form-group.large,
+    .form-group.extra-small,
+    .form-group.auto {
+        width: 100%;
+        min-width: 0;
+        flex: 1;
+    }
+}
+
+/* Tablet adjustments */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .form-row.personal-info {
+        flex-wrap: wrap;
+    }
+
+    .form-row.personal-info .form-group.medium {
+        width: calc(50% - var(--space-md) / 2);
+        min-width: 180px;
+    }
+
+    .form-row.personal-info .form-group.small {
+        width: 100%;
+        margin-top: var(--space-sm);
+    }
+}
+
+/* ================================
    FORM VALIDATION STATES & MESSAGES
    ================================ */
 
@@ -1024,3 +1064,68 @@ textarea:disabled:focus {
     border-bottom: 1px solid var(--color-border);
     padding-bottom: var(--space-xs);
 }
+
+/* ================================
+   FIELD SIZE VARIANTS
+   ================================ */
+
+/* Small fields for short content like dates, ZIP codes, phone numbers */
+.form-group.small {
+    flex: 0 0 auto;
+    width: 160px;
+    min-width: 160px;
+}
+
+/* Medium fields for names, cities */
+.form-group.medium {
+    flex: 0 0 auto;
+    width: 200px;
+    min-width: 200px;
+}
+
+/* Large fields for addresses and other long content */
+.form-group.large {
+    flex: 1;
+    min-width: 250px;
+}
+
+/* Extra small for very short fields like state dropdowns */
+.form-group.extra-small {
+    flex: 0 0 auto;
+    width: 120px;
+    min-width: 120px;
+}
+
+/* Auto-width fields that grow to fit available space */
+.form-group.auto {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Personal info row - optimized for names and date */
+.form-row.personal-info {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+/* Contact info row - optimized for phone and text preference */
+.form-row.contact-info {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+/* Address row - optimized spacing for city/state/zip */
+.form-row.address-location {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+/* ================================
+   ADMIN FORM STYLES
+   ================================ */

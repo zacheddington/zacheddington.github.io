@@ -31,8 +31,10 @@
                 >
                     <div class="form-section">
                         <h3>Patient Information</h3>
-                        <div class="form-row">
-                            <div class="form-group">
+
+                        <!-- Names Row -->
+                        <div class="form-row personal-info">
+                            <div class="form-group medium">
                                 <label for="patientFirstName">First Name</label>
                                 <input
                                     type="text"
@@ -42,11 +44,9 @@
                                     maxlength="50"
                                     autocomplete="given-name"
                                 />
-                                <small class="field-note"
-                                    >Maximum 50 characters</small
-                                >
+                                <small class="field-note">Required</small>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group medium">
                                 <label for="patientMiddleName"
                                     >Middle Name</label
                                 >
@@ -57,11 +57,9 @@
                                     maxlength="50"
                                     autocomplete="additional-name"
                                 />
-                                <small class="field-note"
-                                    >Maximum 50 characters (optional)</small
-                                >
+                                <small class="field-note">Optional</small>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group medium">
                                 <label for="patientLastName">Last Name</label>
                                 <input
                                     type="text"
@@ -71,13 +69,9 @@
                                     maxlength="50"
                                     autocomplete="family-name"
                                 />
-                                <small class="field-note"
-                                    >Maximum 50 characters</small
-                                >
+                                <small class="field-note">Required</small>
                             </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
+                            <div class="form-group small">
                                 <label for="patientDateOfBirth"
                                     >Date of Birth</label
                                 >
@@ -90,15 +84,13 @@
                                     max=""
                                     min="1900-01-01"
                                 />
-                                <small class="field-note">
-                                    Patient's date of birth
-                                </small>
+                                <small class="field-note">Required</small>
                             </div>
                         </div>
 
                         <!-- Address Fields -->
                         <div class="form-row">
-                            <div class="form-group">
+                            <div class="form-group large">
                                 <label for="patientAddress1"
                                     >Street Address</label
                                 >
@@ -111,17 +103,16 @@
                                     autocomplete="address-line1"
                                     placeholder="123 Main Street"
                                 />
-                                <small class="field-note">
-                                    Street number and name
-                                </small>
+                                <small class="field-note"
+                                    >Street number and name</small
+                                >
                             </div>
                         </div>
 
                         <div class="form-row">
-                            <div class="form-group">
+                            <div class="form-group large">
                                 <label for="patientAddress2"
-                                    >Apartment, Suite, Unit, etc.
-                                    (Optional)</label
+                                    >Apartment, Suite, Unit (Optional)</label
                                 >
                                 <input
                                     type="text"
@@ -131,15 +122,15 @@
                                     autocomplete="address-line2"
                                     placeholder="Apt 4B, Suite 200, Unit #12..."
                                 />
-                                <small class="field-note">
-                                    Additional address information
-                                </small>
+                                <small class="field-note"
+                                    >Additional address information</small
+                                >
                             </div>
                         </div>
 
                         <!-- City, State, ZIP Row -->
-                        <div class="form-row address-row">
-                            <div class="form-group">
+                        <div class="form-row address-location">
+                            <div class="form-group auto">
                                 <label for="patientCity">City</label>
                                 <input
                                     type="text"
@@ -150,9 +141,9 @@
                                     autocomplete="address-level2"
                                     placeholder="City name"
                                 />
-                                <small class="field-note"> City name </small>
+                                <small class="field-note">Required</small>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group extra-small">
                                 <label for="patientState">State</label>
                                 <select
                                     id="patientState"
@@ -160,7 +151,7 @@
                                     required
                                     autocomplete="address-level1"
                                 >
-                                    <option value="">Select State</option>
+                                    <option value="">Select</option>
                                     <option value="AL">AL - Alabama</option>
                                     <option value="AK">AK - Alaska</option>
                                     <option value="AZ">AZ - Arizona</option>
@@ -233,9 +224,9 @@
                                         DC - District of Columbia
                                     </option>
                                 </select>
-                                <small class="field-note">Select state</small>
+                                <small class="field-note">Required</small>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group small">
                                 <label for="patientZip">ZIP Code</label>
                                 <input
                                     type="text"
@@ -245,16 +236,15 @@
                                     pattern="[0-9]{5}(-[0-9]{4})?"
                                     maxlength="10"
                                     autocomplete="postal-code"
-                                    placeholder="12345 or 12345-6789"
+                                    placeholder="12345"
                                 />
-                                <small class="field-note"
-                                    >5-digit ZIP code (or ZIP+4)</small
-                                >
+                                <small class="field-note">Required</small>
                             </div>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
+                        <!-- Contact Information -->
+                        <div class="form-row contact-info">
+                            <div class="form-group small">
                                 <label for="patientPhone">Phone Number</label>
                                 <input
                                     type="tel"
@@ -266,15 +256,10 @@
                                     autocomplete="tel"
                                     inputmode="numeric"
                                 />
-                                <small class="field-note"
-                                    >Enter 10 digits - formatting applied
-                                    automatically</small
-                                >
+                                <small class="field-note">Auto-formatted</small>
                             </div>
-                            <div class="form-group">
-                                <label for="acceptsTexts"
-                                    >Accepts Text Messages</label
-                                >
+                            <div class="form-group small">
+                                <label for="acceptsTexts">Text Messages</label>
                                 <select
                                     id="acceptsTexts"
                                     name="acceptsTexts"
@@ -286,7 +271,7 @@
                                     <option value="no">No</option>
                                 </select>
                                 <small class="field-note"
-                                    >Patient consent for text messaging</small
+                                    >Consent required</small
                                 >
                             </div>
                         </div>
