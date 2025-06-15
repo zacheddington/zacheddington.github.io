@@ -1356,9 +1356,7 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
                     <div class="patient-full-name">${fullName}</div>
                 </td>
                 <td class="patient-dob" title="${dateOfBirth}">${dateOfBirth}</td>
-                <td class="patient-phone" title="${patient.phone || ''}">${
-                patient.phone || ''
-            }</td>
+                <td class="patient-phone" title="${formattedPhone}">${formattedPhone}</td>
                 <td>
                     <span class="accepts-texts ${acceptsTextsClass}" title="${acceptsTexts}">
                         ${acceptsTexts}
