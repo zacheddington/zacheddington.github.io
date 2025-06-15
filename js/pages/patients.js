@@ -53,6 +53,8 @@ function initializeCreatePatientPage() {
 
 // Initialize the manage patients page
 function initializeManagePatientsPage() {
+    console.log('🔍 Initializing manage patients page...');
+
     // Load patients and setup patient management
     loadPatients();
     setupPatientFilter();
@@ -96,7 +98,19 @@ function initializeManagePatientsPage() {
         }, 250)
     );
 
-    console.log('Manage patients page initialized');
+    console.log('🔍 Manage patients page initialized');
+
+    // Check if modal is visible on page load
+    setTimeout(() => {
+        const modal = document.getElementById('editPatientModal');
+        if (modal) {
+            console.log('🔍 Modal state after initialization:', {
+                display: modal.style.display,
+                computed: window.getComputedStyle(modal).display,
+                classList: modal.classList.toString(),
+            });
+        }
+    }, 1000);
 }
 
 // Simple debounce function to limit how often a function is called
@@ -1148,7 +1162,8 @@ function setupPatientFilter() {
 
 // Edit patient functionality
 async function editPatient(patientId) {
-    console.log('Editing patient ID:', patientId);
+    console.log('🔍 EditPatient function called with ID:', patientId);
+    console.log('🔍 Call stack:', new Error().stack);
 
     try {
         // Fetch patient data
@@ -1184,11 +1199,10 @@ async function editPatient(patientId) {
         // Store patient ID for form submission
         document
             .getElementById('editPatientForm')
-            .setAttribute('data-patient-id', patientId);
-
-        // Show the modal
+            .setAttribute('data-patient-id', patientId); // Show the modal
         const modal = document.getElementById('editPatientModal');
         modal.style.display = 'block';
+        console.log('🔍 Modal display set to block, should now be visible');
 
         // Initialize structured address for the edit form
         if (window.StructuredAddress) {
@@ -1211,16 +1225,23 @@ async function editPatient(patientId) {
 
 // Close edit patient modal
 function closeEditPatientModal() {
+    console.log('🔍 Attempting to close edit patient modal...');
+
     const modal = document.getElementById('editPatientModal');
     if (modal) {
+        console.log('🔍 Modal found, current display:', modal.style.display);
         modal.style.display = 'none';
+        console.log('🔍 Modal display set to none');
 
         // Clear form data
         const form = document.getElementById('editPatientForm');
         if (form) {
             form.reset();
             form.removeAttribute('data-patient-id');
+            console.log('🔍 Form reset and patient ID cleared');
         }
+    } else {
+        console.error('❌ Modal not found when trying to close');
     }
 }
 
@@ -1592,28 +1613,46 @@ function getTextWidth(text, font) {
 
 // Setup edit patient modal functionality
 function setupEditPatientModal() {
+    console.log('🔍 Setting up edit patient modal...');
+
     const modal = document.getElementById('editPatientModal');
     const closeBtn = modal.querySelector('.close');
     const editPatientForm = document.getElementById('editPatientForm');
 
-    if (!modal || !closeBtn || !editPatientForm) return;
+    console.log('🔍 Modal elements found:', {
+        modal: !!modal,
+        closeBtn: !!closeBtn,
+        editPatientForm: !!editPatientForm,
+        modalDisplay: modal?.style.display,
+    });
+
+    if (!modal || !closeBtn || !editPatientForm) {
+        console.error('❌ Missing modal elements, aborting setup');
+        return;
+    }
+
+    // Check initial modal state
+    console.log('🔍 Initial modal display state:', modal.style.display);
 
     // Close modal when clicking the X button
-    closeBtn.addEventListener('click', closeEditPatientModal);
+    closeBtn.addEventListener('click', function () {
+        console.log('🔍 Close button clicked');
+        closeEditPatientModal();
+    });
 
     // Close modal when clicking outside of it
     window.addEventListener('click', function (event) {
         if (event.target === modal) {
+            console.log('🔍 Click outside modal detected');
             closeEditPatientModal();
         }
     });
 
     // Handle form submission
-    editPatientForm.addEventListener('submit', handleEditPatientSubmit);
-
-    // Close modal on Escape key
+    editPatientForm.addEventListener('submit', handleEditPatientSubmit); // Close modal on Escape key
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape' && modal.style.display === 'block') {
+            console.log('🔍 Escape key pressed');
             closeEditPatientModal();
         }
     });

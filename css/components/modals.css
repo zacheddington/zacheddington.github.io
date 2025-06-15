@@ -10,13 +10,19 @@
     width: 100vw !important;
     height: 100vh !important;
     background-color: rgba(0, 0, 0, 0.4);
-    display: flex !important;
+    display: none; /* Hidden by default */
     justify-content: center !important;
     align-items: center !important;
     z-index: 99999 !important; /* Higher than sidebar */
     backdrop-filter: blur(2px);
     margin: 0 !important;
     padding: 0 !important;
+}
+
+/* Show modal when active */
+.modal[style*='display: block'],
+.modal.show {
+    display: flex !important;
 }
 
 .modal-overlay {
