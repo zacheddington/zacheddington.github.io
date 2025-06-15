@@ -169,10 +169,18 @@ function setupPatientsNavigation() {
 
 // Set up create patient form and validation
 function setupCreatePatientForm() {
+    console.log('🔧 setupCreatePatientForm called');
+    
     const createPatientForm = document.getElementById('createPatientForm');
-    if (!createPatientForm) return;
+    console.log('📋 Create patient form found:', !!createPatientForm);
+    
+    if (!createPatientForm) {
+        console.error('❌ Create patient form not found!');
+        return;
+    }
 
     // Character limit validation for create patient form fields
+    console.log('🔧 Calling setupCreatePatientFieldValidation...');
     setupCreatePatientFieldValidation();
 
     // Handle form submission
@@ -240,43 +248,60 @@ function setupCreatePatientFieldValidation() {
                     }
                 }, 0);
             });
-        }
-    }); // Set up phone number formatting
+        }    }); 
+    
+    console.log('🔧 Setting up phone and ZIP formatting...');
+    
+    // Set up phone number formatting
     setupPatientPhoneFormatting();
 
     // Set up ZIP code formatting
     setupZipCodeFormatting();
+    
+    console.log('✅ Phone and ZIP formatting setup complete');
 }
 
 // Set up phone number formatting for patient phone field
 function setupPatientPhoneFormatting() {
+    console.log('🔧 setupPatientPhoneFormatting called');
+    
     const phoneInput = document.getElementById('patientPhone');
+    console.log('📱 Phone input found:', !!phoneInput, phoneInput);
+    
     if (!phoneInput) {
+        console.error('❌ Phone input not found!');
         return;
     }
 
+    console.log('📱 Adding phone formatting event listeners...');
+
     // Format phone number as user types
     phoneInput.addEventListener('input', function (e) {
+        console.log('📱 Phone input event triggered:', e.target.value);
+        
         let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+        console.log('📱 Phone digits only:', value);
 
         // Limit to 10 digits maximum
         if (value.length > 10) {
             value = value.slice(0, 10);
+            console.log('📱 Phone truncated to 10 digits:', value);
         }
 
         // Format as (XXX) XXX-XXXX
+        let formatted = '';
         if (value.length >= 6) {
-            e.target.value = `(${value.slice(0, 3)}) ${value.slice(
-                3,
-                6
-            )}-${value.slice(6)}`;
+            formatted = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6)}`;
         } else if (value.length >= 3) {
-            e.target.value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+            formatted = `(${value.slice(0, 3)}) ${value.slice(3)}`;
         } else if (value.length > 0) {
-            e.target.value = value;
+            formatted = value;
         } else {
-            e.target.value = '';
+            formatted = '';
         }
+        
+        console.log('📱 Phone formatted result:', formatted);
+        e.target.value = formatted;
     });
 
     // Handle paste events
@@ -297,10 +322,10 @@ function setupPatientPhoneFormatting() {
                 e.target.value = value;
             }
         }, 0);
-    });
-
-    // Prevent non-numeric input on keydown (more reliable than keypress)
+    });    // Prevent non-numeric input on keydown (more reliable than keypress)
     phoneInput.addEventListener('keydown', function (e) {
+        console.log('📱 Phone keydown event:', e.key);
+        
         const allowedKeys = [
             'Backspace',
             'Delete',
@@ -317,17 +342,23 @@ function setupPatientPhoneFormatting() {
 
         // Allow control keys
         if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) {
+            console.log('📱 Phone key allowed:', e.key);
             return;
         }
 
         // Only allow digits
         if (!/[0-9]/.test(e.key)) {
+            console.log('📱 Phone key blocked (not digit):', e.key);
             e.preventDefault();
+        } else {
+            console.log('📱 Phone digit allowed:', e.key);
         }
     });
 
     // Also prevent keypress for extra security
     phoneInput.addEventListener('keypress', function (e) {
+        console.log('📱 Phone keypress event:', e.key);
+        
         const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter'];
         if (allowedKeys.includes(e.key)) return;
 
@@ -339,26 +370,41 @@ function setupPatientPhoneFormatting() {
 
 // Set up ZIP code formatting for patient ZIP field
 function setupZipCodeFormatting() {
+    console.log('🔧 setupZipCodeFormatting called');
+    
     const zipInput = document.getElementById('patientZip');
+    console.log('📮 ZIP input found:', !!zipInput, zipInput);
+    
     if (!zipInput) {
+        console.error('❌ ZIP input not found!');
         return;
     }
 
+    console.log('📮 Adding ZIP formatting event listeners...');
+
     // Format ZIP code as user types
     zipInput.addEventListener('input', function (e) {
+        console.log('📮 ZIP input event triggered:', e.target.value);
+        
         let value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+        console.log('📮 ZIP digits only:', value);
 
         // Limit to 9 digits maximum (for ZIP+4)
         if (value.length > 9) {
             value = value.slice(0, 9);
+            console.log('📮 ZIP truncated to 9 digits:', value);
         }
 
         // Format as XXXXX-XXXX if more than 5 digits
+        let formatted = '';
         if (value.length > 5) {
-            e.target.value = `${value.slice(0, 5)}-${value.slice(5)}`;
+            formatted = `${value.slice(0, 5)}-${value.slice(5)}`;
         } else {
-            e.target.value = value;
+            formatted = value;
         }
+        
+        console.log('📮 ZIP formatted result:', formatted);
+        e.target.value = formatted;
     });
 
     // Handle paste events
@@ -374,10 +420,10 @@ function setupZipCodeFormatting() {
                 e.target.value = value;
             }
         }, 0);
-    });
-
-    // Prevent non-numeric input
+    });    // Prevent non-numeric input
     zipInput.addEventListener('keydown', function (e) {
+        console.log('📮 ZIP keydown event:', e.key);
+        
         const allowedKeys = [
             'Backspace',
             'Delete',
@@ -394,14 +440,20 @@ function setupZipCodeFormatting() {
 
         // Allow control keys
         if (allowedKeys.includes(e.key) || e.ctrlKey || e.metaKey) {
+            console.log('📮 ZIP key allowed:', e.key);
             return;
         }
 
         // Only allow digits
         if (!/[0-9]/.test(e.key)) {
+            console.log('📮 ZIP key blocked (not digit):', e.key);
             e.preventDefault();
+        } else {
+            console.log('📮 ZIP digit allowed:', e.key);
         }
     });
+    
+    console.log('✅ ZIP code formatting setup complete');
 }
 
 // Set up structured address autocomplete for patient address fields
