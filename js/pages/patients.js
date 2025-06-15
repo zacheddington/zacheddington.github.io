@@ -1,36 +1,47 @@
 // Patients Page Module
 // Contains all patient-related functionality including create/manage/navigation
 
-console.log('🔍 PATIENTS.JS: Starting to load patients.js module...');
-
 // Global state for patient management
 let allPatients = [];
 let currentPatientSort = { column: null, direction: null };
 
-console.log('🔍 PATIENTS.JS: Global variables initialized');
+// Utility function to format date without timezone issues
+function formatDateForDisplay(dateString) {
+    if (!dateString) return 'Not provided';
+
+    try {
+        // Split the date string to avoid timezone issues
+        const dateParts = dateString.split('T')[0].split('-'); // Get YYYY-MM-DD part
+        if (dateParts.length === 3) {
+            const year = parseInt(dateParts[0]);
+            const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+            const day = parseInt(dateParts[2]);
+
+            // Create date with local timezone
+            const date = new Date(year, month, day);
+            return date.toLocaleDateString();
+        }
+        return 'Invalid date';
+    } catch (error) {
+        console.warn('Date formatting error:', error);
+        return 'Invalid date';
+    }
+}
 
 // Initialize patients page functionality
 function initializePatientsPage() {
-    console.log('🔍 Initializing patients page...');
-    console.log('🔍 window.patientsPage exists:', !!window.patientsPage);
-    console.log('🔍 Called from:', new Error().stack.split('\n')[2]);
-
     // Determine which page we're on and initialize accordingly
     const currentPage = getCurrentPageType();
-    console.log('🔍 Current page type:', currentPage);
 
     switch (currentPage) {
         case 'create-patient':
-            console.log('🔍 Initializing create patient page');
             initializeCreatePatientPage();
             break;
         case 'manage-patients':
-            console.log('🔍 Initializing manage patients page');
             initializeManagePatientsPage();
             break;
         case 'patients-index':
         default:
-            console.log('🔍 Initializing patients index page');
             initializePatientsIndexPage();
             break;
     }
@@ -65,7 +76,6 @@ function initializeCreatePatientPage() {
 
 // Initialize the manage patients page
 async function initializeManagePatientsPage() {
-    console.log('🔍 Initializing manage patients page...');
     console.log('🔍 Current URL:', window.location.href);
     console.log('🔍 Document ready state:', document.readyState);
 
@@ -1212,15 +1222,12 @@ function displayPatients(patients) {
             const formattedPhone = patient.phone
                 ? formatPhoneNumber(patient.phone)
                 : '';
-
             const createdDate = patient.created_at
                 ? new Date(patient.created_at).toLocaleDateString()
                 : 'No date';
 
-            // Format date of birth
-            const dateOfBirth = patient.date_of_birth
-                ? new Date(patient.date_of_birth).toLocaleDateString()
-                : 'Not provided';
+            // Format date of birth without timezone issues
+            const dateOfBirth = formatDateForDisplay(patient.date_of_birth);
 
             const rowHtml = `
             <tr data-patient-id="${patient.patient_key}">
@@ -1437,12 +1444,8 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
 
             const createdDate = patient.created_at
                 ? new Date(patient.created_at).toLocaleDateString()
-                : 'No date';
-
-            // Format date of birth
-            const dateOfBirth = patient.date_of_birth
-                ? new Date(patient.date_of_birth).toLocaleDateString()
-                : 'Not provided';
+                : 'No date'; // Format date of birth without timezone issues
+            const dateOfBirth = formatDateForDisplay(patient.date_of_birth);
 
             return `
             <tr data-patient-id="${patient.patient_key}">
