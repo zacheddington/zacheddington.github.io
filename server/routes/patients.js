@@ -4,7 +4,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const {
     validateRequiredFields,
     sanitizeInput,
@@ -123,62 +123,66 @@ router.get('/patients', authenticateToken, async (req, res) => {
 });
 
 // Get single patient endpoint
-router.get('/patients/:patientKey', authenticateToken, async (req, res) => {
-    try {
-        const patientKey = req.params.patientKey;
-
-        if (config.isLocalTest) {
-            // Return test patient data
-            const testPatients = {
-                1: {
-                    patient_key: 1,
-                    first_name: 'John',
-                    middle_name: 'A',
-                    last_name: 'Doe',
-                    street_1: '123 Main St',
-                    street_2: 'Apt 4B',
-                    city: 'Anytown',
-                    state: 'CA',
-                    zip: '12345',
-                    phone: '5551234567',
-                    accepts_texts: true,
-                    date_of_birth: '1990-01-15',
-                    date_when: '2024-01-01T00:00:00.000Z',
-                },
-                2: {
-                    patient_key: 2,
-                    first_name: 'Jane',
-                    middle_name: null,
-                    last_name: 'Smith',
-                    street_1: '456 Oak Ave',
-                    street_2: null,
-                    city: 'Somewhere',
-                    state: 'NY',
-                    zip: '67890',
-                    phone: '5555678901',
-                    accepts_texts: false,
-                    date_of_birth: '1985-07-22',
-                    date_when: '2024-01-02T00:00:00.000Z',
-                },
-            };
-
-            const patient = testPatients[patientKey];
-            if (patient) {
-                return successResponse(
-                    res,
-                    patient,
-                    'Patient retrieved successfully'
-                );
-            } else {
-                return notFoundResponse(res, 'Patient');
-            }
-        }
-
-        // Production database logic
-        const client = await pool.connect();
+router.get(
+    '/patients/:patientKey',
+    authenticateToken,
+    requireAdmin,
+    async (req, res) => {
         try {
-            const result = await client.query(
-                `
+            const patientKey = req.params.patientKey;
+
+            if (config.isLocalTest) {
+                // Return test patient data
+                const testPatients = {
+                    1: {
+                        patient_key: 1,
+                        first_name: 'John',
+                        middle_name: 'A',
+                        last_name: 'Doe',
+                        street_1: '123 Main St',
+                        street_2: 'Apt 4B',
+                        city: 'Anytown',
+                        state: 'CA',
+                        zip: '12345',
+                        phone: '5551234567',
+                        accepts_texts: true,
+                        date_of_birth: '1990-01-15',
+                        date_when: '2024-01-01T00:00:00.000Z',
+                    },
+                    2: {
+                        patient_key: 2,
+                        first_name: 'Jane',
+                        middle_name: null,
+                        last_name: 'Smith',
+                        street_1: '456 Oak Ave',
+                        street_2: null,
+                        city: 'Somewhere',
+                        state: 'NY',
+                        zip: '67890',
+                        phone: '5555678901',
+                        accepts_texts: false,
+                        date_of_birth: '1985-07-22',
+                        date_when: '2024-01-02T00:00:00.000Z',
+                    },
+                };
+
+                const patient = testPatients[patientKey];
+                if (patient) {
+                    return successResponse(
+                        res,
+                        patient,
+                        'Patient retrieved successfully'
+                    );
+                } else {
+                    return notFoundResponse(res, 'Patient');
+                }
+            }
+
+            // Production database logic
+            const client = await pool.connect();
+            try {
+                const result = await client.query(
+                    `
                 SELECT 
                     p.patient_key,
                     n.first_name,
@@ -198,26 +202,27 @@ router.get('/patients/:patientKey', authenticateToken, async (req, res) => {
                 LEFT JOIN tbl_address_data a ON p.address_key = a.address_key
                 WHERE p.patient_key = $1
             `,
-                [patientKey]
-            );
+                    [patientKey]
+                );
 
-            if (result.rows.length === 0) {
-                return notFoundResponse(res, 'Patient');
+                if (result.rows.length === 0) {
+                    return notFoundResponse(res, 'Patient');
+                }
+
+                return successResponse(
+                    res,
+                    result.rows[0],
+                    'Patient retrieved successfully'
+                );
+            } finally {
+                client.release();
             }
-
-            return successResponse(
-                res,
-                result.rows[0],
-                'Patient retrieved successfully'
-            );
-        } finally {
-            client.release();
+        } catch (err) {
+            console.error('Get patient error:', err);
+            return errorResponse(res, 'Failed to fetch patient', 500);
         }
-    } catch (err) {
-        console.error('Get patient error:', err);
-        return errorResponse(res, 'Failed to fetch patient', 500);
     }
-});
+);
 
 // Get single patient by ID for editing
 router.get('/:id', authenticateToken, async (req, res) => {
@@ -452,6 +457,7 @@ router.post(
 router.put(
     '/patients/:patientKey',
     authenticateToken,
+    requireAdmin,
     sanitizeInput,
     validateRequiredFields([
         'firstName',

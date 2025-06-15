@@ -1263,6 +1263,14 @@ function displayPatients(patients) {
 
             // Check if user can delete patients
             const canDelete = canDeletePatients();
+            const canEdit = canDeletePatients(); // Use same admin check for editing
+
+            const editButton = canEdit
+                ? `<button class="btn-icon btn-edit" onclick="editPatient(${patient.patient_key})" title="Edit Patient">
+                    ✏️
+                </button>`
+                : '';
+
             const deleteButton = canDelete
                 ? `<button class="btn-icon btn-delete" onclick="deletePatient(${
                       patient.patient_key
@@ -1288,15 +1296,10 @@ function displayPatients(patients) {
                 </td>
                 <td class="patient-address" title="${patient.address || ''}">${
                 patient.address || ''
-            }</td>
-                <td class="patient-created" title="${createdDate}">${createdDate}</td>
+            }</td>                <td class="patient-created" title="${createdDate}">${createdDate}</td>
                 <td>
                     <div class="patient-actions">
-                        <button class="btn-icon btn-edit" onclick="editPatient(${
-                            patient.patient_key
-                        })" title="Edit Patient">
-                            ✏️
-                        </button>
+                        ${editButton}
                         ${deleteButton}
                     </div>
                 </td>
@@ -1487,6 +1490,14 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
 
             // Check if user can delete patients
             const canDelete = canDeletePatients();
+            const canEdit = canDeletePatients(); // Use same admin check for editing
+
+            const editButton = canEdit
+                ? `<button class="btn-icon btn-edit" onclick="editPatient(${patient.patient_key})" title="Edit Patient">
+                    ✏️
+                </button>`
+                : '';
+
             const deleteButton = canDelete
                 ? `<button class="btn-icon btn-delete" onclick="deletePatient(${
                       patient.patient_key
@@ -1664,6 +1675,13 @@ function setupPatientFilter() {
 async function editPatient(patientId) {
     console.log('🔍 EditPatient function called with ID:', patientId);
     console.log('🔍 Call stack:', new Error().stack);
+
+    // Check if user has permission to edit patients
+    if (!canDeletePatients()) {
+        alert('You do not have permission to edit patients.');
+        return;
+    }
+
     try {
         // Fetch patient data using standard fetch API
         const API_URL = window.apiClient.getAPIUrl();
@@ -1898,6 +1916,15 @@ function closeEditPatientModal() {
 // Handle edit patient form submission
 async function handleEditPatientSubmit(event) {
     event.preventDefault();
+
+    // Check if user has permission to edit patients
+    if (!canDeletePatients()) {
+        window.modalManager.showModal(
+            'error',
+            'You do not have permission to edit patients.'
+        );
+        return;
+    }
 
     const form = event.target;
     const patientId = form.getAttribute('data-patient-id');
