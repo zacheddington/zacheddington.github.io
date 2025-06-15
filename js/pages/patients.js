@@ -28,6 +28,39 @@ function formatDateForDisplay(dateString) {
     }
 }
 
+// Check if current user can delete patients
+function canDeletePatients() {
+    try {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) return false;
+
+        const userData = JSON.parse(userStr);
+
+        // Use the same logic as auth-utils.js isUserAdmin function
+        if (userData.isAdmin === true) {
+            return true;
+        }
+
+        if (userData.roles && Array.isArray(userData.roles)) {
+            const hasAdminRole = userData.roles.some(
+                (role) => role && role.toLowerCase().includes('administrator')
+            );
+            if (hasAdminRole) {
+                return true;
+            }
+        }
+
+        if (userData.username === 'admin') {
+            return true;
+        }
+
+        return false;
+    } catch (error) {
+        console.error('Error checking user permissions:', error);
+        return false;
+    }
+}
+
 // Initialize patients page functionality
 function initializePatientsPage() {
     // Determine which page we're on and initialize accordingly
@@ -1225,10 +1258,21 @@ function displayPatients(patients) {
                 : '';
             const createdDate = patient.created_at
                 ? new Date(patient.created_at).toLocaleDateString()
-                : 'No date';
-
-            // Format date of birth without timezone issues
+                : 'No date'; // Format date of birth without timezone issues
             const dateOfBirth = formatDateForDisplay(patient.date_of_birth);
+
+            // Check if user can delete patients
+            const canDelete = canDeletePatients();
+            const deleteButton = canDelete
+                ? `<button class="btn-icon btn-delete" onclick="deletePatient(${
+                      patient.patient_key
+                  }, '${fullName.replace(
+                      /'/g,
+                      "\\'"
+                  )}' )" title="Delete Patient">
+                    🗑️
+                </button>`
+                : '';
 
             const rowHtml = `
             <tr data-patient-id="${patient.patient_key}">
@@ -1253,14 +1297,7 @@ function displayPatients(patients) {
                         })" title="Edit Patient">
                             ✏️
                         </button>
-                        <button class="btn-icon btn-delete" onclick="deletePatient(${
-                            patient.patient_key
-                        }, '${fullName.replace(
-                /'/g,
-                "\\'"
-            )}' )" title="Delete Patient">
-                            🗑️
-                        </button>
+                        ${deleteButton}
                     </div>
                 </td>
             </tr>
@@ -1448,6 +1485,19 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
                 : 'No date'; // Format date of birth without timezone issues
             const dateOfBirth = formatDateForDisplay(patient.date_of_birth);
 
+            // Check if user can delete patients
+            const canDelete = canDeletePatients();
+            const deleteButton = canDelete
+                ? `<button class="btn-icon btn-delete" onclick="deletePatient(${
+                      patient.patient_key
+                  }, '${fullName.replace(
+                      /'/g,
+                      "\\'"
+                  )}' )" title="Delete Patient">
+                    🗑️
+                </button>`
+                : '';
+
             return `
             <tr data-patient-id="${patient.patient_key}">
                 <td class="patient-name" title="${fullName}">
@@ -1471,14 +1521,7 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
                         })" title="Edit Patient">
                             ✏️
                         </button>
-                        <button class="btn-icon btn-delete" onclick="deletePatient(${
-                            patient.patient_key
-                        }, '${fullName.replace(
-                /'/g,
-                "\\'"
-            )}' )" title="Delete Patient">
-                            🗑️
-                        </button>
+                        ${deleteButton}
                     </div>
                 </td>
             </tr>
@@ -1771,9 +1814,20 @@ async function deletePatient(patientId, patientName) {
                         },
                     }
                 );
-
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    if (response.status === 403) {
+                        throw new Error(
+                            'You do not have permission to delete patients. Admin privileges required.'
+                        );
+                    } else if (response.status === 401) {
+                        throw new Error(
+                            'Authentication required. Please log in again.'
+                        );
+                    } else {
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`
+                        );
+                    }
                 }
 
                 const data = await response.json();
