@@ -183,11 +183,22 @@ function initializePage(page) {
                 window.adminPage.initializeAdminPage();
             }
             // Navigation is loaded centrally above, no need to call it again
-            break;
-
-        case 'patients.html':
+            break;        case 'patients.html':
             if (window.patientsPage) {
-                window.patientsPage.initializePatientsPage();
+                console.log('🔍 Calling patientsPage.initializePatientsPage()');
+                try {
+                    // Handle both sync and async initialization
+                    const result = window.patientsPage.initializePatientsPage();
+                    if (result && typeof result.then === 'function') {
+                        result.catch(error => {
+                            console.error('❌ Error in patients page initialization:', error);
+                        });
+                    }
+                } catch (error) {
+                    console.error('❌ Error calling patientsPage.initializePatientsPage():', error);
+                }
+            } else {
+                console.error('❌ window.patientsPage not found');
             }
             // Navigation is loaded centrally above, no need to call it again
             break;

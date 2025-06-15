@@ -8,6 +8,8 @@ let currentPatientSort = { column: null, direction: null };
 // Initialize patients page functionality
 function initializePatientsPage() {
     console.log('🔍 Initializing patients page...');
+    console.log('🔍 window.patientsPage exists:', !!window.patientsPage);
+    console.log('🔍 Called from:', new Error().stack.split('\n')[2]);
 
     // Determine which page we're on and initialize accordingly
     const currentPage = getCurrentPageType();
@@ -58,22 +60,53 @@ function initializeCreatePatientPage() {
 }
 
 // Initialize the manage patients page
-function initializeManagePatientsPage() {
+async function initializeManagePatientsPage() {
     console.log('🔍 Initializing manage patients page...');
+    console.log('🔍 Current URL:', window.location.href);
+    console.log('🔍 Document ready state:', document.readyState);
 
     // Check if required elements exist
     const patientsTableBody = document.getElementById('patientsTableBody');
     const patientsLoading = document.getElementById('patientsLoading');
+    const patientsTable = document.getElementById('patientsTable');
+    const managePatientsSection = document.getElementById('managePatientsSection');
+    
     console.log('🔍 Required elements:', {
         patientsTableBody: !!patientsTableBody,
         patientsLoading: !!patientsLoading,
+        patientsTable: !!patientsTable,
+        managePatientsSection: !!managePatientsSection,
         apiClient: !!window.apiClient,
     });
 
+    if (!patientsTableBody) {
+        console.error('❌ patientsTableBody element not found!');
+        console.log('🔍 Available elements with "patients" in ID:');
+        document.querySelectorAll('[id*="patients"]').forEach(el => {
+            console.log('   -', el.id, el.tagName);
+        });
+    }
+
+    if (!patientsLoading) {
+        console.error('❌ patientsLoading element not found!');
+    }
+
     // Load patients and setup patient management
     console.log('🔍 About to call loadPatients()...');
-    loadPatients();
-    setupPatientFilter();
+    try {
+        await loadPatients();
+        console.log('🔍 loadPatients completed successfully');
+    } catch (error) {
+        console.error('❌ Error calling loadPatients:', error);
+        console.error('❌ Error stack:', error.stack);
+    }
+    
+    try {
+        setupPatientFilter();
+        console.log('🔍 setupPatientFilter completed successfully');
+    } catch (error) {
+        console.error('❌ Error calling setupPatientFilter:', error);
+    }
 
     // Setup edit patient modal
     setupEditPatientModal();
@@ -688,32 +721,106 @@ async function loadPatients() {
     console.log('🔍 Starting to load patients...');
 
     try {
+        // Check if apiClient is available
+        if (!window.apiClient) {
+            console.error('❌ window.apiClient is not available');
+            throw new Error('API client not loaded');
+        }
+
         const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
 
         console.log('🔍 API URL:', API_URL);
         console.log('🔍 Token exists:', !!token);
+        console.log('🔍 Token value (first 20 chars):', token ? token.substring(0, 20) + '...' : 'null');
 
         const patientsLoading = document.getElementById('patientsLoading');
         const patientsTableBody = document.getElementById('patientsTableBody');
 
-        if (patientsLoading) patientsLoading.style.display = 'block';
-        if (patientsTableBody) patientsTableBody.innerHTML = '';
+        console.log('🔍 DOM elements:', {
+            patientsLoading: !!patientsLoading,
+            patientsTableBody: !!patientsTableBody
+        });
 
-        console.log('🔍 Making fetch request to:', `${API_URL}/api/patients`);
+        if (patientsLoading) {
+            patientsLoading.style.display = 'block';
+            console.log('🔍 Set loading message to visible');
+        }
+        if (patientsTableBody) {
+            patientsTableBody.innerHTML = '';
+            console.log('🔍 Cleared table body');
+        }
 
+        console.log('🔍 Making fetch request to:', `${API_URL}/api/patients`);        console.log('🔍 About to start fetch request...');
+        
+        // Add a test to simulate data if database is unavailable
+        if (API_URL.includes('localhost') && !window.FORCE_REAL_API) {
+            console.log('🔍 Local development detected, checking if we should use test data...');
+            
+            // Test if API is actually available
+            try {
+                const testResponse = await fetch(`${API_URL}/api/health`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (!testResponse.ok) {
+                    console.log('🔍 API health check failed, using test data');
+                    // Use test data for debugging
+                    const testPatients = [
+                        {
+                            patient_key: 'test-1',
+                            first_name: 'John',
+                            last_name: 'Doe',
+                            middle_name: 'M',
+                            date_of_birth: '1990-01-01',
+                            phone: '555-1234',
+                            accepts_texts: true,
+                            address_1: '123 Main St',
+                            address_2: 'Apt 1',
+                            city: 'Anytown',
+                            state: 'CA',
+                            zip: '12345',
+                            created_at: new Date().toISOString()
+                        }
+                    ];
+                    
+                    console.log('🔍 Using test patients:', testPatients);
+                    allPatients = testPatients;
+                    console.log('🔍 Setting up patient table sorting...');
+                    setupPatientTableSorting();
+                    console.log('🔍 Getting sorted patients...');
+                    const sortedPatients = getSortedPatients();
+                    console.log('🔍 Sorted patients:', sortedPatients?.length || 0);
+                    
+                    console.log('🔍 Using default display for test data');
+                    displayPatients(sortedPatients);
+                    
+                    if (patientsLoading) {
+                        patientsLoading.style.display = 'none';
+                        console.log('🔍 Hid loading indicator (test data)');
+                    }
+                    return;
+                }
+            } catch (healthError) {
+                console.log('🔍 Health check failed, continuing with normal flow...');
+            }
+        }
+        
+        console.log('🔍 About to start fetch request...');
+        
         const response = await fetch(`${API_URL}/api/patients`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         });
 
+        console.log('🔍 Fetch completed, response received');
         console.log('🔍 Response status:', response.status);
         console.log('🔍 Response ok:', response.ok);
 
         if (response.ok) {
+            console.log('🔍 Response is OK, parsing JSON...');
             const result = await response.json();
-            console.log('🔍 Response data:', result);
+            console.log('🔍 JSON parsed, response data:', result);
 
             allPatients = result.data; // Extract data from response object
             console.log(
@@ -722,8 +829,11 @@ async function loadPatients() {
                 'patients'
             );
 
+            console.log('🔍 Setting up patient table sorting...');
             setupPatientTableSorting();
-            const sortedPatients = getSortedPatients(); // Check if we have saved column widths
+            console.log('🔍 Getting sorted patients...');
+            const sortedPatients = getSortedPatients();
+            console.log('🔍 Sorted patients:', sortedPatients?.length || 0);// Check if we have saved column widths
             try {
                 const savedWidths = JSON.parse(
                     localStorage.getItem('patientTableColumnWidths')
@@ -768,6 +878,40 @@ async function loadPatients() {
         const patientsLoading = document.getElementById('patientsLoading');
         if (patientsLoading) patientsLoading.style.display = 'none';
     }
+}
+
+// Debug function to display information in the DOM
+function showDebugInfo(message, data = null) {
+    let debugDiv = document.getElementById('debugInfo');
+    if (!debugDiv) {
+        debugDiv = document.createElement('div');
+        debugDiv.id = 'debugInfo';
+        debugDiv.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-width: 400px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 10000;
+            font-family: monospace;
+            font-size: 12px;
+        `;
+        document.body.appendChild(debugDiv);
+    }
+    
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = document.createElement('div');
+    logEntry.style.marginBottom = '5px';
+    logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+    if (data) {
+        logEntry.innerHTML += `<br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+    debugDiv.appendChild(logEntry);
+    debugDiv.scrollTop = debugDiv.scrollHeight;
 }
 
 // Set up patient table sorting functionality using shared utility
@@ -955,11 +1099,22 @@ function getSortedPatientsFallback() {
 
 // Display patients in the table
 function displayPatients(patients) {
+    console.log('🔍 displayPatients called with:', patients?.length || 0, 'patients');
+    
     const patientsTableBody = document.getElementById('patientsTableBody');
     const noPatientsFound = document.getElementById('noPatientsFound');
     const tableContainer = document.querySelector('.table-responsive');
 
-    if (!patientsTableBody) return;
+    console.log('🔍 displayPatients DOM elements:', {
+        patientsTableBody: !!patientsTableBody,
+        noPatientsFound: !!noPatientsFound,
+        tableContainer: !!tableContainer
+    });
+
+    if (!patientsTableBody) {
+        console.error('❌ patientsTableBody not found in displayPatients');
+        return;
+    }
 
     if (patients.length === 0) {
         patientsTableBody.innerHTML = '';
