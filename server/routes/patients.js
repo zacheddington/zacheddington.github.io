@@ -450,7 +450,7 @@ router.post(
 
 // Update patient endpoint
 router.put(
-    '/:patientKey',
+    '/patients/:patientKey',
     authenticateToken,
     sanitizeInput,
     validateRequiredFields([

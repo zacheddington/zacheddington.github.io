@@ -1793,6 +1793,15 @@ async function handleEditPatientSubmit(event) {
 
     // Get API URL
     const API_URL = window.apiClient.getAPIUrl();
+    const token = localStorage.getItem('token');
+
+    console.log('🔍 UPDATE DEBUG - API URL:', API_URL);
+    console.log('🔍 UPDATE DEBUG - Patient ID:', patientId);
+    console.log('🔍 UPDATE DEBUG - Token exists:', !!token);
+    console.log(
+        '🔍 UPDATE DEBUG - Full URL:',
+        `${API_URL}/api/patients/${patientId}`
+    );
 
     // Show loading state
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -1807,13 +1816,23 @@ async function handleEditPatientSubmit(event) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(patientData),
         });
 
+        console.log('🔍 UPDATE DEBUG - Response status:', response.status);
+        console.log(
+            '🔍 UPDATE DEBUG - Response headers:',
+            Object.fromEntries(response.headers.entries())
+        );
+
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.log('🔍 UPDATE DEBUG - Error response body:', errorText);
+            throw new Error(
+                `HTTP error! status: ${response.status}, body: ${errorText}`
+            );
         }
 
         const result = await response.json();
@@ -2210,6 +2229,9 @@ function setupEditPatientModal() {
 
     // Setup date validation for edit form
     setupEditFormDateValidation();
+
+    // Setup zip code formatting for edit form
+    setupEditFormZipFormatting();
 }
 
 // Set up phone number formatting for the edit patient form
@@ -2332,11 +2354,92 @@ function setupEditFormDateValidation() {
             // Clear any custom validity if all checks pass
             e.target.setCustomValidity('');
         }
-    });
-
-    // Clear custom validity when user starts typing
+    }); // Clear custom validity when user starts typing
     dateInput.addEventListener('input', function (e) {
         e.target.setCustomValidity('');
+
+        // Limit year to 4 digits max
+        let value = e.target.value;
+        if (value.length > 10) {
+            e.target.value = value.substring(0, 10);
+        }
+
+        // Check if year part is getting too long
+        const yearPart = value.split('-')[0];
+        if (yearPart && yearPart.length > 4) {
+            // Truncate the year to 4 digits
+            const parts = value.split('-');
+            parts[0] = parts[0].substring(0, 4);
+            e.target.value = parts.join('-');
+        }
+    });
+}
+
+// Setup zip code formatting for edit form
+function setupEditFormZipFormatting() {
+    const zipInput = document.getElementById('editPatientZip');
+    if (!zipInput) {
+        console.warn('⚠️ Zip code input not found in edit form');
+        return;
+    }
+
+    console.log('🔍 Setting up zip code formatting for edit form');
+
+    // Format zip code as user types
+    zipInput.addEventListener('input', function (e) {
+        let value = e.target.value;
+
+        // Remove all non-digit characters
+        const digits = value.replace(/\D/g, '');
+
+        // Limit to 10 digits max (XXXXX-XXXX format)
+        const limitedDigits = digits.substring(0, 10);
+
+        // Format as XXXXX-XXXX for 6+ digits, or just XXXXX for 5 or fewer
+        let formattedValue = '';
+        if (limitedDigits.length <= 5) {
+            formattedValue = limitedDigits;
+        } else {
+            formattedValue = `${limitedDigits.slice(
+                0,
+                5
+            )}-${limitedDigits.slice(5)}`;
+        }
+
+        // Update the input value
+        e.target.value = formattedValue;
+    });
+
+    // Handle paste events
+    zipInput.addEventListener('paste', function (e) {
+        setTimeout(() => {
+            // Trigger the input event to format the pasted content
+            zipInput.dispatchEvent(new Event('input'));
+        }, 0);
+    });
+
+    // Prevent non-numeric input (except backspace, delete, tab, etc.)
+    zipInput.addEventListener('keydown', function (e) {
+        // Allow: backspace, delete, tab, escape, enter, hyphen
+        if (
+            [8, 9, 27, 13, 46, 189, 109].indexOf(e.keyCode) !== -1 ||
+            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+            (e.keyCode === 65 && e.ctrlKey === true) ||
+            (e.keyCode === 67 && e.ctrlKey === true) ||
+            (e.keyCode === 86 && e.ctrlKey === true) ||
+            (e.keyCode === 88 && e.ctrlKey === true) ||
+            // Allow: home, end, left, right
+            (e.keyCode >= 35 && e.keyCode <= 39)
+        ) {
+            return;
+        }
+        // Ensure that it is a number and stop the keypress
+        if (
+            (e.shiftKey || e.keyCode < 48 || e.keyCode > 57) &&
+            (e.keyCode < 96 || e.keyCode > 105)
+        ) {
+            e.preventDefault();
+        }
     });
 }
 
