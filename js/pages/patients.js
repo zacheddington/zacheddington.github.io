@@ -899,43 +899,17 @@ async function loadPatients() {
             setupPatientTableSorting();
             console.log('🔍 Getting sorted patients...');
             const sortedPatients = getSortedPatients();
-            console.log('🔍 Sorted patients:', sortedPatients?.length || 0); // Check if we have saved column widths
-            try {
-                const savedWidths = JSON.parse(
-                    localStorage.getItem('patientTableColumnWidths')
-                );
-                console.log('🔍 Saved column widths:', savedWidths);
+            console.log('🔍 Sorted patients:', sortedPatients?.length || 0);
 
-                // Check if saved column widths match current table structure (7 columns)
-                if (
-                    savedWidths &&
-                    Array.isArray(savedWidths) &&
-                    savedWidths.length === 7
-                ) {
-                    // Display patients with saved column widths
-                    console.log('🔍 Using saved column widths');
-                    displayPatientsPreserveWidths(sortedPatients, savedWidths);
-                } else {
-                    // No saved preferences or column count mismatch, clear old data and use default display
-                    console.log(
-                        '🔍 No saved widths or column mismatch, using default display'
-                    );
-                    if (savedWidths && savedWidths.length !== 7) {
-                        console.log(
-                            '🔍 Clearing outdated column width preferences'
-                        );
-                        localStorage.removeItem('patientTableColumnWidths');
-                    }
-                    displayPatients(sortedPatients);
-                }
-            } catch (e) {
-                console.error(
-                    'Error applying column widths after loading patients:',
-                    e
-                );
-                console.log('🔍 Fallback to default display due to error');
-                displayPatients(sortedPatients);
-            }
+            // Force clear column widths to fix display issues
+            console.log(
+                '🔍 Clearing all saved column widths to fix display issue'
+            );
+            localStorage.removeItem('patientTableColumnWidths');
+
+            // Always use default display for now
+            console.log('🔍 Using default display (no saved widths)');
+            displayPatients(sortedPatients);
         } else {
             console.log('🔍 Response not ok, status:', response.status);
             // Use global auth error handler for consistent experience
