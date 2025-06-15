@@ -1407,12 +1407,17 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
         `;
         })
         .join('');
-
     console.log(
         '🔍 Generated patient rows HTML (first 200 chars):',
         patientRows.substring(0, 200)
     );
     console.log('🔍 Total HTML length:', patientRows.length);
+    console.log(
+        '🔍 First row HTML (full):',
+        patients.length > 0
+            ? patientRows.split('</tr>')[0] + '</tr>'
+            : 'No patients'
+    );
 
     patientsTableBody.innerHTML = patientRows;
 
@@ -1424,6 +1429,19 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
         '🔍 Table body child count:',
         patientsTableBody.children.length
     );
+
+    // Check the first row's cell count
+    if (patientsTableBody.children.length > 0) {
+        const firstRow = patientsTableBody.children[0];
+        console.log('🔍 First row cell count:', firstRow.children.length);
+        console.log(
+            '🔍 First row cells:',
+            Array.from(firstRow.children).map(
+                (cell, index) =>
+                    `${index}: ${cell.textContent.trim().substring(0, 20)}`
+            )
+        );
+    }
 
     // Reapply column widths if provided
     if (columnWidths.length > 0) {
