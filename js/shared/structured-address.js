@@ -19,13 +19,34 @@ const STRUCTURED_ADDRESS_CONFIG = {
 function setupStructuredAddressAutocomplete(
     config = STRUCTURED_ADDRESS_CONFIG
 ) {
+    console.log('🔧 Setting up structured address autocomplete...');
+    console.log('🔧 Config:', config);
+
     const address1Input = document.getElementById(config.fields.address1);
     if (!address1Input) {
-        console.error('Address1 field not found:', config.fields.address1);
+        console.error('❌ Address1 field not found:', config.fields.address1);
         return;
     }
 
+    console.log('✅ Address1 input found:', address1Input);
+
+    // Check if addressValidation module is available
+    if (!window.addressValidation) {
+        console.error('❌ Address validation module not available');
+        return;
+    }
+
+    console.log('✅ Address validation module available');
+
+    // Check if Google Places API is loaded
+    if (window.google && window.google.maps && window.google.maps.places) {
+        console.log('✅ Google Places API is loaded');
+    } else {
+        console.warn('⚠️ Google Places API not loaded - will use demo mode');
+    }
+
     // Setup autocomplete on the main address field only
+    console.log('🔧 Calling setupAddressAutocomplete...');
     window.addressValidation.setupAddressAutocomplete(config.fields.address1, {
         minLength: 3,
         debounceMs: 300,
@@ -41,9 +62,11 @@ function setupStructuredAddressAutocomplete(
             }
         },
         onError: function (error) {
-            console.error('Address autocomplete error:', error);
+            console.error('❌ Address autocomplete error:', error);
         },
     });
+
+    console.log('✅ setupAddressAutocomplete called');
 
     // Add PO Box detection if enabled
     if (config.enablePOBoxDetection) {
@@ -54,6 +77,8 @@ function setupStructuredAddressAutocomplete(
     if (config.enableAddressValidation) {
         setupAddressValidation(config);
     }
+
+    console.log('✅ Structured address autocomplete setup complete');
 }
 
 // Auto-populate city, state, zip from Google Places details

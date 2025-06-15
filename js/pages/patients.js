@@ -203,7 +203,10 @@ function setupCreatePatientFieldValidation() {
         { id: 'patientFirstName', maxLength: 50, label: 'First name' },
         { id: 'patientMiddleName', maxLength: 50, label: 'Middle name' },
         { id: 'patientLastName', maxLength: 50, label: 'Last name' },
-        { id: 'patientAddress', maxLength: 100, label: 'Address' },
+        { id: 'patientAddress1', maxLength: 100, label: 'Street Address' },
+        { id: 'patientAddress2', maxLength: 50, label: 'Unit/Apartment' },
+        { id: 'patientCity', maxLength: 50, label: 'City' },
+        { id: 'patientZip', maxLength: 10, label: 'ZIP Code' },
     ];
 
     createPatientFields.forEach((field) => {
@@ -317,11 +320,18 @@ function setupStructuredPatientAddress() {
             '⚠️ Address validation module not available. Autocomplete disabled.'
         );
         return;
-    }
-
-    // Initialize with API key
+    } // Initialize with API key
     const apiKey = getAddressAPIKey();
-    const provider = apiKey ? 'google' : 'demo';
+    // const provider = apiKey ? 'google' : 'demo';
+
+    // For testing, force demo mode to ensure autocomplete is working
+    const provider = 'demo';
+    console.log(
+        '🔧 FORCED TO DEMO MODE FOR TESTING - Remove this once working!'
+    );
+
+    console.log('🔧 Initializing with provider:', provider);
+    console.log('🔧 API key available:', !!apiKey);
 
     // Handle async initialization for Google Places API
     const initPromise = window.addressValidation.initializeAddressValidation(
@@ -416,26 +426,73 @@ function setAddressAPIKeyForTesting(apiKey) {
 
 // Development helper to check if address autocomplete is working
 function testAddressAutocomplete() {
+    console.log('🔍 TESTING ADDRESS AUTOCOMPLETE');
+    console.log('===============================');
+
     const hasApiKey = !!getAddressAPIKey();
     const hasModule = typeof window.addressValidation !== 'undefined';
-    const hasInput = !!document.getElementById('patientAddress');
+    const hasStructuredModule = typeof window.structuredAddress !== 'undefined';
+    const hasInput = !!document.getElementById('patientAddress1');
+    const hasGoogle = !!(
+        window.google &&
+        window.google.maps &&
+        window.google.maps.places
+    );
 
     console.log('📍 Address Autocomplete Status:');
     console.log('   API Key Available:', hasApiKey ? '✅' : '❌');
-    console.log('   Module Loaded:', hasModule ? '✅' : '❌');
+    console.log('   Address Validation Module:', hasModule ? '✅' : '❌');
+    console.log(
+        '   Structured Address Module:',
+        hasStructuredModule ? '✅' : '❌'
+    );
     console.log('   Address Input Found:', hasInput ? '✅' : '❌');
+    console.log('   Google Places API:', hasGoogle ? '✅' : '❌');
+
+    if (hasApiKey) {
+        const apiKey = getAddressAPIKey();
+        console.log(
+            '   API Key (first 10 chars):',
+            apiKey.substring(0, 10) + '...'
+        );
+    }
 
     if (!hasApiKey) {
-        console.log('💡 To set API key for testing:');
-        console.log('   setAddressAPIKeyForTesting("YOUR_API_KEY")');
+        console.log('💡 To set a valid API key for testing:');
+        console.log(
+            '   setAddressAPIKeyForTesting("YOUR_GOOGLE_PLACES_API_KEY")'
+        );
+        console.log('   Then refresh the page');
     }
 
     if (hasApiKey && hasModule && hasInput) {
         console.log('🎉 Address autocomplete should be working!');
-        console.log('   Try typing in the address field...');
+        console.log('   Try typing "123 Main Street" in the address field...');
+
+        // Try to trigger the diagnostic function
+        if (typeof window.diagnoseAddressAutocomplete === 'function') {
+            console.log('🔧 Running full diagnostic...');
+            window.diagnoseAddressAutocomplete();
+        }
+    } else {
+        console.log('❌ Address autocomplete setup incomplete');
     }
 
-    return hasApiKey && hasModule && hasInput;
+    console.log('===============================');
+
+    return {
+        hasApiKey,
+        hasModule,
+        hasStructuredModule,
+        hasInput,
+        hasGoogle,
+        ready: hasApiKey && hasModule && hasInput,
+    };
+}
+
+// Make test function available globally for console testing
+if (typeof window !== 'undefined') {
+    window.testAddressAutocomplete = testAddressAutocomplete;
 }
 
 // Create new patient
