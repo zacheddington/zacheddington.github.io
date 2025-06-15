@@ -39,5 +39,18 @@
     },
     "typescript.disableAutomaticTypeAcquisition": true,
     "extensions.autoUpdate": false,
-    "telemetry.telemetryLevel": "off"
+    "telemetry.telemetryLevel": "off",
+    "editor.suggest.shareSuggestSelections": false,
+    "editor.semanticTokenColorCustomizations": {},
+    "workbench.enableExperiments": false,
+    "workbench.settings.enableNaturalLanguageSearch": false,
+    "extensions.ignoreRecommendations": true,
+    "git.autoRepositoryDetection": false,
+    "git.decorations.enabled": false,
+    "editor.bracketPairColorization.enabled": false,
+    "editor.guides.bracketPairs": false,
+    "editor.minimap.enabled": false,
+    "breadcrumbs.enabled": false,
+    "editor.lightbulb.enabled": "off",
+    "editor.parameterHints.enabled": false
 }
