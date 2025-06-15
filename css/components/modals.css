@@ -140,14 +140,16 @@
 }
 
 /* Modal action buttons */
-.modal-actions {
+.modal-actions,
+.form-actions {
     display: flex;
     gap: var(--space-md);
     justify-content: flex-end;
     margin-top: var(--space-lg);
 }
 
-.modal-actions .primary-btn {
+.modal-actions .primary-btn,
+.form-actions .primary-btn {
     background: var(--color-primary);
     color: var(--color-white);
     border: none;
@@ -158,18 +160,21 @@
     transition: var(--transition-all);
 }
 
-.modal-actions .primary-btn:hover {
+.modal-actions .primary-btn:hover,
+.form-actions .primary-btn:hover {
     background: var(--color-primary-dark);
     transform: translateY(-1px);
 }
 
-.modal-actions .primary-btn:disabled {
+.modal-actions .primary-btn:disabled,
+.form-actions .primary-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
 }
 
-.modal-actions .secondary-btn {
+.modal-actions .secondary-btn,
+.form-actions .secondary-btn {
     background: var(--color-gray-100);
     color: var(--color-secondary);
     border: 2px solid var(--color-border);
@@ -180,7 +185,8 @@
     transition: var(--transition-all);
 }
 
-.modal-actions .secondary-btn:hover {
+.modal-actions .secondary-btn:hover,
+.form-actions .secondary-btn:hover {
     background: var(--color-gray-200);
     border-color: var(--color-gray-400);
 }
@@ -276,16 +282,17 @@
         width: 95%;
         max-width: 340px;
         padding: var(--space-lg);
-    }
-
-    /* Stack modal actions on mobile landscape */
-    .modal-actions {
+    } /* Stack modal actions on mobile landscape */
+    .modal-actions,
+    .form-actions {
         flex-direction: column;
         gap: var(--space-sm);
     }
 
     .modal-actions .primary-btn,
-    .modal-actions .secondary-btn {
+    .modal-actions .secondary-btn,
+    .form-actions .primary-btn,
+    .form-actions .secondary-btn {
         width: 100%;
     }
 }
@@ -303,16 +310,17 @@
         width: 95%;
         max-width: 340px;
         padding: var(--space-lg);
-    }
-
-    /* Responsive modal actions for mobile */
-    .modal-actions {
+    } /* Responsive modal actions for mobile */
+    .modal-actions,
+    .form-actions {
         flex-direction: column;
         gap: var(--space-sm);
     }
 
     .modal-actions .primary-btn,
-    .modal-actions .secondary-btn {
+    .modal-actions .secondary-btn,
+    .form-actions .primary-btn,
+    .form-actions .secondary-btn {
         width: 100%;
         text-align: center;
     }

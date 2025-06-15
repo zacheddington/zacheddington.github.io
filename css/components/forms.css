@@ -197,12 +197,7 @@ textarea:focus {
    FORM ACTIONS
    ================================ */
 
-.form-actions {
-    display: flex;
-    gap: var(--space-md);
-    margin-top: var(--space-lg);
-    justify-content: flex-start;
-}
+/* Form actions styling moved to modals.css for consistency */
 
 /* ================================
    FORM SECTIONS
