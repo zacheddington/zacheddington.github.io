@@ -173,10 +173,8 @@ function setupCreatePatientForm() {
     if (!createPatientForm) return;
 
     // Character limit validation for create patient form fields
-    setupCreatePatientFieldValidation();
-
-    // Setup address autocomplete
-    setupPatientAddressAutocomplete();
+    setupCreatePatientFieldValidation(); // Setup structured address autocomplete
+    setupStructuredPatientAddress();
 
     // Handle form submission
     createPatientForm.addEventListener('submit', async function (e) {
@@ -303,19 +301,26 @@ function setupPatientPhoneFormatting() {
     });
 }
 
-// Set up address autocomplete for patient address field
-function setupPatientAddressAutocomplete() {
-    // Check if address validation module is available
+// Set up structured address autocomplete for patient address fields
+function setupStructuredPatientAddress() {
+    // Check if structured address module is available
+    if (typeof window.structuredAddress === 'undefined') {
+        console.warn(
+            '⚠️ Structured address module not available. Falling back to basic validation.'
+        );
+        return;
+    }
+
+    // Check if base address validation module is available
     if (typeof window.addressValidation === 'undefined') {
         console.warn(
             '⚠️ Address validation module not available. Autocomplete disabled.'
         );
         return;
-    } // Initialize with API key (you can set this via environment variables or config)
-    // For demo purposes, we'll use a placeholder. In production, this should come from config.
-    const apiKey = getAddressAPIKey();
+    }
 
-    // Initialize address validation (will use demo mode if no API key)
+    // Initialize with API key
+    const apiKey = getAddressAPIKey();
     const provider = apiKey ? 'google' : 'demo';
 
     // Handle async initialization for Google Places API
@@ -329,7 +334,7 @@ function setupPatientAddressAutocomplete() {
         initPromise
             .then((initialized) => {
                 if (initialized) {
-                    setupAddressAutocompleteUI();
+                    setupStructuredAddressUI();
                 }
             })
             .catch((error) => {
@@ -343,44 +348,34 @@ function setupPatientAddressAutocomplete() {
                     'demo',
                     null
                 );
-                setupAddressAutocompleteUI();
+                setupStructuredAddressUI();
             });
     } else {
         // Demo mode or already loaded
-        setupAddressAutocompleteUI();
+        setupStructuredAddressUI();
     }
 }
 
-// Setup the address autocomplete UI
-function setupAddressAutocompleteUI() {
-    // Setup autocomplete for the patient address field
-    window.addressValidation.setupAddressAutocomplete('patientAddress', {
-        minLength: 3,
-        debounceMs: 300,
-        maxResults: 5,
-        types: ['address'], // Use legacy API type format for stability
-        componentRestrictions: { country: 'us' }, // Restrict to US addresses
-        onSelect: function (addressData) {
-            console.log('📍 Address selected:', addressData.description);
+// Setup the structured address autocomplete UI
+function setupStructuredAddressUI() {
+    // Configure structured address fields
+    const config = {
+        enableAutoPopulation: true,
+        enablePOBoxDetection: true,
+        enableAddressValidation: true,
+        fields: {
+            address1: 'patientAddress1',
+            address2: 'patientAddress2',
+            city: 'patientCity',
+            state: 'patientState',
+            zip: 'patientZip',
+        },
+    };
 
-            // Trigger validation to clear any previous errors
-            const addressInput = document.getElementById('patientAddress');
-            if (addressInput) {
-                const event = new Event('blur', { bubbles: true });
-                addressInput.dispatchEvent(event);
-            }
-        },
-        onError: function (error) {
-            console.error('Address autocomplete error:', error);
-            // Optionally show user-friendly error message
-            if (window.modalManager) {
-                window.modalManager.showModal(
-                    'warning',
-                    'Address autocomplete is temporarily unavailable. You can still enter addresses manually.'
-                );
-            }
-        },
-    });
+    // Setup structured address autocomplete
+    window.structuredAddress.setupStructuredAddressAutocomplete(config);
+
+    console.log('📍 Structured address autocomplete setup complete');
 }
 
 // Get address API key from configuration
