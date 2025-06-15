@@ -2141,26 +2141,115 @@ function setupEditPatientModal() {
     // Check initial modal state
     console.log('🔍 Initial modal display state:', modal.style.display);
 
+    // Variables to track mouse events for proper click-outside detection
+    let mouseDownTarget = null;
+    let mouseUpTarget = null;
+
     // Close modal when clicking the X button
     closeBtn.addEventListener('click', function () {
         console.log('🔍 Close button clicked');
         closeEditPatientModal();
     });
 
-    // Close modal when clicking outside of it
-    window.addEventListener('click', function (event) {
-        if (event.target === modal) {
-            console.log('🔍 Click outside modal detected');
+    // Track mousedown to know where click started
+    window.addEventListener('mousedown', function (event) {
+        mouseDownTarget = event.target;
+    });
+
+    // Track mouseup to know where click ended
+    window.addEventListener('mouseup', function (event) {
+        mouseUpTarget = event.target;
+        
+        // Only close modal if both mousedown AND mouseup happened on the modal background
+        // This prevents closing when user drags from inside form to outside
+        if (modal.style.display === 'block' && 
+            mouseDownTarget === modal && 
+            mouseUpTarget === modal) {
+            console.log('🔍 Click outside modal detected (both down and up on modal background)');
             closeEditPatientModal();
         }
+        
+        // Reset tracking variables
+        mouseDownTarget = null;
+        mouseUpTarget = null;
     });
 
     // Handle form submission
-    editPatientForm.addEventListener('submit', handleEditPatientSubmit); // Close modal on Escape key
+    editPatientForm.addEventListener('submit', handleEditPatientSubmit); 
+    
+    // Close modal on Escape key
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape' && modal.style.display === 'block') {
             console.log('🔍 Escape key pressed');
             closeEditPatientModal();
+        }
+    });
+
+    // Setup phone number formatting for edit form
+    setupEditFormPhoneFormatting();
+}
+
+// Set up phone number formatting for the edit patient form
+function setupEditFormPhoneFormatting() {
+    const phoneInput = document.getElementById('editPatientPhone');
+    if (!phoneInput) {
+        console.warn('⚠️ Phone input not found in edit form');
+        return;
+    }
+
+    console.log('🔍 Setting up phone formatting for edit form');
+
+    // Format phone number as user types
+    phoneInput.addEventListener('input', function(e) {
+        let value = e.target.value;
+        
+        // Remove all non-digit characters
+        const digits = value.replace(/\D/g, '');
+        
+        // Limit to 10 digits
+        const limitedDigits = digits.substring(0, 10);
+        
+        // Format as (XXX) XXX-XXXX
+        let formattedValue = '';
+        if (limitedDigits.length > 0) {
+            if (limitedDigits.length <= 3) {
+                formattedValue = `(${limitedDigits}`;
+            } else if (limitedDigits.length <= 6) {
+                formattedValue = `(${limitedDigits.slice(0, 3)}) ${limitedDigits.slice(3)}`;
+            } else {
+                formattedValue = `(${limitedDigits.slice(0, 3)}) ${limitedDigits.slice(3, 6)}-${limitedDigits.slice(6)}`;
+            }
+        }
+        
+        // Update the input value
+        e.target.value = formattedValue;
+    });
+
+    // Handle paste events
+    phoneInput.addEventListener('paste', function(e) {
+        setTimeout(() => {
+            // Trigger the input event to format the pasted content
+            phoneInput.dispatchEvent(new Event('input'));
+        }, 0);
+    });
+
+    // Prevent non-numeric input (except backspace, delete, tab, etc.)
+
+    phoneInput.addEventListener('keydown', function(e) {
+        // Allow: backspace, delete, tab, escape, enter
+        if ([8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
+            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+            (e.keyCode === 65 && e.ctrlKey === true) ||
+            (e.keyCode === 67 && e.ctrlKey === true) ||
+            (e.keyCode === 86 && e.ctrlKey === true) ||
+            (e.keyCode === 88 && e.ctrlKey === true) ||
+            // Allow: home, end, left, right
+            (e.keyCode >= 35 && e.keyCode <= 39)) {
+            return;
+        }
+        // Ensure that it is a number and stop the keypress
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
         }
     });
 }
