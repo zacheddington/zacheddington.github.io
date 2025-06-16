@@ -656,8 +656,8 @@ async function createPatient() {
             window.modalManager.showModal('success', successMessage); // Redirect back to patient choice page after brief delay
             setTimeout(() => {
                 window.modalManager.closeModal();
-                // Navigate back to main patient page using clean URL
-                window.location.href = '../';
+                // Navigate back to main patient page using absolute URL
+                window.location.href = '/patients/';
             }, 2500);
         } else {
             // Check for authentication/authorization errors first
