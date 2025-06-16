@@ -1,6 +1,19 @@
 // Profile Page Module
 // Contains user profile management functionality including password changes
 
+// Defensive wrapper to prevent autofill conflicts
+function safeGetPasswordField(fieldId) {
+    try {
+        const field = document.getElementById(fieldId);
+        if (field && field.nodeType === Node.ELEMENT_NODE) {
+            return field;
+        }
+    } catch (error) {
+        // Ignore autofill-related errors
+    }
+    return null;
+}
+
 // Initialize profile page functionality
 function initializeProfilePage() {
     // Check token validity first using global function
@@ -169,7 +182,7 @@ function setupPasswordChangeForm() {
 function setupProfileFieldValidation() {
     // Password field validation
     const currentPasswordField = document.getElementById('currentPassword');
-    const newPasswordField = document.getElementById('newPassword');
+    const newPasswordField = safeGetPasswordField('newPassword');
     const confirmPasswordField = document.getElementById('confirmPassword');
 
     if (currentPasswordField) {
@@ -179,23 +192,27 @@ function setupProfileFieldValidation() {
     }
 
     if (newPasswordField) {
-        // Add password strength indicator for profile password form
-        window.passwordUtils.addPasswordStrengthIndicator(newPasswordField);
+        try {
+            // Add password strength indicator for profile password form
+            window.passwordUtils.addPasswordStrengthIndicator(newPasswordField);
 
-        newPasswordField.addEventListener('input', function () {
-            // Update field state
-            if (
-                window.fieldValidation &&
-                window.fieldValidation.updateFieldState
-            ) {
-                window.fieldValidation.updateFieldState(newPasswordField);
-            }
+            newPasswordField.addEventListener('input', function () {
+                // Update field state
+                if (
+                    window.fieldValidation &&
+                    window.fieldValidation.updateFieldState
+                ) {
+                    window.fieldValidation.updateFieldState(newPasswordField);
+                }
 
-            // Check password match if confirm password has value
-            if (confirmPasswordField && confirmPasswordField.value) {
-                validatePasswordMatch();
-            }
-        });
+                // Check password match if confirm password has value
+                if (confirmPasswordField && confirmPasswordField.value) {
+                    validatePasswordMatch();
+                }
+            });
+        } catch (error) {
+            // Ignore autofill-related errors
+        }
     }
 
     if (confirmPasswordField) {

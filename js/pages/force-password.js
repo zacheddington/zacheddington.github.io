@@ -1,6 +1,19 @@
 // Force Password Change Page Module
 // Contains functionality for mandatory password changes on first login
 
+// Defensive wrapper to prevent autofill conflicts
+function safeGetPasswordField(fieldId) {
+    try {
+        const field = document.getElementById(fieldId);
+        if (field && field.nodeType === Node.ELEMENT_NODE) {
+            return field;
+        }
+    } catch (error) {
+        // Ignore autofill-related errors
+    }
+    return null;
+}
+
 // Security: Clear any sensitive URL parameters immediately
 function clearSensitiveURLParameters() {
     if (window.location.search || window.location.hash) {
@@ -33,12 +46,16 @@ function initializeForcePasswordChangePage() {
     validateForcePasswordAccess();
 
     setupForcePasswordForm();
-    displayUserInfo();
-
-    // Focus on new password field
-    const newPasswordField = document.getElementById('newPassword');
+    displayUserInfo(); // Focus on new password field
+    const newPasswordField = safeGetPasswordField('newPassword');
     if (newPasswordField) {
-        setTimeout(() => newPasswordField.focus(), 100);
+        setTimeout(() => {
+            try {
+                newPasswordField.focus();
+            } catch (error) {
+                // Ignore focus errors from autofill conflicts
+            }
+        }, 100);
     }
 }
 
