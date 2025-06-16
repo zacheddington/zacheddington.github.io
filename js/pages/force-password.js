@@ -217,6 +217,13 @@ function validateForcePasswordMatch() {
 
 // Change password during forced password change
 async function changeForcePassword() {
+    // Prevent multiple simultaneous submissions
+    if (changeForcePassword.isRunning) {
+        return;
+    }
+
+    changeForcePassword.isRunning = true;
+
     const submitBtn = document.getElementById('changePasswordBtn');
     const originalText = submitBtn.textContent;
     let response = null;
@@ -254,17 +261,16 @@ async function changeForcePassword() {
         ) {
             throw new Error('Passwords do not match.');
         }
-
         const token = localStorage.getItem('token');
         const API_URL = window.apiClient.getAPIUrl();
-
-        response = await fetch(`${API_URL}/api/force-change-password`, {
+        response = await fetch(`${API_URL}/api/user/force-change-password`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
+                currentPassword: '', // Not needed for forced changes, but server expects it
                 newPassword,
             }),
         });
@@ -317,6 +323,9 @@ async function changeForcePassword() {
             showForcePasswordError(errorInfo.message);
         }
     } finally {
+        // Reset the guard flag
+        changeForcePassword.isRunning = false;
+
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     }
