@@ -136,7 +136,10 @@ const modalManager = {
             const isPatientManagePage = window.location.pathname.includes(
                 '/patients/manage-patients/'
             );
-            if (!isAdminPage && !isPatientManagePage) {
+            const isPatientCreatePage = window.location.pathname.includes(
+                '/patients/create-patient/'
+            );
+            if (!isAdminPage && !isPatientManagePage && !isPatientCreatePage) {
                 setTimeout(() => {
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
