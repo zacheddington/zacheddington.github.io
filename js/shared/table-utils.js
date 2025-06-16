@@ -21,7 +21,7 @@ function setupTableSorting(config) {
 
     const table = document.getElementById(tableId);
     if (!table) {
-        console.warn(`Table with ID "${tableId}" not found`);
+        console.warn(`Table not found`);
         return;
     }
 

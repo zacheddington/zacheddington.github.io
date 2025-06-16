@@ -37,9 +37,7 @@ function initializeAddressValidation(provider = 'google', key = null) {
     }
 
     if (!apiKey) {
-        console.warn(
-            '⚠️ Address validation: No API key provided. Falling back to demo mode.'
-        );
+        console.warn('Address validation unavailable, using demo mode');
         currentProvider = 'demo';
         return true;
     }
@@ -124,17 +122,13 @@ function loadGooglePlacesAPI() {
 function setupAddressAutocomplete(inputId, options = {}) {
     const input = document.getElementById(inputId);
     if (!input) {
-        console.error(
-            `❌ Address autocomplete: Input field ${inputId} not found`
-        );
+        console.error(`❌ Address autocomplete: Input field not found`);
         return;
     }
 
     // Demo mode or API key is required
     if (!apiKey && currentProvider !== 'demo') {
-        console.warn(
-            '⚠️ Address autocomplete: No API key available and not in demo mode, skipping setup'
-        );
+        console.warn('Address autocomplete setup unavailable');
         return;
     }
 
@@ -212,7 +206,7 @@ function setupAutocompleteEvents(input, container, config) {
                     showAutocompleteResults(container, results, config, input);
                 })
                 .catch((error) => {
-                    console.error('❌ Address search error:', error);
+                    console.error('❌ Address search error');
                     if (config.onError) {
                         config.onError(error);
                     }
@@ -280,7 +274,7 @@ async function searchAddresses(query, config) {
         return searchDemoAddresses(query, config);
     }
     // Add other providers here
-    console.error('❌ Unsupported address provider:', currentProvider);
+    console.error('❌ Unsupported address provider');
     throw new Error(`Unsupported address provider: ${currentProvider}`);
 }
 
@@ -380,8 +374,7 @@ async function searchGooglePlaces(query, config) {
                 })
                 .catch((error) => {
                     console.warn(
-                        'New AutocompleteSuggestion API failed, falling back to legacy API:',
-                        error
+                        'AutocompleteSuggestion API failed, falling back to legacy API'
                     );
                     fallbackToLegacyAPI();
                 });

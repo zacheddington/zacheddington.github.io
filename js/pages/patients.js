@@ -23,7 +23,7 @@ function formatDateForDisplay(dateString) {
         }
         return 'Invalid date';
     } catch (error) {
-        console.warn('Date formatting error:', error);
+        console.warn('Date formatting error');
         return 'Invalid date';
     }
 }
@@ -56,7 +56,7 @@ function canDeletePatients() {
 
         return false;
     } catch (error) {
-        console.error('Error checking user permissions:', error);
+        console.error('Error checking user permissions');
         return false;
     }
 }
@@ -126,24 +126,21 @@ async function initializeManagePatientsPage() {
     try {
         await loadPatients();
     } catch (error) {
-        console.error('❌ Error calling loadPatients:', error);
-        console.error('❌ Error stack:', error.stack);
+        console.error('Failed to load patients');
     }
     try {
         setupPatientFilter();
     } catch (error) {
-        console.error('❌ Error calling setupPatientFilter:', error);
+        console.error('Failed to setup patient filter');
     } // Setup edit patient modal
     setupEditPatientModal();
 
     // Setup delete patient modal
-    setupDeletePatientModal();
-
-    // Apply column preferences or auto-size if no preferences exist
+    setupDeletePatientModal(); // Apply column preferences or auto-size if no preferences exist
     try {
         loadPatientColumnWidthPreferences();
     } catch (e) {
-        console.error('Error loading patient column preferences:', e);
+        console.error('Error loading patient column preferences');
         adjustPatientColumnWidths();
     } // Add event listener for window resize to adjust column widths
     window.addEventListener(
@@ -671,7 +668,7 @@ async function createPatient() {
             throw new Error(result.error || 'Failed to create patient');
         }
     } catch (error) {
-        console.error('Create patient error:', error);
+        console.error('Patient creation failed');
 
         // Use enhanced error categorization
         const errorInfo = window.apiClient.categorizeError(error, response);
@@ -837,7 +834,7 @@ async function loadPatients() {
             throw new Error('Failed to load patients');
         }
     } catch (error) {
-        console.error('❌ Error loading patients:', error);
+        console.error('Failed to load patients');
         const patientsTableBody = document.getElementById('patientsTableBody');
         if (patientsTableBody) {
             patientsTableBody.innerHTML =
@@ -1484,7 +1481,7 @@ async function editPatient(patientId) {
             window.FieldValidation.applyZipValidation('editPatientZip');
         }
     } catch (error) {
-        console.error('Error fetching patient data:', error);
+        console.error('Failed to fetch patient data');
         window.modalManager.showModal(
             'error',
             'Failed to load patient data. Please try again.'
@@ -1561,7 +1558,7 @@ async function deletePatient(patientId, patientName) {
                 } // Reload the patients list to reflect the change
                 await loadPatients();
             } catch (error) {
-                console.error('❌ Error deleting patient:', error);
+                console.error('Patient deletion failed');
 
                 if (window.modalManager && window.modalManager.showModal) {
                     window.modalManager.showModal(
@@ -1572,7 +1569,7 @@ async function deletePatient(patientId, patientName) {
             }
         };
     } catch (error) {
-        console.error('❌ Error setting up delete confirmation:', error);
+        console.error('Failed to setup delete confirmation');
     }
 }
 
@@ -1689,7 +1686,7 @@ async function handleEditPatientSubmit(event) {
             throw new Error(result.message || 'Failed to update patient');
         }
     } catch (error) {
-        console.error('Error updating patient:', error);
+        console.error('Patient update failed');
         window.modalManager.showModal(
             'error',
             'Failed to update patient. Please try again.'
@@ -1721,7 +1718,7 @@ function loadPatientColumnWidthPreferences() {
             }
         }
     } catch (e) {
-        console.error('Error loading patient column preferences:', e);
+        console.error('Error loading patient column preferences');
         adjustPatientColumnWidths();
     }
 }
@@ -1978,7 +1975,7 @@ function savePatientColumnWidthPreferences() {
             );
         }
     } catch (e) {
-        console.error('Error saving patient column preferences:', e);
+        console.error('Error saving patient column preferences');
     }
 }
 

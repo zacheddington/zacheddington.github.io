@@ -51,7 +51,7 @@ function clearStoredCredentials() {
 function setupLoginForm() {
     const loginForm = document.getElementById('loginForm');
     if (!loginForm) {
-        console.error('❌ Login form not found!');
+        console.error('Login form element not found');
         return;
     }
 
@@ -266,7 +266,7 @@ async function performLogin() {
             throw new Error(result.error || 'Login failed');
         }
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('Login failed');
 
         // Clear password field for security on credentials step
         if (!isOnTwofaStep) {

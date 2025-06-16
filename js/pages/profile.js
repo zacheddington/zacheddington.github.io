@@ -55,10 +55,7 @@ async function loadUserProfile() {
             loadProfileFromLocalStorage();
         }
     } catch (error) {
-        console.error(
-            'Error loading user profile from API, trying localStorage fallback:',
-            error
-        );
+        console.error('Failed to load user profile, using cached data');
         loadProfileFromLocalStorage();
     }
 }
@@ -101,7 +98,7 @@ function loadProfileFromLocalStorage() {
             displayProfileError();
         }
     } catch (error) {
-        console.error('Error loading user data from localStorage:', error);
+        console.error('Error loading user data from local storage');
         displayProfileError();
     }
 }
@@ -336,7 +333,7 @@ async function changePassword() {
             }
         }
     } catch (error) {
-        console.error('Change password error:', error);
+        console.error('Password change failed');
 
         // Use enhanced error categorization
         const errorInfo = window.apiClient.categorizeError(error, response);
@@ -495,7 +492,7 @@ async function updateProfile() {
             }
         }
     } catch (error) {
-        console.error('Update profile error:', error);
+        console.error('Profile update failed');
 
         // Use enhanced error categorization
         const errorInfo = window.apiClient.categorizeError(error, response);
@@ -572,7 +569,7 @@ async function load2FAStatus() {
             throw new Error('Failed to load 2FA status');
         }
     } catch (error) {
-        console.error('Error loading 2FA status:', error);
+        console.error('Failed to load 2FA status');
         const twofaStatus = document.getElementById('twofaStatus');
         const twofaActions = document.getElementById('twofaActions');
 
@@ -682,7 +679,7 @@ async function disable2FA() {
                 closeModal();
             }
         } catch (error) {
-            console.error('Error disabling 2FA:', error);
+            console.error('Failed to disable 2FA');
             window.modalManager.showModal(
                 'error',
                 'Network error. Please try again.'
@@ -710,10 +707,7 @@ async function disable2FA() {
                 usernameField.value = username;
             }
         } catch (error) {
-            console.error(
-                'Could not populate username for accessibility:',
-                error
-            );
+            console.error('Could not populate username for accessibility');
         }
     }
 

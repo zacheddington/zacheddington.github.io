@@ -189,9 +189,7 @@ window.pageTransitions = pageTransitions;
 
 // Legacy compatibility
 window.setupFadeNavigation = () => {
-    console.warn(
-        'setupFadeNavigation() is deprecated. Page transitions are now automatic.'
-    );
+    console.warn('setupFadeNavigation() is deprecated');
 };
 
 // Export for module use

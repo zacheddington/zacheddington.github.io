@@ -63,11 +63,7 @@ async function loadTopNavigation() {
             window.authUtils.updateAdminMenuItem(isAdmin);
         }
     } catch (err) {
-        console.error('❌ NAV: Error loading top navigation:', err);
-        console.error('❌ NAV: Error details:', {
-            message: err.message,
-            stack: err.stack,
-        });
+        console.error('❌ NAV: Error loading top navigation');
 
         // Fallback: create a simple navigation inline if loading fails
         createFallbackNavigation();

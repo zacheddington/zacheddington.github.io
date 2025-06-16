@@ -4,7 +4,7 @@
 // Security: Clear any sensitive URL parameters immediately
 function clearSensitiveURLParameters() {
     if (window.location.search || window.location.hash) {
-        console.warn('Removing sensitive URL parameters for security');
+        console.warn('URL parameters cleared for security');
         window.history.replaceState(
             {},
             document.title,
@@ -64,7 +64,7 @@ function validateForcePasswordAccess() {
             return;
         }
     } catch (error) {
-        console.error('Error parsing user data:', error);
+        console.error('Error parsing user data');
         window.location.href = '/';
         return;
     }
@@ -87,7 +87,7 @@ function displayUserInfo() {
             userEmailElement.textContent = user.email;
         }
     } catch (error) {
-        console.error('Error displaying user info:', error);
+        console.error('Error displaying user info');
     }
 }
 
@@ -287,7 +287,7 @@ async function changeForcePassword() {
                     user.force_password_change = false;
                     localStorage.setItem('user', JSON.stringify(user));
                 } catch (error) {
-                    console.error('Error updating user data:', error);
+                    console.error('Error updating user data');
                 }
             }
 
@@ -312,7 +312,7 @@ async function changeForcePassword() {
             throw new Error(result.error || 'Failed to change password');
         }
     } catch (error) {
-        console.error('Force password change error:', error);
+        console.error('Force password change failed');
 
         // Use enhanced error categorization
         const errorInfo = window.apiClient.categorizeError(error, response);

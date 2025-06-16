@@ -683,7 +683,7 @@ async function loadRolesForUserManagement() {
             const result = await response.json();
             currentRoles = result.data; // Extract data from response object
         } else {
-            console.error('Failed to load roles, status:', response.status);
+            console.error('Failed to load roles');
             // Use global auth error handler for consistent experience
             if (response.status === 401 || response.status === 403) {
                 window.handleAuthError(response, 'loading roles');
@@ -694,7 +694,7 @@ async function loadRolesForUserManagement() {
             }
         }
     } catch (error) {
-        console.error('Error loading roles for user management:', error);
+        console.error('Failed to load roles for user management');
         currentRoles = [];
     }
 }

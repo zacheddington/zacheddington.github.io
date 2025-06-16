@@ -21,7 +21,7 @@ function setupStructuredAddressAutocomplete(
 ) {
     const address1Input = document.getElementById(config.fields.address1);
     if (!address1Input) {
-        console.error('❌ Address1 field not found:', config.fields.address1);
+        console.error('❌ Address1 field not found');
         return;
     }
 
@@ -45,7 +45,7 @@ function setupStructuredAddressAutocomplete(
             }
         },
         onError: function (error) {
-            console.error('❌ Address autocomplete error:', error);
+            console.error('❌ Address autocomplete error');
         },
     });
 
@@ -74,7 +74,7 @@ async function populateAddressFields(addressData, config) {
             fillAddressComponents(placeDetails.address_components, config);
         }
     } catch (error) {
-        console.warn('Failed to get place details for auto-population:', error);
+        console.warn('Failed to get place details for auto-population');
     }
 }
 

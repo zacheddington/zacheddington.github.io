@@ -33,7 +33,7 @@ function checkTokenValidity() {
 
         return true;
     } catch (error) {
-        console.warn('Error checking token validity:', error);
+        console.warn('Error checking token validity');
         return false;
     }
 }
@@ -41,21 +41,13 @@ function checkTokenValidity() {
 // Handle authentication errors globally
 function handleAuthError(response, context = '') {
     if (response.status === 401) {
-        console.error(
-            `Authentication failed${
-                context ? ' for ' + context : ''
-            } - token may be expired`
-        );
+        console.error('Authentication failed');
         handleSessionExpiration(
             'Your session has expired. Please log in again.'
         );
         return true;
     } else if (response.status === 403) {
-        console.error(
-            `Access denied${
-                context ? ' for ' + context : ''
-            } - insufficient permissions`
-        );
+        console.error('Access denied');
         handleAccessDenied(
             'You do not have permission to access this resource.'
         );
@@ -190,7 +182,7 @@ function isAuthenticated() {
         const userData = JSON.parse(user);
         return userData && Object.keys(userData).length > 0;
     } catch (error) {
-        console.error('Error parsing user data:', error);
+        console.error('Error parsing user data');
         return false;
     }
 }
@@ -420,7 +412,7 @@ async function logout(reason = 'User logout') {
                     body: JSON.stringify({ reason }),
                 });
             } catch (error) {
-                console.warn('Server logout notification failed:', error);
+                console.warn('Server logout notification failed');
                 // Continue with client-side logout even if server call fails
             }
         }
@@ -438,14 +430,14 @@ async function logout(reason = 'User logout') {
                     cacheNames.map((name) => caches.delete(name))
                 );
             } catch (error) {
-                console.warn('Failed to clear caches:', error);
+                console.warn('Failed to clear caches');
             }
         }
 
         // Redirect to login page
         window.location.href = '/';
     } catch (error) {
-        console.error('Logout error:', error);
+        console.error('Logout process failed');
         // Force logout even on error
         localStorage.clear();
         sessionStorage.clear();

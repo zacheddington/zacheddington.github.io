@@ -151,16 +151,12 @@ function initializePage(page) {
                     if (result && typeof result.then === 'function') {
                         result.catch((error) => {
                             console.error(
-                                'Error in patients page initialization:',
-                                error
+                                'Error in patients page initialization'
                             );
                         });
                     }
                 } catch (error) {
-                    console.error(
-                        'Error calling patientsPage.initializePatientsPage():',
-                        error
-                    );
+                    console.error('Error calling patientsPage initialization');
                 }
             }
             // Navigation is loaded centrally above, no need to call it again
@@ -181,7 +177,7 @@ function initializePage(page) {
 // Enhanced error handler for uncaught errors
 function setupGlobalErrorHandling() {
     window.addEventListener('error', function (event) {
-        console.error('Global error caught:', event.error);
+        console.error('Global error caught');
 
         // Don't show modal for script loading errors during development
         if (
@@ -203,7 +199,7 @@ function setupGlobalErrorHandling() {
     });
 
     window.addEventListener('unhandledrejection', function (event) {
-        console.error('Unhandled promise rejection:', event.reason);
+        console.error('Unhandled promise rejection');
 
         // Don't show modal for module loading rejections
         if (

@@ -190,7 +190,7 @@ async function initiate2FASetup() {
             showError(data.error || 'Failed to setup 2FA');
         }
     } catch (error) {
-        console.error('2FA setup error:', error);
+        console.error('2FA setup failed');
         showError('Network error. Please try again.');
     }
 }
@@ -238,7 +238,7 @@ async function verifyCode() {
             throw new Error(data.error || 'Invalid verification code');
         }
     } catch (error) {
-        console.error('2FA verification error:', error);
+        console.error('2FA verification failed');
 
         // Use enhanced error categorization
         const errorInfo = window.apiClient.categorizeError(error, null);
