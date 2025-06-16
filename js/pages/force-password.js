@@ -44,9 +44,13 @@ function initializeForcePasswordChangePage() {
 
     // Check if user is authenticated and actually needs to change password
     validateForcePasswordAccess();
-
     setupForcePasswordForm();
-    displayUserInfo(); // Focus on new password field
+    displayUserInfo();
+
+    // Initialize password validation indicators
+    resetForcePasswordValidationIndicators();
+
+    // Focus on new password field
     const newPasswordField = safeGetPasswordField('newPassword');
     if (newPasswordField) {
         setTimeout(() => {
@@ -190,16 +194,17 @@ function setupForcePasswordFieldValidation() {
 function updateForcePasswordValidationIndicators(validation) {
     const requirements = [
         { id: 'lengthReq', key: 'minLength' },
-        { id: 'uppercaseReq', key: 'hasUppercase' },
-        { id: 'lowercaseReq', key: 'hasLowercase' },
-        { id: 'digitReq', key: 'hasDigit' },
+        { id: 'uppercaseReq', key: 'hasUpperCase' },
+        { id: 'lowercaseReq', key: 'hasLowerCase' },
+        { id: 'digitReq', key: 'hasNumbers' },
         { id: 'specialReq', key: 'hasSpecialChar' },
     ];
 
     requirements.forEach((req) => {
         const element = document.getElementById(req.id);
         if (element) {
-            if (validation[req.key]) {
+            // Access the requirements object from validation
+            if (validation.requirements && validation.requirements[req.key]) {
                 element.classList.add('valid');
                 element.classList.remove('invalid');
             } else {
@@ -208,6 +213,47 @@ function updateForcePasswordValidationIndicators(validation) {
             }
         }
     });
+
+    // Update password strength bar if it exists
+    updatePasswordStrengthBar(validation);
+}
+
+// Update password strength bar visual indicator
+function updatePasswordStrengthBar(validation) {
+    const strengthBar = document.getElementById('passwordStrengthBar');
+    const strengthText = document.getElementById('passwordStrengthText');
+
+    if (!strengthBar) return;
+
+    // Calculate strength percentage (0-100)
+    const strengthPercent = Math.round(validation.strength * 100); // Update progress bar
+    const progressFill = strengthBar.querySelector('.password-strength-fill');
+    if (progressFill) {
+        progressFill.style.width = strengthPercent + '%';
+
+        // Update color based on strength
+        progressFill.classList.remove('weak', 'fair', 'good', 'strong');
+        if (strengthPercent < 25) {
+            progressFill.classList.add('weak');
+        } else if (strengthPercent < 50) {
+            progressFill.classList.add('fair');
+        } else if (strengthPercent < 75) {
+            progressFill.classList.add('good');
+        } else {
+            progressFill.classList.add('strong');
+        }
+    }
+
+    // Update strength text
+    if (strengthText) {
+        let strengthLabel = 'Very Weak';
+        if (strengthPercent >= 75) strengthLabel = 'Strong';
+        else if (strengthPercent >= 50) strengthLabel = 'Good';
+        else if (strengthPercent >= 25) strengthLabel = 'Fair';
+        else if (strengthPercent > 0) strengthLabel = 'Weak';
+
+        strengthText.textContent = strengthLabel;
+    }
 }
 
 // Validate password match for force password form
@@ -423,13 +469,28 @@ function resetForcePasswordValidationIndicators() {
         if (element) {
             element.classList.remove('valid', 'invalid');
         }
-    });
-
-    // Clear password match indicator
+    }); // Clear password match indicator
     const matchIndicator = document.getElementById('passwordMatch');
     if (matchIndicator) {
         matchIndicator.textContent = '';
         matchIndicator.className = 'password-match';
+    }
+
+    // Reset password strength bar
+    const strengthBar = document.getElementById('passwordStrengthBar');
+    const strengthText = document.getElementById('passwordStrengthText');
+    if (strengthBar) {
+        const progressFill = strengthBar.querySelector(
+            '.password-strength-fill'
+        );
+        if (progressFill) {
+            progressFill.style.width = '0%';
+            progressFill.classList.remove('weak', 'fair', 'good', 'strong');
+            progressFill.classList.add('weak');
+        }
+    }
+    if (strengthText) {
+        strengthText.textContent = 'Very Weak';
     }
 }
 
