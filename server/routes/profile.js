@@ -329,8 +329,6 @@ router.put(
     sanitizeInput,
     validateRequiredFields(['newPassword']),
     async (req, res) => {
-        console.log('Force password change endpoint hit');
-        console.log('Request body:', req.body);
         try {
             const { newPassword } = req.body;
             const userId = req.user.id;

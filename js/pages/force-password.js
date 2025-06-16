@@ -287,10 +287,8 @@ async function changeForcePassword() {
                 } catch (error) {
                     console.error('Error updating user data');
                 }
-            }
-
-            // Clear the form
-            document.getElementById('forcePasswordForm').reset();
+            } // Clear the form
+            document.getElementById('forcePasswordChangeForm').reset();
             clearForcePasswordErrors();
 
             // Reset password validation indicators
