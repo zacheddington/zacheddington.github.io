@@ -47,6 +47,9 @@ function initializeForcePasswordChangePage() {
     setupForcePasswordForm();
     displayUserInfo();
 
+    // Clear any initial error states
+    clearForcePasswordErrors();
+
     // Focus on new password field
     const newPasswordField = safeGetPasswordField('newPassword');
     if (newPasswordField) {
