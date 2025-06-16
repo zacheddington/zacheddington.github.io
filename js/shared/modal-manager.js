@@ -131,11 +131,13 @@ const modalManager = {
                 });
             }
         }, 10);
-
         if (type === 'success') {
-            // Only redirect to welcome page if we're not on the admin page
+            // Only redirect to welcome page if we're not on admin or patient management pages
             const isAdminPage = window.location.pathname.includes('/admin/');
-            if (!isAdminPage) {
+            const isPatientManagePage = window.location.pathname.includes(
+                '/patients/manage-patients/'
+            );
+            if (!isAdminPage && !isPatientManagePage) {
                 setTimeout(() => {
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
@@ -143,7 +145,7 @@ const modalManager = {
                     }, 450); // FADE_DURATION
                 }, 2000);
             } else {
-                // On admin pages, auto-hide success modal after 4 seconds
+                // On admin or patient management pages, auto-hide success modal after 4 seconds
                 setTimeout(() => {
                     this.closeModal();
                 }, 4000);
