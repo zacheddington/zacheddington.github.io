@@ -270,7 +270,6 @@ async function changeForcePassword() {
                 Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
-                currentPassword: '', // Not needed for forced changes, but server expects it
                 newPassword,
             }),
         });

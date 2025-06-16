@@ -327,10 +327,10 @@ router.put(
     '/user/force-change-password',
     authenticateToken,
     sanitizeInput,
-    validateRequiredFields(['currentPassword', 'newPassword']),
+    validateRequiredFields(['newPassword']),
     async (req, res) => {
         try {
-            const { currentPassword, newPassword } = req.body;
+            const { newPassword } = req.body;
             const userId = req.user.id;
 
             // Validate password security
