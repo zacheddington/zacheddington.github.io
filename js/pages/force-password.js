@@ -313,15 +313,23 @@ async function changeForcePassword() {
     } catch (error) {
         console.error('Force password change failed');
 
-        // Use enhanced error categorization
-        const errorInfo = window.apiClient.categorizeError(error, response);
+        // Extract error message from response or error object
+        let errorMessage = 'Failed to change password. Please try again.';
 
-        // Show appropriate feedback based on error type
-        if (errorInfo.modal) {
-            window.modalManager.showModal('error', errorInfo.message);
-        } else {
-            showForcePasswordError(errorInfo.message);
+        if (error.message) {
+            errorMessage = error.message;
+        } else if (response && response.status === 400) {
+            // Try to get the error message from the response
+            try {
+                const result = await response.json();
+                errorMessage = result.error || result.message || errorMessage;
+            } catch (parseError) {
+                // If we can't parse the response, use default message
+            }
         }
+
+        // Always show modal for better user experience
+        window.modalManager.showModal('error', errorMessage);
     } finally {
         // Reset the guard flag
         changeForcePassword.isRunning = false;

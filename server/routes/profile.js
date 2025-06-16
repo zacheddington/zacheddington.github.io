@@ -258,9 +258,7 @@ router.put(
                     return notFoundResponse(res, 'User');
                 }
 
-                const user = userResult.rows[0];
-
-                // Verify current password
+                const user = userResult.rows[0]; // Verify current password
                 const validPassword = await bcrypt.compare(
                     currentPassword,
                     user.password_hash
@@ -269,6 +267,19 @@ router.put(
                     return errorResponse(
                         res,
                         'Current password is incorrect',
+                        400
+                    );
+                }
+
+                // Check if new password is the same as current password
+                const isSamePassword = await bcrypt.compare(
+                    newPassword,
+                    user.password_hash
+                );
+                if (isSamePassword) {
+                    return errorResponse(
+                        res,
+                        'New password cannot be the same as your current password',
                         400
                     );
                 }
@@ -356,7 +367,6 @@ router.put(
                 if (userResult.rows.length === 0) {
                     return notFoundResponse(res, 'User');
                 }
-
                 const user = userResult.rows[0];
 
                 // For forced password changes, skip current password verification
@@ -373,6 +383,19 @@ router.put(
                             400
                         );
                     }
+                }
+
+                // Check if new password is the same as current password
+                const isSamePassword = await bcrypt.compare(
+                    newPassword,
+                    user.password_hash
+                );
+                if (isSamePassword) {
+                    return errorResponse(
+                        res,
+                        'New password cannot be the same as your current password',
+                        400
+                    );
                 }
 
                 // Hash new password
