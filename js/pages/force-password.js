@@ -294,8 +294,12 @@ async function changeForcePassword() {
             // Reset password validation indicators
             resetForcePasswordValidationIndicators();
 
-            // Show success message and redirect
-            showForcePasswordSuccess();
+            // Show success modal and redirect
+            window.modalManager.showModal(
+                'success',
+                'Password changed successfully! Redirecting to your dashboard...'
+            );
+
             // Redirect based on user role after delay
             setTimeout(() => {
                 if (window.authUtils.isAdmin()) {
