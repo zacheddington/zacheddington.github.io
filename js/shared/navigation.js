@@ -6,7 +6,7 @@ async function loadTopNavigation() {
     try {
         const headerContainer = document.querySelector('.app-header');
         if (!headerContainer) {
-            console.warn('Header container not found');
+            // This is expected on pages like login, force-password-change, etc.
             return;
         } // Check if navigation is already loaded
         const existingNav = headerContainer.querySelector('.top-nav-menu');

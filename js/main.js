@@ -67,8 +67,14 @@ function initializeApp() {
         } // Secure history replacement
         if (window.authUtils.secureHistoryReplacement) {
             window.authUtils.secureHistoryReplacement();
-        } // Load navigation menu for authenticated pages
-        if (window.navigation && window.navigation.loadMenu) {
+        }
+
+        // Load navigation menu for authenticated pages that should have navigation
+        if (
+            shouldHaveNavigation(currentPage) &&
+            window.navigation &&
+            window.navigation.loadMenu
+        ) {
             window.navigation.loadMenu();
         }
     } // Initialize page-specific functionality
@@ -103,6 +109,12 @@ function getCurrentPage() {
 function shouldCheckAuth(page) {
     const publicPages = ['login.html', 'index.html', ''];
     return !publicPages.includes(page);
+}
+
+// Check if page should have navigation menu
+function shouldHaveNavigation(page) {
+    const noNavigationPages = ['force-password.html', '2fa-setup.html'];
+    return !noNavigationPages.includes(page);
 }
 
 // Initialize page-specific functionality

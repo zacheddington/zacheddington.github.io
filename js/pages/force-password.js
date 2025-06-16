@@ -96,9 +96,8 @@ function displayUserInfo() {
         const user = JSON.parse(userStr);
         const userNameElement = document.getElementById('userDisplayName');
         const userEmailElement = document.getElementById('userDisplayEmail');
-
         if (userNameElement) {
-            userNameElement.textContent = `${user.first_name} ${user.last_name}`;
+            userNameElement.textContent = `${user.firstName} ${user.lastName}`;
         }
         if (userEmailElement) {
             userEmailElement.textContent = user.email;
@@ -454,7 +453,6 @@ function closeErrorModal() {
 
 // Expose functions to global scope
 window.forcePasswordPage = {
-    initializeForcePasswordPage,
     initializeForcePasswordChangePage,
     changeForcePassword,
     handleForcePasswordLogout,
