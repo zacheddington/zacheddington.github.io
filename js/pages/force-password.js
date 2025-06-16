@@ -71,7 +71,7 @@ function validateForcePasswordAccess() {
 
     try {
         const user = JSON.parse(userStr);
-        if (!user.force_password_change) {
+        if (!user.passwordChangeRequired) {
             // User doesn't need to change password, redirect based on role
             if (window.authUtils.isAdmin()) {
                 window.location.href = '/admin/';
@@ -301,7 +301,7 @@ async function changeForcePassword() {
             if (userStr) {
                 try {
                     const user = JSON.parse(userStr);
-                    user.force_password_change = false;
+                    user.passwordChangeRequired = false;
                     localStorage.setItem('user', JSON.stringify(user));
                 } catch (error) {
                     console.error('Error updating user data');

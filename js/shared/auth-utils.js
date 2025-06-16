@@ -187,6 +187,33 @@ function isAuthenticated() {
     }
 }
 
+// Check if user needs to change password and redirect if necessary
+function checkPasswordChangeRequired() {
+    const userStr = localStorage.getItem('user');
+
+    if (!userStr) {
+        return false;
+    }
+
+    try {
+        const user = JSON.parse(userStr);
+
+        // If user needs to change password and is not on the force password change page
+        if (
+            user.passwordChangeRequired &&
+            !window.location.pathname.startsWith('/force-password-change/')
+        ) {
+            window.location.href = '/force-password-change/';
+            return true; // Indicates redirect was triggered
+        }
+
+        return false; // No redirect needed
+    } catch (error) {
+        console.error('Error parsing user data for password check');
+        return false;
+    }
+}
+
 // Utility functions for admin detection and menu management
 function isUserAdmin(userData) {
     if (!userData) {
@@ -448,6 +475,7 @@ async function logout(reason = 'User logout') {
 // Make authentication utilities available globally
 window.authUtils = {
     isAuthenticated,
+    checkPasswordChangeRequired,
     isAdmin: isUserAdmin,
     isUserAdmin: isUserAdmin, // Add this for navigation.js compatibility
     updateAdminUI,

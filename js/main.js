@@ -35,13 +35,19 @@ let currentPage = null;
 // Initialize application
 function initializeApp() {
     // Determine current page
-    currentPage = getCurrentPage();
-
-    // Check authentication for protected pages
+    currentPage = getCurrentPage(); // Check authentication for protected pages
     if (shouldCheckAuth(currentPage)) {
         if (!window.authUtils.isAuthenticated()) {
             window.location.href = '/';
             return;
+        }
+
+        // Check if user needs to change password
+        if (
+            window.authUtils.checkPasswordChangeRequired &&
+            window.authUtils.checkPasswordChangeRequired()
+        ) {
+            return; // Redirect was triggered, stop further initialization
         }
 
         // Initialize global token monitoring for authenticated pages

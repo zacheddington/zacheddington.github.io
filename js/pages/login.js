@@ -244,10 +244,8 @@ async function performLogin() {
             localStorage.setItem('user', JSON.stringify(user));
 
             // Mark login as successful to prevent button re-enabling
-            loginSuccessful = true;
-
-            // Check if user needs to change password
-            if (user && user.force_password_change) {
+            loginSuccessful = true; // Check if user needs to change password
+            if (user && user.passwordChangeRequired) {
                 window.location.href = '/force-password-change/';
                 return;
             }
