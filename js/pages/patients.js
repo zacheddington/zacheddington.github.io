@@ -96,22 +96,16 @@ function getCurrentPageType() {
 // Initialize the patients index page (choice page)
 function initializePatientsIndexPage() {
     // No specific initialization needed for choice page
-    console.log('Patients index page initialized');
 }
 
 // Initialize the create patient page
 function initializeCreatePatientPage() {
     // Setup create patient form
     setupCreatePatientForm();
-
-    console.log('Create patient page initialized');
 }
 
 // Initialize the manage patients page
 async function initializeManagePatientsPage() {
-    console.log('🔍 Current URL:', window.location.href);
-    console.log('🔍 Document ready state:', document.readyState);
-
     // Check if required elements exist
     const patientsTableBody = document.getElementById('patientsTableBody');
     const patientsLoading = document.getElementById('patientsLoading');
@@ -120,20 +114,8 @@ async function initializeManagePatientsPage() {
         'managePatientsSection'
     );
 
-    console.log('🔍 Required elements:', {
-        patientsTableBody: !!patientsTableBody,
-        patientsLoading: !!patientsLoading,
-        patientsTable: !!patientsTable,
-        managePatientsSection: !!managePatientsSection,
-        apiClient: !!window.apiClient,
-    });
-
     if (!patientsTableBody) {
         console.error('❌ patientsTableBody element not found!');
-        console.log('🔍 Available elements with "patients" in ID:');
-        document.querySelectorAll('[id*="patients"]').forEach((el) => {
-            console.log('   -', el.id, el.tagName);
-        });
     }
 
     if (!patientsLoading) {
@@ -141,18 +123,14 @@ async function initializeManagePatientsPage() {
     }
 
     // Load patients and setup patient management
-    console.log('🔍 About to call loadPatients()...');
     try {
         await loadPatients();
-        console.log('🔍 loadPatients completed successfully');
     } catch (error) {
         console.error('❌ Error calling loadPatients:', error);
         console.error('❌ Error stack:', error.stack);
     }
-
     try {
         setupPatientFilter();
-        console.log('🔍 setupPatientFilter completed successfully');
     } catch (error) {
         console.error('❌ Error calling setupPatientFilter:', error);
     } // Setup edit patient modal
@@ -196,51 +174,6 @@ async function initializeManagePatientsPage() {
             window.lastPatientWidth = window.innerWidth;
         }, 250)
     );
-
-    console.log('🔍 Manage patients page initialized');
-
-    // Check final state after a short delay
-    setTimeout(() => {
-        const patientsLoading = document.getElementById('patientsLoading');
-        const patientsTableBody = document.getElementById('patientsTableBody');
-        const table = document.getElementById('patientsTable');
-
-        console.log('🔍 FINAL STATE CHECK:');
-        console.log('🔍 Loading element:', {
-            exists: !!patientsLoading,
-            display: patientsLoading?.style.display,
-            computedDisplay: patientsLoading
-                ? window.getComputedStyle(patientsLoading).display
-                : 'N/A',
-            visible: patientsLoading
-                ? !patientsLoading.classList.contains('hidden')
-                : 'N/A',
-        });
-        console.log('🔍 Table body:', {
-            exists: !!patientsTableBody,
-            childCount: patientsTableBody?.children.length || 0,
-            innerHTML: patientsTableBody?.innerHTML.substring(0, 100) || 'N/A',
-        });
-        console.log('🔍 Table:', {
-            exists: !!table,
-            display: table?.style.display,
-            computedDisplay: table
-                ? window.getComputedStyle(table).display
-                : 'N/A',
-        });
-    }, 1000);
-
-    // Check if modal is visible on page load
-    setTimeout(() => {
-        const modal = document.getElementById('editPatientModal');
-        if (modal) {
-            console.log('🔍 Modal state after initialization:', {
-                display: modal.style.display,
-                computed: window.getComputedStyle(modal).display,
-                classList: modal.classList.toString(),
-            });
-        }
-    }, 1000);
 }
 
 // Simple debounce function to limit how often a function is called
@@ -817,8 +750,6 @@ function clearCreatePatientErrors() {
 
 // Load all patients from the server
 async function loadPatients() {
-    console.log('🔍 Starting to load patients...');
-
     try {
         // Check if apiClient is available
         if (!window.apiClient) {
@@ -829,46 +760,22 @@ async function loadPatients() {
         const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
 
-        console.log('🔍 API URL:', API_URL);
-        console.log('🔍 Token exists:', !!token);
-        console.log(
-            '🔍 Token value (first 20 chars):',
-            token ? token.substring(0, 20) + '...' : 'null'
-        );
-
         const patientsLoading = document.getElementById('patientsLoading');
         const patientsTableBody = document.getElementById('patientsTableBody');
 
-        console.log('🔍 DOM elements:', {
-            patientsLoading: !!patientsLoading,
-            patientsTableBody: !!patientsTableBody,
-        });
-
         if (patientsLoading) {
             patientsLoading.style.display = 'block';
-            console.log('🔍 Set loading message to visible');
         }
         if (patientsTableBody) {
             patientsTableBody.innerHTML = '';
-            console.log('🔍 Cleared table body');
-        }
-
-        console.log('🔍 Making fetch request to:', `${API_URL}/api/patients`);
-        console.log('🔍 About to start fetch request...');
-
-        // Add a test to simulate data if database is unavailable
+        } // Add a test to simulate data if database is unavailable
         if (API_URL.includes('localhost') && !window.FORCE_REAL_API) {
-            console.log(
-                '🔍 Local development detected, checking if we should use test data...'
-            );
-
             // Test if API is actually available
             try {
                 const testResponse = await fetch(`${API_URL}/api/health`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 if (!testResponse.ok) {
-                    console.log('🔍 API health check failed, using test data');
                     // Use test data for debugging
                     const testPatients = [
                         {
@@ -888,74 +795,40 @@ async function loadPatients() {
                         },
                     ];
 
-                    console.log('🔍 Using test patients:', testPatients);
                     allPatients = testPatients;
-                    console.log('🔍 Setting up patient table sorting...');
                     setupPatientTableSorting();
-                    console.log('🔍 Getting sorted patients...');
                     const sortedPatients = getSortedPatients();
-                    console.log(
-                        '🔍 Sorted patients:',
-                        sortedPatients?.length || 0
-                    );
 
-                    console.log('🔍 Using default display for test data');
                     displayPatients(sortedPatients);
 
                     if (patientsLoading) {
                         patientsLoading.style.display = 'none';
-                        console.log('🔍 Hid loading indicator (test data)');
                     }
                     return;
                 }
             } catch (healthError) {
-                console.log(
-                    '🔍 Health check failed, continuing with normal flow...'
-                );
+                // Health check failed, continuing with normal flow...
             }
         }
-
-        console.log('🔍 About to start fetch request...');
-
         const response = await fetch(`${API_URL}/api/patients`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         });
 
-        console.log('🔍 Fetch completed, response received');
-        console.log('🔍 Response status:', response.status);
-        console.log('🔍 Response ok:', response.ok);
-
         if (response.ok) {
-            console.log('🔍 Response is OK, parsing JSON...');
             const result = await response.json();
-            console.log('🔍 JSON parsed, response data:', result);
-
             allPatients = result.data; // Extract data from response object
-            console.log(
-                '🔍 All patients loaded:',
-                allPatients?.length || 0,
-                'patients'
-            );
 
-            console.log('🔍 Setting up patient table sorting...');
             setupPatientTableSorting();
-            console.log('🔍 Getting sorted patients...');
             const sortedPatients = getSortedPatients();
-            console.log('🔍 Sorted patients:', sortedPatients?.length || 0);
 
             // Force clear column widths to fix display issues
-            console.log(
-                '🔍 Clearing all saved column widths to fix display issue'
-            );
             localStorage.removeItem('patientTableColumnWidths');
 
             // Always use default display for now
-            console.log('🔍 Using default display (no saved widths)');
             displayPatients(sortedPatients);
         } else {
-            console.log('🔍 Response not ok, status:', response.status);
             // Use global auth error handler for consistent experience
             if (response.status === 401 || response.status === 403) {
                 window.handleAuthError(response, 'loading patients');
@@ -971,18 +844,9 @@ async function loadPatients() {
                 '<tr><td colspan="7" style="text-align: center; color: #dc3545;">Error loading patients. Please try again.</td></tr>';
         }
     } finally {
-        console.log('🔍 Hiding loading indicator');
         const patientsLoading = document.getElementById('patientsLoading');
         if (patientsLoading) {
-            console.log(
-                '🔍 Loading element found, current display:',
-                patientsLoading.style.display
-            );
             patientsLoading.style.display = 'none';
-            console.log(
-                '🔍 Loading element display set to none, new display:',
-                patientsLoading.style.display
-            );
         } else {
             console.error('❌ Loading element not found!');
         }
@@ -1209,21 +1073,9 @@ function getSortedPatientsFallback() {
 
 // Display patients in the table
 function displayPatients(patients) {
-    console.log(
-        '🔍 displayPatients called with:',
-        patients?.length || 0,
-        'patients'
-    );
-
     const patientsTableBody = document.getElementById('patientsTableBody');
     const noPatientsFound = document.getElementById('noPatientsFound');
     const tableContainer = document.querySelector('.table-responsive');
-
-    console.log('🔍 displayPatients DOM elements:', {
-        patientsTableBody: !!patientsTableBody,
-        noPatientsFound: !!noPatientsFound,
-        tableContainer: !!tableContainer,
-    });
 
     if (!patientsTableBody) {
         console.error('❌ patientsTableBody not found in displayPatients');
@@ -1301,34 +1153,18 @@ function displayPatients(patients) {
                     <div class="patient-actions">
                         ${editButton}
                         ${deleteButton}
-                    </div>
-                </td>
+                    </div>                </td>
             </tr>
         `;
-
-            // Debug first row
-            if (index === 0) {
-                console.log('🔍 First row HTML:', rowHtml);
-                console.log('🔍 Row data:', {
-                    fullName,
-                    dateOfBirth,
-                    formattedPhone,
-                    acceptsTexts,
-                    address: patient.address,
-                    createdDate,
-                });
-            }
 
             return rowHtml;
         })
         .join('');
-    console.log('🔍 Setting table HTML...');
     patientsTableBody.innerHTML = htmlRows;
 
     // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE
     const table = document.getElementById('patientsTable');
     if (table) {
-        console.log('🔍 FORCING table layout reset...');
         table.style.tableLayout = 'auto';
         table.style.width = '100%';
 
@@ -1343,73 +1179,7 @@ function displayPatients(patients) {
             th.style.width = 'auto';
             th.style.minWidth = '';
         });
-
-        console.log('🔍 Table layout reset completed');
     }
-    // Check final result
-    setTimeout(() => {
-        console.log(
-            '🔍 Final DOM check - Table rows created:',
-            patientsTableBody.children.length
-        );
-        if (patientsTableBody.children.length > 0) {
-            const firstRow = patientsTableBody.children[0];
-            console.log('🔍 Final check - First row HTML:', firstRow.outerHTML);
-            console.log(
-                '🔍 Final check - Cell contents:',
-                Array.from(firstRow.children).map((cell, index) => ({
-                    index,
-                    className: cell.className,
-                    textContent: cell.textContent.trim().substring(0, 50),
-                }))
-            );
-        }
-        if (patientsTableBody.children.length > 0) {
-            const firstRow = patientsTableBody.children[0];
-            console.log(
-                '🔍 Final first row cell count:',
-                firstRow.children.length
-            );
-            console.log(
-                '🔍 Final first row cells:',
-                Array.from(firstRow.children).map(
-                    (cell, index) =>
-                        `${index}: ${cell.textContent.trim().substring(0, 30)}`
-                )
-            );
-
-            // Check table header structure vs cells
-            const table = document.getElementById('patientsTable');
-            const headers = table.querySelectorAll('thead th');
-            console.log('🔍 Table headers count:', headers.length);
-            console.log(
-                '🔍 Table headers:',
-                Array.from(headers).map(
-                    (th, index) => `${index}: ${th.textContent.trim()}`
-                )
-            );
-
-            // Check if headers and cells match
-            console.log('🔍 CRITICAL: Header vs Cell mapping:');
-            Array.from(headers).forEach((header, index) => {
-                const cell = firstRow.children[index];
-                console.log(
-                    `   ${index}: Header="${header.textContent.trim()}" → Cell="${
-                        cell
-                            ? cell.textContent.trim().substring(0, 30)
-                            : 'MISSING'
-                    }"`
-                );
-            });
-
-            // Check for potential CSS layout issues
-            console.log('🔍 Table computed styles:', {
-                tableLayout: getComputedStyle(table).tableLayout,
-                borderCollapse: getComputedStyle(table).borderCollapse,
-                width: getComputedStyle(table).width,
-            });
-        }
-    }, 100);
 
     // Adjust column widths after rendering
     setTimeout(adjustPatientColumnWidths, 100);
@@ -1420,24 +1190,10 @@ function displayPatients(patients) {
 
 // Display patients in the table while preserving column widths
 function displayPatientsPreserveWidths(patients, columnWidths = []) {
-    console.log('🔍 displayPatientsPreserveWidths called with:', {
-        patientsCount: patients?.length || 0,
-        columnWidthsCount: columnWidths?.length || 0,
-        firstPatient: patients?.[0] || null,
-        patients: patients,
-    });
-
     const patientsTableBody = document.getElementById('patientsTableBody');
     const noPatientsFound = document.getElementById('noPatientsFound');
     const tableContainer = document.querySelector('.table-responsive');
     const table = document.querySelector('#patientsTable');
-
-    console.log('🔍 DOM elements for display:', {
-        patientsTableBody: !!patientsTableBody,
-        table: !!table,
-        tableContainer: !!tableContainer,
-        noPatientsFound: !!noPatientsFound,
-    });
 
     if (!patientsTableBody || !table) {
         console.error('❌ Required DOM elements missing for patient display');
@@ -1446,31 +1202,24 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
 
     // Check for empty results
     if (patients.length === 0) {
-        console.log('🔍 No patients to display, showing no results message');
         patientsTableBody.innerHTML = '';
         if (noPatientsFound) noPatientsFound.classList.remove('hidden');
         return;
     }
-
-    console.log('🔍 Displaying patients, hiding no results message');
     if (noPatientsFound) noPatientsFound.classList.add('hidden');
 
     // Reset scroll position when displaying new data
     if (tableContainer) {
         tableContainer.scrollLeft = 0;
-    } // Set the table to auto layout to allow proper expansion
+    }
+
+    // Set the table to auto layout to allow proper expansion
     table.style.tableLayout = 'auto';
-    table.style.minWidth = 'max-content'; // Allow table to expand as needed    // Update the table body with new data
+    table.style.minWidth = 'max-content'; // Allow table to expand as needed
+
+    // Update the table body with new data
     const patientRows = patients
         .map((patient, index) => {
-            // Debug log for first patient
-            if (index === 0) {
-                console.log('🔍 First patient data:', patient);
-                console.log('🔍 Address field:', patient.address);
-                console.log('🔍 Created at field:', patient.created_at);
-                console.log('🔍 Phone field:', patient.phone);
-            }
-
             const fullName = patient.middle_name
                 ? `${patient.first_name} ${patient.middle_name} ${patient.last_name}`
                 : `${patient.first_name} ${patient.last_name}`;
@@ -1485,7 +1234,9 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
 
             const createdDate = patient.created_at
                 ? new Date(patient.created_at).toLocaleDateString()
-                : 'No date'; // Format date of birth without timezone issues
+                : 'No date';
+
+            // Format date of birth without timezone issues
             const dateOfBirth = formatDateForDisplay(patient.date_of_birth);
 
             // Check if user can delete patients
@@ -1539,57 +1290,14 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
         `;
         })
         .join('');
-    console.log(
-        '🔍 Generated patient rows HTML (first 200 chars):',
-        patientRows.substring(0, 200)
-    );
-    console.log('🔍 Total HTML length:', patientRows.length);
-    console.log(
-        '🔍 First row HTML (full):',
-        patients.length > 0
-            ? patientRows.split('</tr>')[0] + '</tr>'
-            : 'No patients'
-    );
 
     patientsTableBody.innerHTML = patientRows; // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE (same as displayPatients)
     const patientTable = document.querySelector('#patientsTable');
     if (patientTable) {
-        console.log(
-            '🔍 FORCING table layout reset in displayPatientsPreserveWidths...'
-        );
         patientTable.style.tableLayout = 'auto';
-        patientTable.style.width = '100%';
-
-        // Force recalculation by temporarily changing display
-        patientTable.style.display = 'none';
+        patientTable.style.width = '100%'; // Force recalculation by temporarily changing display        patientTable.style.display = 'none';
         patientTable.offsetHeight; // Force reflow
         patientTable.style.display = 'table';
-
-        console.log(
-            '🔍 Table layout reset completed in displayPatientsPreserveWidths'
-        );
-    }
-
-    console.log(
-        '🔍 Table body innerHTML set, current content length:',
-        patientsTableBody.innerHTML.length
-    );
-    console.log(
-        '🔍 Table body child count:',
-        patientsTableBody.children.length
-    );
-
-    // Check the first row's cell count
-    if (patientsTableBody.children.length > 0) {
-        const firstRow = patientsTableBody.children[0];
-        console.log('🔍 First row cell count:', firstRow.children.length);
-        console.log(
-            '🔍 First row cells:',
-            Array.from(firstRow.children).map(
-                (cell, index) =>
-                    `${index}: ${cell.textContent.trim().substring(0, 20)}`
-            )
-        );
     }
 
     // Reapply column widths if provided
@@ -1673,9 +1381,6 @@ function setupPatientFilter() {
 
 // Edit patient functionality
 async function editPatient(patientId) {
-    console.log('🔍 EditPatient function called with ID:', patientId);
-    console.log('🔍 Call stack:', new Error().stack);
-
     // Check if user has permission to edit patients
     if (!canDeletePatients()) {
         alert('You do not have permission to edit patients.');
@@ -1705,7 +1410,6 @@ async function editPatient(patientId) {
         }
 
         const patient = result.data;
-        console.log('Patient data:', patient);
 
         // Fill the form with patient data
         document.getElementById('editPatientFirstName').value =
@@ -1760,15 +1464,14 @@ async function editPatient(patientId) {
             patient.street_2 || '';
         document.getElementById('editPatientCity').value = patient.city || '';
         document.getElementById('editPatientState').value = patient.state || '';
-        document.getElementById('editPatientZip').value = patient.zip || '';
-
-        // Store patient ID for form submission
+        document.getElementById('editPatientZip').value = patient.zip || ''; // Store patient ID for form submission
         document
             .getElementById('editPatientForm')
-            .setAttribute('data-patient-id', patientId); // Show the modal
+            .setAttribute('data-patient-id', patientId);
+
+        // Show the modal
         const modal = document.getElementById('editPatientModal');
         modal.style.display = 'block';
-        console.log('🔍 Modal display set to block, should now be visible');
 
         // Initialize structured address for the edit form
         if (window.StructuredAddress) {
@@ -1791,8 +1494,6 @@ async function editPatient(patientId) {
 
 // Delete patient functionality
 async function deletePatient(patientId, patientName) {
-    console.log('🔍 DeletePatient function called with ID:', patientId);
-
     try {
         // Show styled confirmation modal instead of browser confirm
         const modal = document.getElementById('deletePatientModal');
@@ -1847,12 +1548,9 @@ async function deletePatient(patientId, patientName) {
                 }
 
                 const data = await response.json();
-
                 if (!data.success) {
                     throw new Error(data.message || 'Failed to delete patient');
                 }
-
-                console.log('✅ Patient deleted successfully');
 
                 // Show success message
                 if (window.modalManager && window.modalManager.showModal) {
@@ -1860,9 +1558,7 @@ async function deletePatient(patientId, patientName) {
                         'success',
                         'Patient deleted successfully.'
                     );
-                }
-
-                // Reload the patients list to reflect the change
+                } // Reload the patients list to reflect the change
                 await loadPatients();
             } catch (error) {
                 console.error('❌ Error deleting patient:', error);
@@ -1893,20 +1589,15 @@ window.closeDeletePatientModal = closeDeletePatientModal;
 
 // Close edit patient modal
 function closeEditPatientModal() {
-    console.log('🔍 Attempting to close edit patient modal...');
-
     const modal = document.getElementById('editPatientModal');
     if (modal) {
-        console.log('🔍 Modal found, current display:', modal.style.display);
         modal.style.display = 'none';
-        console.log('🔍 Modal display set to none');
 
         // Clear form data
         const form = document.getElementById('editPatientForm');
         if (form) {
             form.reset();
             form.removeAttribute('data-patient-id');
-            console.log('🔍 Form reset and patient ID cleared');
         }
     } else {
         console.error('❌ Modal not found when trying to close');
@@ -1952,19 +1643,10 @@ async function handleEditPatientSubmit(event) {
         state: formData.get('state'),
         zip: formData.get('zip'),
     };
-    console.log('Updating patient:', patientId, patientData);
 
     // Get API URL
     const API_URL = window.apiClient.getAPIUrl();
     const token = localStorage.getItem('token');
-
-    console.log('🔍 UPDATE DEBUG - API URL:', API_URL);
-    console.log('🔍 UPDATE DEBUG - Patient ID:', patientId);
-    console.log('🔍 UPDATE DEBUG - Token exists:', !!token);
-    console.log(
-        '🔍 UPDATE DEBUG - Full URL:',
-        `${API_URL}/api/patients/${patientId}`
-    );
 
     // Show loading state
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -1984,15 +1666,8 @@ async function handleEditPatientSubmit(event) {
             body: JSON.stringify(patientData),
         });
 
-        console.log('🔍 UPDATE DEBUG - Response status:', response.status);
-        console.log(
-            '🔍 UPDATE DEBUG - Response headers:',
-            Object.fromEntries(response.headers.entries())
-        );
-
         if (!response.ok) {
             const errorText = await response.text();
-            console.log('🔍 UPDATE DEBUG - Error response body:', errorText);
             throw new Error(
                 `HTTP error! status: ${response.status}, body: ${errorText}`
             );
@@ -2320,26 +1995,14 @@ function getTextWidth(text, font) {
 
 // Setup edit patient modal functionality
 function setupEditPatientModal() {
-    console.log('🔍 Setting up edit patient modal...');
-
     const modal = document.getElementById('editPatientModal');
     const closeBtn = modal.querySelector('.close');
     const editPatientForm = document.getElementById('editPatientForm');
-
-    console.log('🔍 Modal elements found:', {
-        modal: !!modal,
-        closeBtn: !!closeBtn,
-        editPatientForm: !!editPatientForm,
-        modalDisplay: modal?.style.display,
-    });
 
     if (!modal || !closeBtn || !editPatientForm) {
         console.error('❌ Missing modal elements, aborting setup');
         return;
     }
-
-    // Check initial modal state
-    console.log('🔍 Initial modal display state:', modal.style.display);
 
     // Variables to track mouse events for proper click-outside detection
     let mouseDownTarget = null;
@@ -2347,7 +2010,6 @@ function setupEditPatientModal() {
 
     // Close modal when clicking the X button
     closeBtn.addEventListener('click', function () {
-        console.log('🔍 Close button clicked');
         closeEditPatientModal();
     });
 
@@ -2367,9 +2029,6 @@ function setupEditPatientModal() {
             mouseDownTarget === modal &&
             mouseUpTarget === modal
         ) {
-            console.log(
-                '🔍 Click outside modal detected (both down and up on modal background)'
-            );
             closeEditPatientModal();
         }
 
@@ -2379,15 +2038,14 @@ function setupEditPatientModal() {
     });
 
     // Handle form submission
-    editPatientForm.addEventListener('submit', handleEditPatientSubmit);
-
-    // Close modal on Escape key
+    editPatientForm.addEventListener('submit', handleEditPatientSubmit); // Close modal on Escape key
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape' && modal.style.display === 'block') {
-            console.log('🔍 Escape key pressed');
             closeEditPatientModal();
         }
-    }); // Setup phone number formatting for edit form
+    });
+
+    // Setup phone number formatting for edit form
     setupEditFormPhoneFormatting();
 
     // Setup date validation for edit form
@@ -2404,8 +2062,6 @@ function setupEditFormPhoneFormatting() {
         console.warn('⚠️ Phone input not found in edit form');
         return;
     }
-
-    console.log('🔍 Setting up phone formatting for edit form');
 
     // Format phone number as user types
     phoneInput.addEventListener('input', function (e) {
@@ -2481,8 +2137,6 @@ function setupEditFormDateValidation() {
         return;
     }
 
-    console.log('🔍 Setting up date validation for edit form');
-
     // Simple validation on change (when user finishes editing)
     dateInput.addEventListener('change', function (e) {
         const value = e.target.value;
@@ -2547,8 +2201,6 @@ function setupEditFormZipFormatting() {
         console.warn('⚠️ Zip code input not found in edit form');
         return;
     }
-
-    console.log('🔍 Setting up zip code formatting for edit form');
 
     // Format zip code as user types
     zipInput.addEventListener('input', function (e) {
@@ -2665,12 +2317,4 @@ if (typeof window !== 'undefined') {
         closeEditPatientModal,
         closeDeletePatientModal,
     };
-    console.log(
-        '🔍 PATIENTS.JS: Successfully exported window.patientsPage:',
-        window.patientsPage
-    );
-    console.log(
-        '🔍 PATIENTS.JS: Available functions:',
-        Object.keys(window.patientsPage)
-    );
 }

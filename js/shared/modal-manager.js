@@ -5,7 +5,6 @@ const modalManager = {
     isShowingModal: false,
     showModal: function (type, message, forceShow = false) {
         if (this.isShowingModal && !forceShow) {
-            console.log('Modal already showing, skipping new modal');
             return false;
         }
 
@@ -276,7 +275,6 @@ const modalManager = {
     },
     showConfirmModal: function (title, message, onConfirm, onCancel) {
         if (this.isShowingModal) {
-            console.log('Modal already showing, skipping new modal');
             return false;
         }
 

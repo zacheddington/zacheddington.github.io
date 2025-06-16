@@ -3,8 +3,6 @@
 
 // Initialize login page functionality
 function initializeLoginPage() {
-    console.log('🔐 Initializing login page...');
-
     // Clear form fields first
     clearLoginFormFields();
 
@@ -16,7 +14,6 @@ function initializeLoginPage() {
     if (usernameField && !usernameField.value) {
         setTimeout(() => usernameField.focus(), 100);
     }
-    console.log('✅ Login page initialization complete');
 }
 
 // Clear login form fields
@@ -52,7 +49,6 @@ function clearStoredCredentials() {
 
 // Set up login form functionality
 function setupLoginForm() {
-    console.log('📝 Setting up login form...');
     const loginForm = document.getElementById('loginForm');
     if (!loginForm) {
         console.error('❌ Login form not found!');
@@ -64,7 +60,6 @@ function setupLoginForm() {
 
     // Handle form submission
     loginForm.addEventListener('submit', async function (e) {
-        console.log('🚀 Form submitted, preventing default...');
         e.preventDefault();
         await performLogin();
     });
@@ -74,13 +69,11 @@ function setupLoginForm() {
     if (passwordField) {
         passwordField.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
-                console.log('⏎ Enter key pressed, preventing default...');
                 e.preventDefault();
                 performLogin();
             }
         });
     }
-    console.log('✅ Login form setup complete');
 }
 
 // Set up login form field validation
@@ -144,7 +137,6 @@ function validateUsernameField() {
 async function performLogin() {
     // Prevent multiple simultaneous login attempts
     if (performLogin.isRunning) {
-        console.log('🚫 Login already in progress, ignoring duplicate request');
         return;
     }
 
@@ -227,10 +219,8 @@ async function performLogin() {
 
         // Handle 2FA required case first, before checking response.ok
         if (response.status === 400 && result.error === '2FA token required') {
-            console.log('🔐 Server requesting 2FA token (expected response)');
             // Only show 2FA step if we're currently on credentials step
             if (!isOnTwofaStep) {
-                console.log('🔐 2FA required, transitioning to 2FA step...');
                 show2FAStep();
                 // Reset the guard flag since we're transitioning steps
                 performLogin.isRunning = false;

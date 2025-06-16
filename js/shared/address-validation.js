@@ -33,9 +33,6 @@ function initializeAddressValidation(provider = 'google', key = null) {
 
     // Demo mode doesn't require an API key
     if (currentProvider === 'demo') {
-        console.log(
-            `📍 Address validation initialized with ${ADDRESS_PROVIDERS[provider].name}`
-        );
         return true;
     }
 
@@ -44,9 +41,6 @@ function initializeAddressValidation(provider = 'google', key = null) {
             '⚠️ Address validation: No API key provided. Falling back to demo mode.'
         );
         currentProvider = 'demo';
-        console.log(
-            `📍 Address validation initialized with ${ADDRESS_PROVIDERS.demo.name}`
-        );
         return true;
     }
 
@@ -55,9 +49,6 @@ function initializeAddressValidation(provider = 'google', key = null) {
         return loadGooglePlacesAPI();
     }
 
-    console.log(
-        `📍 Address validation initialized with ${ADDRESS_PROVIDERS[provider].name}`
-    );
     return true;
 }
 
@@ -66,7 +57,6 @@ function loadGooglePlacesAPI() {
     return new Promise((resolve, reject) => {
         // Check if already loaded
         if (window.google && window.google.maps && window.google.maps.places) {
-            console.log('📍 Google Places API already loaded');
             resolve(true);
             return;
         }
@@ -81,7 +71,6 @@ function loadGooglePlacesAPI() {
                     window.google.maps.places
                 ) {
                     clearInterval(checkLoaded);
-                    console.log('📍 Google Places API loaded successfully');
                     resolve(true);
                 }
             }, 100);
@@ -98,7 +87,6 @@ function loadGooglePlacesAPI() {
         // Use the proper callback method for Google Maps API loading
         const callbackName = 'initGoogleMapsCallback_' + Date.now();
         window[callbackName] = function () {
-            console.log('📍 Google Places API loaded successfully');
             delete window[callbackName]; // Clean up
             resolve(true);
         };
@@ -134,10 +122,6 @@ function loadGooglePlacesAPI() {
 
 // Setup address autocomplete for a specific input field
 function setupAddressAutocomplete(inputId, options = {}) {
-    console.log('🔧 Setting up address autocomplete for:', inputId);
-    console.log('🔧 Current provider:', currentProvider);
-    console.log('🔧 API key available:', !!apiKey);
-
     const input = document.getElementById(inputId);
     if (!input) {
         console.error(
@@ -145,8 +129,6 @@ function setupAddressAutocomplete(inputId, options = {}) {
         );
         return;
     }
-
-    console.log('✅ Input field found:', input);
 
     // Demo mode or API key is required
     if (!apiKey && currentProvider !== 'demo') {
@@ -166,19 +148,11 @@ function setupAddressAutocomplete(inputId, options = {}) {
         onSelect: null, // Callback when address is selected
         onError: null, // Callback for errors
     };
-
-    const config = { ...defaultOptions, ...options };
-    console.log('🔧 Autocomplete config:', config);
-
-    // Create autocomplete container
-    console.log('🔧 Creating autocomplete container...');
+    const config = { ...defaultOptions, ...options }; // Create autocomplete container
     const container = createAutocompleteContainer(input);
 
     // Setup event listeners
-    console.log('🔧 Setting up autocomplete events...');
     setupAutocompleteEvents(input, container, config);
-
-    console.log(`✅ Address autocomplete setup complete for ${inputId}`);
 }
 
 // Create the autocomplete dropdown container
@@ -218,39 +192,23 @@ function setupAutocompleteEvents(input, container, config) {
     let selectedIndex = -1;
     let isSelectingAddress = false; // Flag to prevent autocomplete after selection    // Input event handler with debouncing
     input.addEventListener('input', function (e) {
-        console.log('🔧 Input event triggered, value:', e.target.value);
-
         // Skip if we're in the middle of selecting an address
         if (isSelectingAddress) {
-            console.log('🔧 Skipping - address selection in progress');
             isSelectingAddress = false;
             return;
         }
 
         const query = e.target.value.trim();
-        console.log(
-            '🔧 Query after trim:',
-            query,
-            'Length:',
-            query.length,
-            'Min length:',
-            config.minLength
-        );
 
         clearTimeout(debounceTimer);
 
         if (query.length < config.minLength) {
-            console.log('🔧 Query too short, hiding autocomplete');
             hideAutocomplete(container);
             return;
         }
-
-        console.log('🔧 Setting debounce timer for', config.debounceMs, 'ms');
         debounceTimer = setTimeout(() => {
-            console.log('🔧 Debounce timer fired, searching for:', query);
             searchAddresses(query, config)
                 .then((results) => {
-                    console.log('✅ Search results:', results);
                     showAutocompleteResults(container, results, config, input);
                 })
                 .catch((error) => {
@@ -316,18 +274,9 @@ function setupAutocompleteEvents(input, container, config) {
 
 // Search for addresses using the configured provider
 async function searchAddresses(query, config) {
-    console.log(
-        '🔧 searchAddresses called with:',
-        query,
-        'Provider:',
-        currentProvider
-    );
-
     if (currentProvider === 'google') {
-        console.log('🔧 Using Google Places API');
         return searchGooglePlaces(query, config);
     } else if (currentProvider === 'demo') {
-        console.log('🔧 Using demo mode');
         return searchDemoAddresses(query, config);
     }
     // Add other providers here
@@ -487,8 +436,6 @@ async function searchGooglePlaces(query, config) {
 
 // Demo/Mock address search for testing and development
 function searchDemoAddresses(query, config) {
-    console.log('🔧 searchDemoAddresses called with query:', query);
-
     return new Promise((resolve) => {
         // Simulate API delay
         setTimeout(() => {
@@ -541,13 +488,6 @@ function searchDemoAddresses(query, config) {
                     addr.description.toLowerCase().includes(query.toLowerCase())
                 )
                 .slice(0, config.maxResults);
-
-            console.log(
-                '✅ Demo search returning',
-                filteredResults.length,
-                'results for:',
-                query
-            );
             resolve(filteredResults);
         }, 200); // Simulate 200ms API delay
     });
@@ -692,82 +632,23 @@ async function validateAddress(address) {
 
 // Diagnostic function to test address autocomplete setup
 function diagnoseAddressAutocomplete() {
-    console.log('🔍 DIAGNOSTIC: Address Autocomplete Status');
-    console.log('=====================================');
-
     // Check modules
     const hasAddressValidation =
         typeof window.addressValidation !== 'undefined';
     const hasStructuredAddress =
-        typeof window.structuredAddress !== 'undefined';
-    console.log(
-        '✅ addressValidation module:',
-        hasAddressValidation ? '✅ Available' : '❌ Missing'
-    );
-    console.log(
-        '✅ structuredAddress module:',
-        hasStructuredAddress ? '✅ Available' : '❌ Missing'
-    );
-
-    // Check Google Places API
+        typeof window.structuredAddress !== 'undefined'; // Check Google Places API
     const hasGoogle = typeof window.google !== 'undefined';
     const hasMaps = hasGoogle && typeof window.google.maps !== 'undefined';
     const hasPlaces =
-        hasMaps && typeof window.google.maps.places !== 'undefined';
-    console.log('✅ Google API:', hasGoogle ? '✅ Available' : '❌ Missing');
-    console.log('✅ Google Maps:', hasMaps ? '✅ Available' : '❌ Missing');
-    console.log('✅ Google Places:', hasPlaces ? '✅ Available' : '❌ Missing');
-
-    // Check current provider and API key
-    console.log('✅ Current provider:', currentProvider);
-    console.log('✅ API key set:', !!apiKey);
-
-    // Check form fields
+        hasMaps && typeof window.google.maps.places !== 'undefined'; // Check form fields
     const address1Field = document.getElementById('patientAddress1');
     const cityField = document.getElementById('patientCity');
     const stateField = document.getElementById('patientState');
     const zipField = document.getElementById('patientZip');
 
-    console.log(
-        '✅ Address1 field:',
-        address1Field ? '✅ Found' : '❌ Missing'
-    );
-    console.log('✅ City field:', cityField ? '✅ Found' : '❌ Missing');
-    console.log('✅ State field:', stateField ? '✅ Found' : '❌ Missing');
-    console.log('✅ ZIP field:', zipField ? '✅ Found' : '❌ Missing');
-
     // Check autocomplete container
     const autocompleteContainer = document.querySelector(
         '.address-autocomplete-container'
-    );
-    console.log(
-        '✅ Autocomplete container:',
-        autocompleteContainer ? '✅ Found' : '❌ Missing'
-    );
-
-    // Test search function if available
-    if (hasAddressValidation && typeof searchAddresses === 'function') {
-        console.log('🔧 Testing search function...');
-        try {
-            searchAddresses('123 Main', { maxResults: 3 })
-                .then((results) => {
-                    console.log(
-                        '✅ Search test successful:',
-                        results.length,
-                        'results'
-                    );
-                })
-                .catch((error) => {
-                    console.log('❌ Search test failed:', error.message);
-                });
-        } catch (error) {
-            console.log('❌ Search test error:', error.message);
-        }
-    }
-
-    console.log('=====================================');
-    console.log(
-        '💡 To manually test, type in the address field: "123 Main Street"'
     );
 
     return {

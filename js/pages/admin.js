@@ -682,7 +682,6 @@ async function loadRolesForUserManagement() {
         if (response.ok) {
             const result = await response.json();
             currentRoles = result.data; // Extract data from response object
-            console.log('Roles loaded:', currentRoles); // Debug log
         } else {
             console.error('Failed to load roles, status:', response.status);
             // Use global auth error handler for consistent experience
@@ -1339,20 +1338,8 @@ async function deleteUser(userId, username) {
                 } else {
                     // Enhanced error handling for different scenarios
                     let errorMessage = 'Failed to delete user';
-
-                    // Temporary debugging - log the response
-                    console.log(
-                        'Delete failed - Response status:',
-                        response.status
-                    );
-                    console.log(
-                        'Delete failed - Response headers:',
-                        Object.fromEntries(response.headers.entries())
-                    );
-
                     try {
                         const errorData = await response.json();
-                        console.log('Delete failed - Error data:', errorData);
                         errorMessage =
                             errorData.message ||
                             errorData.error ||

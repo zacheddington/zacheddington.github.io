@@ -19,16 +19,11 @@ const STRUCTURED_ADDRESS_CONFIG = {
 function setupStructuredAddressAutocomplete(
     config = STRUCTURED_ADDRESS_CONFIG
 ) {
-    console.log('🔧 Setting up structured address autocomplete...');
-    console.log('🔧 Config:', config);
-
     const address1Input = document.getElementById(config.fields.address1);
     if (!address1Input) {
         console.error('❌ Address1 field not found:', config.fields.address1);
         return;
     }
-
-    console.log('✅ Address1 input found:', address1Input);
 
     // Check if addressValidation module is available
     if (!window.addressValidation) {
@@ -36,17 +31,7 @@ function setupStructuredAddressAutocomplete(
         return;
     }
 
-    console.log('✅ Address validation module available');
-
-    // Check if Google Places API is loaded
-    if (window.google && window.google.maps && window.google.maps.places) {
-        console.log('✅ Google Places API is loaded');
-    } else {
-        console.warn('⚠️ Google Places API not loaded - will use demo mode');
-    }
-
     // Setup autocomplete on the main address field only
-    console.log('🔧 Calling setupAddressAutocomplete...');
     window.addressValidation.setupAddressAutocomplete(config.fields.address1, {
         minLength: 3,
         debounceMs: 300,
@@ -54,8 +39,6 @@ function setupStructuredAddressAutocomplete(
         types: ['address', 'postal_box'], // Include PO boxes
         componentRestrictions: { country: 'us' },
         onSelect: function (addressData) {
-            console.log('📍 Address selected:', addressData.description);
-
             // Auto-populate other fields if enabled
             if (config.enableAutoPopulation) {
                 populateAddressFields(addressData, config);
@@ -66,8 +49,6 @@ function setupStructuredAddressAutocomplete(
         },
     });
 
-    console.log('✅ setupAddressAutocomplete called');
-
     // Add PO Box detection if enabled
     if (config.enablePOBoxDetection) {
         setupPOBoxDetection(config);
@@ -77,14 +58,11 @@ function setupStructuredAddressAutocomplete(
     if (config.enableAddressValidation) {
         setupAddressValidation(config);
     }
-
-    console.log('✅ Structured address autocomplete setup complete');
 }
 
 // Auto-populate city, state, zip from Google Places details
 async function populateAddressFields(addressData, config) {
     if (!addressData.place_id || addressData.place_id.startsWith('demo_')) {
-        console.log('📍 Demo address selected, skipping auto-population');
         return;
     }
 
@@ -174,8 +152,6 @@ function fillAddressComponents(addressComponents, config) {
         zipField.value = components.zip;
         triggerChangeEvent(zipField);
     }
-
-    console.log('📍 Auto-populated address fields:', components);
 }
 
 // Detect and handle PO Box addresses

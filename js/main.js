@@ -36,12 +36,10 @@ let currentPage = null;
 function initializeApp() {
     // Determine current page
     currentPage = getCurrentPage();
-    console.log('Initializing app for page:', currentPage);
 
     // Check authentication for protected pages
     if (shouldCheckAuth(currentPage)) {
         if (!window.authUtils.isAuthenticated()) {
-            console.log('User not authenticated, redirecting to login');
             window.location.href = '/';
             return;
         }
@@ -63,14 +61,9 @@ function initializeApp() {
         } // Secure history replacement
         if (window.authUtils.secureHistoryReplacement) {
             window.authUtils.secureHistoryReplacement();
-        }
-
-        // Load navigation menu for authenticated pages
+        } // Load navigation menu for authenticated pages
         if (window.navigation && window.navigation.loadMenu) {
-            console.log('🔧 Loading navigation menu...');
             window.navigation.loadMenu();
-        } else {
-            console.warn('⚠️ Navigation module not available');
         }
     } // Initialize page-specific functionality
     initializePage(currentPage);
@@ -78,52 +71,24 @@ function initializeApp() {
 
 // Get current page name from URL
 function getCurrentPage() {
-    const path = window.location.pathname;
-
-    // Handle directory-based paths (all pages are index.html in named folders)
+    const path = window.location.pathname; // Handle directory-based paths (all pages are index.html in named folders)
     if (path === '/' || path === '/index.html') {
-        console.log(
-            '🔍 Current path:',
-            path,
-            '→ Page detected: index.html (login)'
-        );
         return 'index.html'; // Root login page
     } else if (path.startsWith('/welcome/')) {
-        console.log('🔍 Current path:', path, '→ Page detected: welcome.html');
         return 'welcome.html';
     } else if (path.startsWith('/admin/')) {
-        console.log('🔍 Current path:', path, '→ Page detected: admin.html');
         return 'admin.html';
     } else if (path.startsWith('/patients/')) {
-        console.log('🔍 Current path:', path, '→ Page detected: patients.html');
         return 'patients.html';
     } else if (path.startsWith('/profile/')) {
-        console.log('🔍 Current path:', path, '→ Page detected: profile.html');
         return 'profile.html';
     } else if (path.startsWith('/force-password-change/')) {
-        console.log(
-            '🔍 Current path:',
-            path,
-            '→ Page detected: force-password.html'
-        );
         return 'force-password.html';
     } else if (path.startsWith('/2fa-setup/')) {
-        console.log(
-            '🔍 Current path:',
-            path,
-            '→ Page detected: 2fa-setup.html'
-        );
         return '2fa-setup.html';
     } else {
         // Fallback to filename for other cases
         const page = path.split('/').pop() || 'index.html';
-        console.log(
-            '🔍 Current path:',
-            path,
-            '→ Page detected:',
-            page,
-            '(fallback)'
-        );
         return page;
     }
 }
@@ -136,20 +101,15 @@ function shouldCheckAuth(page) {
 
 // Initialize page-specific functionality
 function initializePage(page) {
-    console.log('Initializing page functionality for:', page);
     switch (page) {
         case 'login.html':
         case 'index.html':
         case '':
-            console.log('🔐 Detected login page, initializing...');
             if (window.loginPage) {
                 window.loginPage.initializeLoginPage();
-            } else {
-                console.error('❌ window.loginPage not available!');
             }
             break;
         case 'welcome.html':
-            console.log('🏠 Detected welcome page, initializing...');
             // Welcome page initialization can go here if needed
             // Navigation is loaded centrally above, no need to call it again
 
@@ -183,38 +143,25 @@ function initializePage(page) {
                 window.adminPage.initializeAdminPage();
             } // Navigation is loaded centrally above, no need to call it again
             break;
-
         case 'patients.html':
-            console.log('🔍 MAIN.JS: About to check window.patientsPage...');
-            console.log(
-                '🔍 MAIN.JS: window.patientsPage exists:',
-                !!window.patientsPage
-            );
-            console.log(
-                '🔍 MAIN.JS: window.patientsPage value:',
-                window.patientsPage
-            );
             if (window.patientsPage) {
-                console.log('🔍 Calling patientsPage.initializePatientsPage()');
                 try {
                     // Handle both sync and async initialization
                     const result = window.patientsPage.initializePatientsPage();
                     if (result && typeof result.then === 'function') {
                         result.catch((error) => {
                             console.error(
-                                '❌ Error in patients page initialization:',
+                                'Error in patients page initialization:',
                                 error
                             );
                         });
                     }
                 } catch (error) {
                     console.error(
-                        '❌ Error calling patientsPage.initializePatientsPage():',
+                        'Error calling patientsPage.initializePatientsPage():',
                         error
                     );
                 }
-            } else {
-                console.error('❌ window.patientsPage not found');
             }
             // Navigation is loaded centrally above, no need to call it again
             break;
@@ -226,7 +173,6 @@ function initializePage(page) {
             // Navigation is loaded centrally above, no need to call it again
             break;
         default:
-            console.log('No specific initialization for page:', page);
             // Navigation is loaded centrally above for authenticated pages
             break;
     }
@@ -299,13 +245,10 @@ function setupKeyboardShortcuts() {
         // Escape key closes modals
         if (event.key === 'Escape' && window.modalManager) {
             window.modalManager.closeModal();
-        }
-
-        // Ctrl/Cmd + / shows help (placeholder for future implementation)
+        } // Ctrl/Cmd + / shows help (placeholder for future implementation)
         if ((event.ctrlKey || event.metaKey) && event.key === '/') {
             event.preventDefault();
             // Placeholder for help modal
-            console.log('Help shortcut pressed');
         }
     });
 }
@@ -313,7 +256,6 @@ function setupKeyboardShortcuts() {
 // Initialize application when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
-        console.log('DOM loaded, initializing app...');
         initializeApp();
         setupGlobalErrorHandling();
         setupPageVisibilityHandling();
@@ -321,7 +263,6 @@ if (document.readyState === 'loading') {
     });
 } else {
     // DOM already loaded
-    console.log('DOM already loaded, initializing app...');
     initializeApp();
     setupGlobalErrorHandling();
     setupPageVisibilityHandling();
@@ -346,6 +287,4 @@ if (
         config: APP_CONFIG,
         reinitialize: initializeApp,
     };
-
-    console.log('Development mode: appDebug object available');
 }

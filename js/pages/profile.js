@@ -710,7 +710,7 @@ async function disable2FA() {
                 usernameField.value = username;
             }
         } catch (error) {
-            console.log(
+            console.error(
                 'Could not populate username for accessibility:',
                 error
             );
