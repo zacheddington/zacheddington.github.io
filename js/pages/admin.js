@@ -1147,19 +1147,23 @@ function filterUsers() {
         displayUsers(sortedUsers);
         return;
     }
-
     const filteredUsers = allUsers.filter((user) => {
-        const fullName = user.middle_name
-            ? `${user.first_name} ${user.middle_name} ${user.last_name}`
-            : `${user.first_name} ${user.last_name}`;
+        // Build full name with null/undefined safety
+        const firstName = user.first_name || '';
+        const middleName = user.middle_name || '';
+        const lastName = user.last_name || '';
+
+        const fullName = middleName
+            ? `${firstName} ${middleName} ${lastName}`
+            : `${firstName} ${lastName}`;
 
         const primaryRole =
             user.roles && user.roles.length > 0 ? user.roles[0] : 'User';
 
         return (
-            user.username.toLowerCase().includes(filterValue) ||
+            (user.username || '').toLowerCase().includes(filterValue) ||
             fullName.toLowerCase().includes(filterValue) ||
-            user.email.toLowerCase().includes(filterValue) ||
+            (user.email || '').toLowerCase().includes(filterValue) ||
             primaryRole.toLowerCase().includes(filterValue)
         );
     });

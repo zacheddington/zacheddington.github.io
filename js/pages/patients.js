@@ -1013,6 +1013,10 @@ function getPatientValueForSort(patient, columnKey) {
     switch (columnKey) {
         case 'fullName':
             return `${patient.first_name} ${patient.last_name}`.toLowerCase();
+        case 'dateOfBirth':
+            return patient.date_of_birth
+                ? new Date(patient.date_of_birth)
+                : new Date(0);
         case 'address':
             return patient.address?.toLowerCase() || '';
         case 'phone':
@@ -1034,11 +1038,18 @@ function getSortedPatientsFallback() {
 
     return [...allPatients].sort((a, b) => {
         let aValue, bValue;
-
         switch (currentPatientSort.column) {
             case 'fullName':
                 aValue = `${a.first_name} ${a.last_name}`.toLowerCase();
                 bValue = `${b.first_name} ${b.last_name}`.toLowerCase();
+                break;
+            case 'dateOfBirth':
+                aValue = a.date_of_birth
+                    ? new Date(a.date_of_birth)
+                    : new Date(0);
+                bValue = b.date_of_birth
+                    ? new Date(b.date_of_birth)
+                    : new Date(0);
                 break;
             case 'address':
                 aValue = a.address?.toLowerCase() || '';
@@ -1350,11 +1361,15 @@ function filterPatients() {
         displayPatientsPreserveWidths(sortedPatients, columnWidths);
         return;
     }
-
     const filteredPatients = allPatients.filter((patient) => {
-        const fullName = patient.middle_name
-            ? `${patient.first_name} ${patient.middle_name} ${patient.last_name}`
-            : `${patient.first_name} ${patient.lastName}`;
+        // Build full name with null/undefined safety
+        const firstName = patient.first_name || '';
+        const middleName = patient.middle_name || '';
+        const lastName = patient.last_name || '';
+
+        const fullName = middleName
+            ? `${firstName} ${middleName} ${lastName}`
+            : `${firstName} ${lastName}`;
 
         return (
             fullName.toLowerCase().includes(filterValue) ||
