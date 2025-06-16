@@ -1283,14 +1283,9 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
                 <td class="patient-address" title="${patient.address || ''}">${
                 patient.address || ''
             }</td>
-                <td class="patient-created" title="${createdDate}">${createdDate}</td>
-                <td>
+                <td class="patient-created" title="${createdDate}">${createdDate}</td>                <td>
                     <div class="patient-actions">
-                        <button class="btn-icon btn-edit" onclick="editPatient(${
-                            patient.patient_key
-                        })" title="Edit Patient">
-                            ✏️
-                        </button>
+                        ${editButton}
                         ${deleteButton}
                     </div>
                 </td>
@@ -1479,22 +1474,23 @@ async function editPatient(patientId) {
         document.getElementById('editPatientZip').value = patient.zip || ''; // Store patient ID for form submission
         document
             .getElementById('editPatientForm')
-            .setAttribute('data-patient-id', patientId);
-
-        // Show the modal
+            .setAttribute('data-patient-id', patientId); // Show the modal first for better UX
         const modal = document.getElementById('editPatientModal');
         modal.style.display = 'block';
 
-        // Initialize structured address for the edit form
-        if (window.StructuredAddress) {
-            window.StructuredAddress.initialize('edit');
-        }
+        // Initialize structured address and field validation asynchronously
+        setTimeout(() => {
+            // Initialize structured address for the edit form
+            if (window.StructuredAddress) {
+                window.StructuredAddress.initialize('edit');
+            }
 
-        // Apply field validation
-        if (window.FieldValidation) {
-            window.FieldValidation.applyPhoneFormatting('editPatientPhone');
-            window.FieldValidation.applyZipValidation('editPatientZip');
-        }
+            // Apply field validation
+            if (window.FieldValidation) {
+                window.FieldValidation.applyPhoneFormatting('editPatientPhone');
+                window.FieldValidation.applyZipValidation('editPatientZip');
+            }
+        }, 0);
     } catch (error) {
         console.error('Failed to fetch patient data');
         window.modalManager.showModal(
