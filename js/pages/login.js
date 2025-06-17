@@ -68,7 +68,7 @@ function setupLoginForm() {
         passwordField.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                // Don't call performLogin here since form submission will handle it
+                performLogin();
             }
         });
     }
@@ -79,7 +79,7 @@ function setupLoginForm() {
         twofaField.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                // Don't call performLogin here since form submission will handle it
+                performLogin();
             }
         });
     }
@@ -226,7 +226,7 @@ async function performLogin() {
         });
         const result = await response.json(); // Handle 2FA required case first, before checking response.ok
         if (
-            (response.status === 400 || response.status === 401) &&
+            response.status === 400 &&
             (result.error === '2FA token required' ||
                 result.message === '2FA token required' ||
                 result.error === 'Two-factor authentication required' ||
@@ -289,11 +289,10 @@ async function performLogin() {
         } else {
             // Clear 2FA field when there's an error during 2FA step
             if (twofaField) twofaField.value = '';
-        }
-
-        // For authentication errors (401), show specific message based on step
+        } // For authentication errors (401), show specific message based on step
         if (response && response.status === 401) {
             if (isOnTwofaStep) {
+                console.log('Showing 2FA error modal');
                 window.modalManager.showModal(
                     'error',
                     'Invalid authentication code. Please try again.'
@@ -307,6 +306,7 @@ async function performLogin() {
         } else if (response && response.status === 400) {
             // Handle 400 errors specifically
             if (isOnTwofaStep) {
+                console.log('Showing 2FA 400 error modal');
                 window.modalManager.showModal(
                     'error',
                     'Invalid authentication code. Please try again.'
