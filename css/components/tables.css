@@ -425,6 +425,10 @@
     /* Inherits unified input styling from forms.css */
     min-width: 120px;
     font-size: 0.85rem;
+    /* Prevent browser from auto-generating tooltips from option values */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 /* Table action buttons */

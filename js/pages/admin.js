@@ -951,7 +951,7 @@ function displayUsers(users) {
                         currentRoles.length > 0
                             ? `<select class="role-select" onchange="window.adminPage.editUserRole(${
                                   user.user_key
-                              }, this.value)" ${
+                              }, this.value)" title="Select user role" ${
                                   isCurrentUser ? 'disabled' : ''
                               }>
                             ${currentRoles
@@ -1083,12 +1083,12 @@ function displayUsersPreserveWidths(users, columnWidths = []) {
                 <td class="user-fullname" title="${fullName}">${fullName}</td>
                 <td class="user-email" title="${user.email || ''}">${
                 user.email || ''
-            }</td>                <td class="user-role" title="${primaryRole}">
+            }</td>                <td class="user-role" title="Select user role">
                     ${
                         currentRoles.length > 0
                             ? `<select class="role-select" onchange="window.adminPage.editUserRole(${
                                   user.user_key
-                              }, this.value)" ${
+                              }, this.value)" title="Select user role" ${
                                   isCurrentUser ? 'disabled' : ''
                               }>
                             ${currentRoles
