@@ -1988,9 +1988,13 @@ async function loadAllSessions() {
     try {
         const API_URL = getAPIUrl();
         const token = localStorage.getItem('token');
-
         console.log('Loading sessions from:', API_URL);
         console.log('Current hostname:', window.location.hostname);
+        console.log('Token exists:', !!token);
+        console.log(
+            'Token preview:',
+            token ? token.substring(0, 20) + '...' : 'none'
+        );
 
         showSessionsLoading(true);
 
@@ -2000,7 +2004,6 @@ async function loadAllSessions() {
                 'Content-Type': 'application/json',
             },
         });
-
         if (response.ok) {
             const result = await response.json();
             allSessions = result.data || [];
@@ -2014,7 +2017,17 @@ async function loadAllSessions() {
 
             console.log(`Loaded ${allSessions.length} sessions`);
         } else {
-            throw new Error(`Failed to load sessions: ${response.status}`);
+            // Log the error response for debugging
+            const errorText = await response.text();
+            console.error(
+                'API Error Response:',
+                response.status,
+                response.statusText,
+                errorText
+            );
+            throw new Error(
+                `Failed to load sessions: ${response.status} - ${errorText}`
+            );
         }
     } catch (error) {
         console.error('Error loading sessions:', error);
