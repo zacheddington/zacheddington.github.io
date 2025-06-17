@@ -41,7 +41,8 @@ function getCurrentPageType() {
 
 // Initialize the admin index page (choice page)
 function initializeAdminIndexPage() {
-    // No specific initialization needed for choice page
+    // Setup navigation between admin sections
+    setupAdminNavigation();
     // Admin index page initialized
 }
 
@@ -179,10 +180,14 @@ function setupAdminNavigation() {
     const adminChoice = document.getElementById('adminChoice');
     const createUserSection = document.getElementById('createUserSection');
     const manageUsersSection = document.getElementById('manageUsersSection');
+    const sessionManagementSection = document.getElementById(
+        'sessionManagementSection'
+    );
 
     // Choice button handlers
     const createUserBtn = document.getElementById('createUserBtn');
     const manageUsersBtn = document.getElementById('manageUsersBtn');
+    const manageSessionsBtn = document.getElementById('manageSessionsBtn');
 
     if (createUserBtn) {
         createUserBtn.addEventListener('click', function () {
@@ -190,7 +195,6 @@ function setupAdminNavigation() {
             createUserSection.classList.remove('hidden');
         });
     }
-
     if (manageUsersBtn) {
         manageUsersBtn.addEventListener('click', function () {
             adminChoice.classList.add('hidden');
@@ -199,6 +203,15 @@ function setupAdminNavigation() {
             loadUsers();
             loadRolesForUserManagement();
             setupUserFilter();
+        });
+    }
+
+    if (manageSessionsBtn) {
+        manageSessionsBtn.addEventListener('click', function () {
+            adminChoice.classList.add('hidden');
+            sessionManagementSection.classList.remove('hidden');
+            // Initialize session management
+            initializeSessionManagement();
         });
     }
     // Cancel button handler
@@ -225,6 +238,14 @@ function setupAdminNavigation() {
         .getElementById('backToChoiceFromManageUsers')
         ?.addEventListener('click', function () {
             manageUsersSection.classList.add('hidden');
+            adminChoice.classList.remove('hidden');
+        });
+
+    // Back button handler for session management
+    document
+        .getElementById('backToChoiceFromSessionManagement')
+        ?.addEventListener('click', function () {
+            sessionManagementSection.classList.add('hidden');
             adminChoice.classList.remove('hidden');
         });
 }
@@ -1920,4 +1941,457 @@ window.adminPage = {
     loadUsers,
     editUserRole,
     deleteUser,
+    initializeSessionManagement,
+    loadAllSessions,
+    filterSessions,
+    revokeSession,
+    revokeAllUserSessions,
+    forceLogoutUser,
+    cleanupExpiredSessions,
 };
+
+// Session Management Functions
+// ============================
+
+// Global variables for session management
+let allSessions = [];
+let filteredSessions = [];
+let currentSessionSort = { column: null, direction: null };
+
+// Initialize session management
+async function initializeSessionManagement() {
+    try {
+        // Load all sessions
+        await loadAllSessions();
+
+        // Setup session filters
+        setupSessionFilters();
+
+        // Setup session actions
+        setupSessionActions();
+        console.log('Session management initialized successfully');
+    } catch (error) {
+        console.error('Error initializing session management:', error);
+        alert('Error loading session management');
+    }
+}
+
+// Load all sessions from the API
+async function loadAllSessions() {
+    try {
+        const API_URL = getAPIUrl();
+        const token = localStorage.getItem('token');
+
+        showSessionsLoading(true);
+
+        const response = await fetch(`${API_URL}/api/sessions`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            allSessions = result.data || [];
+            filteredSessions = [...allSessions];
+
+            // Display sessions in table
+            displaySessions(filteredSessions);
+
+            // Update stats
+            updateSessionStats();
+
+            console.log(`Loaded ${allSessions.length} sessions`);
+        } else {
+            throw new Error(`Failed to load sessions: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error loading sessions:', error);
+        alert('Failed to load sessions. Please try again.');
+        allSessions = [];
+        filteredSessions = [];
+        displaySessions([]);
+    } finally {
+        showSessionsLoading(false);
+    }
+}
+
+// Setup session filters
+function setupSessionFilters() {
+    const statusFilter = document.getElementById('sessionStatusFilter');
+    const userFilter = document.getElementById('sessionUserFilter');
+    const applyFiltersBtn = document.getElementById('applySessionFilters');
+    const clearFiltersBtn = document.getElementById('clearSessionFilters');
+
+    // Populate user filter dropdown
+    populateUserFilter();
+
+    // Apply filters handler
+    if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', function () {
+            filterSessions();
+        });
+    }
+
+    // Clear filters handler
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', function () {
+            if (statusFilter) statusFilter.value = '';
+            if (userFilter) userFilter.value = '';
+            filteredSessions = [...allSessions];
+            displaySessions(filteredSessions);
+            updateSessionStats();
+        });
+    }
+
+    // Filter on Enter key
+    [statusFilter, userFilter].forEach((filter) => {
+        if (filter) {
+            filter.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    filterSessions();
+                }
+            });
+        }
+    });
+}
+
+// Populate user filter dropdown
+function populateUserFilter() {
+    const userFilter = document.getElementById('sessionUserFilter');
+    if (!userFilter) return;
+
+    // Get unique users from sessions
+    const users = [
+        ...new Set(allSessions.map((session) => session.username)),
+    ].sort();
+
+    // Clear existing options except the default
+    userFilter.innerHTML = '<option value="">All Users</option>';
+
+    // Add user options
+    users.forEach((username) => {
+        const option = document.createElement('option');
+        option.value = username;
+        option.textContent = username;
+        userFilter.appendChild(option);
+    });
+}
+
+// Filter sessions based on current filter values
+function filterSessions() {
+    const statusFilter = document.getElementById('sessionStatusFilter')?.value;
+    const userFilter = document.getElementById('sessionUserFilter')?.value;
+
+    filteredSessions = allSessions.filter((session) => {
+        // Status filter
+        if (statusFilter) {
+            if (statusFilter === 'active' && !session.is_active) return false;
+            if (statusFilter === 'inactive' && session.is_active) return false;
+            if (statusFilter === 'expired' && session.is_active) return false; // Only show truly expired sessions
+        }
+
+        // User filter
+        if (userFilter && session.username !== userFilter) return false;
+
+        return true;
+    });
+
+    displaySessions(filteredSessions);
+    updateSessionStats();
+}
+
+// Display sessions in the table
+function displaySessions(sessions) {
+    const tbody = document.querySelector('.sessions-table tbody');
+    if (!tbody) return;
+
+    if (sessions.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="no-data">No sessions found</td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = sessions
+        .map((session) => {
+            const loginTime = new Date(session.login_time).toLocaleString();
+            const lastActivity = session.last_activity
+                ? new Date(session.last_activity).toLocaleString()
+                : 'Never';
+            const logoutTime = session.logout_time
+                ? new Date(session.logout_time).toLocaleString()
+                : '-';
+
+            const statusBadge = session.is_active
+                ? '<span class="status-badge active">Active</span>'
+                : '<span class="status-badge inactive">Inactive</span>';
+
+            const revokeButton = session.is_active
+                ? `<button class="btn btn-danger btn-sm" onclick="adminPage.revokeSession('${session.session_id}')">Revoke</button>`
+                : '<span class="text-muted">-</span>';
+
+            return `
+            <tr data-session-id="${session.session_id}">
+                <td>${escapeHtml(session.username)}</td>
+                <td>${statusBadge}</td>
+                <td>${loginTime}</td>
+                <td>${lastActivity}</td>
+                <td>${logoutTime}</td>
+                <td>${escapeHtml(session.ip_address || 'Unknown')}</td>
+                <td>${escapeHtml(session.browser_info || 'Unknown')}</td>
+                <td class="session-actions">
+                    ${revokeButton}
+                </td>
+            </tr>
+        `;
+        })
+        .join('');
+}
+
+// Setup session action handlers
+function setupSessionActions() {
+    const revokeAllBtn = document.getElementById('revokeAllSessionsBtn');
+    const cleanupBtn = document.getElementById('cleanupExpiredBtn');
+    const refreshBtn = document.getElementById('refreshSessionsBtn');
+
+    if (revokeAllBtn) {
+        revokeAllBtn.addEventListener('click', function () {
+            const userFilter =
+                document.getElementById('sessionUserFilter')?.value;
+            if (userFilter) {
+                revokeAllUserSessions(userFilter);
+            } else {
+                alert('Please select a specific user to revoke all sessions');
+            }
+        });
+    }
+
+    if (cleanupBtn) {
+        cleanupBtn.addEventListener('click', function () {
+            cleanupExpiredSessions();
+        });
+    }
+
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', function () {
+            loadAllSessions();
+        });
+    }
+}
+
+// Revoke a specific session
+async function revokeSession(sessionId) {
+    if (
+        !confirm(
+            'Are you sure you want to revoke this session? The user will be logged out immediately.'
+        )
+    ) {
+        return;
+    }
+
+    try {
+        const API_URL = getAPIUrl();
+        const token = localStorage.getItem('token');
+
+        setSessionActionLoading(sessionId, true);
+
+        const response = await fetch(
+            `${API_URL}/api/sessions/${sessionId}/revoke`,
+            {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    reason: 'Admin revocation',
+                }),
+            }
+        );
+        if (response.ok) {
+            alert('Session revoked successfully');
+            // Reload sessions to reflect changes
+            await loadAllSessions();
+        } else {
+            throw new Error(`Failed to revoke session: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error revoking session:', error);
+        alert('Failed to revoke session. Please try again.');
+    } finally {
+        setSessionActionLoading(sessionId, false);
+    }
+}
+
+// Revoke all sessions for a specific user
+async function revokeAllUserSessions(username) {
+    if (
+        !confirm(
+            `Are you sure you want to revoke ALL sessions for user "${username}"? This will log them out of all devices immediately.`
+        )
+    ) {
+        return;
+    }
+
+    try {
+        const API_URL = getAPIUrl();
+        const token = localStorage.getItem('token');
+
+        const response = await fetch(
+            `${API_URL}/api/sessions/revoke-user/${encodeURIComponent(
+                username
+            )}`,
+            {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    reason: 'Admin bulk revocation',
+                }),
+            }
+        );
+        if (response.ok) {
+            const result = await response.json();
+            alert(
+                `Revoked ${
+                    result.revokedCount || 0
+                } sessions for user ${username}`
+            );
+            // Reload sessions to reflect changes
+            await loadAllSessions();
+        } else {
+            throw new Error(
+                `Failed to revoke user sessions: ${response.status}`
+            );
+        }
+    } catch (error) {
+        console.error('Error revoking user sessions:', error);
+        alert('Failed to revoke user sessions. Please try again.');
+    }
+}
+
+// Force logout a user (alias for revokeAllUserSessions)
+async function forceLogoutUser(username) {
+    return await revokeAllUserSessions(username);
+}
+
+// Cleanup expired sessions
+async function cleanupExpiredSessions() {
+    if (
+        !confirm(
+            'Are you sure you want to cleanup all expired sessions? This will permanently remove inactive session records.'
+        )
+    ) {
+        return;
+    }
+
+    try {
+        const API_URL = getAPIUrl();
+        const token = localStorage.getItem('token');
+
+        const response = await fetch(`${API_URL}/api/sessions/cleanup`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (response.ok) {
+            const result = await response.json();
+            alert(`Cleaned up ${result.cleanedCount || 0} expired sessions`);
+            // Reload sessions to reflect changes
+            await loadAllSessions();
+        } else {
+            throw new Error(`Failed to cleanup sessions: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error cleaning up sessions:', error);
+        alert('Failed to cleanup sessions. Please try again.');
+    }
+}
+
+// Update session statistics
+function updateSessionStats() {
+    const totalSessions = allSessions.length;
+    const activeSessions = allSessions.filter((s) => s.is_active).length;
+    const inactiveSessions = totalSessions - activeSessions;
+
+    // Update stats display
+    const statsContainer = document.querySelector('.session-stats');
+    if (statsContainer) {
+        statsContainer.innerHTML = `
+            <div class="stat-item">
+                <span class="stat-label">Total Sessions:</span>
+                <span class="stat-value">${totalSessions}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Active:</span>
+                <span class="stat-value active">${activeSessions}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Inactive:</span>
+                <span class="stat-value inactive">${inactiveSessions}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Filtered:</span>
+                <span class="stat-value">${filteredSessions.length}</span>
+            </div>
+        `;
+    }
+}
+
+// Show/hide sessions loading state
+function showSessionsLoading(isLoading) {
+    const loadingIndicator = document.getElementById('sessionsLoading');
+    const sessionsTable = document.querySelector('.sessions-table');
+
+    if (loadingIndicator) {
+        if (isLoading) {
+            loadingIndicator.classList.remove('hidden');
+            if (sessionsTable) sessionsTable.style.opacity = '0.5';
+        } else {
+            loadingIndicator.classList.add('hidden');
+            if (sessionsTable) sessionsTable.style.opacity = '1';
+        }
+    }
+}
+
+// Set loading state for session actions
+function setSessionActionLoading(sessionId, isLoading) {
+    const sessionRow = document.querySelector(
+        `tr[data-session-id="${sessionId}"]`
+    );
+    if (!sessionRow) return;
+
+    const actionButtons = sessionRow.querySelectorAll(
+        '.session-actions button'
+    );
+
+    if (isLoading) {
+        actionButtons.forEach((btn) => {
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            btn.textContent = 'Processing...';
+        });
+    } else {
+        actionButtons.forEach((btn) => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.textContent = 'Revoke';
+        });
+    }
+}
+
+// Utility function to escape HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}

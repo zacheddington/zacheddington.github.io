@@ -1,42 +1,296 @@
-/* ================================
-   ADMIN PAGE STYLES
-   ================================ */
+/* Admin Page Session Management Styles */
 
-/* Admin specific styles are primarily handled by:
-   - containers.css for admin-container layout
-   - cards.css for admin-section and admin-choice styles
-   - forms.css for admin-form styles
-   - tables.css for users-table styles
-   - buttons.css for choice-btn styles
-*/
-
-/* Hidden utility class for admin sections */
-.hidden {
-    display: none !important;
+/* Session management choice button */
+.choice-btn.tertiary {
+    background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+    border-color: #6c5ce7;
 }
 
-/* Utility class for margin-right auto */
-.ml-auto {
-    margin-right: auto !important;
+.choice-btn.tertiary:hover {
+    background: linear-gradient(135deg, #5f3dc4 0%, #9775fa 100%);
+    transform: translateY(-2px);
 }
 
-/* ================================
-   ADMIN BUTTON COLOR OVERRIDES
-   ================================ */
-
-/* Make admin back and cancel buttons match the teal color of submit buttons */
-#backToChoiceFromCreateUser,
-#backToChoiceFromManageUsers,
-#cancelCreateUser {
-    background: linear-gradient(
-        135deg,
-        var(--color-secondary) 0%,
-        #00796b 100%
-    ) !important;
+/* Session table styles */
+.sessions-table-container {
+    margin-top: 1.5rem;
+    overflow-x: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-#backToChoiceFromCreateUser:hover,
-#backToChoiceFromManageUsers:hover,
-#cancelCreateUser:hover {
-    background: linear-gradient(135deg, #00796b 0%, #004d40 100%) !important;
+.sessions-table {
+    width: 100%;
+    min-width: 800px;
+    border-collapse: collapse;
+    background: white;
+}
+
+.sessions-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.sessions-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.sessions-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Session status indicators */
+.session-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.session-status.active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.session-status.expired {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.session-status.revoked {
+    background-color: #ffeaa7;
+    color: #856404;
+}
+
+.session-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+/* Session action buttons */
+.session-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-session-revoke {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-session-revoke:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+.btn-session-revoke:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Session method badges */
+.session-method {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.session-method.password {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.session-method.twofa {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+}
+
+.session-method.backup-code {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+/* Session time formatting */
+.session-time {
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.session-time.recent {
+    color: #28a745;
+    font-weight: 500;
+}
+
+/* Filter actions specific to sessions */
+.session-filter-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.danger-btn {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.danger-btn:hover {
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    transform: translateY(-1px);
+}
+
+/* Session details tooltip */
+.session-details {
+    position: relative;
+    cursor: help;
+}
+
+.session-details:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    z-index: 1000;
+}
+
+/* Session statistics display */
+.session-stats {
+    display: flex;
+    gap: 1.5rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #495057;
+}
+
+.stat-value.active {
+    color: #28a745;
+}
+
+.stat-value.inactive {
+    color: #dc3545;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-badge.inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+/* No data message */
+.no-data {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 2rem;
+}
+
+/* Responsive design for session table */
+@media (max-width: 768px) {
+    .sessions-table-container {
+        margin: 0 -1rem;
+        border-radius: 0;
+    }
+
+    .sessions-table th,
+    .sessions-table td {
+        padding: 8px 4px;
+        font-size: 0.875rem;
+    }
+
+    .session-actions {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .session-stats {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .stat-item {
+        flex: 1;
+        min-width: calc(50% - 0.5rem);
+    }
 }

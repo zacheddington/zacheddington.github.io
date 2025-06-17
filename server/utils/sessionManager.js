@@ -261,7 +261,7 @@ class SessionManager {
         return null;
     } // Get client info from request
     static getClientInfo(req) {
-        const ipAddress =
+        let ipAddress =
             req.ip ||
             req.connection.remoteAddress ||
             req.socket.remoteAddress ||
@@ -269,6 +269,12 @@ class SessionManager {
                 ? req.connection.socket.remoteAddress
                 : null) ||
             '127.0.0.1';
+
+        // Clean up IPv6-mapped IPv4 addresses
+        if (ipAddress.startsWith('::ffff:')) {
+            ipAddress = ipAddress.substring(7);
+        }
+
         const rawUserAgent = req.headers['user-agent'] || 'Unknown';
         const browserInfo = this.parseUserAgent(rawUserAgent);
 
@@ -332,6 +338,116 @@ class SessionManager {
         }
 
         return `${browser} on ${os}`;
+    }
+
+    // Get all sessions for admin view (includes user information)
+    static async getAllSessions() {
+        if (config.isLocalTest) {
+            // Return mock data for testing
+            return [
+                {
+                    session_id: 'test-session-1',
+                    username: 'testuser',
+                    is_active: true,
+                    login_time: new Date(),
+                    last_activity: new Date(),
+                    logout_time: null,
+                    ip_address: '127.0.0.1',
+                    browser_info: 'Chrome on Windows 10/11',
+                },
+            ];
+        }
+
+        const client = await pool.connect();
+        try {
+            const result = await client.query(`
+                SELECT 
+                    s.session_token as session_id,
+                    u.username,
+                    s.is_active,
+                    s.login_time,
+                    s.last_activity,
+                    s.logout_time,
+                    s.ip_address,
+                    s.browser_info,
+                    s.login_method
+                FROM tbl_user_session s
+                JOIN tbl_user u ON s.user_key = u.user_key
+                ORDER BY s.login_time DESC
+            `);
+
+            return result.rows;
+        } finally {
+            client.release();
+        }
+    }
+
+    // Revoke a session by session ID
+    static async revokeSessionById(sessionId, reason = 'admin_revocation') {
+        if (config.isLocalTest) {
+            return true;
+        }
+
+        const client = await pool.connect();
+        try {
+            const result = await client.query(
+                `
+                UPDATE tbl_user_session 
+                SET is_active = false, 
+                    logout_time = CURRENT_TIMESTAMP,
+                    logout_reason = $2
+                WHERE session_token = $1 AND is_active = true
+                RETURNING session_key
+            `,
+                [sessionId, reason]
+            );
+
+            return result.rowCount > 0;
+        } finally {
+            client.release();
+        }
+    }
+
+    // Revoke all sessions for a user by username
+    static async revokeUserSessionsByUsername(
+        username,
+        reason = 'admin_action'
+    ) {
+        if (config.isLocalTest) {
+            return 1;
+        }
+
+        const client = await pool.connect();
+        try {
+            // First get the user_key from username
+            const userResult = await client.query(
+                'SELECT user_key FROM tbl_user WHERE username = $1',
+                [username]
+            );
+
+            if (userResult.rowCount === 0) {
+                return 0;
+            }
+
+            const userKey = userResult.rows[0].user_key;
+
+            // Revoke all active sessions for this user
+            const result = await client.query(
+                `
+                UPDATE tbl_user_session 
+                SET is_active = false, 
+                    logout_time = CURRENT_TIMESTAMP,
+                    logout_reason = $2
+                WHERE user_key = $1 AND is_active = true
+                RETURNING session_key
+            `,
+                [userKey, reason]
+            );
+
+            return result.rowCount;
+        } finally {
+            client.release();
+        }
     }
 }
 

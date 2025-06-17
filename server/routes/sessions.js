@@ -14,29 +14,15 @@ const {
 // Get all active sessions (admin only)
 router.get('/sessions', authenticateToken, requireAdmin, async (req, res) => {
     try {
-        const { userKey } = req.query;
-
-        if (userKey) {
-            // Get sessions for specific user
-            const sessions = await SessionManager.getUserSessions(
-                parseInt(userKey)
-            );
-            return successResponse(
-                res,
-                sessions,
-                'User sessions retrieved successfully'
-            );
-        } else {
-            // Get all sessions would require a different query
-            // For now, return error asking for specific user
-            return errorResponse(
-                res,
-                'Please specify a userKey parameter to view sessions for a specific user',
-                400
-            );
-        }
+        // Get all sessions across all users for admin view
+        const sessions = await SessionManager.getAllSessions();
+        return successResponse(
+            res,
+            sessions,
+            'All sessions retrieved successfully'
+        );
     } catch (err) {
-        console.error('Get sessions error:', err);
+        console.error('Get all sessions error:', err);
         return errorResponse(res, 'Failed to fetch sessions', 500);
     }
 });
@@ -57,50 +43,60 @@ router.get('/my-sessions', authenticateToken, async (req, res) => {
 });
 
 // Revoke a specific session (admin or self)
-router.delete('/sessions/:sessionKey', authenticateToken, async (req, res) => {
-    try {
-        const sessionKey = parseInt(req.params.sessionKey);
-        const { userId } = req.user;
-
-        // Check if user is admin or trying to revoke their own session
-        // For now, assume they can revoke any session if they're authenticated
-        // In production, you'd want more sophisticated authorization
-
-        const sessionEnded = await SessionManager.endSession(
-            null, // We don't have the token, but we could modify the method
-            'user_revoked'
-        );
-
-        return successResponse(
-            res,
-            { sessionKey },
-            'Session revoked successfully'
-        );
-    } catch (err) {
-        console.error('Revoke session error:', err);
-        return errorResponse(res, 'Failed to revoke session', 500);
-    }
-});
-
-// Revoke all sessions for a user (admin only)
-router.delete(
-    '/users/:userId/sessions',
+router.post(
+    '/sessions/:sessionId/revoke',
     authenticateToken,
     requireAdmin,
     async (req, res) => {
         try {
-            const userId = parseInt(req.params.userId);
-            const { reason = 'admin_action' } = req.body;
+            const sessionId = req.params.sessionId;
+            const { reason = 'admin_revocation' } = req.body;
 
-            const revokedCount = await SessionManager.revokeUserSessions(
-                userId,
+            const result = await SessionManager.revokeSessionById(
+                sessionId,
                 reason
             );
 
+            if (result) {
+                return successResponse(
+                    res,
+                    { sessionId },
+                    'Session revoked successfully'
+                );
+            } else {
+                return errorResponse(
+                    res,
+                    'Session not found or already revoked',
+                    404
+                );
+            }
+        } catch (err) {
+            console.error('Revoke session error:', err);
+            return errorResponse(res, 'Failed to revoke session', 500);
+        }
+    }
+);
+
+// Revoke all sessions for a user by username (admin only)
+router.post(
+    '/sessions/revoke-user/:username',
+    authenticateToken,
+    requireAdmin,
+    async (req, res) => {
+        try {
+            const username = req.params.username;
+            const { reason = 'admin_bulk_revocation' } = req.body;
+
+            const revokedCount =
+                await SessionManager.revokeUserSessionsByUsername(
+                    username,
+                    reason
+                );
+
             return updatedResponse(
                 res,
-                { userId, revokedCount },
-                `Revoked ${revokedCount} sessions for user ${userId}`
+                { username, revokedCount },
+                `Revoked ${revokedCount} sessions for user ${username}`
             );
         } catch (err) {
             console.error('Revoke user sessions error:', err);
@@ -132,7 +128,7 @@ router.post('/revoke-other-sessions', authenticateToken, async (req, res) => {
 
 // Manual session cleanup (admin only)
 router.post(
-    '/cleanup-sessions',
+    '/sessions/cleanup',
     authenticateToken,
     requireAdmin,
     async (req, res) => {
