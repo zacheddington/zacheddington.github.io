@@ -1,16 +1,5 @@
 /* Admin Page Session Management Styles */
 
-/* Session management choice button */
-.choice-btn.tertiary {
-    background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
-    border-color: #6c5ce7;
-}
-
-.choice-btn.tertiary:hover {
-    background: linear-gradient(135deg, #5f3dc4 0%, #9775fa 100%);
-    transform: translateY(-2px);
-}
-
 /* Session table styles */
 .sessions-table-container {
     margin-top: 1.5rem;

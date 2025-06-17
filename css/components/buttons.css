@@ -126,15 +126,6 @@ button,
     background: #f0fdfc;
 }
 
-.choice-btn.secondary {
-    border-color: var(--color-secondary);
-}
-
-.choice-btn.secondary:hover {
-    background: var(--color-gray-50);
-    border-color: var(--color-secondary);
-}
-
 .choice-btn h3 {
     margin: 0 0 0.5rem 0;
     color: var(--color-primary);
