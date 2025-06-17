@@ -292,7 +292,6 @@ async function performLogin() {
         } // For authentication errors (401), show specific message based on step
         if (response && response.status === 401) {
             if (isOnTwofaStep) {
-                console.log('Showing 2FA error modal');
                 window.modalManager.showModal(
                     'error',
                     'Invalid authentication code. Please try again.'
@@ -306,7 +305,6 @@ async function performLogin() {
         } else if (response && response.status === 400) {
             // Handle 400 errors specifically
             if (isOnTwofaStep) {
-                console.log('Showing 2FA 400 error modal');
                 window.modalManager.showModal(
                     'error',
                     'Invalid authentication code. Please try again.'
