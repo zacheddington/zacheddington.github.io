@@ -142,7 +142,7 @@ const modalManager = {
                 }
             }
         }, 10);
-        if (type === 'success') {
+        if (type === 'success' || type === 'success-redirect') {
             // Only redirect to welcome page if we're not on admin or patient management pages
             const isAdminPage = window.location.pathname.includes('/admin/');
             const isPatientManagePage = window.location.pathname.includes(
@@ -152,6 +152,13 @@ const modalManager = {
                 '/patients/create-patient/'
             );
             if (!isAdminPage && !isPatientManagePage && !isPatientCreatePage) {
+                // This is a redirecting modal, so make sure it doesn't have close button
+                const modalFooter = modal.querySelector('.modal-footer');
+                if (modalFooter) {
+                    modalFooter.innerHTML =
+                        '<div class="modal-hint" style="font-size: 0.9rem; color: #666; margin-top: 1rem; text-align: center;">Redirecting to Welcome page...</div>';
+                }
+
                 setTimeout(() => {
                     document.body.classList.add('fade-out');
                     setTimeout(() => {
