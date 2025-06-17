@@ -848,7 +848,9 @@ function getUserValueForSort(user, columnKey) {
                 ? user.roles[0].toLowerCase()
                 : '';
         case 'created':
-            return new Date(user.created_at);
+            return user.date_created
+                ? new Date(user.date_created)
+                : new Date(0);
         default:
             return '';
     }
@@ -881,8 +883,17 @@ function getSortedUsersFallback() {
                 bValue = b.roles && b.roles[0] ? b.roles[0].toLowerCase() : '';
                 break;
             case 'created':
-                aValue = new Date(a.created_at);
-                bValue = new Date(b.created_at);
+                // Better date handling for sorting
+                aValue = a.date_created
+                    ? new Date(a.date_created)
+                    : new Date(0);
+                bValue = b.date_created
+                    ? new Date(b.date_created)
+                    : new Date(0);
+
+                // Check if dates are valid
+                if (isNaN(aValue.getTime())) aValue = new Date(0);
+                if (isNaN(bValue.getTime())) bValue = new Date(0);
                 break;
             default:
                 return 0;
@@ -934,9 +945,32 @@ function displayUsers(users) {
                 user.role_keys && user.role_keys.length > 0
                     ? user.role_keys[0]
                     : 2;
-            const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, '');
-
-            const createdDate = new Date(user.created_at).toLocaleDateString();
+            const roleClass = primaryRole.toLowerCase().replace(/[^a-z]/g, ''); // Handle date creation with better error checking
+            let createdDate = 'No date';
+            if (user.date_created) {
+                try {
+                    const dateObj = new Date(user.date_created);
+                    // Check if the date is valid
+                    if (!isNaN(dateObj.getTime())) {
+                        createdDate = dateObj.toLocaleDateString();
+                    } else {
+                        console.warn(
+                            'Invalid date for user:',
+                            user.username,
+                            'date_created:',
+                            user.date_created
+                        );
+                        createdDate = 'Invalid date';
+                    }
+                } catch (error) {
+                    console.error(
+                        'Date parsing error for user:',
+                        user.username,
+                        error
+                    );
+                    createdDate = 'Date error';
+                }
+            }
             const isCurrentUser = currentUser.username === user.username;
             return `
             <tr data-user-id="${user.user_key}">
@@ -1067,11 +1101,32 @@ function displayUsersPreserveWidths(users, columnWidths = []) {
             const primaryRoleKey =
                 user.role_keys && user.role_keys.length > 0
                     ? user.role_keys[0]
-                    : 2;
-
-            const createdDate = user.created_at
-                ? new Date(user.created_at).toLocaleDateString()
-                : '';
+                    : 2; // Handle date creation with better error checking
+            let createdDate = 'No date';
+            if (user.date_created) {
+                try {
+                    const dateObj = new Date(user.date_created);
+                    // Check if the date is valid
+                    if (!isNaN(dateObj.getTime())) {
+                        createdDate = dateObj.toLocaleDateString();
+                    } else {
+                        console.warn(
+                            'Invalid date for user:',
+                            user.username,
+                            'date_created:',
+                            user.date_created
+                        );
+                        createdDate = 'Invalid date';
+                    }
+                } catch (error) {
+                    console.error(
+                        'Date parsing error for user:',
+                        user.username,
+                        error
+                    );
+                    createdDate = 'Date error';
+                }
+            }
 
             const isCurrentUser = currentUser.username === user.username;
 

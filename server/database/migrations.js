@@ -24,10 +24,17 @@ const runDatabaseMigrations = async () => {
             await addPasswordChangeRequiredColumn(client);
 
             // Add 2FA columns
-            await add2FAColumns(client);
-
-            // Add patient table columns
+            await add2FAColumns(client); // Add patient table columns
             await addPatientTableColumns(client);
+
+            // Add user table columns
+            await addUserTableColumns(client);
+
+            // Add user session table
+            await addUserSessionTable(client);
+
+            // Add user session table
+            await addUserSessionTable(client);
 
             console.log('Database migration completed successfully');
         } finally {
@@ -183,6 +190,125 @@ const addPatientTableColumns = async (client) => {
     `);
 };
 
+// Add user table columns and ensure data integrity
+const addUserTableColumns = async (client) => {
+    console.log('Checking user table columns...');
+
+    // Check if date_created column exists
+    const dateCreatedColumnCheck = await client.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'tbl_user' 
+        AND column_name = 'date_created'
+    `);
+
+    // If date_created doesn't exist, add it
+    if (dateCreatedColumnCheck.rows.length === 0) {
+        await client.query(`
+            ALTER TABLE tbl_user ADD COLUMN date_created TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        `);
+        console.log('Successfully added date_created column to tbl_user');
+    }
+
+    // Ensure all users have a date_created value
+    const usersWithoutDateCreated = await client.query(`
+        SELECT COUNT(*) as count FROM tbl_user WHERE date_created IS NULL
+    `);
+
+    if (usersWithoutDateCreated.rows[0].count > 0) {
+        // Update users without date_created to use their date_when or current time
+        await client.query(`
+            UPDATE tbl_user 
+            SET date_created = COALESCE(date_when, NOW()) 
+            WHERE date_created IS NULL
+        `);
+        console.log(
+            `Updated ${usersWithoutDateCreated.rows[0].count} users with missing date_created`
+        );
+    }
+
+    // Check if date_when column exists (it should, but let's be safe)
+    const dateWhenColumnCheck = await client.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'tbl_user' 
+        AND column_name = 'date_when'
+    `);
+
+    if (dateWhenColumnCheck.rows.length === 0) {
+        await client.query(`
+            ALTER TABLE tbl_user ADD COLUMN date_when TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        `);
+        console.log('Successfully added date_when column to tbl_user');
+    }
+
+    console.log('User table column check completed');
+};
+
+// Add user session table and indexes
+const addUserSessionTable = async (client) => {
+    console.log('Checking user session table...');
+
+    // Check if table exists
+    const tableExists = await client.query(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'tbl_user_session'
+    `);
+
+    if (tableExists.rows.length === 0) {
+        console.log('Creating tbl_user_session table...');
+
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS public.tbl_user_session
+            (
+                session_key integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+                user_key integer NOT NULL,
+                session_token character varying(255) UNIQUE NOT NULL,
+                login_time timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+                last_activity timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+                expires_at timestamp with time zone DEFAULT (CURRENT_TIMESTAMP + INTERVAL '8 hours'),
+                logout_time timestamp with time zone NULL,
+                ip_address character varying(50) COLLATE pg_catalog."default" NOT NULL,
+                user_agent text,
+                login_method character varying(20) DEFAULT 'password',
+                is_active boolean DEFAULT true,
+                revoked boolean DEFAULT false,
+                revoked_reason character varying(100),
+                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT tbl_user_session_pkey PRIMARY KEY (session_key),
+                CONSTRAINT tbl_user_session_user_key_fkey FOREIGN KEY (user_key)
+                    REFERENCES public.tbl_user (user_key) MATCH SIMPLE
+                    ON UPDATE CASCADE
+                    ON DELETE CASCADE
+            )
+        `);
+
+        // Create indexes
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_user_session_user_key ON public.tbl_user_session(user_key)
+        `);
+
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_user_session_token ON public.tbl_user_session(session_token)
+        `);
+
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_user_session_active ON public.tbl_user_session(is_active) WHERE is_active = true
+        `);
+
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_user_session_expires ON public.tbl_user_session(expires_at)
+        `);
+
+        console.log('Successfully created tbl_user_session table and indexes');
+    } else {
+        console.log('tbl_user_session table already exists');
+    }
+};
+
 // Future migration placeholder
 const runFutureMigrations = async () => {
     // Add new migrations here as needed
@@ -194,5 +320,7 @@ module.exports = {
     addPasswordChangeRequiredColumn,
     add2FAColumns,
     addPatientTableColumns,
+    addUserTableColumns,
+    addUserSessionTable,
     runFutureMigrations,
 };

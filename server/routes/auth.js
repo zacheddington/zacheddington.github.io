@@ -15,6 +15,7 @@ const {
 } = require('../middleware/validation');
 const { pool } = require('../config/database');
 const { validatePasswordSecurity } = require('../utils/passwordValidator');
+const SessionManager = require('../utils/sessionManager');
 const {
     successResponse,
     errorResponse,
@@ -34,24 +35,20 @@ router.post(
             if (config.isLocalTest) {
                 const { username, password } = req.body;
                 if (username === 'admin' && password === 'admin') {
-                    const token = jwt.sign(
-                        {
-                            id: 1,
-                            username: 'admin',
-                            firstName: 'Test',
-                            middleName: 'Local',
-                            lastName: 'Admin',
-                            email: 'admin@test.com',
-                            roles: ['admin'],
-                            roleKeys: [1],
-                        },
-                        config.JWT_SECRET,
-                        { expiresIn: JWT_CONFIG.EXPIRES_IN }
+                    // Create session for local test admin
+                    const { ipAddress, userAgent } =
+                        SessionManager.getClientInfo(req);
+                    const session = await SessionManager.createSession(
+                        1,
+                        ipAddress,
+                        userAgent,
+                        'password'
                     );
+
                     return successResponse(
                         res,
                         {
-                            token,
+                            token: session.session_token,
                             user: {
                                 username: 'admin',
                                 firstName: 'Test',
@@ -61,33 +58,31 @@ router.post(
                                 roles: ['admin'],
                                 roleKeys: [1],
                                 isAdmin: true,
-                                passwordChangeRequired: false, // Set to true to test password change
+                                passwordChangeRequired: false,
                                 authVersion: '2.0',
+                            },
+                            session: {
+                                expiresAt: session.expires_at,
+                                sessionKey: session.session_key,
                             },
                         },
                         'Login successful'
                     );
                 } else if (username === 'newuser' && password === 'newuser') {
                     // Test user that requires password change
-                    const token = jwt.sign(
-                        {
-                            id: 2,
-                            username: 'newuser',
-                            firstName: 'New',
-                            middleName: '',
-                            lastName: 'User',
-                            email: 'newuser@test.com',
-                            roles: ['user'],
-                            roleKeys: [2],
-                        },
-                        config.JWT_SECRET,
-                        { expiresIn: JWT_CONFIG.EXPIRES_IN }
+                    const { ipAddress, userAgent } =
+                        SessionManager.getClientInfo(req);
+                    const session = await SessionManager.createSession(
+                        2,
+                        ipAddress,
+                        userAgent,
+                        'password'
                     );
 
                     return successResponse(
                         res,
                         {
-                            token,
+                            token: session.session_token,
                             user: {
                                 username: 'newuser',
                                 firstName: 'New',
@@ -97,8 +92,12 @@ router.post(
                                 roles: ['user'],
                                 roleKeys: [2],
                                 isAdmin: false,
-                                passwordChangeRequired: true, // This user requires password change
+                                passwordChangeRequired: true,
                                 authVersion: '2.0',
+                            },
+                            session: {
+                                expiresAt: session.expires_at,
+                                sessionKey: session.session_key,
                             },
                         },
                         'Login successful'
@@ -167,7 +166,7 @@ router.post(
                         // Remove used backup code
                         backupCodes.splice(codeIndex, 1);
                         await pool.query(
-                            'UPDATE tbl_user SET backup_codes = $1 WHERE user_key = $2',
+                            'UPDATE tbl_user SET backup_codes = $1, date_when = NOW() WHERE user_key = $2',
                             [JSON.stringify(backupCodes), user.user_key]
                         );
                         backupCodeUsed = true;
@@ -202,35 +201,26 @@ router.post(
                         roleLower.includes('administrator') ||
                         roleLower === 'admin'
                     );
-                });
+                }); // Determine login method based on authentication
+            let loginMethod = 'password';
+            if (user.twofa_enabled && twofaToken) {
+                loginMethod = backupCodeUsed ? 'backup_code' : '2fa';
+            }
 
-            // Create token
-            const token = jwt.sign(
-                {
-                    id: user.user_key,
-                    username: user.username,
-                    firstName: user.first_name,
-                    middleName: user.middle_name,
-                    lastName: user.last_name,
-                    email: user.email,
-                    nameKey: user.name_key,
-                    roles: roles,
-                    roleKeys: roleKeys,
-                },
-                config.JWT_SECRET,
-                { expiresIn: JWT_CONFIG.EXPIRES_IN }
+            // Get client information
+            const { ipAddress, userAgent } = SessionManager.getClientInfo(req);
+
+            // Create session instead of just a JWT token
+            const session = await SessionManager.createSession(
+                user.user_key,
+                ipAddress,
+                userAgent,
+                loginMethod
             );
-
-            // Update last login time
-            await pool.query(
-                'UPDATE tbl_user SET date_when = CURRENT_TIMESTAMP WHERE user_key = $1',
-                [user.user_key]
-            );
-
             return successResponse(
                 res,
                 {
-                    token,
+                    token: session.session_token,
                     user: {
                         username: user.username,
                         firstName: user.first_name,
@@ -245,6 +235,10 @@ router.post(
                             user.password_change_required || false,
                         authVersion: '2.0',
                     },
+                    session: {
+                        expiresAt: session.expires_at,
+                        sessionKey: session.session_key,
+                    },
                 },
                 'Login successful'
             );
@@ -255,20 +249,38 @@ router.post(
     }
 );
 
-// Server-side logout endpoint for token invalidation
+// Server-side logout endpoint for session termination
 router.post('/logout', authenticateToken, async (req, res) => {
     try {
-        // In a production environment, you would typically:
-        // 1. Add the token to a blacklist stored in Redis or database
-        // 2. Log the logout event for security auditing
+        const sessionToken = SessionManager.extractSessionToken(req);
 
-        console.log(
-            `User ${
-                req.user.username
-            } logged out at ${new Date().toISOString()}`
-        );
+        if (sessionToken) {
+            // End the session
+            const sessionEnded = await SessionManager.endSession(
+                sessionToken,
+                'user_logout'
+            );
 
-        return successResponse(res, null, 'Successfully logged out');
+            if (sessionEnded) {
+                console.log(
+                    `User ${
+                        req.user.username
+                    } logged out at ${new Date().toISOString()}`
+                );
+                return successResponse(res, null, 'Successfully logged out');
+            } else {
+                console.warn(
+                    `Failed to end session for user ${req.user.username}`
+                );
+                return successResponse(
+                    res,
+                    null,
+                    'Logout completed (session may have already expired)'
+                );
+            }
+        } else {
+            return successResponse(res, null, 'No active session found');
+        }
     } catch (err) {
         console.error('Logout error:', err);
         return errorResponse(res, 'Logout failed', 500);

@@ -160,11 +160,9 @@ router.put(
                     throw new Error('Failed to create name record');
                 }
 
-                const newNameKey = newNameResult.rows[0].name_key;
-
-                // Update user table with new name_key and email
+                const newNameKey = newNameResult.rows[0].name_key; // Update user table with new name_key and email
                 const userUpdateResult = await client.query(
-                    'UPDATE tbl_user SET email = $1, name_key = $2 WHERE user_key = $3',
+                    'UPDATE tbl_user SET email = $1, name_key = $2, date_when = NOW() WHERE user_key = $3',
                     [email, newNameKey, userId]
                 );
 
@@ -289,11 +287,9 @@ router.put(
                 const newPasswordHash = await bcrypt.hash(
                     newPassword,
                     saltRounds
-                );
-
-                // Update password in database
+                ); // Update password in database
                 const updateResult = await client.query(
-                    'UPDATE tbl_user SET password_hash = $1 WHERE user_key = $2',
+                    'UPDATE tbl_user SET password_hash = $1, date_when = NOW() WHERE user_key = $2',
                     [newPasswordHash, userId]
                 );
 
@@ -403,11 +399,9 @@ router.put(
                 const newPasswordHash = await bcrypt.hash(
                     newPassword,
                     saltRounds
-                );
-
-                // Update password and clear the password change requirement flag
+                ); // Update password and clear the password change requirement flag
                 const updateResult = await client.query(
-                    'UPDATE tbl_user SET password_hash = $1, password_change_required = false WHERE user_key = $2',
+                    'UPDATE tbl_user SET password_hash = $1, password_change_required = false, date_when = NOW() WHERE user_key = $2',
                     [newPasswordHash, userId]
                 );
 
