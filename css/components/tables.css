@@ -207,6 +207,7 @@
     border-radius: var(--radius-lg);
     scrollbar-width: thin; /* For Firefox */
     scrollbar-color: var(--color-primary) #f1f1f1; /* For Firefox */
+    padding-right: 0.5rem; /* Add padding to ensure right edge is visible */
 }
 
 .table-responsive table {
@@ -221,9 +222,9 @@
     width: 100%; /* Full width but can expand beyond container */
     border-collapse: collapse;
     font-size: 0.9rem;
-    table-layout: fixed; /* Fixed layout prevents adjacent columns from resizing */
+    table-layout: auto; /* Change to auto to allow proper column sizing */
     display: table;
-    min-width: max-content; /* Allow table to expand to fit content */
+    min-width: 850px; /* Ensure table is wide enough for all 6 columns */
 }
 
 .users-table thead {
@@ -277,9 +278,11 @@
 } /* Role */
 .users-table th:nth-child(5) {
     min-width: 100px;
+    width: 12%;
 } /* Created */
 .users-table th:nth-child(6) {
-    min-width: 110px;
+    min-width: 130px;
+    width: 15%;
 } /* Actions */
 
 .users-table th:last-child {
@@ -401,9 +404,21 @@
     padding: 0.5rem 0.75rem;
 }
 
+/* Ensure users table Actions column is fully visible */
+#usersTable th:nth-child(6),
+#usersTable td:nth-child(6) {
+    min-width: 140px !important;
+    width: 140px;
+    text-align: center;
+    padding: 0.5rem 1rem;
+    white-space: nowrap;
+}
+
 /* Add padding to table container to ensure Actions column is fully visible */
 .users-table-container .table-responsive {
-    padding-right: 1rem;
+    padding-right: 1.5rem; /* Increase padding for better visibility */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .role-select {
