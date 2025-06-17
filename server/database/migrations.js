@@ -268,9 +268,8 @@ const addUserSessionTable = async (client) => {
                 login_time timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
                 last_activity timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
                 expires_at timestamp with time zone DEFAULT (CURRENT_TIMESTAMP + INTERVAL '8 hours'),
-                logout_time timestamp with time zone NULL,
-                ip_address character varying(50) COLLATE pg_catalog."default" NOT NULL,
-                user_agent text,
+                logout_time timestamp with time zone NULL,                ip_address character varying(50) COLLATE pg_catalog."default" NOT NULL,
+                browser_info character varying(100), -- Parsed browser and OS info
                 login_method character varying(20) DEFAULT 'password',
                 is_active boolean DEFAULT true,
                 revoked boolean DEFAULT false,

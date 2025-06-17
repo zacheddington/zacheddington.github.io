@@ -34,13 +34,11 @@ class SessionManager {
                 },
                 config.JWT_SECRET,
                 { expiresIn: '8h' }
-            );
-
-            // Create session record
+            ); // Create session record
             const result = await client.query(
                 `
                 INSERT INTO tbl_user_session 
-                (user_key, session_token, ip_address, user_agent, login_method) 
+                (user_key, session_token, ip_address, browser_info, login_method) 
                 VALUES ($1, $2, $3, $4, $5) 
                 RETURNING session_key, session_token, expires_at, is_active
             `,
@@ -221,7 +219,7 @@ class SessionManager {
                     login_time: new Date(),
                     last_activity: new Date(),
                     ip_address: '127.0.0.1',
-                    user_agent: 'Test Browser',
+                    browser_info: 'Chrome on Windows 10/11',
                     login_method: 'password',
                 },
             ];
@@ -236,7 +234,7 @@ class SessionManager {
                     login_time,
                     last_activity,
                     ip_address,
-                    user_agent,
+                    browser_info,
                     login_method,
                     expires_at
                 FROM tbl_user_session 
@@ -261,9 +259,7 @@ class SessionManager {
             return authHeader.substring(7);
         }
         return null;
-    }
-
-    // Get client info from request
+    } // Get client info from request
     static getClientInfo(req) {
         const ipAddress =
             req.ip ||
@@ -273,10 +269,69 @@ class SessionManager {
                 ? req.connection.socket.remoteAddress
                 : null) ||
             '127.0.0.1';
+        const rawUserAgent = req.headers['user-agent'] || 'Unknown';
+        const browserInfo = this.parseUserAgent(rawUserAgent);
 
-        const userAgent = req.headers['user-agent'] || 'Unknown';
+        return { ipAddress, userAgent: browserInfo };
+    }
 
-        return { ipAddress, userAgent };
+    // Parse user agent into human-readable format
+    static parseUserAgent(userAgentString) {
+        if (!userAgentString || userAgentString === 'Unknown') {
+            return 'Unknown Browser';
+        }
+
+        let browser = 'Unknown';
+        let os = 'Unknown';
+
+        // Detect browser
+        if (
+            userAgentString.includes('Chrome') &&
+            !userAgentString.includes('Edg')
+        ) {
+            browser = 'Chrome';
+        } else if (userAgentString.includes('Edg')) {
+            browser = 'Edge';
+        } else if (userAgentString.includes('Firefox')) {
+            browser = 'Firefox';
+        } else if (
+            userAgentString.includes('Safari') &&
+            !userAgentString.includes('Chrome')
+        ) {
+            browser = 'Safari';
+        } else if (
+            userAgentString.includes('Opera') ||
+            userAgentString.includes('OPR')
+        ) {
+            browser = 'Opera';
+        }
+
+        // Detect operating system
+        if (userAgentString.includes('Windows NT 10.0')) {
+            os = 'Windows 10/11';
+        } else if (userAgentString.includes('Windows NT 6.3')) {
+            os = 'Windows 8.1';
+        } else if (userAgentString.includes('Windows NT 6.1')) {
+            os = 'Windows 7';
+        } else if (userAgentString.includes('Windows')) {
+            os = 'Windows';
+        } else if (
+            userAgentString.includes('Mac OS X') ||
+            userAgentString.includes('macOS')
+        ) {
+            os = 'macOS';
+        } else if (userAgentString.includes('Linux')) {
+            os = 'Linux';
+        } else if (userAgentString.includes('Android')) {
+            os = 'Android';
+        } else if (
+            userAgentString.includes('iPhone') ||
+            userAgentString.includes('iPad')
+        ) {
+            os = 'iOS';
+        }
+
+        return `${browser} on ${os}`;
     }
 }
 
