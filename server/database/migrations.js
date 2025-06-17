@@ -259,7 +259,6 @@ const addUserSessionTable = async (client) => {
 
     if (tableExists.rows.length === 0) {
         console.log('Creating tbl_user_session table...');
-
         await client.query(`
             CREATE TABLE IF NOT EXISTS public.tbl_user_session
             (
@@ -276,8 +275,6 @@ const addUserSessionTable = async (client) => {
                 is_active boolean DEFAULT true,
                 revoked boolean DEFAULT false,
                 revoked_reason character varying(100),
-                created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-                updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
                 CONSTRAINT tbl_user_session_pkey PRIMARY KEY (session_key),
                 CONSTRAINT tbl_user_session_user_key_fkey FOREIGN KEY (user_key)
                     REFERENCES public.tbl_user (user_key) MATCH SIMPLE

@@ -64,7 +64,7 @@ class SessionManager {
             const result = await client.query(
                 `
                 UPDATE tbl_user_session 
-                SET last_activity = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+                SET last_activity = CURRENT_TIMESTAMP
                 WHERE session_token = $1 AND is_active = true AND NOT revoked
                 AND expires_at > CURRENT_TIMESTAMP
             `,
@@ -140,7 +140,6 @@ class SessionManager {
                 UPDATE tbl_user_session 
                 SET logout_time = CURRENT_TIMESTAMP, 
                     is_active = false, 
-                    updated_at = CURRENT_TIMESTAMP,
                     revoked_reason = $2
                 WHERE session_token = $1
             `,
@@ -170,7 +169,6 @@ class SessionManager {
                 SET revoked = true, 
                     is_active = false, 
                     logout_time = CURRENT_TIMESTAMP,
-                    updated_at = CURRENT_TIMESTAMP,
                     revoked_reason = $2
                 WHERE user_key = $1 AND is_active = true
             `;
@@ -202,7 +200,6 @@ class SessionManager {
                 UPDATE tbl_user_session 
                 SET is_active = false, 
                     logout_time = CURRENT_TIMESTAMP,
-                    updated_at = CURRENT_TIMESTAMP,
                     revoked_reason = 'expired'
                 WHERE is_active = true 
                 AND expires_at <= CURRENT_TIMESTAMP
