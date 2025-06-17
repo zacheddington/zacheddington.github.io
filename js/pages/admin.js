@@ -1972,7 +1972,14 @@ async function initializeSessionManagement() {
         console.log('Session management initialized successfully');
     } catch (error) {
         console.error('Error initializing session management:', error);
-        alert('Error loading session management');
+        if (window.modalManager) {
+            window.modalManager.showModal(
+                'error',
+                'Error loading session management'
+            );
+        } else {
+            alert('Error loading session management');
+        }
     }
 }
 
@@ -1981,6 +1988,9 @@ async function loadAllSessions() {
     try {
         const API_URL = getAPIUrl();
         const token = localStorage.getItem('token');
+
+        console.log('Loading sessions from:', API_URL);
+        console.log('Current hostname:', window.location.hostname);
 
         showSessionsLoading(true);
 
@@ -2008,7 +2018,14 @@ async function loadAllSessions() {
         }
     } catch (error) {
         console.error('Error loading sessions:', error);
-        alert('Failed to load sessions. Please try again.');
+        if (window.modalManager) {
+            window.modalManager.showModal(
+                'error',
+                'Failed to load sessions. Please try again.'
+            );
+        } else {
+            alert('Failed to load sessions. Please try again.');
+        }
         allSessions = [];
         filteredSessions = [];
         displaySessions([]);
@@ -2165,7 +2182,16 @@ function setupSessionActions() {
             if (userFilter) {
                 revokeAllUserSessions(userFilter);
             } else {
-                alert('Please select a specific user to revoke all sessions');
+                if (window.modalManager) {
+                    window.modalManager.showModal(
+                        'warning',
+                        'Please select a specific user to revoke all sessions'
+                    );
+                } else {
+                    alert(
+                        'Please select a specific user to revoke all sessions'
+                    );
+                }
             }
         });
     }
@@ -2213,7 +2239,14 @@ async function revokeSession(sessionId) {
             }
         );
         if (response.ok) {
-            alert('Session revoked successfully');
+            if (window.modalManager) {
+                window.modalManager.showModal(
+                    'success',
+                    'Session revoked successfully'
+                );
+            } else {
+                alert('Session revoked successfully');
+            }
             // Reload sessions to reflect changes
             await loadAllSessions();
         } else {
@@ -2221,7 +2254,14 @@ async function revokeSession(sessionId) {
         }
     } catch (error) {
         console.error('Error revoking session:', error);
-        alert('Failed to revoke session. Please try again.');
+        if (window.modalManager) {
+            window.modalManager.showModal(
+                'error',
+                'Failed to revoke session. Please try again.'
+            );
+        } else {
+            alert('Failed to revoke session. Please try again.');
+        }
     } finally {
         setSessionActionLoading(sessionId, false);
     }
@@ -2258,11 +2298,20 @@ async function revokeAllUserSessions(username) {
         );
         if (response.ok) {
             const result = await response.json();
-            alert(
-                `Revoked ${
-                    result.revokedCount || 0
-                } sessions for user ${username}`
-            );
+            if (window.modalManager) {
+                window.modalManager.showModal(
+                    'success',
+                    `Revoked ${
+                        result.revokedCount || 0
+                    } sessions for user ${username}`
+                );
+            } else {
+                alert(
+                    `Revoked ${
+                        result.revokedCount || 0
+                    } sessions for user ${username}`
+                );
+            }
             // Reload sessions to reflect changes
             await loadAllSessions();
         } else {
@@ -2272,7 +2321,14 @@ async function revokeAllUserSessions(username) {
         }
     } catch (error) {
         console.error('Error revoking user sessions:', error);
-        alert('Failed to revoke user sessions. Please try again.');
+        if (window.modalManager) {
+            window.modalManager.showModal(
+                'error',
+                'Failed to revoke user sessions. Please try again.'
+            );
+        } else {
+            alert('Failed to revoke user sessions. Please try again.');
+        }
     }
 }
 
@@ -2312,7 +2368,14 @@ async function cleanupExpiredSessions() {
         }
     } catch (error) {
         console.error('Error cleaning up sessions:', error);
-        alert('Failed to cleanup sessions. Please try again.');
+        if (window.modalManager) {
+            window.modalManager.showModal(
+                'error',
+                'Failed to cleanup sessions. Please try again.'
+            );
+        } else {
+            alert('Failed to cleanup sessions. Please try again.');
+        }
     }
 }
 
