@@ -228,7 +228,7 @@ router.get(
 );
 
 // Get single patient by ID for editing
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get('/patients/:id', authenticateToken, async (req, res) => {
     try {
         const patientId = parseInt(req.params.id);
 
