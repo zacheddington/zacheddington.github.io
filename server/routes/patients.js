@@ -40,7 +40,7 @@ router.get('/patients', authenticateToken, async (req, res) => {
                         accepts_texts: true,
                         date_of_birth: '1990-01-15',
                         date_created: '2024-01-01T00:00:00.000Z',
-                        date_updated: '2024-01-15T00:00:00.000Z',
+                        date_updated: '2024-01-15T10:30:00.000Z',
                     },
                     {
                         patient_key: 2,
@@ -80,8 +80,8 @@ router.get('/patients', authenticateToken, async (req, res) => {
                     p.phone,
                     p.accepts_texts,
                     p.date_of_birth,
-                    p.date_when as date_created,
-                    p.date_updated
+                    p.date_created,
+                    p.date_when as date_updated
                 FROM tbl_patient p
                 LEFT JOIN tbl_name_data n ON p.name_key = n.name_key
                 LEFT JOIN tbl_address_data a ON p.address_key = a.address_key
@@ -397,7 +397,7 @@ router.post(
 
                 const addressKey = addressResult.rows[0].address_key; // Insert into tbl_patient
                 const patientResult = await client.query(
-                    'INSERT INTO tbl_patient (name_key, address_key, phone, accepts_texts, date_of_birth, who, date_when, date_updated) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING patient_key',
+                    'INSERT INTO tbl_patient (name_key, address_key, phone, accepts_texts, date_of_birth, who, date_when, date_created) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) RETURNING patient_key',
                     [
                         nameKey,
                         addressKey,
@@ -557,7 +557,7 @@ router.put(
                     ]
                 ); // Update patient record
                 await client.query(
-                    'UPDATE tbl_patient SET phone = $1, accepts_texts = $2, date_of_birth = $3, who = $4, date_when = NOW(), date_updated = NOW() WHERE patient_key = $5',
+                    'UPDATE tbl_patient SET phone = $1, accepts_texts = $2, date_of_birth = $3, who = $4, date_when = NOW() WHERE patient_key = $5',
                     [
                         phone,
                         acceptsTexts === 'yes',
