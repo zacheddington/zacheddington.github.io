@@ -390,7 +390,20 @@
     justify-content: center;
     align-items: center;
     white-space: nowrap; /* Prevent wrapping of action buttons */
-    min-width: 90px; /* Ensure minimum width for the actions column */
+    min-width: 120px; /* Increase minimum width for the actions column */
+}
+
+/* Ensure Actions column has enough space for both users and patients tables */
+.users-table th:nth-child(6),
+.users-table td:nth-child(6) {
+    min-width: 130px;
+    text-align: center;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Add padding to table container to ensure Actions column is fully visible */
+.users-table-container .table-responsive {
+    padding-right: 1rem;
 }
 
 .role-select {

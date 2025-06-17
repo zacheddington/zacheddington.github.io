@@ -42,8 +42,11 @@
 
 .patient-actions {
     display: flex;
-    gap: 0.5rem;
+    justify-content: center;
     align-items: center;
+    gap: 0.5rem;
+    min-width: 120px;
+    padding: 0.25rem;
 }
 
 .accepts-texts {
@@ -111,17 +114,17 @@
 /* Column widths - min-width instead of fixed width for responsive behavior */
 #patientsTable th:nth-child(1) {
     min-width: 150px;
-    width: 20%;
-} /* Patient Name */
+    width: 18%;
+} /* Name */
 
 #patientsTable th:nth-child(2) {
-    min-width: 200px;
-    width: 30%;
-} /* Address - larger for potentially long addresses */
+    min-width: 110px;
+    width: 12%;
+} /* Date of Birth */
 
 #patientsTable th:nth-child(3) {
     min-width: 120px;
-    width: 15%;
+    width: 12%;
 } /* Phone */
 
 #patientsTable th:nth-child(4) {
@@ -130,20 +133,44 @@
 } /* Accepts Texts */
 
 #patientsTable th:nth-child(5) {
-    min-width: 100px;
-    width: 10%;
-} /* Created */
+    min-width: 200px;
+    width: 25%;
+} /* Address - larger for potentially long addresses */
 
 #patientsTable th:nth-child(6) {
     min-width: 110px;
-    width: 15%;
-} /* Actions */
+    width: 12%;
+} /* Last Updated */
+
+#patientsTable th:nth-child(7) {
+    min-width: 100px;
+    width: 11%;
+} /* Created */
+
+#patientsTable th:nth-child(8) {
+    text-align: center;
+    padding: 0.5rem 0.75rem;
+    min-width: 130px;
+    white-space: nowrap;
+} /* Actions - ensure this has enough space and doesn't get cut off */
 
 /* Patient address cell specific style */
 #patientsTable td.patient-address {
     max-width: none; /* Remove the max-width limit to allow full expansion */
     text-align: left; /* Left-align address text */
     position: relative; /* For potential overflow indicator */
+}
+
+/* Ensure the table container allows full scrolling */
+.users-table-container .table-responsive {
+    overflow-x: auto;
+    padding-right: 1rem; /* Add padding to ensure Actions column is fully visible */
+}
+
+/* Force table to maintain minimum width to show all columns */
+#patientsTable {
+    min-width: 1000px; /* Ensure table is wide enough for all 8 columns */
+    table-layout: auto; /* Allow columns to adjust to content */
 }
 
 /* Cell hover effect to show full content on mobile */
