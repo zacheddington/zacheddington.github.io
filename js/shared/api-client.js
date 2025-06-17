@@ -3,129 +3,151 @@
 
 // Utility function to get the correct API URL
 function getAPIUrl() {
-  const isLocal =
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1";
-  return isLocal
-    ? "http://localhost:3000"
-    : "https://integrisneuro-eec31e4aaab1.herokuapp.com";
+    // Check if we're running on localhost/development
+    const isLocal =
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname === '';
+
+    // For production (GitHub Pages with custom domain)
+    if (window.location.hostname === 'indataentry.com') {
+        return 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
+    }
+
+    // Default to production API for any other domain
+    return isLocal
+        ? 'http://localhost:3000'
+        : 'https://integrisneuro-eec31e4aaab1.herokuapp.com';
 }
 
 // Network connectivity and database health check
 async function checkConnectivity() {
-  try {
-    const API_URL = getAPIUrl();
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    try {
+        const API_URL = getAPIUrl();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    const response = await fetch(`${API_URL}/api/health/public`, {
-      method: "GET",
-      signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+        const response = await fetch(`${API_URL}/api/health/public`, {
+            method: 'GET',
+            signal: controller.signal,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-    clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
 
-    if (response.ok) {
-      const data = await response.json();
-      return {
-        connected: true,
-        status: data.status || "healthy",
-        database: data.database || "connected",
-      };
-    } else {
-      return {
-        connected: false,
-        error: `Server returned ${response.status}: ${response.statusText}`,
-        status: "unhealthy",
-      };
+        if (response.ok) {
+            const result = await response.json();
+            return {
+                success: true,
+                status: result.data?.status || 'unknown',
+                database: result.data?.database || 'unknown',
+                message: result.message || 'Connected successfully',
+            };
+        } else {
+            return {
+                success: false,
+                status: 'error',
+                message: `API returned ${response.status}: ${response.statusText}`,
+            };
+        }
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            return {
+                success: false,
+                status: 'timeout',
+                message: 'Connection timeout - server may be sleeping',
+            };
+        }
+        return {
+            success: false,
+            status: 'error',
+            message: error.message || 'Connection failed',
+        };
     }
-  } catch (error) {
-    if (error.name === "AbortError") {
-      return {
-        connected: false,
-        error: "Connection timeout - server may be unavailable",
-        status: "timeout",
-      };
-    }
-    return {
-      connected: false,
-      error: error.message || "Network connection failed",
-      status: "error",
-    };
-  }
 }
 
-// Enhanced error categorization
-function categorizeError(error, response = null) {
-  if (error.name === "TypeError" && error.message.includes("fetch")) {
-    return {
-      type: "network",
-      message:
-        "Network connection failed. Please check your internet connection and try again.",
-      modal: true,
-    };
-  }
+// Enhanced token validation with user context
+async function validateToken(token) {
+    try {
+        const API_URL = getAPIUrl();
+        const response = await fetch(`${API_URL}/api/auth/validate`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
 
-  if (error.name === "AbortError" || error.message.includes("timeout")) {
-    return {
-      type: "timeout",
-      message:
-        "Request timed out. The server may be experiencing high load. Please try again.",
-      modal: true,
-    };
-  }
-
-  if (response && response.status >= 500) {
-    return {
-      type: "server",
-      message: "Server error occurred. Please try again in a few moments.",
-      modal: true,
-    };
-  }
-
-  if (error.message.includes("Database connection")) {
-    return {
-      type: "database",
-      message:
-        "Database connection error. Please try again or contact support if the problem persists.",
-      modal: true,
-    };
-  }
-
-  if (error.message.includes("Email address is already in use")) {
-    return {
-      type: "validation",
-      message: error.message,
-      modal: false,
-    };
-  }
-
-  if (error.message.includes("Current password is incorrect")) {
-    return {
-      type: "validation",
-      message: error.message,
-      modal: false,
-    };
-  }
-
-  return {
-    type: "general",
-    message: error.message || "An unexpected error occurred. Please try again.",
-    modal: false,
-  };
+        if (response.ok) {
+            const result = await response.json();
+            return {
+                valid: true,
+                user: result.data?.user || null,
+            };
+        } else {
+            return {
+                valid: false,
+                user: null,
+            };
+        }
+    } catch (error) {
+        console.error('Token validation error:', error);
+        return {
+            valid: false,
+            user: null,
+        };
+    }
 }
 
-// Make functions available globally
-window.getAPIUrl = getAPIUrl;
-window.checkConnectivity = checkConnectivity;
-window.categorizeError = categorizeError;
+// Generic API request wrapper with error handling
+async function apiRequest(endpoint, options = {}) {
+    try {
+        const API_URL = getAPIUrl();
+        const url = `${API_URL}${endpoint}`;
 
-// Create apiClient object for easier access
-window.apiClient = {
-  getAPIUrl: getAPIUrl,
-  checkConnectivity: checkConnectivity,
-  categorizeError: categorizeError,
+        const defaultOptions = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
+
+        // Add auth token if available
+        const token = localStorage.getItem('token');
+        if (token) {
+            defaultOptions.headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const finalOptions = {
+            ...defaultOptions,
+            ...options,
+            headers: {
+                ...defaultOptions.headers,
+                ...options.headers,
+            },
+        };
+
+        const response = await fetch(url, finalOptions);
+
+        if (!response.ok) {
+            throw new Error(
+                `API request failed: ${response.status} ${response.statusText}`
+            );
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('API request error:', error);
+        throw error;
+    }
+}
+
+// Export functions for global use
+window.apiUtils = {
+    getAPIUrl,
+    checkConnectivity,
+    validateToken,
+    apiRequest,
 };

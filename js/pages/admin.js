@@ -1985,16 +1985,26 @@ async function initializeSessionManagement() {
 
 // Load all sessions from the API
 async function loadAllSessions() {
+                'Error loading session management'    try {
+            );();
+        } else {.getItem('token');
+            alert('Error loading session management');
+        }s from:', API_URL);
+    }tion.hostname);
+}
+
+// Load all sessions from the API
+async function loadAllSessions() {        const response = await fetch(`${API_URL}/api/sessions`, {
     try {
-        const API_URL = getAPIUrl();
+        const API_URL = getAPIUrl();                Authorization: `Bearer ${token}`,
         const token = localStorage.getItem('token');
 
         console.log('Loading sessions from:', API_URL);
         console.log('Current hostname:', window.location.hostname);
-
-        showSessionsLoading(true);
-
-        const response = await fetch(`${API_URL}/api/sessions`, {
+sponse.ok) {
+        showSessionsLoading(true); const result = await response.json();
+            allSessions = result.data || [];
+        const response = await fetch(`${API_URL}/api/sessions`, {ns = [...allSessions];
             headers: {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -2002,50 +2012,40 @@ async function loadAllSessions() {
         });
 
         if (response.ok) {
-            const result = await response.json();
+            const result = await response.json();aded ${allSessions.length} sessions`);
             allSessions = result.data || [];
-            filteredSessions = [...allSessions];
+            filteredSessions = [...allSessions];            throw new Error(`Failed to load sessions: ${response.status}`);
 
-            // Display sessions in table
+            // Display sessions in tableor) {
             displaySessions(filteredSessions);
-
-            // Update stats
+f (window.modalManager) {
+            // Update statsdalManager.showModal(
             updateSessionStats();
-
+ssions. Please try again.'
             console.log(`Loaded ${allSessions.length} sessions`);
         } else {
-            throw new Error(`Failed to load sessions: ${response.status}`);
+            throw new Error(`Failed to load sessions: ${response.status}`);.');
         }
-    } catch (error) {
+    } catch (error) {ons = [];
         console.error('Error loading sessions:', error);
-        if (window.modalManager) {
+        if (window.modalManager) {isplaySessions([]);
             window.modalManager.showModal(
-                'error',
+                'error',lse);
                 'Failed to load sessions. Please try again.'
             );
         } else {
-            alert('Failed to load sessions. Please try again.');
-        }
-        allSessions = [];
-        filteredSessions = [];
-        displaySessions([]);
-    } finally {
+            alert('Failed to load sessions. Please try again.');tup session filters
+        }unction setupSessionFilters() {
+        allSessions = [];    const statusFilter = document.getElementById('sessionStatusFilter');
+        filteredSessions = [];ocument.getElementById('sessionUserFilter');
+        displaySessions([]);ment.getElementById('applySessionFilters');
+    } finally {');
         showSessionsLoading(false);
     }
 }
 
 // Setup session filters
-function setupSessionFilters() {
-    const statusFilter = document.getElementById('sessionStatusFilter');
-    const userFilter = document.getElementById('sessionUserFilter');
-    const applyFiltersBtn = document.getElementById('applySessionFilters');
-    const clearFiltersBtn = document.getElementById('clearSessionFilters');
-
-    // Populate user filter dropdown
-    populateUserFilter();
-
-    // Apply filters handler
-    if (applyFiltersBtn) {
+function setupSessionFilters() {{
         applyFiltersBtn.addEventListener('click', function () {
             filterSessions();
         });
