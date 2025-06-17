@@ -788,7 +788,8 @@ async function loadPatients() {
                             city: 'Anytown',
                             state: 'CA',
                             zip: '12345',
-                            created_at: new Date().toISOString(),
+                            date_created: new Date().toISOString(),
+                            date_updated: new Date().toISOString(),
                         },
                     ];
 
@@ -886,14 +887,15 @@ function showDebugInfo(message, data = null) {
 
 // Set up patient table sorting functionality using shared utility
 function setupPatientTableSorting() {
-    // Define sortable columns - CORRECTED to match actual table structure
+    // Define sortable columns - Updated to include Last Updated column
     const sortableColumns = [
         { index: 0, key: 'fullName', label: 'Name' },
         { index: 1, key: 'dateOfBirth', label: 'Date of Birth' },
         { index: 2, key: 'phone', label: 'Phone' },
         { index: 3, key: 'acceptsTexts', label: 'Accepts Texts' },
         { index: 4, key: 'address', label: 'Address' },
-        { index: 5, key: 'created', label: 'Created' },
+        { index: 5, key: 'updated', label: 'Last Updated' },
+        { index: 6, key: 'created', label: 'Created' },
     ];
 
     // Use shared table sorting utility
@@ -1023,8 +1025,14 @@ function getPatientValueForSort(patient, columnKey) {
             return patient.phone || '';
         case 'acceptsTexts':
             return patient.accepts_texts ? 'yes' : 'no';
+        case 'updated':
+            return patient.date_updated
+                ? new Date(patient.date_updated)
+                : new Date(0);
         case 'created':
-            return new Date(patient.created_at);
+            return patient.date_created
+                ? new Date(patient.date_created)
+                : new Date(0);
         default:
             return '';
     }
@@ -1063,9 +1071,21 @@ function getSortedPatientsFallback() {
                 aValue = a.accepts_texts ? 'yes' : 'no';
                 bValue = b.accepts_texts ? 'yes' : 'no';
                 break;
+            case 'updated':
+                aValue = a.date_updated
+                    ? new Date(a.date_updated)
+                    : new Date(0);
+                bValue = b.date_updated
+                    ? new Date(b.date_updated)
+                    : new Date(0);
+                break;
             case 'created':
-                aValue = new Date(a.created_at);
-                bValue = new Date(b.created_at);
+                aValue = a.date_created
+                    ? new Date(a.date_created)
+                    : new Date(0);
+                bValue = b.date_created
+                    ? new Date(b.date_created)
+                    : new Date(0);
                 break;
             default:
                 return 0;
@@ -1110,15 +1130,20 @@ function displayPatients(patients) {
                 : `${patient.first_name} ${patient.last_name}`;
 
             const acceptsTexts = patient.accepts_texts ? 'Yes' : 'No';
-            const acceptsTextsClass = patient.accepts_texts ? 'yes' : 'no';
-
-            // Format phone number
+            const acceptsTextsClass = patient.accepts_texts ? 'yes' : 'no'; // Format phone number
             const formattedPhone = patient.phone
                 ? formatPhoneNumber(patient.phone)
                 : '';
-            const createdDate = patient.created_at
-                ? new Date(patient.created_at).toLocaleDateString()
-                : 'No date'; // Format date of birth without timezone issues
+
+            // Format date fields
+            const createdDate = patient.date_created
+                ? new Date(patient.date_created).toLocaleDateString()
+                : 'No date';
+            const updatedDate = patient.date_updated
+                ? new Date(patient.date_updated).toLocaleDateString()
+                : 'No date';
+
+            // Format date of birth without timezone issues
             const dateOfBirth = formatDateForDisplay(patient.date_of_birth);
 
             // Check if user can delete patients
@@ -1141,7 +1166,6 @@ function displayPatients(patients) {
                     🗑️
                 </button>`
                 : '';
-
             const rowHtml = `
             <tr data-patient-id="${patient.patient_key}">
                 <td class="patient-name" title="${fullName}">
@@ -1156,12 +1180,15 @@ function displayPatients(patients) {
                 </td>
                 <td class="patient-address" title="${patient.address || ''}">${
                 patient.address || ''
-            }</td>                <td class="patient-created" title="${createdDate}">${createdDate}</td>
+            }</td>
+                <td class="patient-updated" title="${updatedDate}">${updatedDate}</td>
+                <td class="patient-created" title="${createdDate}">${createdDate}</td>
                 <td>
                     <div class="patient-actions">
                         ${editButton}
                         ${deleteButton}
-                    </div>                </td>
+                    </div>
+                </td>
             </tr>
         `;
 
@@ -1233,15 +1260,17 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
                 : `${patient.first_name} ${patient.last_name}`;
 
             const acceptsTexts = patient.accepts_texts ? 'Yes' : 'No';
-            const acceptsTextsClass = patient.accepts_texts ? 'yes' : 'no';
-
-            // Format phone number
+            const acceptsTextsClass = patient.accepts_texts ? 'yes' : 'no'; // Format phone number
             const formattedPhone = patient.phone
                 ? formatPhoneNumber(patient.phone)
                 : '';
 
-            const createdDate = patient.created_at
-                ? new Date(patient.created_at).toLocaleDateString()
+            // Format date fields
+            const createdDate = patient.date_created
+                ? new Date(patient.date_created).toLocaleDateString()
+                : 'No date';
+            const updatedDate = patient.date_updated
+                ? new Date(patient.date_updated).toLocaleDateString()
                 : 'No date';
 
             // Format date of birth without timezone issues
@@ -1267,7 +1296,6 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
                     🗑️
                 </button>`
                 : '';
-
             return `
             <tr data-patient-id="${patient.patient_key}">
                 <td class="patient-name" title="${fullName}">
@@ -1283,7 +1311,9 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
                 <td class="patient-address" title="${patient.address || ''}">${
                 patient.address || ''
             }</td>
-                <td class="patient-created" title="${createdDate}">${createdDate}</td>                <td>
+                <td class="patient-updated" title="${updatedDate}">${updatedDate}</td>
+                <td class="patient-created" title="${createdDate}">${createdDate}</td>
+                <td>
                     <div class="patient-actions">
                         ${editButton}
                         ${deleteButton}
