@@ -3,7 +3,7 @@
 
 const modalManager = {
     isShowingModal: false,
-    showModal: function (type, message, forceShow = false) {
+    showModal: function (type, message, forceShow = false, options = {}) {
         if (this.isShowingModal && !forceShow) {
             return false;
         }
@@ -14,16 +14,28 @@ const modalManager = {
         const existingModal = document.getElementById('feedbackModal');
         if (existingModal) {
             existingModal.remove();
-        } // Create modal element
+        }
+
+        // Determine if this is a redirecting modal (no close button needed)
+        const isRedirectModal = options.redirect || type === 'success-redirect';
+
+        // Create modal element
         const modal = document.createElement('div');
         modal.id = 'feedbackModal';
         modal.className = `modal ${type}`;
         modal.tabIndex = '-1'; // Make modal focusable
+
+        // Build footer content based on whether this redirects
+        const footerContent = isRedirectModal
+            ? '<div class="modal-hint" style="font-size: 0.9rem; color: #666; margin-top: 1rem; text-align: center;">Redirecting...</div>'
+            : `<button class="modal-btn" onclick="window.modalManager.closeModal()">OK</button>
+               <div class="modal-hint" style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; text-align: center;">Press Enter or Escape to close</div>`;
+
         modal.innerHTML = `
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>${
-                        type === 'success'
+                        type === 'success' || type === 'success-redirect'
                             ? '✅ Success'
                             : type === 'error'
                             ? '❌ Error'
@@ -32,9 +44,9 @@ const modalManager = {
                 </div>
                 <div class="modal-body">
                     <p>${message.replace(/\n/g, '<br>')}</p>
-                </div>                <div class="modal-footer">
-                    <button class="modal-btn" onclick="window.modalManager.closeModal()">OK</button>
-                    <div class="modal-hint" style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; text-align: center;">Press Enter or Escape to close</div>
+                </div>                
+                <div class="modal-footer">
+                    ${footerContent}
                 </div>
             </div>
         `;
@@ -120,14 +132,14 @@ const modalManager = {
                         button.style.color = 'white';
                     }
                 } // Focus the modal for accessibility
-                modalElement.focus();
-
-                // Add keyboard event listener after modal is set up
-                modalElement.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === 'Escape') {
-                        this.closeModal();
-                    }
-                });
+                modalElement.focus(); // Add keyboard event listener after modal is set up (only if not a redirect modal)
+                if (!isRedirectModal) {
+                    modalElement.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === 'Escape') {
+                            this.closeModal();
+                        }
+                    });
+                }
             }
         }, 10);
         if (type === 'success') {

@@ -646,14 +646,14 @@ async function createPatient() {
         if (response.ok) {
             // Clear the form
             document.getElementById('createPatientForm').reset();
-            clearCreatePatientErrors();
-
-            // Show success modal with simple personalized message
+            clearCreatePatientErrors(); // Show success modal with simple personalized message
             const patientName = formData.middleName
                 ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`
                 : `${formData.firstName} ${formData.lastName}`;
             const successMessage = `Success, new patient ${patientName} created!`;
-            window.modalManager.showModal('success', successMessage); // Redirect back to patient choice page after brief delay
+            window.modalManager.showModal('success', successMessage, false, {
+                redirect: true,
+            }); // Redirect back to patient choice page after brief delay
             setTimeout(() => {
                 window.modalManager.closeModal();
                 // Navigate back to main patient page using absolute URL

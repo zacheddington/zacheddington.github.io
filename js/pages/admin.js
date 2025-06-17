@@ -565,7 +565,9 @@ async function createUser() {
                 ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`
                 : `${formData.firstName} ${formData.lastName}`;
             const successMessage = `Success, new user for ${userName} created!`;
-            window.modalManager.showModal('success', successMessage); // Redirect back to admin choice page after brief delay
+            window.modalManager.showModal('success', successMessage, false, {
+                redirect: true,
+            }); // Redirect back to admin choice page after brief delay
             setTimeout(() => {
                 window.modalManager.closeModal();
                 // Navigate back to main admin page using clean URL
