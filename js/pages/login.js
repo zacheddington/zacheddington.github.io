@@ -62,15 +62,24 @@ function setupLoginForm() {
     loginForm.addEventListener('submit', async function (e) {
         e.preventDefault();
         await performLogin();
-    });
-
-    // Enter key handling for password field
+    }); // Enter key handling for password field
     const passwordField = document.getElementById('password');
     if (passwordField) {
         passwordField.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                performLogin();
+                // Don't call performLogin here since form submission will handle it
+            }
+        });
+    }
+
+    // Enter key handling for 2FA token field
+    const twofaField = document.getElementById('twofaToken');
+    if (twofaField) {
+        twofaField.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                // Don't call performLogin here since form submission will handle it
             }
         });
     }
@@ -215,10 +224,14 @@ async function performLogin() {
             },
             body: JSON.stringify(loginData),
         });
-        const result = await response.json();
-
-        // Handle 2FA required case first, before checking response.ok
-        if (response.status === 400 && result.error === '2FA token required') {
+        const result = await response.json(); // Handle 2FA required case first, before checking response.ok
+        if (
+            (response.status === 400 || response.status === 401) &&
+            (result.error === '2FA token required' ||
+                result.message === '2FA token required' ||
+                result.error === 'Two-factor authentication required' ||
+                result.message === 'Two-factor authentication required')
+        ) {
             // Only show 2FA step if we're currently on credentials step
             if (!isOnTwofaStep) {
                 show2FAStep();
@@ -266,17 +279,41 @@ async function performLogin() {
     } catch (error) {
         console.error('Login failed');
 
+        // Get field references
+        const passwordField = document.getElementById('password');
+        const twofaField = document.getElementById('twofaToken');
+
         // Clear password field for security on credentials step
         if (!isOnTwofaStep) {
-            passwordField.value = '';
+            if (passwordField) passwordField.value = '';
+        } else {
+            // Clear 2FA field when there's an error during 2FA step
+            if (twofaField) twofaField.value = '';
         }
 
-        // For authentication errors (401), show specific message
+        // For authentication errors (401), show specific message based on step
         if (response && response.status === 401) {
-            window.modalManager.showModal(
-                'error',
-                'Invalid username or password. Please try again.'
-            );
+            if (isOnTwofaStep) {
+                window.modalManager.showModal(
+                    'error',
+                    'Invalid authentication code. Please try again.'
+                );
+            } else {
+                window.modalManager.showModal(
+                    'error',
+                    'Invalid username or password. Please try again.'
+                );
+            }
+        } else if (response && response.status === 400) {
+            // Handle 400 errors specifically
+            if (isOnTwofaStep) {
+                window.modalManager.showModal(
+                    'error',
+                    'Invalid authentication code. Please try again.'
+                );
+            } else {
+                window.modalManager.showModal('error', error.message);
+            }
         } else {
             // For all other errors (including validation), show modal with error message
             window.modalManager.showModal('error', error.message);
