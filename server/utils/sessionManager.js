@@ -357,11 +357,27 @@ class SessionManager {
                     browser_info: 'Chrome on Windows 10/11',
                 },
             ];
-        }
-
-        console.log('🗄️ Connecting to production database for sessions...');
+        }        console.log('🗄️ Connecting to production database for sessions...');
         const client = await pool.connect();
         try {
+            // First, check if the tables exist
+            console.log('🔍 Checking if tables exist...');
+            const sessionTableCheck = await client.query(`
+                SELECT table_name FROM information_schema.tables 
+                WHERE table_schema = 'public' AND table_name = 'tbl_user_session'
+            `);
+            console.log('Session table exists:', sessionTableCheck.rows.length > 0);
+            
+            const userTableCheck = await client.query(`
+                SELECT table_name FROM information_schema.tables 
+                WHERE table_schema = 'public' AND table_name = 'tbl_user'
+            `);
+            console.log('User table exists:', userTableCheck.rows.length > 0);
+            
+            // Check session table data
+            const sessionCount = await client.query(`SELECT COUNT(*) as count FROM tbl_user_session`);
+            console.log('Session table record count:', sessionCount.rows[0].count);
+            
             console.log('📊 Executing sessions query...');
             const result = await client.query(`
                 SELECT 
