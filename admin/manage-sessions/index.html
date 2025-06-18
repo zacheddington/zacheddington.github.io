@@ -52,6 +52,22 @@
                         </p>
                     </div>
 
+                    <!-- Session Management Debug Panel -->
+                    <div
+                        id="debugPanel"
+                        style="
+                            background: #f0f0f0;
+                            border: 2px solid #333;
+                            padding: 15px;
+                            margin: 15px 0;
+                            font-family: monospace;
+                            font-size: 12px;
+                        "
+                    >
+                        <h3>Debug Information</h3>
+                        <div id="debugOutput">Loading debug info...</div>
+                    </div>
+
                     <!-- Session Filters -->
                     <div class="sessions-filters">
                         <div class="filter-row">
@@ -204,106 +220,155 @@
         <script src="../../js/shared/navigation.js"></script>
         <script src="../../js/pages/admin.js"></script>
         <script>
+            // Debugging helper function to show output on page
+            function addDebugInfo(message) {
+                const debugOutput = document.getElementById('debugOutput');
+                if (debugOutput) {
+                    debugOutput.innerHTML +=
+                        '<br>' + new Date().toISOString() + ': ' + message;
+                }
+                console.log(message);
+            }
+
             // Immediate DOM test
-            console.log('🔧 Running immediate DOM test...');
-            console.log('🔧 Document ready state:', document.readyState);
+            addDebugInfo('🔧 Running immediate DOM test...');
+            addDebugInfo('🔧 Document ready state: ' + document.readyState);
 
             function testDOMElements() {
-                console.log('🔧 Testing DOM elements...');
+                addDebugInfo('🔧 Testing DOM elements...');
                 const table = document.querySelector('.sessions-table');
                 const tbody = document.querySelector('.sessions-table tbody');
                 const usersTable = document.querySelector('.users-table');
                 const usersTableTbody =
                     document.querySelector('.users-table tbody');
 
-                console.log('🔧 .sessions-table found:', !!table);
-                console.log('🔧 .sessions-table tbody found:', !!tbody);
-                console.log('🔧 .users-table found:', !!usersTable);
-                console.log('🔧 .users-table tbody found:', !!usersTableTbody);
+                addDebugInfo('🔧 .sessions-table found: ' + !!table);
+                addDebugInfo('🔧 .sessions-table tbody found: ' + !!tbody);
+                addDebugInfo('🔧 .users-table found: ' + !!usersTable);
+                addDebugInfo(
+                    '🔧 .users-table tbody found: ' + !!usersTableTbody
+                );
 
                 const allTables = document.querySelectorAll('table');
                 const allTbodies = document.querySelectorAll('tbody');
-                console.log('🔧 Total tables:', allTables.length);
-                console.log('🔧 Total tbodies:', allTbodies.length);
+                addDebugInfo('🔧 Total tables: ' + allTables.length);
+                addDebugInfo('🔧 Total tbodies: ' + allTbodies.length);
 
                 // Log each table's classes
                 allTables.forEach((t, i) => {
-                    console.log(`🔧 Table ${i} classes:`, t.className);
+                    addDebugInfo(`🔧 Table ${i} classes: "${t.className}"`);
                 });
+
+                // If we found elements, test innerHTML manipulation
+                if (tbody) {
+                    addDebugInfo('🔧 Testing tbody innerHTML manipulation...');
+                    const originalContent = tbody.innerHTML;
+                    tbody.innerHTML =
+                        '<tr><td colspan="8" style="text-align: center; color: green; font-weight: bold;">✅ TEST: DOM manipulation works! Table found and accessible.</td></tr>';
+                    addDebugInfo('🔧 innerHTML set successfully');
+                    setTimeout(() => {
+                        tbody.innerHTML = originalContent;
+                        addDebugInfo('🔧 Original content restored');
+                    }, 3000);
+                } else {
+                    addDebugInfo(
+                        '❌ No tbody found - cannot test manipulation'
+                    );
+                }
             }
 
             // Test immediately
-            testDOMElements();
-
-            // Test after a short delay
-            setTimeout(testDOMElements, 100);
+            setTimeout(() => {
+                addDebugInfo('🔧 Initial test after 50ms...');
+                testDOMElements();
+            }, 50);
 
             // Initialize the session management page
             document.addEventListener('DOMContentLoaded', function () {
-                console.log('🔧 DOMContentLoaded event fired');
+                addDebugInfo('🔧 DOMContentLoaded event fired');
                 testDOMElements();
 
                 // Load shared head content
                 if (window.headManager) {
                     window.headManager.loadSharedHead();
+                    addDebugInfo('🔧 Head manager loaded');
+                } else {
+                    addDebugInfo('🔧 Head manager not available');
                 }
 
                 // Initialize auth and navigation
                 if (window.authUtils) {
                     window.authUtils.init();
+                    addDebugInfo('🔧 Auth utils initialized');
+                } else {
+                    addDebugInfo('🔧 Auth utils not available');
                 }
 
                 if (window.navigation) {
                     window.navigation.init();
+                    addDebugInfo('🔧 Navigation initialized');
+                } else {
+                    addDebugInfo('🔧 Navigation not available');
                 }
 
                 // Initialize modal manager
                 if (window.modalManager) {
                     window.modalManager.init();
-                } // Initialize session management specifically
-                console.log('🔍 DOM loaded, checking table existence...');
+                    addDebugInfo('� Modal manager initialized');
+                } else {
+                    addDebugInfo('🔧 Modal manager not available');
+                }
 
-                // Debug table existence
-                const table = document.querySelector('.sessions-table');
-                const tbody = document.querySelector('.sessions-table tbody');
-                console.log('🔍 Table found:', !!table);
-                console.log('🔍 Tbody found:', !!tbody);
-                console.log('🔍 Table element:', table);
-                console.log('🔍 Tbody element:', tbody);
+                // Initialize session management specifically
+                addDebugInfo('🔍 DOM loaded, checking table existence...');
 
                 if (
                     window.adminPage &&
                     window.adminPage.initializeSessionManagement
                 ) {
-                    console.log('🔍 Initializing session management...');
+                    addDebugInfo(
+                        '🔍 AdminPage available, initializing session management...'
+                    );
 
                     // Add a small delay to ensure DOM is fully ready
                     setTimeout(() => {
-                        console.log(
-                            '🔍 After timeout - checking table again...'
+                        addDebugInfo(
+                            '🔍 After 500ms timeout - initializing session management...'
                         );
                         testDOMElements();
-                        const tableAfter =
-                            document.querySelector('.sessions-table');
-                        const tbodyAfter = document.querySelector(
-                            '.sessions-table tbody'
-                        );
-                        console.log(
-                            '🔍 Table found after timeout:',
-                            !!tableAfter
-                        );
-                        console.log(
-                            '🔍 Tbody found after timeout:',
-                            !!tbodyAfter
-                        );
 
-                        window.adminPage.initializeSessionManagement();
+                        try {
+                            window.adminPage.initializeSessionManagement();
+                            addDebugInfo(
+                                '✅ Session management initialization called successfully'
+                            );
+                        } catch (error) {
+                            addDebugInfo(
+                                '❌ Error during session management initialization: ' +
+                                    error.message
+                            );
+                        }
                     }, 500);
                 } else {
-                    console.error(
-                        '❌ adminPage or initializeSessionManagement not found'
+                    addDebugInfo(
+                        '❌ AdminPage or initializeSessionManagement not found'
                     );
-                    console.log('🔍 window.adminPage:', window.adminPage);
+                    addDebugInfo(
+                        '🔍 window.adminPage: ' +
+                            (window.adminPage ? 'exists' : 'undefined')
+                    );
+                    if (window.adminPage) {
+                        addDebugInfo(
+                            '🔍 adminPage.initializeSessionManagement: ' +
+                                (window.adminPage.initializeSessionManagement
+                                    ? 'exists'
+                                    : 'undefined')
+                        );
+                        addDebugInfo(
+                            '🔍 Available adminPage methods: ' +
+                                Object.keys(window.adminPage).join(', ')
+                        );
+                    }
                 }
             });
         </script>
