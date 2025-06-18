@@ -335,12 +335,12 @@ class SessionManager {
             userAgentString.includes('iPad')
         ) {
             os = 'iOS';
-        }
+        }        return `${browser} on ${os}`;
+    }
 
-        return `${browser} on ${os}`;
-    } // Get all sessions for admin view (includes user information)
+    // Get all sessions for admin view (includes user information)
     static async getAllSessions() {
-        console.log('🔍 SessionManager.getAllSessions called');
+        console.log('🔍 SessionManager.getAllSessions called, config.isLocalTest:', config.isLocalTest);
 
         if (config.isLocalTest) {
             console.log('📋 Using local test data for sessions');
@@ -357,26 +357,37 @@ class SessionManager {
                     browser_info: 'Chrome on Windows 10/11',
                 },
             ];
-        }
-        console.log('🗄️ Connecting to production database for sessions...');
-        const client = await pool.connect();
+        }        console.log('🗄️ Connecting to production database for sessions...');
+        let client;
         try {
-            // First, check if the tables exist
+            client = await pool.connect();
+            console.log('✅ Database connection established');
+        } catch (err) {
+            console.error('❌ Failed to connect to database:', err.message);
+            throw new Error(`Database connection failed: ${err.message}`);
+        }
+        
+        try {            // First, check if the tables exist
             console.log('🔍 Checking if tables exist...');
             const sessionTableCheck = await client.query(`
                 SELECT table_name FROM information_schema.tables 
                 WHERE table_schema = 'public' AND table_name = 'tbl_user_session'
             `);
-            console.log(
-                'Session table exists:',
-                sessionTableCheck.rows.length > 0
-            );
+            console.log('Session table exists:', sessionTableCheck.rows.length > 0);
+            
+            if (sessionTableCheck.rows.length === 0) {
+                throw new Error('tbl_user_session table does not exist. Migration may not have run properly.');
+            }
 
             const userTableCheck = await client.query(`
                 SELECT table_name FROM information_schema.tables 
                 WHERE table_schema = 'public' AND table_name = 'tbl_user'
             `);
             console.log('User table exists:', userTableCheck.rows.length > 0);
+            
+            if (userTableCheck.rows.length === 0) {
+                throw new Error('tbl_user table does not exist. Database setup incomplete.');
+            }
 
             // Check session table data
             const sessionCount = await client.query(
