@@ -1,193 +1,239 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Session Management - Integris Neuro Admin</title>
-    
-    <!-- CSS Files -->
-    <link rel="stylesheet" href="../../css/base/reset.css">
-    <link rel="stylesheet" href="../../css/base/variables.css">
-    <link rel="stylesheet" href="../../css/base/typography.css">
-    <link rel="stylesheet" href="../../css/layout/containers.css">
-    <link rel="stylesheet" href="../../css/layout/header.css">
-    <link rel="stylesheet" href="../../css/layout/navigation.css">
-    <link rel="stylesheet" href="../../css/components/buttons.css">
-    <link rel="stylesheet" href="../../css/components/forms.css">
-    <link rel="stylesheet" href="../../css/components/tables.css">
-    <link rel="stylesheet" href="../../css/components/modals.css">
-    <link rel="stylesheet" href="../../css/pages/admin.css">
-    <link rel="stylesheet" href="../../css/utils/animations.css">
-    <link rel="stylesheet" href="../../css/utils/responsive.css">
-</head>
-<body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-content">
-                <div class="header-left">
-                    <img src="../../favicon.png" alt="Integris Neuro" class="app-logo">
-                    <h1 class="app-title">Integris Neuro</h1>
-                </div>
-                <div id="menuContainer"></div>
-                <div class="user-profile">
-                    <button class="logout-btn" id="logoutLink">
-                        <span>Logout</span>
-                    </button>
-                </div>
-            </div>
-        </header>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Session Management - Integris Neuro Admin</title>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="content-container">
-                <div class="page-header">
-                    <h2>Session Management</h2>
-                    <p class="page-description">View and manage active user sessions</p>
+        <!-- CSS Files -->
+        <link rel="stylesheet" href="../../css/base/reset.css" />
+        <link rel="stylesheet" href="../../css/base/variables.css" />
+        <link rel="stylesheet" href="../../css/base/typography.css" />
+        <link rel="stylesheet" href="../../css/layout/containers.css" />
+        <link rel="stylesheet" href="../../css/layout/header.css" />
+        <link rel="stylesheet" href="../../css/layout/navigation.css" />
+        <link rel="stylesheet" href="../../css/components/buttons.css" />
+        <link rel="stylesheet" href="../../css/components/forms.css" />
+        <link rel="stylesheet" href="../../css/components/tables.css" />
+        <link rel="stylesheet" href="../../css/components/modals.css" />
+        <link rel="stylesheet" href="../../css/pages/admin.css" />
+        <link rel="stylesheet" href="../../css/utils/animations.css" />
+        <link rel="stylesheet" href="../../css/utils/responsive.css" />
+    </head>
+    <body>
+        <div class="app-container">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <img
+                            src="../../favicon.png"
+                            alt="Integris Neuro"
+                            class="app-logo"
+                        />
+                        <h1 class="app-title">Integris Neuro</h1>
+                    </div>
+                    <div id="menuContainer"></div>
+                    <div class="user-profile">
+                        <button class="logout-btn" id="logoutLink">
+                            <span>Logout</span>
+                        </button>
+                    </div>
                 </div>
+            </header>
 
-                <!-- Session Filters -->
-                <div class="sessions-filters">
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <label for="sessionStatusFilter">Status:</label>
-                            <select id="sessionStatusFilter" class="form-control">
-                                <option value="">All Statuses</option>
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                            </select>
+            <!-- Main Content -->
+            <main class="main-content">
+                <div class="content-container">
+                    <div class="page-header">
+                        <h2>Session Management</h2>
+                        <p class="page-description">
+                            View and manage active user sessions
+                        </p>
+                    </div>
+
+                    <!-- Session Filters -->
+                    <div class="sessions-filters">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="sessionStatusFilter">Status:</label>
+                                <select
+                                    id="sessionStatusFilter"
+                                    class="form-control"
+                                >
+                                    <option value="">All Statuses</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="sessionUserFilter">User:</label>
+                                <select
+                                    id="sessionUserFilter"
+                                    class="form-control"
+                                >
+                                    <option value="">All Users</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="sessionDateFilter"
+                                    >Date Range:</label
+                                >
+                                <select
+                                    id="sessionDateFilter"
+                                    class="form-control"
+                                >
+                                    <option value="">All Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-actions">
+                                <button
+                                    type="button"
+                                    class="btn btn-secondary"
+                                    id="clearSessionFilters"
+                                >
+                                    Clear Filters
+                                </button>
+                                <button
+                                    type="button"
+                                    class="btn btn-primary"
+                                    id="refreshSessionsBtn"
+                                >
+                                    Refresh
+                                </button>
+                            </div>
                         </div>
-                        
-                        <div class="filter-group">
-                            <label for="sessionUserFilter">User:</label>
-                            <select id="sessionUserFilter" class="form-control">
-                                <option value="">All Users</option>
-                            </select>
+                    </div>
+
+                    <!-- Session Stats -->
+                    <div class="session-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalSessionsCount">
+                                -
+                            </div>
+                            <div class="stat-label">Total Sessions</div>
                         </div>
-                        
-                        <div class="filter-group">
-                            <label for="sessionDateFilter">Date Range:</label>
-                            <select id="sessionDateFilter" class="form-control">
-                                <option value="">All Time</option>
-                                <option value="today">Today</option>
-                                <option value="week">This Week</option>
-                                <option value="month">This Month</option>
-                            </select>
+                        <div class="stat-card">
+                            <div class="stat-value" id="activeSessionsCount">
+                                -
+                            </div>
+                            <div class="stat-label">Active Sessions</div>
                         </div>
-                        
-                        <div class="filter-actions">
-                            <button type="button" class="btn btn-secondary" id="clearSessionFilters">
-                                Clear Filters
-                            </button>
-                            <button type="button" class="btn btn-primary" id="refreshSessionsBtn">
-                                Refresh
-                            </button>
+                        <div class="stat-card">
+                            <div class="stat-value" id="uniqueUsersCount">
+                                -
+                            </div>
+                            <div class="stat-label">Unique Users</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="todaySessionsCount">
+                                -
+                            </div>
+                            <div class="stat-label">Today's Sessions</div>
+                        </div>
+                    </div>
+
+                    <!-- Session Actions -->
+                    <div class="session-actions-bar">
+                        <button
+                            type="button"
+                            class="btn btn-danger"
+                            id="revokeAllSessionsBtn"
+                        >
+                            Revoke Selected User Sessions
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-warning"
+                            id="cleanupExpiredBtn"
+                        >
+                            Cleanup Expired Sessions
+                        </button>
+                    </div>
+
+                    <!-- Sessions Table -->
+                    <div class="users-table-container">
+                        <div class="table-responsive">
+                            <table class="users-table sessions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Status</th>
+                                        <th>Login Time</th>
+                                        <th>Last Activity</th>
+                                        <th>Logout Time</th>
+                                        <th>IP Address</th>
+                                        <th>Browser Info</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="8" class="no-data">
+                                            Loading sessions...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
+            </main>
+        </div>
 
-                <!-- Session Stats -->
-                <div class="session-stats">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalSessionsCount">-</div>
-                        <div class="stat-label">Total Sessions</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="activeSessionsCount">-</div>
-                        <div class="stat-label">Active Sessions</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="uniqueUsersCount">-</div>
-                        <div class="stat-label">Unique Users</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="todaySessionsCount">-</div>
-                        <div class="stat-label">Today's Sessions</div>
-                    </div>
-                </div>
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading...</div>
+        </div>
 
-                <!-- Session Actions -->
-                <div class="session-actions-bar">
-                    <button type="button" class="btn btn-danger" id="revokeAllSessionsBtn">
-                        Revoke Selected User Sessions
-                    </button>
-                    <button type="button" class="btn btn-warning" id="cleanupExpiredBtn">
-                        Cleanup Expired Sessions
-                    </button>
-                </div>
+        <!-- Modal Container -->
+        <div id="modalContainer"></div>
 
-                <!-- Sessions Table -->
-                <div class="users-table-container">
-                    <div class="table-responsive">
-                        <table class="users-table sessions-table">
-                            <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Status</th>
-                                    <th>Login Time</th>
-                                    <th>Last Activity</th>
-                                    <th>Logout Time</th>
-                                    <th>IP Address</th>
-                                    <th>Browser Info</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="8" class="no-data">Loading sessions...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+        <!-- JavaScript Files -->
+        <script src="../../js/shared/head-manager.js"></script>
+        <script src="../../js/shared/auth-utils.js"></script>
+        <script src="../../js/shared/api-client.js"></script>
+        <script src="../../js/shared/modal-manager.js"></script>
+        <script src="../../js/shared/navigation.js"></script>
+        <script src="../../js/pages/admin.js"></script>
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Loading...</div>
-    </div>
+        <script>
+            // Initialize the session management page
+            document.addEventListener('DOMContentLoaded', function () {
+                // Load shared head content
+                if (window.headManager) {
+                    window.headManager.loadSharedHead();
+                }
 
-    <!-- Modal Container -->
-    <div id="modalContainer"></div>
+                // Initialize auth and navigation
+                if (window.authUtils) {
+                    window.authUtils.init();
+                }
 
-    <!-- JavaScript Files -->
-    <script src="../../js/shared/head-manager.js"></script>
-    <script src="../../js/shared/auth-utils.js"></script>
-    <script src="../../js/shared/api-client.js"></script>
-    <script src="../../js/shared/modal-manager.js"></script>
-    <script src="../../js/shared/navigation.js"></script>
-    <script src="../../js/pages/admin.js"></script>
+                if (window.navigation) {
+                    window.navigation.init();
+                }
 
-    <script>
-        // Initialize the session management page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load shared head content
-            if (window.headManager) {
-                window.headManager.loadSharedHead();
-            }
+                // Initialize modal manager
+                if (window.modalManager) {
+                    window.modalManager.init();
+                }
 
-            // Initialize auth and navigation
-            if (window.authUtils) {
-                window.authUtils.init();
-            }
-
-            if (window.navigation) {
-                window.navigation.init();
-            }
-
-            // Initialize modal manager
-            if (window.modalManager) {
-                window.modalManager.init();
-            }
-
-            // Initialize session management specifically
-            if (window.adminPage && window.adminPage.initializeSessionManagement) {
-                window.adminPage.initializeSessionManagement();
-            }
-        });
-    </script>
-</body>
+                // Initialize session management specifically
+                if (
+                    window.adminPage &&
+                    window.adminPage.initializeSessionManagement
+                ) {
+                    window.adminPage.initializeSessionManagement();
+                }
+            });
+        </script>
+    </body>
 </html>
