@@ -421,9 +421,7 @@ class SessionManager {
                 if (parseInt(sessionCount.rows[0].count) === 0) {
                     console.log('📊 No sessions found, returning empty array');
                     return [];
-                }
-
-                console.log('📊 Executing sessions query...');
+                }                console.log('📊 Executing sessions query...');
                 // Use LEFT JOIN to handle cases where user might not exist
                 const result = await client.query(`
                 SELECT 
@@ -434,7 +432,7 @@ class SessionManager {
                     s.last_activity,
                     s.logout_time,
                     s.ip_address,
-                    s.browser_info,
+                    s.user_agent as browser_info,
                     s.login_method
                 FROM tbl_user_session s
                 LEFT JOIN tbl_user u ON s.user_key = u.user_key
