@@ -2138,12 +2138,36 @@ function displaySessions(sessions) {
     console.log('🔍 sessions length:', sessions?.length);
     console.log('🔍 sessions data:', JSON.stringify(sessions, null, 2));
 
-    const tbody = document.querySelector('.sessions-table tbody');
+    // Try multiple selectors to find the table
+    let tbody = document.querySelector('.sessions-table tbody');
+    if (!tbody) {
+        tbody = document.querySelector('.users-table tbody');
+    }
+    if (!tbody) {
+        tbody = document.querySelector('table tbody');
+    }
+
     console.log('🔍 Found tbody element:', !!tbody);
     console.log('🔍 tbody element:', tbody);
 
+    // Also check what tables exist on the page
+    const allTables = document.querySelectorAll('table');
+    const allTbodies = document.querySelectorAll('tbody');
+    console.log('🔍 All tables on page:', allTables.length);
+    console.log('🔍 All tbody elements on page:', allTbodies.length);
+
+    // Log details of each table found
+    allTables.forEach((table, index) => {
+        console.log(`🔍 Table ${index}:`, table.className, table);
+    });
+
+    allTbodies.forEach((tb, index) => {
+        console.log(`🔍 Tbody ${index}:`, tb.parentElement?.className, tb);
+    });
+
     if (!tbody) {
         console.error('❌ No tbody element found for .sessions-table tbody');
+        console.error('❌ Available tbody elements:', allTbodies);
         return;
     }
 
