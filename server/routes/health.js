@@ -158,4 +158,43 @@ router.get("/health/database", authenticateToken, async (req, res) => {
   }
 });
 
+// Temporary public diagnostic endpoint (remove after debugging)
+router.get("/health/database/public", async (req, res) => {
+  try {
+    const { pool } = require("../config/database");
+    const client = await pool.connect();
+
+    try {
+      // Check if main tables exist
+      const tablesCheck = await client.query(`
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_name IN ('tbl_user', 'tbl_user_session', 'tbl_patient')
+        ORDER BY table_name
+      `);
+
+      const existingTables = tablesCheck.rows.map((row) => row.table_name);
+
+      return res.json({
+        success: true,
+        status: "public_database_diagnostic",
+        existing_tables: existingTables,
+        total_tables_found: existingTables.length,
+        timestamp: new Date().toISOString(),
+      });
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    console.error("Public database diagnostic failed:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Public database diagnostic failed",
+      details: err.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
 module.exports = router;
