@@ -1,99 +1,99 @@
 // Health Check Routes
 // Server and database health monitoring endpoints
 
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require("../middleware/auth");
-const { checkDatabaseConnection } = require("../config/database");
+const { authenticateToken } = require('../middleware/auth');
+const { checkDatabaseConnection } = require('../config/database');
 const {
-  successResponse,
-  serverErrorResponse,
-} = require("../utils/responseHelpers");
-const config = require("../config/environment");
+    successResponse,
+    serverErrorResponse,
+} = require('../utils/responseHelpers');
+const config = require('../config/environment');
 
 // Authenticated health check endpoint for internal monitoring
-router.get("/health", authenticateToken, async (req, res) => {
-  try {
-    const dbStatus = await checkDatabaseConnection();
+router.get('/health', authenticateToken, async (req, res) => {
+    try {
+        const dbStatus = await checkDatabaseConnection();
 
-    if (dbStatus.connected) {
-      return successResponse(
-        res,
-        {
-          status: "healthy",
-          database: "connected",
-        },
-        "System is healthy"
-      );
-    } else {
-      return res.status(503).json({
-        status: "unhealthy",
-        database: "disconnected",
-        error: "Database connection failed",
-        timestamp: new Date().toISOString(),
-      });
+        if (dbStatus.connected) {
+            return successResponse(
+                res,
+                {
+                    status: 'healthy',
+                    database: 'connected',
+                },
+                'System is healthy'
+            );
+        } else {
+            return res.status(503).json({
+                status: 'unhealthy',
+                database: 'disconnected',
+                error: 'Database connection failed',
+                timestamp: new Date().toISOString(),
+            });
+        }
+    } catch (err) {
+        console.error('Health check failed:', err);
+        return serverErrorResponse(res, 'Health check failed');
     }
-  } catch (err) {
-    console.error("Health check failed:", err);
-    return serverErrorResponse(res, "Health check failed");
-  }
 });
 
 // Public health check endpoint for basic connectivity testing (no auth required)
-router.get("/health/public", async (req, res) => {
-  try {
-    // Check if we're in local development mode without proper database
-    if (config.isLocalTest) {
-      // For local testing, just return success
-      return successResponse(
-        res,
-        {
-          status: "healthy",
-          database: "local_test_mode",
-        },
-        "System is healthy (local test mode)"
-      );
-    }
+router.get('/health/public', async (req, res) => {
+    try {
+        // Check if we're in local development mode without proper database
+        if (config.isLocalTest) {
+            // For local testing, just return success
+            return successResponse(
+                res,
+                {
+                    status: 'healthy',
+                    database: 'local_test_mode',
+                },
+                'System is healthy (local test mode)'
+            );
+        }
 
-    const dbStatus = await checkDatabaseConnection();
+        const dbStatus = await checkDatabaseConnection();
 
-    if (dbStatus.connected) {
-      return successResponse(
-        res,
-        {
-          status: "healthy",
-          database: "connected",
-        },
-        "System is healthy"
-      );
-    } else {
-      return res.status(503).json({
-        status: "unhealthy",
-        database: "disconnected",
-        error: "Database connection failed",
-        timestamp: new Date().toISOString(),
-      });
+        if (dbStatus.connected) {
+            return successResponse(
+                res,
+                {
+                    status: 'healthy',
+                    database: 'connected',
+                },
+                'System is healthy'
+            );
+        } else {
+            return res.status(503).json({
+                status: 'unhealthy',
+                database: 'disconnected',
+                error: 'Database connection failed',
+                timestamp: new Date().toISOString(),
+            });
+        }
+    } catch (err) {
+        console.error('Public health check failed:', err);
+        return res.status(503).json({
+            status: 'unhealthy',
+            database: 'disconnected',
+            error: 'Database connection failed',
+            timestamp: new Date().toISOString(),
+        });
     }
-  } catch (err) {
-    console.error("Public health check failed:", err);
-    return res.status(503).json({
-      status: "unhealthy",
-      database: "disconnected",
-      error: "Database connection failed",
-      timestamp: new Date().toISOString(),
-    });
-  }
 });
 
 // Database diagnostic endpoint (authenticated)
-router.get("/health/database", authenticateToken, async (req, res) => {
-  try {
-    const { pool } = require("../config/database");
-    const client = await pool.connect();
-
+router.get('/health/database', authenticateToken, async (req, res) => {
     try {
-      // Check if main tables exist
-      const tablesCheck = await client.query(`
+        const { pool } = require('../config/database');
+        const client = await pool.connect();
+
+        try {
+            // Check if main tables exist
+            const tablesCheck = await client.query(`
         SELECT table_name
         FROM information_schema.tables
         WHERE table_schema = 'public'
@@ -101,72 +101,74 @@ router.get("/health/database", authenticateToken, async (req, res) => {
         ORDER BY table_name
       `);
 
-      const existingTables = tablesCheck.rows.map((row) => row.table_name);
+            const existingTables = tablesCheck.rows.map(
+                (row) => row.table_name
+            );
 
-      // Check record counts for existing tables
-      const tableStats = {};
-      for (const tableName of existingTables) {
-        try {
-          const countResult = await client.query(
-            `SELECT COUNT(*) as count FROM ${tableName}`
-          );
-          tableStats[tableName] = {
-            exists: true,
-            count: parseInt(countResult.rows[0].count),
-          };
-        } catch (err) {
-          tableStats[tableName] = {
-            exists: true,
-            count: "error",
-            error: err.message,
-          };
+            // Check record counts for existing tables
+            const tableStats = {};
+            for (const tableName of existingTables) {
+                try {
+                    const countResult = await client.query(
+                        `SELECT COUNT(*) as count FROM ${tableName}`
+                    );
+                    tableStats[tableName] = {
+                        exists: true,
+                        count: parseInt(countResult.rows[0].count),
+                    };
+                } catch (err) {
+                    tableStats[tableName] = {
+                        exists: true,
+                        count: 'error',
+                        error: err.message,
+                    };
+                }
+            }
+
+            // Mark missing tables
+            const allTables = ['tbl_user', 'tbl_user_session', 'tbl_patient'];
+            for (const tableName of allTables) {
+                if (!existingTables.includes(tableName)) {
+                    tableStats[tableName] = {
+                        exists: false,
+                        count: 0,
+                    };
+                }
+            }
+
+            return successResponse(
+                res,
+                {
+                    status: 'database_diagnostic',
+                    tables: tableStats,
+                    existing_tables: existingTables,
+                    total_tables_found: existingTables.length,
+                },
+                'Database diagnostic completed'
+            );
+        } finally {
+            client.release();
         }
-      }
-
-      // Mark missing tables
-      const allTables = ["tbl_user", "tbl_user_session", "tbl_patient"];
-      for (const tableName of allTables) {
-        if (!existingTables.includes(tableName)) {
-          tableStats[tableName] = {
-            exists: false,
-            count: 0,
-          };
-        }
-      }
-
-      return successResponse(
-        res,
-        {
-          status: "database_diagnostic",
-          tables: tableStats,
-          existing_tables: existingTables,
-          total_tables_found: existingTables.length,
-        },
-        "Database diagnostic completed"
-      );
-    } finally {
-      client.release();
+    } catch (err) {
+        console.error('Database diagnostic failed:', err);
+        return res.status(500).json({
+            success: false,
+            error: 'Database diagnostic failed',
+            details: err.message,
+            timestamp: new Date().toISOString(),
+        });
     }
-  } catch (err) {
-    console.error("Database diagnostic failed:", err);
-    return res.status(500).json({
-      success: false,
-      error: "Database diagnostic failed",
-      details: err.message,
-      timestamp: new Date().toISOString(),
-    });
-  }
 });
 
 // Temporary public diagnostic endpoint (remove after debugging)
-router.get("/health/database/public", async (req, res) => {
-  try {
-    const { pool } = require("../config/database");
-    const client = await pool.connect();
-
+router.get('/health/database/public', async (req, res) => {
     try {
-      // Check if main tables exist
-      const tablesCheck = await client.query(`
+        const { pool } = require('../config/database');
+        const client = await pool.connect();
+
+        try {
+            // Check if main tables exist
+            const tablesCheck = await client.query(`
         SELECT table_name
         FROM information_schema.tables
         WHERE table_schema = 'public'
@@ -174,27 +176,29 @@ router.get("/health/database/public", async (req, res) => {
         ORDER BY table_name
       `);
 
-      const existingTables = tablesCheck.rows.map((row) => row.table_name);
+            const existingTables = tablesCheck.rows.map(
+                (row) => row.table_name
+            );
 
-      return res.json({
-        success: true,
-        status: "public_database_diagnostic",
-        existing_tables: existingTables,
-        total_tables_found: existingTables.length,
-        timestamp: new Date().toISOString(),
-      });
-    } finally {
-      client.release();
+            return res.json({
+                success: true,
+                status: 'public_database_diagnostic',
+                existing_tables: existingTables,
+                total_tables_found: existingTables.length,
+                timestamp: new Date().toISOString(),
+            });
+        } finally {
+            client.release();
+        }
+    } catch (err) {
+        console.error('Public database diagnostic failed:', err);
+        return res.status(500).json({
+            success: false,
+            error: 'Public database diagnostic failed',
+            details: err.message,
+            timestamp: new Date().toISOString(),
+        });
     }
-  } catch (err) {
-    console.error("Public database diagnostic failed:", err);
-    return res.status(500).json({
-      success: false,
-      error: "Public database diagnostic failed",
-      details: err.message,
-      timestamp: new Date().toISOString(),
-    });
-  }
 });
 
 module.exports = router;
