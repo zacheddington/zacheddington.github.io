@@ -145,7 +145,7 @@ async function apiRequest(endpoint, options = {}) {
 }
 
 // Export functions for global use
-window.apiUtils = {
+window.apiClient = {
     getAPIUrl,
     checkConnectivity,
     validateToken,

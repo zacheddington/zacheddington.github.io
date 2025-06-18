@@ -486,7 +486,7 @@ async function createUser() {
         submitBtn.textContent = 'Creating User...';
 
         // Pre-flight connectivity check
-        const connectivity = await checkConnectivity();
+        const connectivity = await window.apiClient.checkConnectivity();
         if (!connectivity.connected) {
             throw new Error(`Connection failed: ${connectivity.error}`);
         }
