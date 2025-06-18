@@ -14,10 +14,16 @@ const {
 // Get all active sessions (admin only)
 router.get('/sessions', authenticateToken, requireAdmin, async (req, res) => {
     try {
-        console.log('🔍 Admin sessions endpoint called by user:', req.user.userId);
+        console.log(
+            '🔍 Admin sessions endpoint called by user:',
+            req.user.userId
+        );
         // Get all sessions across all users for admin view
         const sessions = await SessionManager.getAllSessions();
-        console.log('✅ Sessions retrieved successfully, count:', sessions.length);
+        console.log(
+            '✅ Sessions retrieved successfully, count:',
+            sessions.length
+        );
         return successResponse(
             res,
             sessions,
@@ -28,7 +34,7 @@ router.get('/sessions', authenticateToken, requireAdmin, async (req, res) => {
             message: err.message,
             stack: err.stack,
             code: err.code,
-            detail: err.detail
+            detail: err.detail,
         });
         return errorResponse(res, 'Failed to fetch sessions', 500);
     }

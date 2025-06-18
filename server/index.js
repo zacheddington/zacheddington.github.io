@@ -44,9 +44,10 @@ const startServer = async () => {
 
         // Test database connection first
         const { checkDatabaseConnection } = require('./config/database');
-        const dbStatus = await checkDatabaseConnection();        if (dbStatus.connected) {
+        const dbStatus = await checkDatabaseConnection();
+        if (dbStatus.connected) {
             console.log('✅ Database connection successful');
-            
+
             // Run database migrations
             await runDatabaseMigrations();
             console.log('✅ Database migrations completed');

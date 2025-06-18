@@ -338,10 +338,10 @@ class SessionManager {
         }
 
         return `${browser} on ${os}`;
-    }    // Get all sessions for admin view (includes user information)
+    } // Get all sessions for admin view (includes user information)
     static async getAllSessions() {
         console.log('🔍 SessionManager.getAllSessions called');
-        
+
         if (config.isLocalTest) {
             console.log('📋 Using local test data for sessions');
             // Return mock data for testing
@@ -357,7 +357,8 @@ class SessionManager {
                     browser_info: 'Chrome on Windows 10/11',
                 },
             ];
-        }        console.log('🗄️ Connecting to production database for sessions...');
+        }
+        console.log('🗄️ Connecting to production database for sessions...');
         const client = await pool.connect();
         try {
             // First, check if the tables exist
@@ -366,18 +367,26 @@ class SessionManager {
                 SELECT table_name FROM information_schema.tables 
                 WHERE table_schema = 'public' AND table_name = 'tbl_user_session'
             `);
-            console.log('Session table exists:', sessionTableCheck.rows.length > 0);
-            
+            console.log(
+                'Session table exists:',
+                sessionTableCheck.rows.length > 0
+            );
+
             const userTableCheck = await client.query(`
                 SELECT table_name FROM information_schema.tables 
                 WHERE table_schema = 'public' AND table_name = 'tbl_user'
             `);
             console.log('User table exists:', userTableCheck.rows.length > 0);
-            
+
             // Check session table data
-            const sessionCount = await client.query(`SELECT COUNT(*) as count FROM tbl_user_session`);
-            console.log('Session table record count:', sessionCount.rows[0].count);
-            
+            const sessionCount = await client.query(
+                `SELECT COUNT(*) as count FROM tbl_user_session`
+            );
+            console.log(
+                'Session table record count:',
+                sessionCount.rows[0].count
+            );
+
             console.log('📊 Executing sessions query...');
             const result = await client.query(`
                 SELECT 
@@ -395,7 +404,10 @@ class SessionManager {
                 ORDER BY s.login_time DESC
             `);
 
-            console.log('✅ Sessions query successful, rows:', result.rows.length);
+            console.log(
+                '✅ Sessions query successful, rows:',
+                result.rows.length
+            );
             return result.rows;
         } catch (err) {
             console.error('❌ Database query error in getAllSessions:', {
@@ -403,7 +415,7 @@ class SessionManager {
                 code: err.code,
                 detail: err.detail,
                 table: err.table,
-                column: err.column
+                column: err.column,
             });
             throw err;
         } finally {
