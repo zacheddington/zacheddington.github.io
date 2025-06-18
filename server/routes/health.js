@@ -85,4 +85,77 @@ router.get("/health/public", async (req, res) => {
   }
 });
 
+// Database diagnostic endpoint (authenticated)
+router.get("/health/database", authenticateToken, async (req, res) => {
+  try {
+    const { pool } = require("../config/database");
+    const client = await pool.connect();
+
+    try {
+      // Check if main tables exist
+      const tablesCheck = await client.query(`
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_name IN ('tbl_user', 'tbl_user_session', 'tbl_patient')
+        ORDER BY table_name
+      `);
+
+      const existingTables = tablesCheck.rows.map((row) => row.table_name);
+
+      // Check record counts for existing tables
+      const tableStats = {};
+      for (const tableName of existingTables) {
+        try {
+          const countResult = await client.query(
+            `SELECT COUNT(*) as count FROM ${tableName}`
+          );
+          tableStats[tableName] = {
+            exists: true,
+            count: parseInt(countResult.rows[0].count),
+          };
+        } catch (err) {
+          tableStats[tableName] = {
+            exists: true,
+            count: "error",
+            error: err.message,
+          };
+        }
+      }
+
+      // Mark missing tables
+      const allTables = ["tbl_user", "tbl_user_session", "tbl_patient"];
+      for (const tableName of allTables) {
+        if (!existingTables.includes(tableName)) {
+          tableStats[tableName] = {
+            exists: false,
+            count: 0,
+          };
+        }
+      }
+
+      return successResponse(
+        res,
+        {
+          status: "database_diagnostic",
+          tables: tableStats,
+          existing_tables: existingTables,
+          total_tables_found: existingTables.length,
+        },
+        "Database diagnostic completed"
+      );
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    console.error("Database diagnostic failed:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Database diagnostic failed",
+      details: err.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
 module.exports = router;
