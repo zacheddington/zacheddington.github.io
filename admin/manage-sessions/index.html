@@ -224,14 +224,49 @@
                 // Initialize modal manager
                 if (window.modalManager) {
                     window.modalManager.init();
-                }
+                } // Initialize session management specifically
+                console.log('🔍 DOM loaded, checking table existence...');
 
-                // Initialize session management specifically
+                // Debug table existence
+                const table = document.querySelector('.sessions-table');
+                const tbody = document.querySelector('.sessions-table tbody');
+                console.log('🔍 Table found:', !!table);
+                console.log('🔍 Tbody found:', !!tbody);
+                console.log('🔍 Table element:', table);
+                console.log('🔍 Tbody element:', tbody);
+
                 if (
                     window.adminPage &&
                     window.adminPage.initializeSessionManagement
                 ) {
-                    window.adminPage.initializeSessionManagement();
+                    console.log('🔍 Initializing session management...');
+
+                    // Add a small delay to ensure DOM is fully ready
+                    setTimeout(() => {
+                        console.log(
+                            '🔍 After timeout - checking table again...'
+                        );
+                        const tableAfter =
+                            document.querySelector('.sessions-table');
+                        const tbodyAfter = document.querySelector(
+                            '.sessions-table tbody'
+                        );
+                        console.log(
+                            '🔍 Table found after timeout:',
+                            !!tableAfter
+                        );
+                        console.log(
+                            '🔍 Tbody found after timeout:',
+                            !!tbodyAfter
+                        );
+
+                        window.adminPage.initializeSessionManagement();
+                    }, 500);
+                } else {
+                    console.error(
+                        '❌ adminPage or initializeSessionManagement not found'
+                    );
+                    console.log('🔍 window.adminPage:', window.adminPage);
                 }
             });
         </script>
