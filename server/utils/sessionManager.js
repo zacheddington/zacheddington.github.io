@@ -400,9 +400,7 @@ class SessionManager {
                 throw new Error(
                     'tbl_user table does not exist. Database setup incomplete.'
                 );
-            }
-
-            // Check session table data
+            }            // Check session table data
             const sessionCount = await client.query(
                 `SELECT COUNT(*) as count FROM tbl_user_session`
             );
@@ -411,11 +409,18 @@ class SessionManager {
                 sessionCount.rows[0].count
             );
 
+            // If no sessions exist, return empty array
+            if (parseInt(sessionCount.rows[0].count) === 0) {
+                console.log('📊 No sessions found, returning empty array');
+                return [];
+            }
+
             console.log('📊 Executing sessions query...');
+            // Use LEFT JOIN to handle cases where user might not exist
             const result = await client.query(`
                 SELECT 
                     s.session_token as session_id,
-                    u.username,
+                    COALESCE(u.username, 'Unknown User') as username,
                     s.is_active,
                     s.login_time,
                     s.last_activity,
@@ -424,7 +429,7 @@ class SessionManager {
                     s.browser_info,
                     s.login_method
                 FROM tbl_user_session s
-                JOIN tbl_user u ON s.user_key = u.user_key
+                LEFT JOIN tbl_user u ON s.user_key = u.user_key
                 ORDER BY s.login_time DESC
             `);
 
