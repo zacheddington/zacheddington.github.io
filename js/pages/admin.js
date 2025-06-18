@@ -2136,13 +2136,16 @@ function filterSessions() {
 function displaySessions(sessions) {
     console.log('🔍 displaySessions called with:', sessions);
     console.log('🔍 sessions length:', sessions?.length);
-    console.log('🔍 sessions data:', JSON.stringify(sessions, null, 2));
-
-    // Use a more robust approach to find the tbody
+    console.log('🔍 sessions data:', JSON.stringify(sessions, null, 2)); // Use a more robust approach to find the tbody
     let tbody = null;
 
-    // First try the direct selector
+    // First try the direct selector for dedicated session management page
     tbody = document.querySelector('.sessions-table tbody');
+
+    // Try the ID-based selector for main admin page
+    if (!tbody) {
+        tbody = document.querySelector('#sessionsTableBody');
+    }
 
     // If not found, try alternative selectors
     if (!tbody) {
