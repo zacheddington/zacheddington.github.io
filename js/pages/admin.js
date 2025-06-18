@@ -2138,36 +2138,87 @@ function displaySessions(sessions) {
     console.log('🔍 sessions length:', sessions?.length);
     console.log('🔍 sessions data:', JSON.stringify(sessions, null, 2));
 
-    // Try multiple selectors to find the table
-    let tbody = document.querySelector('.sessions-table tbody');
+    // Use a more robust approach to find the tbody
+    let tbody = null;
+
+    // First try the direct selector
+    tbody = document.querySelector('.sessions-table tbody');
+
+    // If not found, try alternative selectors
     if (!tbody) {
         tbody = document.querySelector('.users-table tbody');
     }
+
     if (!tbody) {
-        tbody = document.querySelector('table tbody');
+        tbody = document.querySelector('table.sessions-table tbody');
+    }
+
+    if (!tbody) {
+        tbody = document.querySelector('table.users-table tbody');
+    }
+
+    if (!tbody) {
+        // Try to find any tbody in a table
+        const tables = document.querySelectorAll('table');
+        for (const table of tables) {
+            if (
+                table.classList.contains('sessions-table') ||
+                table.classList.contains('users-table')
+            ) {
+                const tbodyInTable = table.querySelector('tbody');
+                if (tbodyInTable) {
+                    tbody = tbodyInTable;
+                    break;
+                }
+            }
+        }
+    }
+
+    // If still not found, try to find any tbody on the page
+    if (!tbody) {
+        const allTbodies = document.querySelectorAll('tbody');
+        if (allTbodies.length > 0) {
+            tbody = allTbodies[0]; // Use the first tbody found
+            console.log('🔍 Using first available tbody as fallback');
+        }
     }
 
     console.log('🔍 Found tbody element:', !!tbody);
     console.log('🔍 tbody element:', tbody);
 
-    // Also check what tables exist on the page
+    // Also check what tables exist on the page for debugging
     const allTables = document.querySelectorAll('table');
     const allTbodies = document.querySelectorAll('tbody');
     console.log('🔍 All tables on page:', allTables.length);
     console.log('🔍 All tbody elements on page:', allTbodies.length);
 
-    // Log details of each table found
-    allTables.forEach((table, index) => {
-        console.log(`🔍 Table ${index}:`, table.className, table);
-    });
-
-    allTbodies.forEach((tb, index) => {
-        console.log(`🔍 Tbody ${index}:`, tb.parentElement?.className, tb);
-    });
-
     if (!tbody) {
-        console.error('❌ No tbody element found for .sessions-table tbody');
-        console.error('❌ Available tbody elements:', allTbodies);
+        console.error('❌ No tbody element found anywhere on the page');
+        // Try to create an error message in any container we can find
+        const containers = [
+            document.querySelector('.content-container'),
+            document.querySelector('.main-content'),
+            document.querySelector('body'),
+        ];
+
+        for (const container of containers) {
+            if (container) {
+                const errorDiv = document.createElement('div');
+                errorDiv.innerHTML = `
+                    <div style="background: #ffebee; border: 1px solid #f44336; padding: 15px; margin: 15px 0; border-radius: 4px; color: #d32f2f;">
+                        <strong>Error:</strong> Unable to find sessions table on page. 
+                        Found ${allTables.length} tables and ${
+                    allTbodies.length
+                } tbody elements.
+                        <br>Sessions data: ${
+                            sessions?.length || 0
+                        } sessions loaded.
+                    </div>
+                `;
+                container.insertBefore(errorDiv, container.firstChild);
+                break;
+            }
+        }
         return;
     }
 
