@@ -338,11 +338,12 @@ class SessionManager {
         }
 
         return `${browser} on ${os}`;
-    }
-
-    // Get all sessions for admin view (includes user information)
+    }    // Get all sessions for admin view (includes user information)
     static async getAllSessions() {
+        console.log('🔍 SessionManager.getAllSessions called');
+        
         if (config.isLocalTest) {
+            console.log('📋 Using local test data for sessions');
             // Return mock data for testing
             return [
                 {
@@ -358,8 +359,10 @@ class SessionManager {
             ];
         }
 
+        console.log('🗄️ Connecting to production database for sessions...');
         const client = await pool.connect();
         try {
+            console.log('📊 Executing sessions query...');
             const result = await client.query(`
                 SELECT 
                     s.session_token as session_id,
@@ -376,7 +379,17 @@ class SessionManager {
                 ORDER BY s.login_time DESC
             `);
 
+            console.log('✅ Sessions query successful, rows:', result.rows.length);
             return result.rows;
+        } catch (err) {
+            console.error('❌ Database query error in getAllSessions:', {
+                message: err.message,
+                code: err.code,
+                detail: err.detail,
+                table: err.table,
+                column: err.column
+            });
+            throw err;
         } finally {
             client.release();
         }
