@@ -13,30 +13,51 @@ const {
 
 // Get all active sessions (admin only)
 router.get('/sessions', authenticateToken, requireAdmin, async (req, res) => {
+    console.log('🌟 SESSIONS ROUTE: Hit /sessions endpoint');
+    console.log('🌟 SESSIONS ROUTE: User from middleware:', req.user);
     try {
+        console.log('🚀 SESSIONS ENDPOINT: Starting session retrieval');
         console.log(
             '🔍 Admin sessions endpoint called by user:',
-            req.user.userId
+            req.user?.userId
         );
+        console.log('🔍 About to call SessionManager.getAllSessions()');
+
         // Get all sessions across all users for admin view
         const sessions = await SessionManager.getAllSessions();
+
         console.log(
             '✅ Sessions retrieved successfully, count:',
             sessions.length
         );
+        console.log(
+            '✅ Sessions sample:',
+            JSON.stringify(sessions.slice(0, 2), null, 2)
+        );
+
         return successResponse(
             res,
             sessions,
             'All sessions retrieved successfully'
         );
     } catch (err) {
-        console.error('❌ Get all sessions error details:', {
+        console.error('❌ SESSIONS ENDPOINT ERROR - Full details:', {
             message: err.message,
             stack: err.stack,
             code: err.code,
             detail: err.detail,
+            name: err.name,
         });
-        return errorResponse(res, 'Failed to fetch sessions', 500);
+        console.error(
+            '❌ SESSIONS ENDPOINT ERROR - Stringified:',
+            JSON.stringify(err, Object.getOwnPropertyNames(err), 2)
+        );
+
+        return errorResponse(
+            res,
+            `Failed to fetch sessions: ${err.message}`,
+            500
+        );
     }
 });
 

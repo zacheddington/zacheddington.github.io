@@ -337,87 +337,95 @@ class SessionManager {
             os = 'iOS';
         }
         return `${browser} on ${os}`;
-    }
-
-    // Get all sessions for admin view (includes user information)
+    } // Get all sessions for admin view (includes user information)
     static async getAllSessions() {
-        console.log(
-            '🔍 SessionManager.getAllSessions called, config.isLocalTest:',
-            config.isLocalTest
-        );
-
-        if (config.isLocalTest) {
-            console.log('📋 Using local test data for sessions');
-            // Return mock data for testing
-            return [
-                {
-                    session_id: 'test-session-1',
-                    username: 'testuser',
-                    is_active: true,
-                    login_time: new Date(),
-                    last_activity: new Date(),
-                    logout_time: null,
-                    ip_address: '127.0.0.1',
-                    browser_info: 'Chrome on Windows 10/11',
-                },
-            ];
-        }
-        console.log('🗄️ Connecting to production database for sessions...');
-        let client;
         try {
-            client = await pool.connect();
-            console.log('✅ Database connection established');
-        } catch (err) {
-            console.error('❌ Failed to connect to database:', err.message);
-            throw new Error(`Database connection failed: ${err.message}`);
-        }
+            console.log('🎯 SESSION MANAGER: getAllSessions() method called');
+            console.log(
+                '🎯 SESSION MANAGER: config object:',
+                JSON.stringify(config, null, 2)
+            );
+            console.log('🎯 SESSION MANAGER: pool object exists:', !!pool);
+            console.log(
+                '🔍 SessionManager.getAllSessions called, config.isLocalTest:',
+                config.isLocalTest
+            );
 
-        try {
-            // First, check if the tables exist
-            console.log('🔍 Checking if tables exist...');
-            const sessionTableCheck = await client.query(`
+            if (config.isLocalTest) {
+                console.log('📋 Using local test data for sessions');
+                // Return mock data for testing
+                return [
+                    {
+                        session_id: 'test-session-1',
+                        username: 'testuser',
+                        is_active: true,
+                        login_time: new Date(),
+                        last_activity: new Date(),
+                        logout_time: null,
+                        ip_address: '127.0.0.1',
+                        browser_info: 'Chrome on Windows 10/11',
+                    },
+                ];
+            }
+            console.log('🗄️ Connecting to production database for sessions...');
+            let client;
+            try {
+                client = await pool.connect();
+                console.log('✅ Database connection established');
+            } catch (err) {
+                console.error('❌ Failed to connect to database:', err.message);
+                throw new Error(`Database connection failed: ${err.message}`);
+            }
+
+            try {
+                // First, check if the tables exist
+                console.log('🔍 Checking if tables exist...');
+                const sessionTableCheck = await client.query(`
                 SELECT table_name FROM information_schema.tables 
                 WHERE table_schema = 'public' AND table_name = 'tbl_user_session'
             `);
-            console.log(
-                'Session table exists:',
-                sessionTableCheck.rows.length > 0
-            );
-
-            if (sessionTableCheck.rows.length === 0) {
-                throw new Error(
-                    'tbl_user_session table does not exist. Migration may not have run properly.'
+                console.log(
+                    'Session table exists:',
+                    sessionTableCheck.rows.length > 0
                 );
-            }
 
-            const userTableCheck = await client.query(`
+                if (sessionTableCheck.rows.length === 0) {
+                    throw new Error(
+                        'tbl_user_session table does not exist. Migration may not have run properly.'
+                    );
+                }
+
+                const userTableCheck = await client.query(`
                 SELECT table_name FROM information_schema.tables 
                 WHERE table_schema = 'public' AND table_name = 'tbl_user'
             `);
-            console.log('User table exists:', userTableCheck.rows.length > 0);
-
-            if (userTableCheck.rows.length === 0) {
-                throw new Error(
-                    'tbl_user table does not exist. Database setup incomplete.'
+                console.log(
+                    'User table exists:',
+                    userTableCheck.rows.length > 0
                 );
-            } // Check session table data
-            const sessionCount = await client.query(
-                `SELECT COUNT(*) as count FROM tbl_user_session`
-            );
-            console.log(
-                'Session table record count:',
-                sessionCount.rows[0].count
-            );
 
-            // If no sessions exist, return empty array
-            if (parseInt(sessionCount.rows[0].count) === 0) {
-                console.log('📊 No sessions found, returning empty array');
-                return [];
-            }
+                if (userTableCheck.rows.length === 0) {
+                    throw new Error(
+                        'tbl_user table does not exist. Database setup incomplete.'
+                    );
+                } // Check session table data
+                const sessionCount = await client.query(
+                    `SELECT COUNT(*) as count FROM tbl_user_session`
+                );
+                console.log(
+                    'Session table record count:',
+                    sessionCount.rows[0].count
+                );
 
-            console.log('📊 Executing sessions query...');
-            // Use LEFT JOIN to handle cases where user might not exist
-            const result = await client.query(`
+                // If no sessions exist, return empty array
+                if (parseInt(sessionCount.rows[0].count) === 0) {
+                    console.log('📊 No sessions found, returning empty array');
+                    return [];
+                }
+
+                console.log('📊 Executing sessions query...');
+                // Use LEFT JOIN to handle cases where user might not exist
+                const result = await client.query(`
                 SELECT 
                     s.session_token as session_id,
                     COALESCE(u.username, 'Unknown User') as username,
@@ -432,23 +440,58 @@ class SessionManager {
                 LEFT JOIN tbl_user u ON s.user_key = u.user_key
                 ORDER BY s.login_time DESC
             `);
+                console.log(
+                    '✅ Sessions query successful, rows:',
+                    result.rows.length
+                );
+                return result.rows;
+            } catch (err) {
+                console.error('❌ SESSION MANAGER ERROR in getAllSessions:', {
+                    message: err.message,
+                    code: err.code,
+                    detail: err.detail,
+                    table: err.table,
+                    column: err.column,
+                    stack: err.stack,
+                    name: err.name,
+                });
+                console.error(
+                    '❌ SESSION MANAGER ERROR - Full error object:',
+                    JSON.stringify(err, Object.getOwnPropertyNames(err), 2)
+                );
 
-            console.log(
-                '✅ Sessions query successful, rows:',
-                result.rows.length
+                // Re-throw with more context
+                const enhancedError = new Error(
+                    `SessionManager.getAllSessions failed: ${err.message}`
+                );
+                enhancedError.originalError = err;
+                enhancedError.context = 'getAllSessions database operation';
+                throw enhancedError;
+            } finally {
+                client.release();
+            }
+        } catch (outerErr) {
+            console.error(
+                '❌ SESSION MANAGER OUTER ERROR - Catastrophic failure in getAllSessions:',
+                {
+                    message: outerErr.message,
+                    stack: outerErr.stack,
+                    name: outerErr.name,
+                }
             );
-            return result.rows;
-        } catch (err) {
-            console.error('❌ Database query error in getAllSessions:', {
-                message: err.message,
-                code: err.code,
-                detail: err.detail,
-                table: err.table,
-                column: err.column,
-            });
-            throw err;
-        } finally {
-            client.release();
+            console.error(
+                '❌ SESSION MANAGER OUTER ERROR - Full object:',
+                JSON.stringify(
+                    outerErr,
+                    Object.getOwnPropertyNames(outerErr),
+                    2
+                )
+            );
+
+            // Create a user-friendly error
+            throw new Error(
+                `Critical error in session management: ${outerErr.message}`
+            );
         }
     }
 
