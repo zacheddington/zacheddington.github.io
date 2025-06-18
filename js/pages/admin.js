@@ -2134,10 +2134,21 @@ function filterSessions() {
 
 // Display sessions in the table
 function displaySessions(sessions) {
+    console.log('🔍 displaySessions called with:', sessions);
+    console.log('🔍 sessions length:', sessions?.length);
+    console.log('🔍 sessions data:', JSON.stringify(sessions, null, 2));
+
     const tbody = document.querySelector('.sessions-table tbody');
-    if (!tbody) return;
+    console.log('🔍 Found tbody element:', !!tbody);
+    console.log('🔍 tbody element:', tbody);
+
+    if (!tbody) {
+        console.error('❌ No tbody element found for .sessions-table tbody');
+        return;
+    }
 
     if (sessions.length === 0) {
+        console.log('📋 No sessions, showing no data message');
         tbody.innerHTML = `
             <tr>
                 <td colspan="8" class="no-data">No sessions found</td>
@@ -2146,25 +2157,28 @@ function displaySessions(sessions) {
         return;
     }
 
-    tbody.innerHTML = sessions
-        .map((session) => {
-            const loginTime = new Date(session.login_time).toLocaleString();
-            const lastActivity = session.last_activity
-                ? new Date(session.last_activity).toLocaleString()
-                : 'Never';
-            const logoutTime = session.logout_time
-                ? new Date(session.logout_time).toLocaleString()
-                : '-';
+    console.log('📊 Processing sessions for display...');
 
-            const statusBadge = session.is_active
-                ? '<span class="status-badge active">Active</span>'
-                : '<span class="status-badge inactive">Inactive</span>';
+    const sessionRows = sessions.map((session, index) => {
+        console.log(`🔍 Processing session ${index}:`, session);
 
-            const revokeButton = session.is_active
-                ? `<button class="btn btn-danger btn-sm" onclick="adminPage.revokeSession('${session.session_id}')">Revoke</button>`
-                : '<span class="text-muted">-</span>';
+        const loginTime = new Date(session.login_time).toLocaleString();
+        const lastActivity = session.last_activity
+            ? new Date(session.last_activity).toLocaleString()
+            : 'Never';
+        const logoutTime = session.logout_time
+            ? new Date(session.logout_time).toLocaleString()
+            : '-';
 
-            return `
+        const statusBadge = session.is_active
+            ? '<span class="status-badge active">Active</span>'
+            : '<span class="status-badge inactive">Inactive</span>';
+
+        const revokeButton = session.is_active
+            ? `<button class="btn btn-danger btn-sm" onclick="adminPage.revokeSession('${session.session_id}')">Revoke</button>`
+            : '<span class="text-muted">-</span>';
+
+        const rowHtml = `
             <tr data-session-id="${session.session_id}">
                 <td>${escapeHtml(session.username)}</td>
                 <td>${statusBadge}</td>
@@ -2178,8 +2192,17 @@ function displaySessions(sessions) {
                 </td>
             </tr>
         `;
-        })
-        .join('');
+
+        console.log(`🔍 Generated row HTML for session ${index}:`, rowHtml);
+        return rowHtml;
+    });
+
+    const finalHtml = sessionRows.join('');
+    console.log('🔍 Final HTML to be inserted:', finalHtml);
+
+    tbody.innerHTML = finalHtml;
+    console.log('✅ Sessions HTML inserted into tbody');
+    console.log('🔍 tbody content after insertion:', tbody.innerHTML);
 }
 
 // Setup session action handlers
