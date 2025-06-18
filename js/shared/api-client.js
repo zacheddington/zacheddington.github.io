@@ -36,10 +36,10 @@ async function checkConnectivity() {
         });
 
         clearTimeout(timeoutId);
-
         if (response.ok) {
             const result = await response.json();
             return {
+                connected: true,
                 success: true,
                 status: result.data?.status || 'unknown',
                 database: result.data?.database || 'unknown',
@@ -47,22 +47,28 @@ async function checkConnectivity() {
             };
         } else {
             return {
+                connected: false,
                 success: false,
                 status: 'error',
+                error: `API returned ${response.status}: ${response.statusText}`,
                 message: `API returned ${response.status}: ${response.statusText}`,
             };
         }
     } catch (error) {
         if (error.name === 'AbortError') {
             return {
+                connected: false,
                 success: false,
                 status: 'timeout',
+                error: 'Connection timeout - server may be sleeping',
                 message: 'Connection timeout - server may be sleeping',
             };
         }
         return {
+            connected: false,
             success: false,
             status: 'error',
+            error: error.message || 'Connection failed',
             message: error.message || 'Connection failed',
         };
     }
