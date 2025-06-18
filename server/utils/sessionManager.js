@@ -400,7 +400,7 @@ class SessionManager {
                 throw new Error(
                     'tbl_user table does not exist. Database setup incomplete.'
                 );
-            }            // Check session table data
+            } // Check session table data
             const sessionCount = await client.query(
                 `SELECT COUNT(*) as count FROM tbl_user_session`
             );

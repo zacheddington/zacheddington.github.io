@@ -275,7 +275,9 @@ router.get('/health/sessions/debug', async (req, res) => {
             const sessionCount = await client.query(
                 `SELECT COUNT(*) as count FROM tbl_user_session`
             );
-            const userCount = await client.query(`SELECT COUNT(*) as count FROM tbl_user`);
+            const userCount = await client.query(
+                `SELECT COUNT(*) as count FROM tbl_user`
+            );
 
             results.steps.push({
                 step: 5,
