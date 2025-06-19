@@ -8,47 +8,17 @@ async function loadTopNavigation() {
         if (!headerContainer) {
             // This is expected on pages like login, force-password-change, etc.
             return;
-        } // Check if navigation is already loaded
+        }
+
+        // Check if navigation is already loaded
         const existingNav = headerContainer.querySelector('.top-nav-menu');
         if (existingNav) {
             setupTopNavigation();
             return;
         }
 
-        // Determine the correct path to menu.html based on current location
-        const path = window.location.pathname;
-        let menuPath = '/html/menu.html';
-
-        // If we're in a subfolder, adjust the path
-        if (
-            path.includes('/admin/') ||
-            path.includes('/patients/') ||
-            path.includes('/profile/') ||
-            path.includes('/welcome/') ||
-            path.includes('/force-password-change/') ||
-            path.includes('/2fa-setup/')
-        ) {
-            const depth = (path.match(/\//g) || []).length - 1;
-            if (depth > 1) {
-                menuPath = '../../html/menu.html';
-            } else {
-                menuPath = '../html/menu.html';
-            }
-        }
-
-        const response = await fetch(menuPath);
-        if (!response.ok) {
-            throw new Error(`Failed to load menu: ${response.status}`);
-        }
-        const menuHTML = await response.text();
-
-        // Insert navigation directly into the header
-        headerContainer.insertAdjacentHTML('beforeend', menuHTML);
-
-        // Verify insertion
-        const insertedNav = headerContainer.querySelector('.top-nav-menu');
-
-        setupTopNavigation();
+        // Use the proper navigation directly instead of loading from menu.html
+        createProperNavigation();
 
         // Update admin menu visibility based on user role
         if (window.authUtils && window.authUtils.updateAdminMenuItem) {
@@ -64,14 +34,11 @@ async function loadTopNavigation() {
         }
     } catch (err) {
         console.error('❌ NAV: Error loading top navigation');
-
-        // Fallback: create a simple navigation inline if loading fails
-        createFallbackNavigation();
     }
 }
 
-// Create fallback navigation if menu.html fails to load
-function createFallbackNavigation() {
+// Create proper navigation with dropdowns and icons
+function createProperNavigation() {
     const headerContainer = document.querySelector('.app-header');
     if (!headerContainer) return;
 
@@ -139,14 +106,22 @@ function createFallbackNavigation() {
                                 <path d="M22 11h-6m3-3v6"/>
                             </svg>
                             Create New User
-                        </a>
-                        <a href="/admin/manage-users/">
+                        </a>                        <a href="/admin/manage-users/">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                 <circle cx="9" cy="7" r="4"/>
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
                             </svg>
                             Manage Users
+                        </a>
+                        <a href="/admin/manage-sessions/">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            Session Management
                         </a>
                     </div>
                 </li>
