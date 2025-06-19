@@ -51,7 +51,8 @@
             <main class="main-content">
                 <div class="content-container">
                     <div class="page-header">
-                        <h2>Session Management</h2>                        <p class="page-description">
+                        <h2>Session Management</h2>
+                        <p class="page-description">
                             View and manage active user sessions
                         </p>
                     </div>
@@ -230,7 +231,10 @@
                 }
 
                 // Initialize session management
-                if (window.adminPage && window.adminPage.initializeSessionManagement) {
+                if (
+                    window.adminPage &&
+                    window.adminPage.initializeSessionManagement
+                ) {
                     window.adminPage.initializeSessionManagement();
                 }
             });

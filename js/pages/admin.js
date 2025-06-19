@@ -1965,7 +1965,7 @@ async function initializeSessionManagement() {
         await loadAllSessions();
 
         // Setup session filters
-        setupSessionFilters();        // Setup session actions
+        setupSessionFilters(); // Setup session actions
         setupSessionActions();
     } catch (error) {
         console.error('Error initializing session management:', error);
@@ -2000,7 +2000,7 @@ async function loadAllSessions() {
             filteredSessions = [...allSessions];
 
             // Display sessions in table
-            displaySessions(filteredSessions);            // Update stats
+            displaySessions(filteredSessions); // Update stats
             updateSessionStats();
         } else {
             // Log the error response for debugging
@@ -2162,7 +2162,8 @@ function displaySessions(sessions) {
     }
 
     // If still not found, try to find any tbody on the page
-    if (!tbody) {        const allTbodies = document.querySelectorAll('tbody');
+    if (!tbody) {
+        const allTbodies = document.querySelectorAll('tbody');
         if (allTbodies.length > 0) {
             tbody = allTbodies[0]; // Use the first tbody found
         }
@@ -2196,16 +2197,17 @@ function displaySessions(sessions) {
             }
         }
         return;
-    }    if (sessions.length === 0) {
+    }
+    if (sessions.length === 0) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="8" class="no-data">No sessions found</td>
             </tr>
         `;
-        return;}
+        return;
+    }
 
     const sessionRows = sessions.map((session, index) => {
-
         const loginTime = new Date(session.login_time).toLocaleString();
         const lastActivity = session.last_activity
             ? new Date(session.last_activity).toLocaleString()
