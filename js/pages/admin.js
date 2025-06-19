@@ -19,6 +19,9 @@ function initializeAdminPage() {
             // Handle async initialization without making the function async
             initializeManageUsersPage();
             break;
+        case 'manage-sessions':
+            initializeSessionManagement();
+            break;
         case 'admin-index':
         default:
             initializeAdminIndexPage();
@@ -33,6 +36,8 @@ function getCurrentPageType() {
         return 'create-user';
     } else if (path.includes('/admin/manage-users/')) {
         return 'manage-users';
+    } else if (path.includes('/admin/manage-sessions/')) {
+        return 'manage-sessions';
     } else if (path.includes('/admin/')) {
         return 'admin-index';
     }
@@ -187,7 +192,8 @@ function setupAdminNavigation() {
     // Choice button handlers
     const createUserBtn = document.getElementById('createUserBtn');
     const manageUsersBtn = document.getElementById('manageUsersBtn');
-    const manageSessionsBtn = document.getElementById('manageSessionsBtn');    if (createUserBtn) {
+    const manageSessionsBtn = document.getElementById('manageSessionsBtn');
+    if (createUserBtn) {
         createUserBtn.addEventListener('click', function () {
             window.location.href = '/admin/create-user/';
         });
