@@ -1965,11 +1965,8 @@ async function initializeSessionManagement() {
         await loadAllSessions();
 
         // Setup session filters
-        setupSessionFilters();
-
-        // Setup session actions
+        setupSessionFilters();        // Setup session actions
         setupSessionActions();
-        console.log('Session management initialized successfully');
     } catch (error) {
         console.error('Error initializing session management:', error);
         if (window.modalManager) {
@@ -1988,13 +1985,6 @@ async function loadAllSessions() {
     try {
         const API_URL = getAPIUrl();
         const token = localStorage.getItem('token');
-        console.log('Loading sessions from:', API_URL);
-        console.log('Current hostname:', window.location.hostname);
-        console.log('Token exists:', !!token);
-        console.log(
-            'Token preview:',
-            token ? token.substring(0, 20) + '...' : 'none'
-        );
 
         showSessionsLoading(true);
 
@@ -2010,12 +2000,8 @@ async function loadAllSessions() {
             filteredSessions = [...allSessions];
 
             // Display sessions in table
-            displaySessions(filteredSessions);
-
-            // Update stats
+            displaySessions(filteredSessions);            // Update stats
             updateSessionStats();
-
-            console.log(`Loaded ${allSessions.length} sessions`);
         } else {
             // Log the error response for debugging
             const errorText = await response.text();
@@ -2134,9 +2120,7 @@ function filterSessions() {
 
 // Display sessions in the table
 function displaySessions(sessions) {
-    console.log('🔍 displaySessions called with:', sessions);
-    console.log('🔍 sessions length:', sessions?.length);
-    console.log('🔍 sessions data:', JSON.stringify(sessions, null, 2)); // Use a more robust approach to find the tbody
+    // Use a more robust approach to find the tbody
     let tbody = null;
 
     // First try the direct selector for dedicated session management page
@@ -2178,22 +2162,11 @@ function displaySessions(sessions) {
     }
 
     // If still not found, try to find any tbody on the page
-    if (!tbody) {
-        const allTbodies = document.querySelectorAll('tbody');
+    if (!tbody) {        const allTbodies = document.querySelectorAll('tbody');
         if (allTbodies.length > 0) {
             tbody = allTbodies[0]; // Use the first tbody found
-            console.log('🔍 Using first available tbody as fallback');
         }
     }
-
-    console.log('🔍 Found tbody element:', !!tbody);
-    console.log('🔍 tbody element:', tbody);
-
-    // Also check what tables exist on the page for debugging
-    const allTables = document.querySelectorAll('table');
-    const allTbodies = document.querySelectorAll('tbody');
-    console.log('🔍 All tables on page:', allTables.length);
-    console.log('🔍 All tbody elements on page:', allTbodies.length);
 
     if (!tbody) {
         console.error('❌ No tbody element found anywhere on the page');
@@ -2223,22 +2196,15 @@ function displaySessions(sessions) {
             }
         }
         return;
-    }
-
-    if (sessions.length === 0) {
-        console.log('📋 No sessions, showing no data message');
+    }    if (sessions.length === 0) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="8" class="no-data">No sessions found</td>
             </tr>
         `;
-        return;
-    }
-
-    console.log('📊 Processing sessions for display...');
+        return;}
 
     const sessionRows = sessions.map((session, index) => {
-        console.log(`🔍 Processing session ${index}:`, session);
 
         const loginTime = new Date(session.login_time).toLocaleString();
         const lastActivity = session.last_activity
@@ -2268,19 +2234,13 @@ function displaySessions(sessions) {
                 <td class="session-actions">
                     ${revokeButton}
                 </td>
-            </tr>
-        `;
+            </tr>        `;
 
-        console.log(`🔍 Generated row HTML for session ${index}:`, rowHtml);
         return rowHtml;
     });
 
     const finalHtml = sessionRows.join('');
-    console.log('🔍 Final HTML to be inserted:', finalHtml);
-
     tbody.innerHTML = finalHtml;
-    console.log('✅ Sessions HTML inserted into tbody');
-    console.log('🔍 tbody content after insertion:', tbody.innerHTML);
 }
 
 // Setup session action handlers
