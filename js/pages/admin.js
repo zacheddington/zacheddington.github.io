@@ -187,31 +187,20 @@ function setupAdminNavigation() {
     // Choice button handlers
     const createUserBtn = document.getElementById('createUserBtn');
     const manageUsersBtn = document.getElementById('manageUsersBtn');
-    const manageSessionsBtn = document.getElementById('manageSessionsBtn');
-
-    if (createUserBtn) {
+    const manageSessionsBtn = document.getElementById('manageSessionsBtn');    if (createUserBtn) {
         createUserBtn.addEventListener('click', function () {
-            adminChoice.classList.add('hidden');
-            createUserSection.classList.remove('hidden');
+            window.location.href = '/admin/create-user/';
         });
     }
     if (manageUsersBtn) {
         manageUsersBtn.addEventListener('click', function () {
-            adminChoice.classList.add('hidden');
-            manageUsersSection.classList.remove('hidden');
-            // Load users and setup user management
-            loadUsers();
-            loadRolesForUserManagement();
-            setupUserFilter();
+            window.location.href = '/admin/manage-users/';
         });
     }
 
     if (manageSessionsBtn) {
         manageSessionsBtn.addEventListener('click', function () {
-            adminChoice.classList.add('hidden');
-            sessionManagementSection.classList.remove('hidden');
-            // Initialize session management
-            initializeSessionManagement();
+            window.location.href = '/admin/manage-sessions/';
         });
     }
     // Cancel button handler
