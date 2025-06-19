@@ -98,7 +98,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Sessions Table -->
                 <div class="users-table-container">
                     <div class="table-responsive">
@@ -129,7 +129,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Load shared modules first -->
         <script src="../../js/shared/api-client.js"></script>
         <script src="../../js/shared/modal-manager.js"></script>
@@ -146,34 +145,5 @@
 
         <!-- Load main controller -->
         <script src="../../js/main.js"></script>
-        
-        <script>
-            // Initialize the session management page
-            document.addEventListener('DOMContentLoaded', function () {
-                // Load shared head content
-                if (window.headManager) {
-                    window.headManager.loadSharedHead();
-                }
-
-                // Initialize auth and navigation
-                if (window.authUtils) {
-                    window.authUtils.init();
-                }
-
-                if (window.navigation) {
-                    window.navigation.init();
-                }
-
-                // Initialize modal manager
-                if (window.modalManager) {
-                    window.modalManager.init();
-                }
-
-                // Initialize session management
-                if (window.adminPage && window.adminPage.initializeSessionManagement) {
-                    window.adminPage.initializeSessionManagement();
-                }
-            });
-        </script>
     </body>
 </html>
