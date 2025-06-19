@@ -38,7 +38,7 @@ class SessionManager {
             const result = await client.query(
                 `
                 INSERT INTO tbl_user_session 
-                (user_key, session_token, ip_address, browser_info, login_method) 
+                (user_key, session_token, ip_address, user_agent, login_method) 
                 VALUES ($1, $2, $3, $4, $5) 
                 RETURNING session_key, session_token, expires_at, is_active
             `,
@@ -219,7 +219,7 @@ class SessionManager {
                     login_time: new Date(),
                     last_activity: new Date(),
                     ip_address: '127.0.0.1',
-                    browser_info: 'Chrome on Windows 10/11',
+                    user_agent: 'Chrome on Windows 10/11',
                     login_method: 'password',
                 },
             ];
@@ -231,10 +231,9 @@ class SessionManager {
                 `
                 SELECT 
                     session_key,
-                    login_time,
-                    last_activity,
+                    login_time,                    last_activity,
                     ip_address,
-                    browser_info,
+                    user_agent,
                     login_method,
                     expires_at
                 FROM tbl_user_session 
@@ -363,7 +362,7 @@ class SessionManager {
                         last_activity: new Date(),
                         logout_time: null,
                         ip_address: '127.0.0.1',
-                        browser_info: 'Chrome on Windows 10/11',
+                        user_agent: 'Chrome on Windows 10/11',
                     },
                 ];
             }
