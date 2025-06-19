@@ -5,6 +5,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Session Management - Integris Neuro Admin</title>
 
+        <!-- Favicon and Icons -->
+        <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+        <link rel="icon" type="image/png" href="../../favicon.png" />
+
         <!-- CSS Files -->
         <link rel="stylesheet" href="../../css/base/reset.css" />
         <link rel="stylesheet" href="../../css/base/variables.css" />
@@ -46,26 +51,9 @@
             <main class="main-content">
                 <div class="content-container">
                     <div class="page-header">
-                        <h2>Session Management</h2>
-                        <p class="page-description">
+                        <h2>Session Management</h2>                        <p class="page-description">
                             View and manage active user sessions
                         </p>
-                    </div>
-
-                    <!-- Session Management Debug Panel -->
-                    <div
-                        id="debugPanel"
-                        style="
-                            background: #f0f0f0;
-                            border: 2px solid #333;
-                            padding: 15px;
-                            margin: 15px 0;
-                            font-family: monospace;
-                            font-size: 12px;
-                        "
-                    >
-                        <h3>Debug Information</h3>
-                        <div id="debugOutput">Loading debug info...</div>
                     </div>
 
                     <!-- Session Filters -->
@@ -220,155 +208,30 @@
         <script src="../../js/shared/navigation.js"></script>
         <script src="../../js/pages/admin.js"></script>
         <script>
-            // Debugging helper function to show output on page
-            function addDebugInfo(message) {
-                const debugOutput = document.getElementById('debugOutput');
-                if (debugOutput) {
-                    debugOutput.innerHTML +=
-                        '<br>' + new Date().toISOString() + ': ' + message;
-                }
-                console.log(message);
-            }
-
-            // Immediate DOM test
-            addDebugInfo('🔧 Running immediate DOM test...');
-            addDebugInfo('🔧 Document ready state: ' + document.readyState);
-
-            function testDOMElements() {
-                addDebugInfo('🔧 Testing DOM elements...');
-                const table = document.querySelector('.sessions-table');
-                const tbody = document.querySelector('.sessions-table tbody');
-                const usersTable = document.querySelector('.users-table');
-                const usersTableTbody =
-                    document.querySelector('.users-table tbody');
-
-                addDebugInfo('🔧 .sessions-table found: ' + !!table);
-                addDebugInfo('🔧 .sessions-table tbody found: ' + !!tbody);
-                addDebugInfo('🔧 .users-table found: ' + !!usersTable);
-                addDebugInfo(
-                    '🔧 .users-table tbody found: ' + !!usersTableTbody
-                );
-
-                const allTables = document.querySelectorAll('table');
-                const allTbodies = document.querySelectorAll('tbody');
-                addDebugInfo('🔧 Total tables: ' + allTables.length);
-                addDebugInfo('🔧 Total tbodies: ' + allTbodies.length);
-
-                // Log each table's classes
-                allTables.forEach((t, i) => {
-                    addDebugInfo(`🔧 Table ${i} classes: "${t.className}"`);
-                });
-
-                // If we found elements, test innerHTML manipulation
-                if (tbody) {
-                    addDebugInfo('🔧 Testing tbody innerHTML manipulation...');
-                    const originalContent = tbody.innerHTML;
-                    tbody.innerHTML =
-                        '<tr><td colspan="8" style="text-align: center; color: green; font-weight: bold;">✅ TEST: DOM manipulation works! Table found and accessible.</td></tr>';
-                    addDebugInfo('🔧 innerHTML set successfully');
-                    setTimeout(() => {
-                        tbody.innerHTML = originalContent;
-                        addDebugInfo('🔧 Original content restored');
-                    }, 3000);
-                } else {
-                    addDebugInfo(
-                        '❌ No tbody found - cannot test manipulation'
-                    );
-                }
-            }
-
-            // Test immediately
-            setTimeout(() => {
-                addDebugInfo('🔧 Initial test after 50ms...');
-                testDOMElements();
-            }, 50);
-
             // Initialize the session management page
             document.addEventListener('DOMContentLoaded', function () {
-                addDebugInfo('🔧 DOMContentLoaded event fired');
-                testDOMElements();
-
                 // Load shared head content
                 if (window.headManager) {
                     window.headManager.loadSharedHead();
-                    addDebugInfo('🔧 Head manager loaded');
-                } else {
-                    addDebugInfo('🔧 Head manager not available');
                 }
 
                 // Initialize auth and navigation
                 if (window.authUtils) {
                     window.authUtils.init();
-                    addDebugInfo('🔧 Auth utils initialized');
-                } else {
-                    addDebugInfo('🔧 Auth utils not available');
                 }
 
                 if (window.navigation) {
                     window.navigation.init();
-                    addDebugInfo('🔧 Navigation initialized');
-                } else {
-                    addDebugInfo('🔧 Navigation not available');
                 }
 
                 // Initialize modal manager
                 if (window.modalManager) {
                     window.modalManager.init();
-                    addDebugInfo('� Modal manager initialized');
-                } else {
-                    addDebugInfo('🔧 Modal manager not available');
                 }
 
-                // Initialize session management specifically
-                addDebugInfo('🔍 DOM loaded, checking table existence...');
-
-                if (
-                    window.adminPage &&
-                    window.adminPage.initializeSessionManagement
-                ) {
-                    addDebugInfo(
-                        '🔍 AdminPage available, initializing session management...'
-                    );
-
-                    // Add a small delay to ensure DOM is fully ready
-                    setTimeout(() => {
-                        addDebugInfo(
-                            '🔍 After 500ms timeout - initializing session management...'
-                        );
-                        testDOMElements();
-
-                        try {
-                            window.adminPage.initializeSessionManagement();
-                            addDebugInfo(
-                                '✅ Session management initialization called successfully'
-                            );
-                        } catch (error) {
-                            addDebugInfo(
-                                '❌ Error during session management initialization: ' +
-                                    error.message
-                            );
-                        }
-                    }, 500);
-                } else {
-                    addDebugInfo(
-                        '❌ AdminPage or initializeSessionManagement not found'
-                    );
-                    addDebugInfo(
-                        '🔍 window.adminPage: ' +
-                            (window.adminPage ? 'exists' : 'undefined')
-                    );
-                    if (window.adminPage) {
-                        addDebugInfo(
-                            '🔍 adminPage.initializeSessionManagement: ' +
-                                (window.adminPage.initializeSessionManagement
-                                    ? 'exists'
-                                    : 'undefined')
-                        );
-                        addDebugInfo(
-                            '🔍 Available adminPage methods: ' +
-                                Object.keys(window.adminPage).join(', ')
-                        );
-                    }
+                // Initialize session management
+                if (window.adminPage && window.adminPage.initializeSessionManagement) {
+                    window.adminPage.initializeSessionManagement();
                 }
             });
         </script>
