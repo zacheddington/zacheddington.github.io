@@ -1694,6 +1694,9 @@ function startColumnResize(event, header, columnIndex) {
     const startWidth = header.offsetWidth;
     const handle = event.target;
 
+    let isResizing = false; // Track if we're actually resizing
+    const RESIZE_THRESHOLD = 3; // Minimum pixels to move before starting resize
+
     // Update ARIA attributes for accessibility
     handle.setAttribute('aria-valuenow', startWidth); // Add resizing class to table
     table.classList.add('resizing');
@@ -1705,9 +1708,21 @@ function startColumnResize(event, header, columnIndex) {
             e.pageX ||
             (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
 
+        const deltaX = Math.abs(pageX - startX);
+
+        // Only start resizing if we've moved beyond the threshold
+        if (!isResizing && deltaX < RESIZE_THRESHOLD) {
+            return; // Don't resize for small movements
+        }
+
+        // Start resizing once threshold is exceeded
+        if (!isResizing) {
+            isResizing = true;
+        }
+
         // Calculate new width immediately for responsive feedback
-        const deltaX = pageX - startX;
-        const newWidth = Math.max(80, Math.min(500, startWidth + deltaX));
+        const actualDeltaX = pageX - startX;
+        const newWidth = Math.max(80, Math.min(500, startWidth + actualDeltaX));
 
         // Use requestAnimationFrame for smooth updates
         if (!handlePointerMove.rafId) {
@@ -1747,29 +1762,34 @@ function startColumnResize(event, header, columnIndex) {
                 ? e.changedTouches[0].pageX
                 : startX);
 
-        // Calculate the final width with constraints
-        const newWidth = Math.max(
-            80,
-            Math.min(500, startWidth + (pageX - startX))
-        ); // Min 80px, Max 500px
+        // Only apply final width if we actually started resizing
+        if (isResizing) {
+            // Calculate the final width with constraints
+            const newWidth = Math.max(
+                80,
+                Math.min(500, startWidth + (pageX - startX))
+            ); // Min 80px, Max 500px
 
-        // Apply the final width immediately
-        header.style.width = `${newWidth}px`;
+            // Apply the final width immediately
+            header.style.width = `${newWidth}px`;
 
-        // Update ARIA value for accessibility
-        handle.setAttribute('aria-valuenow', newWidth);
+            // Update ARIA value for accessibility
+            handle.setAttribute('aria-valuenow', newWidth);
+
+            // Save column width in localStorage for persistence
+            saveColumnWidthPreferences();
+
+            // Announce resize completion for screen readers
+            announceForScreenReader(
+                `Column ${header.textContent.trim()} resized`
+            );
+        }
 
         // Remove the resizing class
         table.classList.remove('resizing');
 
         // Remove active from handle
         handle.classList.remove('active');
-
-        // Save column width in localStorage for persistence
-        saveColumnWidthPreferences();
-
-        // Announce resize completion for screen readers
-        announceForScreenReader(`Column ${header.textContent.trim()} resized`);
     } // Add event listeners for mouse/touch movement and release
     document.addEventListener('mousemove', handlePointerMove, {
         passive: false,

@@ -1907,6 +1907,9 @@ function startColumnResize(event, header, columnIndex) {
     const startWidth = header.offsetWidth;
     const handle = event.target;
 
+    let isResizing = false; // Track if we're actually resizing
+    const RESIZE_THRESHOLD = 3; // Minimum pixels to move before starting resize
+
     // Update ARIA attributes for accessibility
     handle.setAttribute('aria-valuenow', startWidth);
 
@@ -1921,8 +1924,21 @@ function startColumnResize(event, header, columnIndex) {
         const pageX =
             e.pageX ||
             (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
-        const deltaX = pageX - startX;
-        const newWidth = Math.max(80, Math.min(500, startWidth + deltaX));
+
+        const deltaX = Math.abs(pageX - startX);
+
+        // Only start resizing if we've moved beyond the threshold
+        if (!isResizing && deltaX < RESIZE_THRESHOLD) {
+            return; // Don't resize for small movements
+        }
+
+        // Start resizing once threshold is exceeded
+        if (!isResizing) {
+            isResizing = true;
+        }
+
+        const actualDeltaX = pageX - startX;
+        const newWidth = Math.max(80, Math.min(500, startWidth + actualDeltaX));
 
         // Use requestAnimationFrame for smooth updates
         if (!handlePointerMove.rafId) {
@@ -1963,24 +1979,30 @@ function startColumnResize(event, header, columnIndex) {
             (e.changedTouches && e.changedTouches[0]
                 ? e.changedTouches[0].pageX
                 : startX);
-        const newWidth = Math.max(
-            80,
-            Math.min(500, startWidth + (pageX - startX))
-        );
 
-        // Apply the final width
-        header.style.width = `${newWidth}px`;
-        handle.setAttribute('aria-valuenow', newWidth);
+        // Only apply final width if we actually started resizing
+        if (isResizing) {
+            const newWidth = Math.max(
+                80,
+                Math.min(500, startWidth + (pageX - startX))
+            );
+
+            // Apply the final width
+            header.style.width = `${newWidth}px`;
+            handle.setAttribute('aria-valuenow', newWidth);
+
+            // Save column width preferences
+            savePatientColumnWidthPreferences();
+
+            // Announce resize completion for screen readers
+            announceForScreenReader(
+                `Column ${header.textContent.trim()} resized`
+            );
+        }
 
         // Remove the resizing class
         table.classList.remove('resizing');
         handle.classList.remove('active');
-
-        // Save column width preferences
-        savePatientColumnWidthPreferences();
-
-        // Announce resize completion for screen readers
-        announceForScreenReader(`Column ${header.textContent.trim()} resized`);
     }
 
     // Add event listeners for mouse/touch movement and release
