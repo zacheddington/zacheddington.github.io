@@ -2118,6 +2118,10 @@ function setupDeletePatientModal() {
     }
 }
 
+// Make functions globally available for inline onclick handlers
+window.editPatient = editPatient;
+window.deletePatient = deletePatient;
+
 // Export functions for global access
 window.patientsPage = {
     initializePatientsPage,
@@ -2128,6 +2132,8 @@ window.patientsPage = {
     savePatientColumnWidthPreferences,
     adjustPatientColumnWidths,
     addPatientColumnResizeHandles,
+    editPatient,
+    deletePatient,
 };
 
 // Export for module systems

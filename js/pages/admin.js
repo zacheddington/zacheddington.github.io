@@ -165,6 +165,35 @@ function setUserActionLoading(userId, isLoading) {
     }
 }
 
+// Get the column type based on header text for appropriate sizing constraints
+function getAdminColumnType(headerText) {
+    const header = headerText.toLowerCase().trim();
+
+    if (header.includes('email')) {
+        return 'email';
+    } else if (header.includes('username') || header.includes('user')) {
+        return 'username';
+    } else if (header.includes('name') || header.includes('full name')) {
+        return 'name';
+    } else if (header.includes('role')) {
+        return 'role';
+    } else if (header.includes('created') || header.includes('date')) {
+        return 'created';
+    } else if (header.includes('action')) {
+        return 'actions';
+    } else if (header.includes('status')) {
+        return 'status';
+    } else if (header.includes('login') || header.includes('activity')) {
+        return 'datetime';
+    } else if (header.includes('ip') || header.includes('address')) {
+        return 'ip';
+    } else if (header.includes('browser')) {
+        return 'browser';
+    } else {
+        return 'general';
+    }
+}
+
 // Function to announce changes to screen readers
 function announceForScreenReader(message) {
     const announcement = document.createElement('div');
