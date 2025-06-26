@@ -1214,13 +1214,14 @@ function displayPatients(patients) {
             th.style.width = 'auto';
             th.style.minWidth = '';
         });
-    }
-
-    // Adjust column widths after rendering
+    } // Adjust column widths after rendering
     setTimeout(adjustPatientColumnWidths, 100);
 
     // Add column resize tooltips
     addColumnResizeTooltips();
+
+    // Add column resize handles after rendering the table
+    addPatientColumnResizeHandles();
 }
 
 // Display patients in the table while preserving column widths

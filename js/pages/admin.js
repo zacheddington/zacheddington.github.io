@@ -2235,9 +2235,11 @@ function displaySessions(sessions) {
 
         return rowHtml;
     });
-
     const finalHtml = sessionRows.join('');
     tbody.innerHTML = finalHtml;
+
+    // Add column resize handles after rendering the table
+    addColumnResizeHandles();
 }
 
 // Setup session action handlers
