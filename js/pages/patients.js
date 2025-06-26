@@ -2035,3 +2035,20 @@ function autoSizeColumn(header, columnIndex) {
     // Announce the change to screen readers
     announceForScreenReader(`Column ${header.textContent.trim()} auto-sized`);
 }
+
+// Make functions available globally
+window.patientsPage = {
+    initializePatientsPage,
+    loadPatients,
+    createPatient,
+    editPatient,
+    deletePatient,
+    handleEditPatientSubmit,
+    closeEditPatientModal,
+    closeDeletePatientModal,
+};
+
+// Export for module systems
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = window.patientsPage;
+}

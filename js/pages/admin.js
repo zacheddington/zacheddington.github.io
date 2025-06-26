@@ -248,7 +248,7 @@ function setupAdminNavigation() {
 // Load roles for dropdown
 async function loadRoles() {
     try {
-        const API_URL = getAPIUrl();
+        const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
 
         const response = await fetch(`${API_URL}/api/roles`, {
@@ -363,7 +363,7 @@ async function checkUsernameAvailability(username) {
     }
 
     try {
-        const API_URL = getAPIUrl();
+        const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
 
         const usernameInput = document.getElementById('newUsername');
@@ -558,7 +558,7 @@ async function createUser() {
         }
 
         const token = localStorage.getItem('token');
-        const API_URL = getAPIUrl();
+        const API_URL = window.apiClient.getAPIUrl();
 
         response = await fetch(`${API_URL}/api/create-user`, {
             method: 'POST',
@@ -623,7 +623,7 @@ function clearCreateUserErrors() {
 // Load users for management
 async function loadUsers() {
     try {
-        const API_URL = getAPIUrl();
+        const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
 
         const usersLoading = document.getElementById('usersLoading');
@@ -689,7 +689,7 @@ function displayFilteredUsers() {
 // Load roles for user management
 async function loadRolesForUserManagement() {
     try {
-        const API_URL = getAPIUrl();
+        const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
 
         const response = await fetch(`${API_URL}/api/roles`, {
@@ -1302,7 +1302,7 @@ async function editUserRole(userId, newRoleKey) {
 
                     // Update user role directly - the server will handle validation
                     const token = localStorage.getItem('token');
-                    const API_URL = getAPIUrl();
+                    const API_URL = window.apiClient.getAPIUrl();
 
                     const response = await fetch(
                         `${API_URL}/api/users/${userId}/role`,
@@ -1385,7 +1385,7 @@ async function deleteUser(userId, username) {
             try {
                 // Show loading state
                 setUserActionLoading(userId, true); // Note: Proceeding directly to delete since individual user GET endpoint doesn't exist
-                const API_URL = getAPIUrl();
+                const API_URL = window.apiClient.getAPIUrl();
                 const token = localStorage.getItem('token');
                 const response = await fetch(`${API_URL}/api/users/${userId}`, {
                     method: 'DELETE',
@@ -1491,7 +1491,7 @@ async function deleteUser(userId, username) {
 // Check if user has any dependencies that might prevent deletion
 async function checkUserDependencies(userId) {
     try {
-        const API_URL = getAPIUrl();
+        const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
 
         // Try to get user details to see if they have associated data
@@ -1518,7 +1518,7 @@ async function checkUserDependencies(userId) {
 // Check for specific foreign key constraints that might prevent deletion
 async function analyzeUserConstraints(userId, username) {
     try {
-        const API_URL = getAPIUrl();
+        const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
 
         // Try to get detailed user information
@@ -1960,7 +1960,7 @@ async function initializeSessionManagement() {
 // Load all sessions from the API
 async function loadAllSessions() {
     try {
-        const API_URL = getAPIUrl();
+        const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
 
         showSessionsLoading(true);
@@ -2211,7 +2211,7 @@ async function revokeSession(sessionId) {
     }
 
     try {
-        const API_URL = getAPIUrl();
+        const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
 
         setSessionActionLoading(sessionId, true);
@@ -2269,7 +2269,7 @@ async function revokeAllUserSessions(username) {
     }
 
     try {
-        const API_URL = getAPIUrl();
+        const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
 
         const response = await fetch(
@@ -2339,7 +2339,7 @@ async function cleanupExpiredSessions() {
     }
 
     try {
-        const API_URL = getAPIUrl();
+        const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
 
         const response = await fetch(`${API_URL}/api/sessions/cleanup`, {
@@ -2524,4 +2524,19 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Make functions available globally
+window.adminPage = {
+    initializeAdminPage,
+    editUserRole,
+    deleteUser,
+    revokeSession,
+    loadAllSessions,
+    displaySessions,
+};
+
+// Export for module systems
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = window.adminPage;
 }
