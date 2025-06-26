@@ -1566,14 +1566,12 @@ function updateCreateUserSubmitButton() {
 // Function to add resize handles to table columns
 function addColumnResizeHandles() {
     const table = document.querySelector('.users-table');
-    console.log('🔍 Looking for table with .users-table selector:', table);
     if (!table) {
         console.error('❌ No table found with .users-table class');
         return;
     }
 
     const headers = Array.from(table.querySelectorAll('th'));
-    console.log('📋 Found headers:', headers.length);
 
     // Remove any existing resize handles
     document.querySelectorAll('.column-resize-handle').forEach((handle) => {
@@ -2099,82 +2097,11 @@ function filterSessions() {
 
 // Display sessions in the table
 function displaySessions(sessions) {
-    // Use a more robust approach to find the tbody
-    let tbody = null;
-
-    // First try the direct selector for dedicated session management page
-    tbody = document.querySelector('.sessions-table tbody');
-
-    // Try the ID-based selector for main admin page
-    if (!tbody) {
-        tbody = document.querySelector('#sessionsTableBody');
-    }
-
-    // If not found, try alternative selectors
-    if (!tbody) {
-        tbody = document.querySelector('.users-table tbody');
-    }
+    // Use the specific ID for session management page
+    const tbody = document.querySelector('#sessionsTableBody');
 
     if (!tbody) {
-        tbody = document.querySelector('table.sessions-table tbody');
-    }
-
-    if (!tbody) {
-        tbody = document.querySelector('table.users-table tbody');
-    }
-
-    if (!tbody) {
-        // Try to find any tbody in a table
-        const tables = document.querySelectorAll('table');
-        for (const table of tables) {
-            if (
-                table.classList.contains('sessions-table') ||
-                table.classList.contains('users-table')
-            ) {
-                const tbodyInTable = table.querySelector('tbody');
-                if (tbodyInTable) {
-                    tbody = tbodyInTable;
-                    break;
-                }
-            }
-        }
-    }
-
-    // If still not found, try to find any tbody on the page
-    if (!tbody) {
-        const allTbodies = document.querySelectorAll('tbody');
-        if (allTbodies.length > 0) {
-            tbody = allTbodies[0]; // Use the first tbody found
-        }
-    }
-
-    if (!tbody) {
-        console.error('❌ No tbody element found anywhere on the page');
-        // Try to create an error message in any container we can find
-        const containers = [
-            document.querySelector('.content-container'),
-            document.querySelector('.main-content'),
-            document.querySelector('body'),
-        ];
-
-        for (const container of containers) {
-            if (container) {
-                const errorDiv = document.createElement('div');
-                errorDiv.innerHTML = `
-                    <div style="background: #ffebee; border: 1px solid #f44336; padding: 15px; margin: 15px 0; border-radius: 4px; color: #d32f2f;">
-                        <strong>Error:</strong> Unable to find sessions table on page. 
-                        Found ${allTables.length} tables and ${
-                    allTbodies.length
-                } tbody elements.
-                        <br>Sessions data: ${
-                            sessions?.length || 0
-                        } sessions loaded.
-                    </div>
-                `;
-                container.insertBefore(errorDiv, container.firstChild);
-                break;
-            }
-        }
+        console.error('❌ No tbody element found with #sessionsTableBody');
         return;
     }
     if (sessions.length === 0) {
@@ -2222,9 +2149,13 @@ function displaySessions(sessions) {
     const finalHtml = sessionRows.join('');
     tbody.innerHTML = finalHtml;
 
-    // Add column resize handles after rendering the table
+    // Set table layout to fixed for column resizing to work
+    const table = document.querySelector('#sessionsTable');
+    if (table) {
+        table.style.tableLayout = 'fixed';
+        table.style.width = '100%';
+    } // Add column resize handles after rendering the table
     setTimeout(() => {
-        console.log('🔧 Adding column resize handles for sessions table');
         addColumnResizeHandles();
     }, 100);
 }

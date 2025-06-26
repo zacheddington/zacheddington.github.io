@@ -1195,32 +1195,22 @@ function displayPatients(patients) {
             return rowHtml;
         })
         .join('');
-    patientsTableBody.innerHTML = htmlRows;
-
-    // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE
+    patientsTableBody.innerHTML = htmlRows; // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE
     const table = document.getElementById('patientsTable');
     if (table) {
-        table.style.tableLayout = 'auto';
+        // Set table layout to fixed for column resizing to work
+        table.style.tableLayout = 'fixed';
         table.style.width = '100%';
 
         // Force recalculation by temporarily changing display
         table.style.display = 'none';
         table.offsetHeight; // Force reflow
         table.style.display = 'table';
+    } // Adjust column widths after rendering    // Adjust column widths after rendering
+    setTimeout(adjustPatientColumnWidths, 100);
 
-        // Clear any saved column widths that might be causing issues
-        const headers = table.querySelectorAll('th');
-        headers.forEach((th) => {
-            th.style.width = 'auto';
-            th.style.minWidth = '';
-        });
-    } // Adjust column widths after rendering
-    setTimeout(adjustPatientColumnWidths, 100); // Add column resize tooltips
+    // Add column resize tooltips
     addColumnResizeTooltips();
-
-    // Add column resize handles after rendering the table
-    console.log('🔧 Adding column resize handles for patients table');
-    addPatientColumnResizeHandles();
 }
 
 // Display patients in the table while preserving column widths
@@ -1793,17 +1783,12 @@ function adjustPatientColumnWidths() {
 // Add column resize handles to patient table
 function addPatientColumnResizeHandles() {
     const table = document.querySelector('#patientsTable');
-    console.log(
-        '🔍 Looking for patients table with #patientsTable selector:',
-        table
-    );
     if (!table) {
         console.error('❌ No patients table found with #patientsTable id');
         return;
     }
 
     const headers = Array.from(table.querySelectorAll('th'));
-    console.log('📋 Found patient headers:', headers.length);
 
     // Remove any existing resize handles
     document.querySelectorAll('.column-resize-handle').forEach((handle) => {
@@ -1828,11 +1813,9 @@ function addPatientColumnResizeHandles() {
             header.setAttribute(
                 'title',
                 'Drag to resize column | Double-click to auto-size'
-            );
-
-            // Add resize listeners for mouse
+            ); // Add resize listeners for mouse
             resizeHandle.addEventListener('mousedown', function (e) {
-                startPatientColumnResize(e, header, index);
+                startColumnResize(e, header, index);
             });
 
             // Add touch support
@@ -1842,7 +1825,7 @@ function addPatientColumnResizeHandles() {
                     // Prevent scrolling while resizing
                     e.preventDefault();
                     const touch = e.touches[0];
-                    startPatientColumnResize(touch, header, index);
+                    startColumnResize(touch, header, index);
                 },
                 { passive: false }
             );
@@ -1851,7 +1834,7 @@ function addPatientColumnResizeHandles() {
             resizeHandle.addEventListener('dblclick', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                autoSizePatientColumn(header, index);
+                autoSizeColumn(header, index);
             });
 
             // Also add double-click to the header itself for better UX
@@ -1864,7 +1847,7 @@ function addPatientColumnResizeHandles() {
                 ) {
                     e.preventDefault();
                     e.stopPropagation();
-                    autoSizePatientColumn(header, index);
+                    autoSizeColumn(header, index);
                 }
             });
 
@@ -1879,19 +1862,19 @@ function addPatientColumnResizeHandles() {
                     header.style.width = newWidth + 'px';
                     this.setAttribute('aria-valuenow', newWidth);
                     savePatientColumnWidthPreferences();
-                }
-                // Enter key to auto-size
+                } // Enter key to auto-size
                 else if (e.key === 'Enter') {
                     e.preventDefault();
-                    autoSizePatientColumn(header, index);
+                    autoSizeColumn(header, index);
                 }
             });
         }
     });
 }
 
-// Function to handle patient column resizing
-function startPatientColumnResize(event, header, columnIndex) {
+// Column Resize Functions for Patients Table
+
+function startColumnResize(event, header, columnIndex) {
     // Accept both mouse and touch events
     if (event.preventDefault) event.preventDefault();
 
@@ -1902,19 +1885,18 @@ function startPatientColumnResize(event, header, columnIndex) {
 
     // Update ARIA attributes for accessibility
     handle.setAttribute('aria-valuenow', startWidth);
+
     // Add resizing class to table
     table.classList.add('resizing');
+
     // Mark the handle as active
     handle.classList.add('active');
 
     // Function to handle mouse/touch movement during resize
     function handlePointerMove(e) {
-        // Get pageX for calculations
         const pageX =
             e.pageX ||
             (e.touches && e.touches[0] ? e.touches[0].pageX : startX);
-
-        // Calculate new width immediately for responsive feedback
         const deltaX = pageX - startX;
         const newWidth = Math.max(80, Math.min(500, startWidth + deltaX));
 
@@ -1926,7 +1908,7 @@ function startPatientColumnResize(event, header, columnIndex) {
             });
         }
 
-        // Only update ARIA value periodically to reduce overhead
+        // Update ARIA value periodically
         if (
             !handlePointerMove.lastAriaUpdate ||
             Date.now() - handlePointerMove.lastAriaUpdate > 100
@@ -1949,418 +1931,107 @@ function startPatientColumnResize(event, header, columnIndex) {
         document.removeEventListener('mouseup', handlePointerUp);
         document.removeEventListener('touchmove', handlePointerMove);
         document.removeEventListener('touchend', handlePointerUp);
+        document.removeEventListener('touchcancel', handlePointerUp);
 
-        // Clean up classes
+        // Get final position
+        const pageX =
+            e.pageX ||
+            (e.changedTouches && e.changedTouches[0]
+                ? e.changedTouches[0].pageX
+                : startX);
+        const newWidth = Math.max(
+            80,
+            Math.min(500, startWidth + (pageX - startX))
+        );
+
+        // Apply the final width
+        header.style.width = `${newWidth}px`;
+        handle.setAttribute('aria-valuenow', newWidth);
+
+        // Remove the resizing class
         table.classList.remove('resizing');
         handle.classList.remove('active');
 
-        // Save the new column widths to localStorage
+        // Save column width preferences
         savePatientColumnWidthPreferences();
 
-        // Remove tracking properties
-        delete handlePointerMove.rafId;
-        delete handlePointerMove.lastAriaUpdate;
+        // Announce resize completion for screen readers
+        announceForScreenReader(`Column ${header.textContent.trim()} resized`);
     }
 
-    // Add event listeners for move and up
-    document.addEventListener('mousemove', handlePointerMove);
+    // Add event listeners for mouse/touch movement and release
+    document.addEventListener('mousemove', handlePointerMove, {
+        passive: false,
+    });
     document.addEventListener('mouseup', handlePointerUp);
     document.addEventListener('touchmove', handlePointerMove, {
         passive: false,
     });
     document.addEventListener('touchend', handlePointerUp);
+    document.addEventListener('touchcancel', handlePointerUp);
 }
 
-// Auto-size patient column based on content
-function autoSizePatientColumn(header, columnIndex) {
+// Function to announce changes to screen readers
+function announceForScreenReader(message) {
+    const announcement = document.createElement('div');
+    announcement.setAttribute('aria-live', 'polite');
+    announcement.setAttribute('aria-atomic', 'true');
+    announcement.classList.add('sr-only');
+    announcement.textContent = message;
+    document.body.appendChild(announcement);
+
+    // Remove after announcement is made
+    setTimeout(() => {
+        if (document.body.contains(announcement)) {
+            document.body.removeChild(announcement);
+        }
+    }, 1000);
+}
+
+// Auto-size function for patient columns
+function autoSizeColumn(header, columnIndex) {
     const table = document.querySelector('#patientsTable');
     if (!table) return;
 
     // Get all cells in this column
     const cells = Array.from(
-        table.querySelectorAll(
-            `tr td:nth-child(${columnIndex + 1}), tr th:nth-child(${
-                columnIndex + 1
-            })`
-        )
+        table.querySelectorAll(`tbody tr td:nth-child(${columnIndex + 1})`)
     );
 
-    // Calculate the maximum content width
-    let maxWidth = 100; // Minimum width
+    // Simple calculation for patient table
+    const headerText = header.textContent;
+    let maxWidth = Math.max(headerText.length * 8 + 40, 80);
+
+    // Check cell content for better sizing
     cells.forEach((cell) => {
-        const textWidth = getTextWidth(
-            cell.textContent || cell.innerText,
-            getComputedStyle(cell)
-        );
-        maxWidth = Math.max(maxWidth, textWidth + 20); // Add padding
+        const cellText = cell.textContent.trim();
+        if (cellText) {
+            const cellWidth = cellText.length * 8 + 40; // Rough estimation
+            maxWidth = Math.max(maxWidth, cellWidth);
+        }
     });
 
-    // Apply the new width
-    const newWidth = Math.min(maxWidth, 500); // Cap at maximum width
-    header.style.width = newWidth + 'px';
+    // Apply constraints for different column types
+    if (headerText.includes('Name')) {
+        maxWidth = Math.min(maxWidth, 250);
+        maxWidth = Math.max(maxWidth, 150);
+    } else if (headerText.includes('Address')) {
+        maxWidth = Math.min(maxWidth, 300);
+        maxWidth = Math.max(maxWidth, 200);
+    } else if (headerText.includes('Phone')) {
+        maxWidth = Math.min(maxWidth, 150);
+        maxWidth = Math.max(maxWidth, 120);
+    } else {
+        maxWidth = Math.min(maxWidth, 200);
+        maxWidth = Math.max(maxWidth, 100);
+    }
 
-    // Save preferences
+    // Apply the calculated width
+    header.style.width = `${maxWidth}px`;
+
+    // Save the updated column widths
     savePatientColumnWidthPreferences();
 
-    // Update ARIA value
-    const resizeHandle = header.querySelector('.column-resize-handle');
-    if (resizeHandle) {
-        resizeHandle.setAttribute('aria-valuenow', newWidth);
-    }
-}
-
-// Save patient column width preferences to localStorage
-function savePatientColumnWidthPreferences() {
-    try {
-        const table = document.querySelector('#patientsTable');
-        if (table) {
-            const headers = Array.from(table.querySelectorAll('th'));
-            const widths = headers.map(
-                (header) => header.style.width || 'auto'
-            );
-            localStorage.setItem(
-                'patientTableColumnWidths',
-                JSON.stringify(widths)
-            );
-        }
-    } catch (e) {
-        console.error('Error saving patient column preferences');
-    }
-}
-
-// Helper function to calculate text width
-function getTextWidth(text, font) {
-    const canvas =
-        getTextWidth.canvas ||
-        (getTextWidth.canvas = document.createElement('canvas'));
-    const context = canvas.getContext('2d');
-    context.font = `${font.fontSize} ${font.fontFamily}`;
-    const metrics = context.measureText(text);
-    return metrics.width;
-}
-
-// Setup edit patient modal functionality
-function setupEditPatientModal() {
-    const modal = document.getElementById('editPatientModal');
-    const closeBtn = modal.querySelector('.close');
-    const editPatientForm = document.getElementById('editPatientForm');
-
-    if (!modal || !closeBtn || !editPatientForm) {
-        console.error('❌ Missing modal elements, aborting setup');
-        return;
-    }
-
-    // Variables to track mouse events for proper click-outside detection
-    let mouseDownTarget = null;
-    let mouseUpTarget = null;
-
-    // Close modal when clicking the X button
-    closeBtn.addEventListener('click', function () {
-        closeEditPatientModal();
-    });
-
-    // Track mousedown to know where click started
-    window.addEventListener('mousedown', function (event) {
-        mouseDownTarget = event.target;
-    });
-
-    // Track mouseup to know where click ended
-    window.addEventListener('mouseup', function (event) {
-        mouseUpTarget = event.target;
-
-        // Only close modal if both mousedown AND mouseup happened on the modal background
-        // This prevents closing when user drags from inside form to outside
-        if (
-            modal.style.display === 'block' &&
-            mouseDownTarget === modal &&
-            mouseUpTarget === modal
-        ) {
-            closeEditPatientModal();
-        }
-
-        // Reset tracking variables
-        mouseDownTarget = null;
-        mouseUpTarget = null;
-    });
-
-    // Handle form submission
-    editPatientForm.addEventListener('submit', handleEditPatientSubmit); // Close modal on Escape key
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && modal.style.display === 'block') {
-            closeEditPatientModal();
-        }
-    });
-
-    // Setup phone number formatting for edit form
-    setupEditFormPhoneFormatting();
-
-    // Setup date validation for edit form
-    setupEditFormDateValidation();
-
-    // Setup zip code formatting for edit form
-    setupEditFormZipFormatting();
-}
-
-// Set up phone number formatting for the edit patient form
-function setupEditFormPhoneFormatting() {
-    const phoneInput = document.getElementById('editPatientPhone');
-    if (!phoneInput) {
-        console.warn('⚠️ Phone input not found in edit form');
-        return;
-    }
-
-    // Format phone number as user types
-    phoneInput.addEventListener('input', function (e) {
-        let value = e.target.value;
-
-        // Remove all non-digit characters
-        const digits = value.replace(/\D/g, '');
-
-        // Limit to 10 digits
-        const limitedDigits = digits.substring(0, 10);
-
-        // Format as (XXX) XXX-XXXX
-        let formattedValue = '';
-        if (limitedDigits.length > 0) {
-            if (limitedDigits.length <= 3) {
-                formattedValue = `(${limitedDigits}`;
-            } else if (limitedDigits.length <= 6) {
-                formattedValue = `(${limitedDigits.slice(
-                    0,
-                    3
-                )}) ${limitedDigits.slice(3)}`;
-            } else {
-                formattedValue = `(${limitedDigits.slice(
-                    0,
-                    3
-                )}) ${limitedDigits.slice(3, 6)}-${limitedDigits.slice(6)}`;
-            }
-        }
-
-        // Update the input value
-        e.target.value = formattedValue;
-    });
-
-    // Handle paste events
-    phoneInput.addEventListener('paste', function (e) {
-        setTimeout(() => {
-            // Trigger the input event to format the pasted content
-            phoneInput.dispatchEvent(new Event('input'));
-        }, 0);
-    });
-
-    // Prevent non-numeric input (except backspace, delete, tab, etc.)
-
-    phoneInput.addEventListener('keydown', function (e) {
-        // Allow: backspace, delete, tab, escape, enter
-        if (
-            [8, 9, 27, 13, 46].indexOf(e.keyCode) !== -1 ||
-            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-            (e.keyCode === 65 && e.ctrlKey === true) ||
-            (e.keyCode === 67 && e.ctrlKey === true) ||
-            (e.keyCode === 86 && e.ctrlKey === true) ||
-            (e.keyCode === 88 && e.ctrlKey === true) ||
-            // Allow: home, end, left, right
-            (e.keyCode >= 35 && e.keyCode <= 39)
-        ) {
-            return;
-        }
-        // Ensure that it is a number and stop the keypress
-        if (
-            (e.shiftKey || e.keyCode < 48 || e.keyCode > 57) &&
-            (e.keyCode < 96 || e.keyCode > 105)
-        ) {
-            e.preventDefault();
-        }
-    });
-}
-
-// Setup date validation for edit form
-function setupEditFormDateValidation() {
-    const dateInput = document.getElementById('editPatientDateOfBirth');
-    if (!dateInput) {
-        console.warn('⚠️ Date of birth input not found in edit form');
-        return;
-    }
-
-    // Simple validation on change (when user finishes editing)
-    dateInput.addEventListener('change', function (e) {
-        const value = e.target.value;
-        if (value) {
-            const date = new Date(value);
-            const today = new Date();
-
-            // Check if date is valid
-            if (isNaN(date.getTime())) {
-                e.target.setCustomValidity('Please enter a valid date');
-                return;
-            }
-
-            // Check if date is not in the future
-            if (date > today) {
-                e.target.setCustomValidity(
-                    'Date of birth cannot be in the future'
-                );
-                return;
-            }
-
-            // Check if date is reasonable (not too far in the past)
-            const minDate = new Date();
-            minDate.setFullYear(minDate.getFullYear() - 150);
-            if (date < minDate) {
-                e.target.setCustomValidity(
-                    'Please enter a reasonable date of birth'
-                );
-                return;
-            }
-
-            // Clear any custom validity if all checks pass
-            e.target.setCustomValidity('');
-        }
-    }); // Clear custom validity when user starts typing
-    dateInput.addEventListener('input', function (e) {
-        e.target.setCustomValidity('');
-
-        let value = e.target.value;
-
-        // Only process if we have a reasonable length to avoid interfering with normal typing
-        if (value.length >= 5) {
-            // Check if year part is getting too long (more than 4 digits before first hyphen)
-            const firstHyphenIndex = value.indexOf('-');
-            if (firstHyphenIndex > 4) {
-                // The year part is too long, truncate it to 4 digits
-                const yearPart = value.substring(0, 4);
-                const remainingPart = value.substring(firstHyphenIndex);
-                e.target.value = yearPart + remainingPart;
-            } else if (firstHyphenIndex === -1 && value.length > 4) {
-                // No hyphen yet but year is getting long, truncate to 4 digits
-                e.target.value = value.substring(0, 4);
-            }
-        }
-    });
-}
-
-// Setup zip code formatting for edit form
-function setupEditFormZipFormatting() {
-    const zipInput = document.getElementById('editPatientZip');
-    if (!zipInput) {
-        console.warn('⚠️ Zip code input not found in edit form');
-        return;
-    }
-
-    // Format zip code as user types
-    zipInput.addEventListener('input', function (e) {
-        let value = e.target.value;
-
-        // Remove all non-digit characters
-        const digits = value.replace(/\D/g, '');
-
-        // Limit to 10 digits max (XXXXX-XXXX format)
-        const limitedDigits = digits.substring(0, 10);
-
-        // Format as XXXXX-XXXX for 6+ digits, or just XXXXX for 5 or fewer
-        let formattedValue = '';
-        if (limitedDigits.length <= 5) {
-            formattedValue = limitedDigits;
-        } else {
-            formattedValue = `${limitedDigits.slice(
-                0,
-                5
-            )}-${limitedDigits.slice(5)}`;
-        }
-
-        // Update the input value
-        e.target.value = formattedValue;
-    });
-
-    // Handle paste events
-    zipInput.addEventListener('paste', function (e) {
-        setTimeout(() => {
-            // Trigger the input event to format the pasted content
-            zipInput.dispatchEvent(new Event('input'));
-        }, 0);
-    });
-
-    // Prevent non-numeric input (except backspace, delete, tab, etc.)
-    zipInput.addEventListener('keydown', function (e) {
-        // Allow: backspace, delete, tab, escape, enter, hyphen
-        if (
-            [8, 9, 27, 13, 46, 189, 109].indexOf(e.keyCode) !== -1 ||
-            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
-            (e.keyCode === 65 && e.ctrlKey === true) ||
-            (e.keyCode === 67 && e.ctrlKey === true) ||
-            (e.keyCode === 86 && e.ctrlKey === true) ||
-            (e.keyCode === 88 && e.ctrlKey === true) ||
-            // Allow: home, end, left, right
-            (e.keyCode >= 35 && e.keyCode <= 39)
-        ) {
-            return;
-        }
-        // Ensure that it is a number and stop the keypress
-        if (
-            (e.shiftKey || e.keyCode < 48 || e.keyCode > 57) &&
-            (e.keyCode < 96 || e.keyCode > 105)
-        ) {
-            e.preventDefault();
-        }
-    });
-}
-
-// Setup delete patient modal
-function setupDeletePatientModal() {
-    const modal = document.getElementById('deletePatientModal');
-    if (!modal) {
-        console.warn('⚠️ Delete patient modal not found');
-        return;
-    }
-
-    const closeBtn = modal.querySelector('.close');
-
-    // Variables to track mouse events for proper click-outside detection
-    let mouseDownTarget = null;
-    let mouseUpTarget = null;
-
-    // Close modal when clicking the X button
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function () {
-            closeDeletePatientModal();
-        });
-    }
-
-    // Track mousedown to know where click started
-    window.addEventListener('mousedown', function (event) {
-        mouseDownTarget = event.target;
-    });
-
-    // Track mouseup to know where click ended
-    window.addEventListener('mouseup', function (event) {
-        mouseUpTarget = event.target;
-
-        // Only close modal if both mousedown AND mouseup happened on the modal background
-        if (
-            modal.style.display === 'block' &&
-            mouseDownTarget === modal &&
-            mouseUpTarget === modal
-        ) {
-            closeDeletePatientModal();
-        }
-
-        // Reset tracking variables
-        mouseDownTarget = null;
-        mouseUpTarget = null;
-    });
-}
-
-// Export functions to window object for main.js to access
-if (typeof window !== 'undefined') {
-    window.patientsPage = {
-        initializePatientsPage,
-        initializeCreatePatientPage,
-        initializeManagePatientsPage,
-        initializePatientsIndexPage,
-        editPatient,
-        deletePatient,
-        closeEditPatientModal,
-        closeDeletePatientModal,
-    };
+    // Announce the change to screen readers
+    announceForScreenReader(`Column ${header.textContent.trim()} auto-sized`);
 }
