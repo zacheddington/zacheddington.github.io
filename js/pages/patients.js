@@ -2082,7 +2082,21 @@ function autoSizeColumn(header, columnIndex) {
             maxWidth = 110; // Default actions column width for patients
         }
 
+        // Calculate width difference and update table width accordingly
+        const widthDifference = maxWidth - initialWidths[columnIndex];
         header.style.width = `${maxWidth}px`;
+
+        // Adjust the table width to accommodate the change
+        const newTableWidth = initialTableWidth + widthDifference;
+        table.style.width = `${newTableWidth}px`;
+
+        // Ensure all other columns maintain their exact original widths
+        headers.forEach((h, index) => {
+            if (index !== columnIndex) {
+                h.style.width = `${initialWidths[index]}px`;
+            }
+        });
+
         savePatientColumnWidthPreferences();
         announceForScreenReader(
             `Column ${header.textContent.trim()} auto-sized`
@@ -2099,8 +2113,20 @@ function autoSizeColumn(header, columnIndex) {
         const headerText = header.textContent;
         let maxWidth = Math.max(headerText.length * 8 + 40, 80); // Rough estimation
 
-        // Apply the calculated width
+        // Apply the calculated width with proper width difference handling
+        const widthDifference = maxWidth - initialWidths[columnIndex];
         header.style.width = `${maxWidth}px`;
+
+        // Adjust the table width to accommodate the change
+        const newTableWidth = initialTableWidth + widthDifference;
+        table.style.width = `${newTableWidth}px`;
+
+        // Ensure all other columns maintain their exact original widths
+        headers.forEach((h, index) => {
+            if (index !== columnIndex) {
+                h.style.width = `${initialWidths[index]}px`;
+            }
+        });
 
         // Save the updated column widths
         savePatientColumnWidthPreferences();
@@ -2215,8 +2241,20 @@ function autoSizeColumn(header, columnIndex) {
         maxWidth = Math.max(maxWidth, 100); // Minimum width for readability
     }
 
-    // Apply the calculated width
+    // Apply the calculated width to the target column only
+    const widthDifference = maxWidth - initialWidths[columnIndex];
     header.style.width = `${maxWidth}px`;
+
+    // Adjust the table width to accommodate the change without affecting other columns
+    const newTableWidth = initialTableWidth + widthDifference;
+    table.style.width = `${newTableWidth}px`;
+
+    // Ensure all other columns maintain their exact original widths
+    headers.forEach((h, index) => {
+        if (index !== columnIndex) {
+            h.style.width = `${initialWidths[index]}px`;
+        }
+    });
 
     // Save the updated column widths
     savePatientColumnWidthPreferences();
