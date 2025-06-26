@@ -2047,42 +2047,172 @@ function announceForScreenReader(message) {
     }, 1000);
 }
 
-// Auto-size function for patient columns
+// Enhanced auto-size function that measures actual content width (similar to admin.js)
 function autoSizeColumn(header, columnIndex) {
     const table = document.querySelector('#patientsTable');
     if (!table) return;
+
+    // Store initial widths and table width to prevent redistribution (same as manual resize)
+    const headers = Array.from(table.querySelectorAll('th'));
+    const initialWidths = headers.map((h) => h.offsetWidth);
+    const initialTableWidth = table.offsetWidth;
+
+    // Apply initial widths immediately to prevent layout shift
+    headers.forEach((h, index) => {
+        h.style.width = `${initialWidths[index]}px`;
+    });
+
+    // Set table to fixed layout
+    table.style.tableLayout = 'fixed';
+    table.style.width = `${initialTableWidth}px`;
 
     // Get all cells in this column
     const cells = Array.from(
         table.querySelectorAll(`tbody tr td:nth-child(${columnIndex + 1})`)
     );
 
-    // Simple calculation for patient table
-    const headerText = header.textContent;
-    let maxWidth = Math.max(headerText.length * 8 + 40, 80);
+    // If table is empty, just use header text for sizing
+    if (cells.length === 0) {
+        const headerText = header.textContent;
+        let maxWidth = Math.max(headerText.length * 10 + 40, 100); // Slightly more generous for headers
 
-    // Check cell content for better sizing
+        // Apply column type constraints even for empty tables
+        const columnType = getPatientColumnType(headerText);
+        if (columnType === 'actions') {
+            maxWidth = 110; // Default actions column width for patients
+        }
+
+        header.style.width = `${maxWidth}px`;
+        savePatientColumnWidthPreferences();
+        announceForScreenReader(
+            `Column ${header.textContent.trim()} auto-sized`
+        );
+        return;
+    }
+
+    // Use canvas for accurate text measurement
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+        // Fallback to simple calculation if canvas is not available
+        const headerText = header.textContent;
+        let maxWidth = Math.max(headerText.length * 8 + 40, 80); // Rough estimation
+
+        // Apply the calculated width
+        header.style.width = `${maxWidth}px`;
+
+        // Save the updated column widths
+        savePatientColumnWidthPreferences();
+
+        // Announce the change to screen readers
+        announceForScreenReader(
+            `Column ${header.textContent.trim()} auto-sized`
+        );
+        return;
+    }
+
+    const headerStyle = window.getComputedStyle(header);
+    context.font = `${headerStyle.fontWeight} ${headerStyle.fontSize} ${headerStyle.fontFamily}`;
+
+    // Measure header width
+    let maxWidth = Math.max(
+        context.measureText(header.textContent).width + 40,
+        80
+    ); // Add padding, minimum 80px
+
+    // Measure all cells in the column to find the widest content
     cells.forEach((cell) => {
-        const cellText = cell.textContent.trim();
+        // Get the actual text content from the cell or its children
+        let cellText = '';
+
+        // Handle different cell types properly
+        if (cell.querySelector('.patient-actions')) {
+            // For action cells, measure the actual button content
+            const actionButtons = cell.querySelectorAll('button');
+            let buttonWidths = 0;
+            actionButtons.forEach((btn) => {
+                // Get actual button text and add some padding for button styling
+                const btnText = btn.textContent.trim();
+                const btnWidth = context.measureText(btnText).width + 30; // padding for button styling
+                buttonWidths += btnWidth;
+            });
+            cellText = buttonWidths > 0 ? 'MEASURED_BUTTONS' : 'Edit Delete'; // fallback text
+        } else {
+            // Get the raw text content and clean it
+            cellText = cell.textContent.trim();
+        }
+
         if (cellText) {
-            const cellWidth = cellText.length * 8 + 40; // Rough estimation
+            // Use canvas to measure text width more accurately
+            const cellStyle = window.getComputedStyle(cell);
+            context.font = `${cellStyle.fontWeight} ${cellStyle.fontSize} ${cellStyle.fontFamily}`;
+
+            let cellWidth;
+            if (cellText === 'MEASURED_BUTTONS') {
+                // Use the pre-calculated button widths plus some margin
+                const actionButtons = cell.querySelectorAll('button');
+                cellWidth = 0;
+                actionButtons.forEach((btn) => {
+                    const btnText = btn.textContent.trim();
+                    const btnWidth = context.measureText(btnText).width + 30; // padding for button styling
+                    cellWidth += btnWidth;
+                });
+                cellWidth += actionButtons.length > 1 ? 10 : 0; // gap between buttons
+                cellWidth += 20; // cell padding
+            } else {
+                cellWidth = context.measureText(cellText).width + 40; // Add padding
+            }
+
+            // Find the maximum width needed
             maxWidth = Math.max(maxWidth, cellWidth);
         }
     });
 
-    // Apply constraints for different column types
-    if (headerText.includes('Name')) {
-        maxWidth = Math.min(maxWidth, 250);
-        maxWidth = Math.max(maxWidth, 150);
-    } else if (headerText.includes('Address')) {
-        maxWidth = Math.min(maxWidth, 300);
-        maxWidth = Math.max(maxWidth, 200);
-    } else if (headerText.includes('Phone')) {
-        maxWidth = Math.min(maxWidth, 150);
-        maxWidth = Math.max(maxWidth, 120);
+    // Apply constraints based on column type
+    const columnType = getPatientColumnType(header.textContent);
+
+    if (columnType === 'name') {
+        maxWidth = Math.min(maxWidth, 250); // Name column max width
+        maxWidth = Math.max(maxWidth, 150); // Name column min width
+    } else if (columnType === 'dob') {
+        maxWidth = Math.min(maxWidth, 130); // DOB column max width
+        maxWidth = Math.max(maxWidth, 110); // DOB column min width
+    } else if (columnType === 'phone') {
+        maxWidth = Math.min(maxWidth, 150); // Phone column max width
+        maxWidth = Math.max(maxWidth, 120); // Phone column min width
+    } else if (columnType === 'accepts_texts') {
+        maxWidth = Math.min(maxWidth, 120); // Accepts Texts column max width
+        maxWidth = Math.max(maxWidth, 100); // Accepts Texts column min width
+    } else if (columnType === 'address') {
+        maxWidth = Math.min(maxWidth, 300); // Address column max width
+        maxWidth = Math.max(maxWidth, 200); // Address column min width
+    } else if (columnType === 'date') {
+        maxWidth = Math.min(maxWidth, 150); // Date columns max width
+        maxWidth = Math.max(maxWidth, 120); // Date columns min width
+    } else if (columnType === 'actions') {
+        // Calculate actions column width more precisely based on actual button content
+        const actionCells = table.querySelectorAll(
+            'tbody tr td:nth-child(' + (columnIndex + 1) + ') .patient-actions'
+        );
+        if (actionCells.length > 0) {
+            // Measure actual action buttons
+            const sampleCell = actionCells[0];
+            const buttons = sampleCell.querySelectorAll('button');
+            let totalButtonWidth = 0;
+            buttons.forEach((btn) => {
+                totalButtonWidth += btn.offsetWidth || 70; // fallback width if not measured
+            });
+            totalButtonWidth += buttons.length > 1 ? 10 : 0; // gap between buttons
+            totalButtonWidth += 20; // cell padding
+            maxWidth = Math.max(totalButtonWidth, 100); // minimum 100px
+            maxWidth = Math.min(maxWidth, 160); // maximum 160px to prevent excessive width
+        } else {
+            maxWidth = 110; // default fallback for actions column
+        }
     } else {
-        maxWidth = Math.min(maxWidth, 200);
-        maxWidth = Math.max(maxWidth, 100);
+        maxWidth = Math.min(maxWidth, 300); // General max width
+        maxWidth = Math.max(maxWidth, 100); // Minimum width for readability
     }
 
     // Apply the calculated width
@@ -2093,6 +2223,29 @@ function autoSizeColumn(header, columnIndex) {
 
     // Announce the change to screen readers
     announceForScreenReader(`Column ${header.textContent.trim()} auto-sized`);
+}
+
+// Helper function to determine patient column type
+function getPatientColumnType(headerText) {
+    const text = headerText.toLowerCase().trim();
+
+    if (text.includes('name')) {
+        return 'name';
+    } else if (text.includes('birth') || text.includes('dob')) {
+        return 'dob';
+    } else if (text.includes('phone')) {
+        return 'phone';
+    } else if (text.includes('text')) {
+        return 'accepts_texts';
+    } else if (text.includes('address')) {
+        return 'address';
+    } else if (text.includes('updated') || text.includes('created')) {
+        return 'date';
+    } else if (text.includes('action')) {
+        return 'actions';
+    }
+
+    return 'general';
 }
 
 // Setup edit patient modal functionality

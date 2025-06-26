@@ -402,31 +402,48 @@
    TABLE ACTIONS
    ================================ */
 
-.user-actions {
+.user-actions,
+.patient-actions {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.5rem; /* Reduce gap for more compact layout */
     justify-content: center;
     align-items: center;
     white-space: nowrap; /* Prevent wrapping of action buttons */
-    min-width: 120px; /* Increase minimum width for the actions column */
+    min-width: fit-content; /* Use only the space needed */
+    max-width: 160px; /* Prevent excessive width */
 }
 
-/* Ensure Actions column has enough space for both users and patients tables */
-.users-table th:nth-child(6),
-.users-table td:nth-child(6) {
-    min-width: 130px;
-    text-align: center;
-    padding: 0.5rem 0.75rem;
-}
-
-/* Ensure users table Actions column is fully visible */
-#usersTable th:nth-child(6),
-#usersTable td:nth-child(6) {
-    min-width: 140px !important;
-    width: 140px;
-    text-align: center;
-    padding: 0.5rem 1rem;
+/* Optimize action buttons for compact sizing */
+.user-actions .btn-edit,
+.user-actions .btn-delete,
+.patient-actions .btn-edit,
+.patient-actions .btn-delete {
+    font-size: 14px; /* Slightly smaller font */
+    padding: 0.4rem 0.6rem; /* Reduce padding for compactness */
+    min-width: auto; /* Remove minimum width constraints */
     white-space: nowrap;
+    border-radius: var(--radius-sm);
+    line-height: 1.2;
+}
+
+/* Remove excessive minimum width constraints from Actions columns */
+/* Let Actions columns size themselves based on actual content */
+.users-table th:last-child,
+.users-table td:last-child,
+#patientsTable th:last-child,
+#patientsTable td:last-child {
+    text-align: center;
+    padding: 0.5rem;
+    width: auto; /* Let the column size itself */
+    min-width: 90px; /* Reasonable minimum */
+    max-width: 160px; /* Prevent excessive width */
+}
+
+/* Ensure Actions column content doesn't overflow */
+.users-table th:last-child,
+#patientsTable th:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Add padding to table container to ensure Actions column is fully visible */
@@ -446,13 +463,17 @@
     appearance: none;
 }
 
-/* Table action buttons */
+/* Table action buttons - optimized for compact layout */
 .btn-edit,
 .btn-delete {
-    font-size: 16px;
-    width: 36px;
-    height: 36px;
+    font-size: 14px; /* Smaller, more compact size */
+    padding: 0.4rem 0.6rem; /* Reduce padding */
+    min-width: auto; /* Remove width constraints */
+    height: auto; /* Remove fixed height */
     box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+    border-radius: var(--radius-sm);
+    line-height: 1.2;
 }
 
 .btn-edit:hover {
@@ -465,25 +486,17 @@
     border-color: #f44336;
 }
 
-/* Patient Actions Column */
-.patient-actions {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-}
-
+/* Patient Actions Column - remove redundant styles */
 .btn-icon {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1rem; /* Slightly smaller */
     padding: 0.25rem;
     border-radius: var(--radius-sm);
     transition: background-color 0.2s ease;
-    min-width: 24px;
-    height: 24px;
+    min-width: auto; /* Remove minimum width */
+    height: auto; /* Remove fixed height */
     display: inline-flex;
     align-items: center;
     justify-content: center;

@@ -1873,10 +1873,44 @@ function autoSizeColumn(header, columnIndex) {
     const table = document.querySelector('.users-table');
     if (!table) return;
 
+    // Store initial widths and table width to prevent redistribution (same as manual resize)
+    const headers = Array.from(table.querySelectorAll('th'));
+    const initialWidths = headers.map((h) => h.offsetWidth);
+    const initialTableWidth = table.offsetWidth;
+    const startWidth = header.offsetWidth;
+
+    // Apply initial widths immediately to prevent layout shift
+    headers.forEach((h, index) => {
+        h.style.width = `${initialWidths[index]}px`;
+    });
+
+    // Set table to fixed layout
+    table.style.tableLayout = 'fixed';
+    table.style.width = `${initialTableWidth}px`;
+
     // Get all cells in this column
     const cells = Array.from(
         table.querySelectorAll(`tbody tr td:nth-child(${columnIndex + 1})`)
     );
+
+    // If table is empty, just use header text for sizing
+    if (cells.length === 0) {
+        const headerText = header.textContent;
+        let maxWidth = Math.max(headerText.length * 10 + 40, 100); // Slightly more generous for headers
+
+        // Apply column type constraints even for empty tables
+        const columnType = getAdminColumnType(headerText);
+        if (columnType === 'actions') {
+            maxWidth = 120; // Default actions column width
+        }
+
+        header.style.width = `${maxWidth}px`;
+        saveColumnWidthPreferences();
+        announceForScreenReader(
+            `Column ${header.textContent.trim()} auto-sized`
+        );
+        return;
+    }
 
     // Use canvas for accurate text measurement
     const canvas = document.createElement('canvas');
@@ -1916,8 +1950,17 @@ function autoSizeColumn(header, columnIndex) {
         if (cell.querySelector('.user-full-name')) {
             cellText = cell.querySelector('.user-full-name').textContent.trim();
         } else if (cell.querySelector('.user-actions')) {
-            // For action cells, measure the actual button content
-            cellText = '✏️ Edit Role 🗑️ Delete'; // More accurate representation
+            // For action cells, measure the actual button content more accurately
+            const actionButtons = cell.querySelectorAll('button');
+            let buttonWidths = 0;
+            actionButtons.forEach((btn) => {
+                // Get actual button text and add some padding for button styling
+                const btnText = btn.textContent.trim();
+                const btnWidth = context.measureText(btnText).width + 30; // padding for button styling
+                buttonWidths += btnWidth;
+            });
+            cellText =
+                buttonWidths > 0 ? 'MEASURED_BUTTONS' : 'Edit Role Delete'; // fallback text
         } else {
             // Get the raw text content and clean it
             cellText = cell.textContent.trim();
@@ -1927,7 +1970,22 @@ function autoSizeColumn(header, columnIndex) {
             // Use canvas to measure text width more accurately
             const cellStyle = window.getComputedStyle(cell);
             context.font = `${cellStyle.fontWeight} ${cellStyle.fontSize} ${cellStyle.fontFamily}`;
-            const cellWidth = context.measureText(cellText).width + 40; // Add padding
+
+            let cellWidth;
+            if (cellText === 'MEASURED_BUTTONS') {
+                // Use the pre-calculated button widths plus some margin
+                const actionButtons = cell.querySelectorAll('button');
+                cellWidth = 0;
+                actionButtons.forEach((btn) => {
+                    const btnText = btn.textContent.trim();
+                    const btnWidth = context.measureText(btnText).width + 30; // padding for button styling
+                    cellWidth += btnWidth;
+                });
+                cellWidth += actionButtons.length > 1 ? 10 : 0; // gap between buttons
+                cellWidth += 20; // cell padding
+            } else {
+                cellWidth = context.measureText(cellText).width + 40; // Add padding
+            }
 
             // Find the maximum width needed
             maxWidth = Math.max(maxWidth, cellWidth);
@@ -1953,7 +2011,25 @@ function autoSizeColumn(header, columnIndex) {
         maxWidth = Math.min(maxWidth, 150); // Created column max width
         maxWidth = Math.max(maxWidth, 100); // Created column min width
     } else if (columnType === 'actions') {
-        maxWidth = 140; // Actions column fixed width
+        // Calculate actions column width more precisely based on actual button content
+        const actionCells = table.querySelectorAll(
+            'tbody tr td:nth-child(' + (columnIndex + 1) + ') .user-actions'
+        );
+        if (actionCells.length > 0) {
+            // Measure actual action buttons
+            const sampleCell = actionCells[0];
+            const buttons = sampleCell.querySelectorAll('button');
+            let totalButtonWidth = 0;
+            buttons.forEach((btn) => {
+                totalButtonWidth += btn.offsetWidth || 80; // fallback width if not measured
+            });
+            totalButtonWidth += buttons.length > 1 ? 10 : 0; // gap between buttons
+            totalButtonWidth += 20; // cell padding
+            maxWidth = Math.max(totalButtonWidth, 100); // minimum 100px
+            maxWidth = Math.min(maxWidth, 180); // maximum 180px to prevent excessive width
+        } else {
+            maxWidth = 120; // default fallback for actions column
+        }
     } else {
         maxWidth = Math.min(maxWidth, 300); // General max width
         maxWidth = Math.max(maxWidth, 100); // Minimum width for readability
