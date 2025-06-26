@@ -19,6 +19,20 @@
 /* User filter inputs inherit unified styling from forms.css */
 
 /* ================================
+   TABLE-SPECIFIC SIZING
+   ================================ */
+
+/* Sessions table specific styling - needs more width for 8 columns */
+#sessionsTable {
+    min-width: 1400px; /* Wider for 8 columns: User, Status, Login Time, Last Activity, Logout Time, IP Address, Browser, Actions */
+}
+
+/* Patients table specific styling - adequate for 6 columns */
+#patientsTable {
+    min-width: 1000px; /* Adequate for 6 columns: Patient ID, Name, DOB, Phone, Email, Actions */
+}
+
+/* ================================
    RESIZABLE COLUMNS
    ================================ */
 
@@ -224,7 +238,7 @@
     font-size: 0.9rem;
     table-layout: auto; /* Change to auto to allow proper column sizing */
     display: table;
-    min-width: 850px; /* Ensure table is wide enough for all 6 columns */
+    min-width: 1200px; /* Ensure table is wide enough for all 8 columns in sessions table */
 }
 
 .users-table thead {

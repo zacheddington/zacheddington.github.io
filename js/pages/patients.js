@@ -132,17 +132,23 @@ async function initializeManagePatientsPage() {
         setupPatientFilter();
     } catch (error) {
         console.error('Failed to setup patient filter');
-    } // Setup edit patient modal
+    }
+
+    // Setup edit patient modal
     setupEditPatientModal();
 
     // Setup delete patient modal
-    setupDeletePatientModal(); // Apply column preferences or auto-size if no preferences exist
+    setupDeletePatientModal();
+
+    // Apply column preferences or auto-size if no preferences exist
     try {
         loadPatientColumnWidthPreferences();
     } catch (e) {
         console.error('Error loading patient column preferences');
         adjustPatientColumnWidths();
-    } // Add event listener for window resize to adjust column widths
+    }
+
+    // Add event listener for window resize to adjust column widths
     window.addEventListener(
         'resize',
         debounce(function () {
@@ -2110,4 +2116,21 @@ function setupDeletePatientModal() {
             }
         });
     }
+}
+
+// Export functions for global access
+window.patientsPage = {
+    initializePatientsPage,
+    loadPatients,
+    displayPatients,
+    setupEditPatientModal,
+    setupDeletePatientModal,
+    savePatientColumnWidthPreferences,
+    adjustPatientColumnWidths,
+    addPatientColumnResizeHandles,
+};
+
+// Export for module systems
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = window.patientsPage;
 }
