@@ -1754,6 +1754,24 @@ function loadPatientColumnWidthPreferences() {
     }
 }
 
+// Save patient table column width preferences to localStorage
+function savePatientColumnWidthPreferences() {
+    try {
+        const table = document.querySelector('#patientsTable');
+        if (!table) return;
+
+        const headers = Array.from(table.querySelectorAll('th'));
+        const widths = headers.map((header) => header.style.width);
+
+        localStorage.setItem(
+            'patientTableColumnWidths',
+            JSON.stringify(widths)
+        );
+    } catch (error) {
+        console.error('Error saving patient column preferences:', error);
+    }
+}
+
 // Adjust patient table column widths automatically
 function adjustPatientColumnWidths() {
     const table = document.querySelector('#patientsTable');
@@ -2036,19 +2054,60 @@ function autoSizeColumn(header, columnIndex) {
     announceForScreenReader(`Column ${header.textContent.trim()} auto-sized`);
 }
 
-// Make functions available globally
-window.patientsPage = {
-    initializePatientsPage,
-    loadPatients,
-    createPatient,
-    editPatient,
-    deletePatient,
-    handleEditPatientSubmit,
-    closeEditPatientModal,
-    closeDeletePatientModal,
-};
+// Setup edit patient modal functionality
+function setupEditPatientModal() {
+    const modal = document.getElementById('editPatientModal');
+    const closeBtn = document.querySelector('#editPatientModal .close');
+    const cancelBtn = document.getElementById('cancelEditPatient');
+    const form = document.getElementById('editPatientForm');
 
-// Export for module systems
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = window.patientsPage;
+    // Close modal when clicking X button
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeEditPatientModal);
+    }
+
+    // Close modal when clicking Cancel button
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeEditPatientModal);
+    }
+
+    // Close modal when clicking outside of it
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                closeEditPatientModal();
+            }
+        });
+    }
+
+    // Handle form submission
+    if (form) {
+        form.addEventListener('submit', handleEditPatientSubmit);
+    }
+}
+
+// Setup delete patient modal functionality
+function setupDeletePatientModal() {
+    const modal = document.getElementById('deletePatientModal');
+    const closeBtn = document.querySelector('#deletePatientModal .close');
+    const cancelBtn = document.getElementById('cancelDeletePatient');
+
+    // Close modal when clicking X button
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeDeletePatientModal);
+    }
+
+    // Close modal when clicking Cancel button
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeDeletePatientModal);
+    }
+
+    // Close modal when clicking outside of it
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) {
+                closeDeletePatientModal();
+            }
+        });
+    }
 }
