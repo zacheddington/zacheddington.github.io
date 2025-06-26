@@ -654,34 +654,17 @@
     }
 }
 
-/* Enhanced scrolling for wide tables */
-.users-table-container:has(#sessionsTable) .table-responsive {
-    /* Special handling for sessions table with 8 columns */
-    max-width: 100%;
-    overflow-x: auto;
-    scrollbar-width: auto;
-    scrollbar-color: var(--color-primary-light) var(--color-background);
+/* Enhanced table resizing behavior */
+.users-table.resizing {
+    /* Maintain table layout during resize */
+    table-layout: fixed !important;
+    width: auto !important;
+    min-width: max-content;
 }
 
-.users-table-container:has(#sessionsTable)
-    .table-responsive::-webkit-scrollbar {
-    height: 12px;
-}
-
-.users-table-container:has(#sessionsTable)
-    .table-responsive::-webkit-scrollbar-track {
-    background: var(--color-background);
-    border-radius: 6px;
-}
-
-.users-table-container:has(#sessionsTable)
-    .table-responsive::-webkit-scrollbar-thumb {
-    background: var(--color-primary-light);
-    border-radius: 6px;
-    border: 2px solid var(--color-background);
-}
-
-.users-table-container:has(#sessionsTable)
-    .table-responsive::-webkit-scrollbar-thumb:hover {
-    background: var(--color-primary);
+.users-table.resizing th {
+    /* Prevent column width changes during resize */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

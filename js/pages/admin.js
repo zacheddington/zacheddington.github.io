@@ -1694,6 +1694,11 @@ function startColumnResize(event, header, columnIndex) {
     const startWidth = header.offsetWidth;
     const handle = event.target;
 
+    // Store initial widths and table width to prevent redistribution
+    const headers = Array.from(table.querySelectorAll('th'));
+    const initialWidths = headers.map((h) => h.offsetWidth);
+    const initialTableWidth = table.offsetWidth;
+
     let isResizing = false; // Track if we're actually resizing
     const RESIZE_THRESHOLD = 3; // Minimum pixels to move before starting resize
 
@@ -1701,7 +1706,12 @@ function startColumnResize(event, header, columnIndex) {
     handle.setAttribute('aria-valuenow', startWidth); // Add resizing class to table
     table.classList.add('resizing');
     // Mark the handle as active
-    handle.classList.add('active'); // Function to handle mouse/touch movement during resize
+    handle.classList.add('active');
+
+    // Set table to fixed layout
+    table.style.tableLayout = 'fixed';
+
+    // Function to handle mouse/touch movement during resize
     function handlePointerMove(e) {
         // Get pageX for calculations
         const pageX =
@@ -1723,11 +1733,25 @@ function startColumnResize(event, header, columnIndex) {
         // Calculate new width immediately for responsive feedback
         const actualDeltaX = pageX - startX;
         const newWidth = Math.max(80, Math.min(500, startWidth + actualDeltaX));
+        const widthChange = newWidth - startWidth;
 
         // Use requestAnimationFrame for smooth updates
         if (!handlePointerMove.rafId) {
             handlePointerMove.rafId = requestAnimationFrame(() => {
+                // Apply new width to the resizing column
                 header.style.width = `${newWidth}px`;
+
+                // Adjust table width to accommodate the change
+                const newTableWidth = initialTableWidth + widthChange;
+                table.style.width = `${newTableWidth}px`;
+
+                // Ensure all other columns maintain their original widths
+                headers.forEach((h, index) => {
+                    if (index !== columnIndex) {
+                        h.style.width = `${initialWidths[index]}px`;
+                    }
+                });
+
                 handlePointerMove.rafId = null;
             });
         }
@@ -1770,8 +1794,21 @@ function startColumnResize(event, header, columnIndex) {
                 Math.min(500, startWidth + (pageX - startX))
             ); // Min 80px, Max 500px
 
+            const widthChange = newWidth - startWidth;
+
             // Apply the final width immediately
             header.style.width = `${newWidth}px`;
+
+            // Adjust table width to accommodate the change
+            const newTableWidth = initialTableWidth + widthChange;
+            table.style.width = `${newTableWidth}px`;
+
+            // Ensure all other columns maintain their widths
+            headers.forEach((h, index) => {
+                if (index !== columnIndex) {
+                    h.style.width = `${initialWidths[index]}px`;
+                }
+            });
 
             // Update ARIA value for accessibility
             handle.setAttribute('aria-valuenow', newWidth);
