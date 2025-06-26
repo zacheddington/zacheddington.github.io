@@ -1912,6 +1912,18 @@ function startColumnResize(event, header, columnIndex) {
     const initialWidths = headers.map((h) => h.offsetWidth);
     const initialTableWidth = table.offsetWidth;
 
+    // Apply initial widths immediately to prevent layout shift
+    headers.forEach((h, index) => {
+        h.style.width = `${initialWidths[index]}px`;
+    });
+
+    // Set table to fixed layout AFTER setting initial widths
+    table.style.tableLayout = 'fixed';
+    table.style.width = `${initialTableWidth}px`;
+
+    // Force a layout reflow to stabilize the table
+    table.offsetHeight; // This forces a reflow
+
     // Update ARIA attributes for accessibility
     handle.setAttribute('aria-valuenow', startWidth);
 
@@ -1920,9 +1932,6 @@ function startColumnResize(event, header, columnIndex) {
 
     // Mark the handle as active
     handle.classList.add('active');
-
-    // Set table to fixed layout to maintain column independence
-    table.style.tableLayout = 'fixed';
 
     // Function to handle mouse/touch movement during resize
     function handlePointerMove(e) {
