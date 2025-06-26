@@ -1215,12 +1215,11 @@ function displayPatients(patients) {
             th.style.minWidth = '';
         });
     } // Adjust column widths after rendering
-    setTimeout(adjustPatientColumnWidths, 100);
-
-    // Add column resize tooltips
+    setTimeout(adjustPatientColumnWidths, 100); // Add column resize tooltips
     addColumnResizeTooltips();
 
     // Add column resize handles after rendering the table
+    console.log('🔧 Adding column resize handles for patients table');
     addPatientColumnResizeHandles();
 }
 
@@ -1794,9 +1793,17 @@ function adjustPatientColumnWidths() {
 // Add column resize handles to patient table
 function addPatientColumnResizeHandles() {
     const table = document.querySelector('#patientsTable');
-    if (!table) return;
+    console.log(
+        '🔍 Looking for patients table with #patientsTable selector:',
+        table
+    );
+    if (!table) {
+        console.error('❌ No patients table found with #patientsTable id');
+        return;
+    }
 
     const headers = Array.from(table.querySelectorAll('th'));
+    console.log('📋 Found patient headers:', headers.length);
 
     // Remove any existing resize handles
     document.querySelectorAll('.column-resize-handle').forEach((handle) => {

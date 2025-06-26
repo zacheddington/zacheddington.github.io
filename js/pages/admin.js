@@ -1566,9 +1566,14 @@ function updateCreateUserSubmitButton() {
 // Function to add resize handles to table columns
 function addColumnResizeHandles() {
     const table = document.querySelector('.users-table');
-    if (!table) return;
+    console.log('🔍 Looking for table with .users-table selector:', table);
+    if (!table) {
+        console.error('❌ No table found with .users-table class');
+        return;
+    }
 
     const headers = Array.from(table.querySelectorAll('th'));
+    console.log('📋 Found headers:', headers.length);
 
     // Remove any existing resize handles
     document.querySelectorAll('.column-resize-handle').forEach((handle) => {
@@ -1909,42 +1914,6 @@ function loadColumnWidthPreferences() {
     }
 }
 
-// Function to determine the column type based on header text
-function getAdminColumnType(headerText) {
-    headerText = headerText.toLowerCase();
-
-    if (headerText.includes('username')) {
-        return 'username';
-    } else if (headerText.includes('name')) {
-        return 'name';
-    } else if (headerText.includes('email')) {
-        return 'email';
-    } else if (headerText.includes('role')) {
-        return 'role';
-    } else if (headerText.includes('created')) {
-        return 'created';
-    } else if (headerText.includes('action')) {
-        return 'actions';
-    }
-    return 'general';
-}
-
-// Make admin functions available globally
-window.adminPage = {
-    initializeAdminPage,
-    setupAdminNavigation,
-    loadUsers,
-    editUserRole,
-    deleteUser,
-    initializeSessionManagement,
-    loadAllSessions,
-    filterSessions,
-    revokeSession,
-    revokeAllUserSessions,
-    forceLogoutUser,
-    cleanupExpiredSessions,
-};
-
 // Session Management Functions
 // ============================
 
@@ -1956,12 +1925,27 @@ let currentSessionSort = { column: null, direction: null };
 // Initialize session management
 async function initializeSessionManagement() {
     try {
+        // Load session column preferences
+        loadSessionColumnPreferences();
+
         // Load all sessions
         await loadAllSessions();
 
         // Setup session filters
-        setupSessionFilters(); // Setup session actions
+        setupSessionFilters();
+
+        // Setup session actions
         setupSessionActions();
+
+        // Setup window resize handler for sessions
+        window.addEventListener('resize', () => {
+            adjustSessionColumnWidths();
+        });
+
+        // Initial column width adjustment
+        setTimeout(() => {
+            adjustSessionColumnWidths();
+        }, 100);
     } catch (error) {
         console.error('Error initializing session management:', error);
         if (window.modalManager) {
@@ -2239,7 +2223,10 @@ function displaySessions(sessions) {
     tbody.innerHTML = finalHtml;
 
     // Add column resize handles after rendering the table
-    addColumnResizeHandles();
+    setTimeout(() => {
+        console.log('🔧 Adding column resize handles for sessions table');
+        addColumnResizeHandles();
+    }, 100);
 }
 
 // Setup session action handlers
@@ -2521,6 +2508,82 @@ function setSessionActionLoading(sessionId, isLoading) {
             btn.style.opacity = '1';
             btn.textContent = 'Revoke';
         });
+    }
+}
+
+// Session Column Width Management Functions
+
+// Load session column preferences from localStorage
+function loadSessionColumnPreferences() {
+    try {
+        const savedPrefs = localStorage.getItem('sessionColumnPreferences');
+        if (savedPrefs) {
+            const prefs = JSON.parse(savedPrefs);
+            applySessionColumnWidths(prefs);
+        }
+    } catch (error) {
+        console.error('Error loading session column preferences:', error);
+    }
+}
+
+// Save session column preferences to localStorage
+function saveSessionColumnPreferences() {
+    try {
+        const table = document.querySelector('.users-table, .sessions-table');
+        if (!table) return;
+
+        const headers = table.querySelectorAll('th');
+        const prefs = {};
+
+        headers.forEach((th, index) => {
+            const width = th.style.width || th.offsetWidth + 'px';
+            prefs[`column_${index}`] = width;
+        });
+
+        localStorage.setItem('sessionColumnPreferences', JSON.stringify(prefs));
+    } catch (error) {
+        console.error('Error saving session column preferences:', error);
+    }
+}
+
+// Apply session column widths from preferences
+function applySessionColumnWidths(prefs) {
+    try {
+        const table = document.querySelector('.users-table, .sessions-table');
+        if (!table) return;
+
+        const headers = table.querySelectorAll('th');
+
+        headers.forEach((th, index) => {
+            const prefKey = `column_${index}`;
+            if (prefs[prefKey]) {
+                th.style.width = prefs[prefKey];
+            }
+        });
+    } catch (error) {
+        console.error('Error applying session column widths:', error);
+    }
+}
+
+// Adjust session column widths and setup resize functionality
+function adjustSessionColumnWidths() {
+    try {
+        const table = document.querySelector('.users-table, .sessions-table');
+        if (!table) return;
+
+        // Ensure table layout is set correctly
+        table.style.tableLayout = 'fixed';
+        table.style.width = '100%';
+
+        // Add column resize handles
+        addColumnResizeHandles();
+
+        // Save current widths
+        setTimeout(() => {
+            saveSessionColumnPreferences();
+        }, 100);
+    } catch (error) {
+        console.error('Error adjusting session column widths:', error);
     }
 }
 
