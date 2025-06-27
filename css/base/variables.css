@@ -30,6 +30,9 @@
     --color-info-dark: #138496;
     /* Neutral Colors */
     --color-white: #ffffff;
+    --color-text: #333333; /* Main text color */
+    --color-text-light: #666666; /* Secondary text color */
+    --color-text-muted: #999999; /* Muted text color */
     --color-gray-50: #f8f9fa;
     --color-gray-100: #f7fafc;
     --color-gray-200: #e0e0e0;

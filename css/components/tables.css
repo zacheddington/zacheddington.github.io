@@ -365,8 +365,25 @@
     white-space: nowrap; /* Prevent text from wrapping */
     text-overflow: ellipsis; /* Show ... when text overflows */
     overflow: hidden; /* Hide overflow content */
-    max-width: 0; /* Required for text-overflow to work with table cells */
+    /* max-width: 0; REMOVED - This was causing invisible text */
     position: relative; /* For hover effect */
+    color: var(--color-text, #333); /* Ensure text color is visible */
+    min-width: 80px; /* Ensure minimum cell width */
+}
+
+/* Specific table styling overrides to ensure visibility */
+#patientsTable td,
+#sessionsTable td {
+    color: #333 !important; /* Force text to be visible */
+    background-color: transparent !important; /* Ensure background doesn't hide text */
+    max-width: none !important; /* Override any max-width that might hide content */
+    width: auto !important; /* Allow natural width */
+}
+
+/* Make sure text content is visible */
+#patientsTable td *,
+#sessionsTable td * {
+    color: inherit !important;
 }
 
 /* Specific column behavior */

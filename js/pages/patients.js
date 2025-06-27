@@ -167,11 +167,11 @@ async function initializeManagePatientsPage() {
                     (width >= 768 && window.lastPatientWidth < 768)
                 ) {
                     // We've crossed a responsive breakpoint, adjust columns
-                    window.tableUtils.adjustTableColumnWidths('.users-table');
+                    window.tableUtils.adjustTableColumnWidths('#patientsTable');
                     // Re-add resize handles after adjustment
                     setTimeout(() => {
                         window.tableUtils.addTableColumnResizeHandles(
-                            '.users-table',
+                            '#patientsTable',
                             'patientsTableColumnWidths'
                         );
                     }, 100);
@@ -1148,14 +1148,7 @@ function displayPatients(patients) {
         '✅ Set patientsTableBody.innerHTML, tbody now contains:',
         patientsTableBody.children.length,
         'rows'
-    );
-    
-    // Manual test - add a simple row to verify DOM manipulation works
-    console.log('🧪 Manual test: Adding a test row to patients table');
-    const testRow = document.createElement('tr');
-    testRow.innerHTML = '<td colspan="8" style="background: yellow; color: black; font-weight: bold;">TEST ROW - PATIENTS TABLE RENDERING WORKS</td>';
-    patientsTableBody.appendChild(testRow);
-    console.log('🧪 Test row added, patientsTableBody now contains:', patientsTableBody.children.length, 'rows'); // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE
+    ); // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE
     const table = document.getElementById('patientsTable');
     if (table) {
         // Set table layout to fixed for column resizing to work
