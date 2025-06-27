@@ -24,7 +24,7 @@ const config = require('../config/environment');
 // Setup 2FA - Generate secret and QR code
 router.post('/2fa/setup', authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user.userId;
         const username = req.user.username;
 
         if (config.isLocalTest) {
@@ -87,7 +87,7 @@ router.post(
     async (req, res) => {
         try {
             const { token } = req.body;
-            const userId = req.user.id;
+            const userId = req.user.userId;
 
             if (config.isLocalTest) {
                 // For local testing, accept token '123456'
@@ -178,7 +178,7 @@ router.post(
     async (req, res) => {
         try {
             const { password } = req.body;
-            const userId = req.user.id;
+            const userId = req.user.userId;
 
             if (config.isLocalTest) {
                 // For local testing, accept password 'admin'
@@ -238,9 +238,9 @@ router.post(
 
 // Get 2FA status
 router.get('/2fa/status', authenticateToken, async (req, res) => {
-    console.log('🔍 2FA status route hit - User ID:', req.user?.id);
+    console.log('🔍 2FA status route hit - User ID:', req.user?.userId);
     try {
-        const userId = req.user.id;
+        const userId = req.user.userId;
 
         if (config.isLocalTest) {
             // For local testing, return status

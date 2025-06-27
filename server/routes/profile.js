@@ -25,9 +25,9 @@ const config = require('../config/environment');
 
 // Get user profile endpoint
 router.get('/user/profile', authenticateToken, async (req, res) => {
-    console.log('🔍 Profile route hit - User ID:', req.user?.id);
+    console.log('🔍 Profile route hit - User ID:', req.user?.userId);
     try {
-        const userId = req.user.id;
+        const userId = req.user.userId;
         if (config.isLocalTest) {
             // For local testing, return mock data
             return successResponse(
@@ -117,7 +117,7 @@ router.put(
     async (req, res) => {
         try {
             const { firstName, middleName, lastName, email } = req.body;
-            const userId = req.user.id;
+            const userId = req.user.userId;
 
             if (config.isLocalTest) {
                 // For local testing, just return success
@@ -214,7 +214,7 @@ router.put(
     async (req, res) => {
         try {
             const { currentPassword, newPassword } = req.body;
-            const userId = req.user.id;
+            const userId = req.user.userId;
 
             // Validate password security
             const passwordValidation = validatePasswordSecurity(newPassword);
@@ -328,7 +328,7 @@ router.put(
     async (req, res) => {
         try {
             const { newPassword } = req.body;
-            const userId = req.user.id;
+            const userId = req.user.userId;
 
             // Validate password security
             const passwordValidation = validatePasswordSecurity(newPassword);
