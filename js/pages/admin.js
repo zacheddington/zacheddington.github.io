@@ -72,40 +72,12 @@ function initializeManageUsersPage() {
 
     setupUserFilter();
 
-    // Apply column preferences or auto-size if no preferences exist
-    try {
-        loadColumnWidthPreferences();
-    } catch (e) {
-        // Error loading column preferences
-        adjustColumnWidths();
-    } // Add event listener for window resize to adjust column widths
-    window.addEventListener(
-        'resize',
-        debounce(function () {
-            // Only auto-adjust if no saved preferences
-            if (!localStorage.getItem('userTableColumnWidths')) {
-                adjustColumnWidths();
-            } else {
-                // For responsive tables, check if we've crossed a breakpoint
-                const width = window.innerWidth;
-                if (
-                    !window.lastWidth ||
-                    (width < 480 && window.lastWidth >= 480) ||
-                    (width >= 480 &&
-                        width < 768 &&
-                        (window.lastWidth < 480 || window.lastWidth >= 768)) ||
-                    (width >= 768 && window.lastWidth < 768)
-                ) {
-                    // We've crossed a responsive breakpoint, adjust columns
-                    adjustColumnWidths();
-                } else {
-                    // Just refresh resize handles
-                    addColumnResizeHandles();
-                }
-            }
-            window.lastWidth = window.innerWidth;
-        }, 250)
-    );
+    // Initialize table formatting and resizing using unified utilities
+    window.tableUtils.initializeTableFormatting({
+        tableSelector: '.users-table',
+        storageKey: 'userTableColumnWidths',
+        getColumnType: getAdminColumnType,
+    });
 
     // Manage users page initialized
 }
@@ -1068,8 +1040,14 @@ function displayUsers(users) {
         })
         .join('');
 
-    // Adjust column widths after rendering
-    setTimeout(adjustColumnWidths, 100);
+    // Add resize handles after rendering table content
+    setTimeout(() => {
+        window.tableUtils.addTableColumnResizeHandles(
+            '.users-table',
+            'userTableColumnWidths',
+            getAdminColumnType
+        );
+    }, 100);
 }
 
 // Display users in the table while preserving column widths
@@ -1235,7 +1213,11 @@ function displayUsersPreserveWidths(users, columnWidths = []) {
     }
 
     // Add column resize handles
-    addColumnResizeHandles();
+    window.tableUtils.addTableColumnResizeHandles(
+        '.users-table',
+        'userTableColumnWidths',
+        getAdminColumnType
+    );
 }
 
 // Filter users
@@ -2135,8 +2117,12 @@ let currentSessionSort = { column: null, direction: null };
 // Initialize session management
 async function initializeSessionManagement() {
     try {
-        // Load session column preferences
-        loadSessionColumnPreferences();
+        // Initialize table formatting and resizing using unified utilities
+        window.tableUtils.initializeTableFormatting({
+            tableSelector: '.users-table',
+            storageKey: 'sessionTableColumnWidths',
+            getColumnType: getAdminColumnType,
+        });
 
         // Load all sessions
         await loadAllSessions();
@@ -2146,16 +2132,6 @@ async function initializeSessionManagement() {
 
         // Setup session actions
         setupSessionActions();
-
-        // Setup window resize handler for sessions
-        window.addEventListener('resize', () => {
-            adjustSessionColumnWidths();
-        });
-
-        // Initial column width adjustment
-        setTimeout(() => {
-            adjustSessionColumnWidths();
-        }, 100);
     } catch (error) {
         console.error('Error initializing session management:', error);
         if (window.modalManager) {
@@ -2368,7 +2344,11 @@ function displaySessions(sessions) {
         table.style.width = '100%';
     } // Add column resize handles after rendering the table
     setTimeout(() => {
-        addColumnResizeHandles();
+        window.tableUtils.addTableColumnResizeHandles(
+            '.users-table',
+            'sessionTableColumnWidths',
+            getAdminColumnType
+        );
     }, 100);
 }
 

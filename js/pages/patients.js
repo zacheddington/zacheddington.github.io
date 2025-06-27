@@ -140,13 +140,12 @@ async function initializeManagePatientsPage() {
     // Setup delete patient modal
     setupDeletePatientModal();
 
-    // Apply column preferences or auto-size if no preferences exist
-    try {
-        loadPatientColumnWidthPreferences();
-    } catch (e) {
-        console.error('Error loading patient column preferences');
-        adjustPatientColumnWidths();
-    }
+    // Initialize table formatting and resizing using unified utilities
+    window.tableUtils.initializeTableFormatting({
+        tableSelector: '.users-table',
+        storageKey: 'patientsTableColumnWidths',
+        getColumnType: window.tableUtils.getDefaultColumnType,
+    });
 
     // Add event listener for window resize to adjust column widths
     window.addEventListener(
@@ -1053,7 +1052,8 @@ function displayPatients(patients) {
     if (tableContainer) {
         tableContainer.scrollLeft = 0;
     } // Make sure tooltips are added to column headers
-    addColumnResizeTooltips(); // Update the table body with new data
+    // (Tooltips are now handled by the unified table utilities)
+    // Update the table body with new data
     const htmlRows = patients
         .map((patient, index) => {
             const fullName = patient.middle_name
@@ -1137,11 +1137,13 @@ function displayPatients(patients) {
         table.style.display = 'none';
         table.offsetHeight; // Force reflow
         table.style.display = 'table';
-    } // Adjust column widths after rendering    // Adjust column widths after rendering
-    setTimeout(adjustPatientColumnWidths, 100);
-
-    // Add column resize tooltips
-    addColumnResizeTooltips();
+    } // Add resize handles after rendering table content
+    setTimeout(() => {
+        window.tableUtils.addTableColumnResizeHandles(
+            '.users-table',
+            'patientsTableColumnWidths'
+        );
+    }, 100);
 }
 
 // Display patients in the table while preserving column widths
@@ -1264,9 +1266,11 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
         });
     }
 
-    // Add column resize handles and tooltips
-    addPatientColumnResizeHandles();
-    addColumnResizeTooltips();
+    // Add column resize handles
+    window.tableUtils.addTableColumnResizeHandles(
+        '.users-table',
+        'patientsTableColumnWidths'
+    );
 }
 
 // Function to add tooltips to column headers to indicate they can be resized

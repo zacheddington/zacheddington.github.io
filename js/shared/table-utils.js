@@ -155,12 +155,600 @@ function sortTableData(data, sortConfig, getValueForSort) {
     });
 }
 
+// ============================================================================
+// TABLE FORMATTING AND RESIZING UTILITIES
+// ============================================================================
+
+/**
+ * Initialize table formatting and resizing for a given table
+ * @param {Object} config - Configuration object
+ * @param {string} config.tableSelector - CSS selector for the table (e.g., '.users-table', '#patientsTable')
+ * @param {string} config.storageKey - LocalStorage key for saving column preferences (e.g., 'userTableColumnWidths')
+ * @param {Function} config.getColumnType - Function to determine column type from header text
+ */
+function initializeTableFormatting(config) {
+    const { tableSelector, storageKey, getColumnType } = config;
+
+    const table = document.querySelector(tableSelector);
+    if (!table) {
+        console.warn(`Table not found with selector: ${tableSelector}`);
+        return;
+    }
+
+    // Load column preferences or apply auto-sizing
+    loadTableColumnWidthPreferences(tableSelector, storageKey);
+
+    // Add resize handles
+    addTableColumnResizeHandles(tableSelector, storageKey, getColumnType);
+
+    // Setup responsive resize handler
+    setupTableResponsiveResize(tableSelector, storageKey);
+}
+
+/**
+ * Adjust column widths for a table using auto-sizing
+ * @param {string} tableSelector - CSS selector for the table
+ */
+function adjustTableColumnWidths(tableSelector) {
+    const table = document.querySelector(tableSelector);
+    if (!table) return;
+
+    // Use auto layout to allow table to expand beyond container width
+    table.style.tableLayout = 'auto';
+    table.style.minWidth = 'max-content'; // Allow table to expand as needed
+}
+
+/**
+ * Simple debounce function to limit how often a function is called
+ * @param {Function} func - Function to debounce
+ * @param {number} wait - Wait time in milliseconds
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+/**
+ * Get the column type based on header text for appropriate sizing constraints
+ * @param {string} headerText - The header text to analyze
+ * @returns {string} The column type
+ */
+function getDefaultColumnType(headerText) {
+    const header = headerText.toLowerCase().trim();
+
+    if (header.includes('email')) {
+        return 'email';
+    } else if (header.includes('username') || header.includes('user')) {
+        return 'username';
+    } else if (header.includes('name') || header.includes('full name')) {
+        return 'name';
+    } else if (header.includes('role')) {
+        return 'role';
+    } else if (header.includes('created') || header.includes('date')) {
+        return 'created';
+    } else if (header.includes('action')) {
+        return 'actions';
+    } else if (header.includes('status')) {
+        return 'status';
+    } else if (header.includes('login') || header.includes('activity')) {
+        return 'datetime';
+    } else if (header.includes('ip') || header.includes('address')) {
+        return 'ip';
+    } else if (header.includes('browser')) {
+        return 'browser';
+    } else if (header.includes('phone') || header.includes('contact')) {
+        return 'phone';
+    } else if (header.includes('mrn') || header.includes('id')) {
+        return 'id';
+    } else if (header.includes('birth') || header.includes('dob')) {
+        return 'date';
+    } else {
+        return 'general';
+    }
+}
+
+/**
+ * Function to announce changes to screen readers
+ * @param {string} message - Message to announce
+ */
+function announceForScreenReader(message) {
+    const announcement = document.createElement('div');
+    announcement.setAttribute('aria-live', 'polite');
+    announcement.setAttribute('aria-atomic', 'true');
+    announcement.classList.add('sr-only'); // Screen reader only
+    announcement.textContent = message;
+    document.body.appendChild(announcement);
+
+    // Remove after announcement is made
+    setTimeout(() => {
+        document.body.removeChild(announcement);
+    }, 1000);
+}
+
+/**
+ * Add resize handles to table columns
+ * @param {string} tableSelector - CSS selector for the table
+ * @param {string} storageKey - LocalStorage key for saving preferences
+ * @param {Function} getColumnType - Function to determine column type
+ */
+function addTableColumnResizeHandles(
+    tableSelector,
+    storageKey,
+    getColumnType = getDefaultColumnType
+) {
+    const table = document.querySelector(tableSelector);
+    if (!table) {
+        console.error(`❌ No table found with selector: ${tableSelector}`);
+        return;
+    }
+
+    const headers = Array.from(table.querySelectorAll('th'));
+
+    // Remove any existing resize handles
+    document.querySelectorAll('.column-resize-handle').forEach((handle) => {
+        handle.remove();
+    });
+
+    // Add resize handle to each header except the last one (actions column)
+    headers.forEach((header, index) => {
+        if (index < headers.length - 1) {
+            // Skip last column (actions)
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'column-resize-handle';
+            resizeHandle.setAttribute('role', 'separator');
+            resizeHandle.setAttribute('aria-orientation', 'vertical');
+            resizeHandle.setAttribute('aria-valuemin', '80'); // Minimum width
+            resizeHandle.setAttribute('aria-valuemax', '500'); // Maximum width
+            resizeHandle.setAttribute('aria-valuenow', header.offsetWidth);
+            resizeHandle.setAttribute('tabindex', '0'); // Make focusable for keyboard
+            header.appendChild(resizeHandle);
+
+            // Add tooltip to indicate resizable column
+            header.setAttribute(
+                'title',
+                'Drag to resize column | Double-click to auto-size'
+            );
+
+            // Add resize listeners for mouse
+            resizeHandle.addEventListener('mousedown', function (e) {
+                startTableColumnResize(
+                    e,
+                    header,
+                    index,
+                    tableSelector,
+                    storageKey
+                );
+            });
+
+            // Add touch support
+            resizeHandle.addEventListener(
+                'touchstart',
+                function (e) {
+                    // Prevent scrolling while resizing
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    startTableColumnResize(
+                        touch,
+                        header,
+                        index,
+                        tableSelector,
+                        storageKey
+                    );
+                },
+                { passive: false }
+            );
+
+            // Add double-click to auto-size functionality
+            resizeHandle.addEventListener('dblclick', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                autoSizeTableColumn(
+                    header,
+                    index,
+                    tableSelector,
+                    storageKey,
+                    getColumnType
+                );
+            });
+
+            // Also add double-click to the header itself for better UX
+            header.addEventListener('dblclick', function (e) {
+                // Only trigger if not clicking on sort indicator or other interactive elements
+                if (
+                    !e.target.classList.contains('sort-indicator') &&
+                    !e.target.closest('.sort-indicator') &&
+                    !e.target.classList.contains('column-resize-handle')
+                ) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    autoSizeTableColumn(
+                        header,
+                        index,
+                        tableSelector,
+                        storageKey,
+                        getColumnType
+                    );
+                }
+            });
+
+            // Add keyboard support
+            resizeHandle.addEventListener('keydown', function (e) {
+                // Respond to left/right arrow keys
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    const currentWidth = header.offsetWidth;
+                    const step = e.key === 'ArrowLeft' ? -10 : 10;
+                    const newWidth = Math.max(80, currentWidth + step);
+                    header.style.width = newWidth + 'px';
+                    this.setAttribute('aria-valuenow', newWidth);
+                    saveTableColumnWidthPreferences(tableSelector, storageKey);
+                }
+                // Enter key to auto-size
+                else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    autoSizeTableColumn(
+                        header,
+                        index,
+                        tableSelector,
+                        storageKey,
+                        getColumnType
+                    );
+                }
+            });
+        }
+    });
+}
+
+/**
+ * Handle column resizing start
+ * @param {Event} event - Mouse or touch event
+ * @param {Element} header - Header element being resized
+ * @param {number} columnIndex - Index of the column
+ * @param {string} tableSelector - CSS selector for the table
+ * @param {string} storageKey - LocalStorage key for saving preferences
+ */
+function startTableColumnResize(
+    event,
+    header,
+    columnIndex,
+    tableSelector,
+    storageKey
+) {
+    // Accept both mouse and touch events
+    if (event.preventDefault) event.preventDefault();
+
+    const table = document.querySelector(tableSelector);
+    const startX = event.pageX || event.clientX;
+    const startWidth = header.offsetWidth;
+    const handle = event.target;
+
+    // Store initial widths and table width to prevent redistribution
+    const headers = Array.from(table.querySelectorAll('th'));
+    const initialWidths = headers.map((h) => h.offsetWidth);
+    const initialTableWidth = table.offsetWidth;
+
+    // Apply initial widths immediately to prevent layout shift
+    headers.forEach((h, index) => {
+        h.style.width = `${initialWidths[index]}px`;
+    });
+
+    // Set table to fixed layout
+    table.style.tableLayout = 'fixed';
+    table.style.width = `${initialTableWidth}px`;
+
+    function doResize(e) {
+        const currentX = e.pageX || e.clientX;
+        const diff = currentX - startX;
+        const newWidth = Math.max(80, startWidth + diff);
+
+        // Calculate width difference and update table width accordingly
+        const widthDifference = newWidth - initialWidths[columnIndex];
+        header.style.width = `${newWidth}px`;
+
+        // Adjust the table width to accommodate the change
+        const newTableWidth = initialTableWidth + widthDifference;
+        table.style.width = `${newTableWidth}px`;
+
+        // Ensure all other columns maintain their exact original widths
+        headers.forEach((h, index) => {
+            if (index !== columnIndex) {
+                h.style.width = `${initialWidths[index]}px`;
+            }
+        });
+
+        // Update ARIA attribute
+        handle.setAttribute('aria-valuenow', newWidth);
+    }
+
+    function stopResize() {
+        document.removeEventListener('mousemove', doResize);
+        document.removeEventListener('mouseup', stopResize);
+        document.removeEventListener('touchmove', doResize);
+        document.removeEventListener('touchend', stopResize);
+
+        // Save preferences after resize
+        saveTableColumnWidthPreferences(tableSelector, storageKey);
+
+        // Announce change for screen readers
+        announceForScreenReader(`Column ${header.textContent.trim()} resized`);
+    }
+
+    document.addEventListener('mousemove', doResize);
+    document.addEventListener('mouseup', stopResize);
+    document.addEventListener('touchmove', doResize);
+    document.addEventListener('touchend', stopResize);
+}
+
+/**
+ * Auto-size a table column based on content
+ * @param {Element} header - Header element to auto-size
+ * @param {number} columnIndex - Index of the column
+ * @param {string} tableSelector - CSS selector for the table
+ * @param {string} storageKey - LocalStorage key for saving preferences
+ * @param {Function} getColumnType - Function to determine column type
+ */
+function autoSizeTableColumn(
+    header,
+    columnIndex,
+    tableSelector,
+    storageKey,
+    getColumnType = getDefaultColumnType
+) {
+    const table = document.querySelector(tableSelector);
+    if (!table) return;
+
+    // Store initial widths and table width to prevent redistribution
+    const headers = Array.from(table.querySelectorAll('th'));
+    const initialWidths = headers.map((h) => h.offsetWidth);
+    const initialTableWidth = table.offsetWidth;
+    const startWidth = header.offsetWidth;
+
+    // Apply initial widths immediately to prevent layout shift
+    headers.forEach((h, index) => {
+        h.style.width = `${initialWidths[index]}px`;
+    });
+
+    // Set table to fixed layout
+    table.style.tableLayout = 'fixed';
+    table.style.width = `${initialTableWidth}px`;
+
+    // Get all cells in this column
+    const cells = Array.from(
+        table.querySelectorAll(`tbody tr td:nth-child(${columnIndex + 1})`)
+    );
+
+    // If table is empty, just use header text for sizing
+    if (cells.length === 0) {
+        const headerText = header.textContent;
+        let maxWidth = Math.max(headerText.length * 10 + 40, 100);
+
+        // Apply column type constraints even for empty tables
+        const columnType = getColumnType(headerText);
+        if (columnType === 'actions') {
+            maxWidth = 120; // Default actions column width
+        }
+
+        // Calculate width difference and update table width accordingly
+        const widthDifference = maxWidth - initialWidths[columnIndex];
+        header.style.width = `${maxWidth}px`;
+
+        // Adjust the table width to accommodate the change
+        const newTableWidth = initialTableWidth + widthDifference;
+        table.style.width = `${newTableWidth}px`;
+
+        // Ensure all other columns maintain their exact original widths
+        headers.forEach((h, index) => {
+            if (index !== columnIndex) {
+                h.style.width = `${initialWidths[index]}px`;
+            }
+        });
+
+        saveTableColumnWidthPreferences(tableSelector, storageKey);
+        announceForScreenReader(
+            `Column ${header.textContent.trim()} auto-sized`
+        );
+        return;
+    }
+
+    // Use canvas for accurate text measurement
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+        // Fallback to simple calculation if canvas is not available
+        const headerText = header.textContent;
+        let maxWidth = Math.max(headerText.length * 8 + 40, 80);
+
+        // Apply the calculated width with proper width difference handling
+        const widthDifference = maxWidth - initialWidths[columnIndex];
+        header.style.width = `${maxWidth}px`;
+
+        // Adjust the table width to accommodate the change
+        const newTableWidth = initialTableWidth + widthDifference;
+        table.style.width = `${newTableWidth}px`;
+
+        // Ensure all other columns maintain their exact original widths
+        headers.forEach((h, index) => {
+            if (index !== columnIndex) {
+                h.style.width = `${initialWidths[index]}px`;
+            }
+        });
+
+        saveTableColumnWidthPreferences(tableSelector, storageKey);
+        announceForScreenReader(
+            `Column ${header.textContent.trim()} auto-sized`
+        );
+        return;
+    }
+
+    // Measure actual text content for precise sizing
+    context.font = getComputedStyle(table).font || '14px system-ui';
+
+    let maxWidth = 0;
+
+    // Measure header text
+    const headerText = header.textContent.trim();
+    const headerWidth = context.measureText(headerText).width;
+    maxWidth = Math.max(maxWidth, headerWidth + 40); // Add padding
+
+    // Measure all cell contents
+    cells.forEach((cell) => {
+        const text = cell.textContent.trim();
+        if (text) {
+            const textWidth = context.measureText(text).width;
+            maxWidth = Math.max(maxWidth, textWidth + 20); // Add padding
+        }
+    });
+
+    // Apply minimum and maximum constraints
+    maxWidth = Math.max(maxWidth, 80); // Minimum width
+    maxWidth = Math.min(maxWidth, 500); // Maximum width
+
+    // Apply column type constraints
+    const columnType = getColumnType(headerText);
+    switch (columnType) {
+        case 'actions':
+            maxWidth = Math.min(maxWidth, 120);
+            break;
+        case 'status':
+            maxWidth = Math.min(maxWidth, 100);
+            break;
+        case 'date':
+        case 'created':
+            maxWidth = Math.min(maxWidth, 150);
+            break;
+        case 'id':
+        case 'mrn':
+            maxWidth = Math.min(maxWidth, 120);
+            break;
+    }
+
+    // Calculate width difference and update table width accordingly
+    const widthDifference = maxWidth - initialWidths[columnIndex];
+    header.style.width = `${maxWidth}px`;
+
+    // Adjust the table width to accommodate the change
+    const newTableWidth = initialTableWidth + widthDifference;
+    table.style.width = `${newTableWidth}px`;
+
+    // Ensure all other columns maintain their exact original widths
+    headers.forEach((h, index) => {
+        if (index !== columnIndex) {
+            h.style.width = `${initialWidths[index]}px`;
+        }
+    });
+
+    saveTableColumnWidthPreferences(tableSelector, storageKey);
+    announceForScreenReader(`Column ${header.textContent.trim()} auto-sized`);
+}
+
+/**
+ * Save column width preferences to localStorage
+ * @param {string} tableSelector - CSS selector for the table
+ * @param {string} storageKey - LocalStorage key for saving preferences
+ */
+function saveTableColumnWidthPreferences(tableSelector, storageKey) {
+    const table = document.querySelector(tableSelector);
+    if (!table) return;
+
+    const headers = Array.from(table.querySelectorAll('th'));
+    const widths = headers.map((header) => header.style.width);
+
+    localStorage.setItem(storageKey, JSON.stringify(widths));
+}
+
+/**
+ * Load column width preferences from localStorage
+ * @param {string} tableSelector - CSS selector for the table
+ * @param {string} storageKey - LocalStorage key for loading preferences
+ */
+function loadTableColumnWidthPreferences(tableSelector, storageKey) {
+    const table = document.querySelector(tableSelector);
+    if (!table) return;
+
+    try {
+        const savedWidths = JSON.parse(localStorage.getItem(storageKey));
+
+        if (savedWidths && Array.isArray(savedWidths)) {
+            const headers = Array.from(table.querySelectorAll('th'));
+
+            headers.forEach((header, index) => {
+                if (savedWidths[index]) {
+                    header.style.width = savedWidths[index];
+                }
+            });
+
+            table.style.tableLayout = 'fixed';
+        } else {
+            // No saved preferences, run auto-sizing algorithm
+            adjustTableColumnWidths(tableSelector);
+        }
+    } catch (error) {
+        // Error loading column width preferences
+        adjustTableColumnWidths(tableSelector);
+    }
+}
+
+/**
+ * Setup responsive resize handler for tables
+ * @param {string} tableSelector - CSS selector for the table
+ * @param {string} storageKey - LocalStorage key for preferences
+ */
+function setupTableResponsiveResize(tableSelector, storageKey) {
+    // Add event listener for window resize to adjust column widths
+    window.addEventListener(
+        'resize',
+        debounce(function () {
+            // Only auto-adjust if no saved preferences
+            if (!localStorage.getItem(storageKey)) {
+                adjustTableColumnWidths(tableSelector);
+            } else {
+                // For responsive tables, check if we've crossed a breakpoint
+                const width = window.innerWidth;
+                if (
+                    !window.lastWidth ||
+                    (width < 480 && window.lastWidth >= 480) ||
+                    (width >= 480 &&
+                        width < 768 &&
+                        (window.lastWidth < 480 || window.lastWidth >= 768)) ||
+                    (width >= 768 && window.lastWidth < 768)
+                ) {
+                    // We've crossed a responsive breakpoint, adjust columns
+                    adjustTableColumnWidths(tableSelector);
+                    // Re-add resize handles after adjustment
+                    setTimeout(() => {
+                        addTableColumnResizeHandles(tableSelector, storageKey);
+                    }, 100);
+                }
+                window.lastWidth = width;
+            }
+        }, 250)
+    );
+}
+
 // Make table utilities available globally
 window.tableUtils = {
     setupTableSorting,
     handleTableSort,
     updateTableSortIndicators,
     sortTableData,
+    initializeTableFormatting,
+    adjustTableColumnWidths,
+    addTableColumnResizeHandles,
+    autoSizeTableColumn,
+    saveTableColumnWidthPreferences,
+    loadTableColumnWidthPreferences,
+    setupTableResponsiveResize,
+    getDefaultColumnType,
+    debounce,
+    announceForScreenReader,
 };
 
 // Also expose individual functions for backward compatibility
@@ -168,3 +756,10 @@ window.setupTableSorting = setupTableSorting;
 window.handleTableSort = handleTableSort;
 window.updateTableSortIndicators = updateTableSortIndicators;
 window.sortTableData = sortTableData;
+window.initializeTableFormatting = initializeTableFormatting;
+window.adjustTableColumnWidths = adjustTableColumnWidths;
+window.addTableColumnResizeHandles = addTableColumnResizeHandles;
+window.autoSizeTableColumn = autoSizeTableColumn;
+window.saveTableColumnWidthPreferences = saveTableColumnWidthPreferences;
+window.loadTableColumnWidthPreferences = loadTableColumnWidthPreferences;
+window.setupTableResponsiveResize = setupTableResponsiveResize;
