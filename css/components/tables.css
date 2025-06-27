@@ -372,18 +372,50 @@
 }
 
 /* Specific table styling overrides to ensure visibility */
+#patientsTable,
+#sessionsTable {
+    display: table !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #333 !important;
+    background-color: white !important;
+}
+
+#patientsTable thead,
+#sessionsTable thead,
+#patientsTable tbody,
+#sessionsTable tbody {
+    display: table-header-group !important;
+    visibility: visible !important;
+}
+
+#patientsTable tbody {
+    display: table-row-group !important;
+}
+
 #patientsTable td,
-#sessionsTable td {
+#patientsTable th,
+#sessionsTable td,
+#sessionsTable th {
     color: #333 !important; /* Force text to be visible */
     background-color: transparent !important; /* Ensure background doesn't hide text */
     max-width: none !important; /* Override any max-width that might hide content */
     width: auto !important; /* Allow natural width */
+    display: table-cell !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 14px !important; /* Ensure text size is readable */
+    padding: 0.75rem !important; /* Ensure there's padding */
 }
 
 /* Make sure text content is visible */
 #patientsTable td *,
-#sessionsTable td * {
+#sessionsTable td *,
+#patientsTable th *,
+#sessionsTable th * {
     color: inherit !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Specific column behavior */
