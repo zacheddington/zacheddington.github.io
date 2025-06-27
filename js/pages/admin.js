@@ -2328,7 +2328,7 @@ function displaySessions(sessions) {
             : '<span class="status-badge inactive">Inactive</span>';
 
         const revokeButton = session.is_active
-            ? `<button class="btn btn-danger btn-sm" onclick="adminPage.revokeSession('${session.session_id}')">Revoke</button>`
+            ? `<button class="btn btn-danger btn-sm" onclick="window.adminPage.revokeSession('${session.session_id}')">Revoke</button>`
             : '<span class="text-muted">-</span>';
 
         const rowHtml = `
@@ -2360,6 +2360,13 @@ function displaySessions(sessions) {
         tbody.children.length,
         'rows'
     );
+    
+    // Manual test - add a simple row to verify DOM manipulation works
+    console.log('🧪 Manual test: Adding a test row');
+    const testRow = document.createElement('tr');
+    testRow.innerHTML = '<td colspan="8" style="background: yellow; color: black; font-weight: bold;">TEST ROW - TABLE RENDERING WORKS</td>';
+    tbody.appendChild(testRow);
+    console.log('🧪 Test row added, tbody now contains:', tbody.children.length, 'rows');
 
     // Set table layout to fixed for column resizing to work
     const table = document.querySelector('#sessionsTable');
