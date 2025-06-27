@@ -293,17 +293,6 @@ router.put(
                 );
             }
 
-            if (config.isLocalTest) {
-                // For local testing, just return success
-                return successResponse(
-                    res,
-                    {
-                        passwordChangeRequired: false,
-                    },
-                    'Password changed successfully'
-                );
-            }
-
             // Production database logic
             const client = await pool.connect();
             try {

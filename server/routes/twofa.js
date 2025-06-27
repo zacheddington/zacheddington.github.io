@@ -27,20 +27,6 @@ router.post('/2fa/setup', authenticateToken, async (req, res) => {
         const userId = req.user.userId;
         const username = req.user.username;
 
-        if (config.isLocalTest) {
-            // For local testing, return mock 2FA setup data
-            return successResponse(
-                res,
-                {
-                    secret: 'JBSWY3DPEHPK3PXP',
-                    qrCode: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
-                    manualEntryKey: 'JBSWY3DPEHPK3PXP',
-                    issuer: 'IntegrisNeuro Medical Records',
-                },
-                '2FA setup initiated successfully'
-            );
-        }
-
         // Generate a secret for the user
         const secret = speakeasy.generateSecret({
             name: `IntegrisNeuro:${username}`,
@@ -88,22 +74,6 @@ router.post(
         try {
             const { token } = req.body;
             const userId = req.user.userId;
-
-            if (config.isLocalTest) {
-                // For local testing, accept token '123456'
-                if (token === '123456') {
-                    return successResponse(
-                        res,
-                        {
-                            enabled: true,
-                            backupCodes: ['backup1', 'backup2', 'backup3'],
-                        },
-                        '2FA verified and enabled successfully'
-                    );
-                } else {
-                    return errorResponse(res, 'Invalid 2FA token', 400);
-                }
-            }
 
             const client = await pool.connect();
             try {
@@ -180,19 +150,6 @@ router.post(
             const { password } = req.body;
             const userId = req.user.userId;
 
-            if (config.isLocalTest) {
-                // For local testing, accept password 'admin'
-                if (password === 'admin') {
-                    return successResponse(
-                        res,
-                        { enabled: false },
-                        '2FA disabled successfully'
-                    );
-                } else {
-                    return errorResponse(res, 'Invalid password', 400);
-                }
-            }
-
             const client = await pool.connect();
             try {
                 // Verify password before disabling 2FA
@@ -240,18 +197,6 @@ router.post(
 router.get('/2fa/status', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.userId;
-
-        if (config.isLocalTest) {
-            // For local testing, return status
-            return successResponse(
-                res,
-                {
-                    enabled: false,
-                    setupDate: null,
-                },
-                '2FA status retrieved successfully'
-            );
-        }
 
         const client = await pool.connect();
         try {

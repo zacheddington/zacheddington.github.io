@@ -21,48 +21,6 @@ const config = require('../config/environment');
 // Get all patients endpoint
 router.get('/patients', authenticateToken, async (req, res) => {
     try {
-        if (config.isLocalTest) {
-            // Return test patients for local development
-            return successResponse(
-                res,
-                [
-                    {
-                        patient_key: 1,
-                        first_name: 'John',
-                        middle_name: 'A',
-                        last_name: 'Doe',
-                        street_1: '123 Main St',
-                        street_2: 'Apt 4B',
-                        city: 'Anytown',
-                        state: 'CA',
-                        zip: '12345',
-                        phone: '5551234567',
-                        accepts_texts: true,
-                        date_of_birth: '1990-01-15',
-                        date_created: '2024-01-01T00:00:00.000Z',
-                        date_updated: '2024-01-15T10:30:00.000Z',
-                    },
-                    {
-                        patient_key: 2,
-                        first_name: 'Jane',
-                        middle_name: null,
-                        last_name: 'Smith',
-                        street_1: '456 Oak Ave',
-                        street_2: null,
-                        city: 'Springfield',
-                        state: 'IL',
-                        zip: '62701',
-                        phone: '5559876543',
-                        accepts_texts: false,
-                        date_of_birth: '1985-05-20',
-                        date_created: '2024-01-02T00:00:00.000Z',
-                        date_updated: '2024-01-02T00:00:00.000Z',
-                    },
-                ],
-                'Patients retrieved successfully'
-            );
-        }
-
         // Production database logic
         const client = await pool.connect();
         try {
@@ -134,53 +92,6 @@ router.get(
         try {
             const patientKey = req.params.patientKey;
 
-            if (config.isLocalTest) {
-                // Return test patient data
-                const testPatients = {
-                    1: {
-                        patient_key: 1,
-                        first_name: 'John',
-                        middle_name: 'A',
-                        last_name: 'Doe',
-                        street_1: '123 Main St',
-                        street_2: 'Apt 4B',
-                        city: 'Anytown',
-                        state: 'CA',
-                        zip: '12345',
-                        phone: '5551234567',
-                        accepts_texts: true,
-                        date_of_birth: '1990-01-15',
-                        date_when: '2024-01-01T00:00:00.000Z',
-                    },
-                    2: {
-                        patient_key: 2,
-                        first_name: 'Jane',
-                        middle_name: null,
-                        last_name: 'Smith',
-                        street_1: '456 Oak Ave',
-                        street_2: null,
-                        city: 'Somewhere',
-                        state: 'NY',
-                        zip: '67890',
-                        phone: '5555678901',
-                        accepts_texts: false,
-                        date_of_birth: '1985-07-22',
-                        date_when: '2024-01-02T00:00:00.000Z',
-                    },
-                };
-
-                const patient = testPatients[patientKey];
-                if (patient) {
-                    return successResponse(
-                        res,
-                        patient,
-                        'Patient retrieved successfully'
-                    );
-                } else {
-                    return notFoundResponse(res, 'Patient');
-                }
-            }
-
             // Production database logic
             const client = await pool.connect();
             try {
@@ -234,30 +145,6 @@ router.get('/patients/:id', authenticateToken, async (req, res) => {
 
         if (isNaN(patientId)) {
             return errorResponse(res, 'Invalid patient ID', 400);
-        }
-        if (config.isLocalTest) {
-            // Local test mode - return mock data
-            const mockPatient = {
-                patient_key: patientId,
-                first_name: 'John',
-                middle_name: 'A',
-                last_name: 'Doe',
-                street_1: '123 Main Street',
-                street_2: 'Apt 4B',
-                city: 'Anytown',
-                state: 'CA',
-                zip: '12345',
-                phone: '(555) 123-4567',
-                accepts_texts: true,
-                date_of_birth: '1990-01-15',
-                created_at: new Date().toISOString(),
-            };
-
-            return successResponse(
-                res,
-                mockPatient,
-                'Patient retrieved successfully'
-            );
         }
 
         const client = await pool.connect();
@@ -335,28 +222,6 @@ router.post(
                 phone,
                 acceptsTexts,
             } = req.body;
-
-            if (config.isLocalTest) {
-                // For local testing, just return success
-                return successResponse(
-                    res,
-                    {
-                        patient_key: Math.floor(Math.random() * 1000),
-                        firstName,
-                        middleName,
-                        lastName,
-                        dateOfBirth,
-                        address1,
-                        address2,
-                        city,
-                        state,
-                        zip,
-                        phone,
-                        acceptsTexts: acceptsTexts === 'yes',
-                    },
-                    'Patient created successfully'
-                );
-            }
 
             // Production database logic
             const client = await pool.connect();
@@ -488,28 +353,6 @@ router.put(
                 acceptsTexts,
             } = req.body;
 
-            if (config.isLocalTest) {
-                // For local testing, just return success
-                return successResponse(
-                    res,
-                    {
-                        patient_key: parseInt(patientKey),
-                        firstName,
-                        middleName,
-                        lastName,
-                        dateOfBirth,
-                        address1,
-                        address2,
-                        city,
-                        state,
-                        zip,
-                        phone,
-                        acceptsTexts: acceptsTexts === 'yes',
-                    },
-                    'Patient updated successfully'
-                );
-            }
-
             // Production database logic
             const client = await pool.connect();
             try {
@@ -609,11 +452,6 @@ router.put(
 router.delete('/patients/:patientKey', authenticateToken, async (req, res) => {
     try {
         const patientKey = req.params.patientKey;
-
-        if (config.isLocalTest) {
-            // For local testing, just return success
-            return deletedResponse(res, 'Patient deleted successfully');
-        }
 
         // Production database logic
         const client = await pool.connect();

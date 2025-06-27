@@ -53,14 +53,4 @@ if (!config.JWT_SECRET) {
     }
 }
 
-// Debug logging for environment detection
-console.log('🔧 Environment Configuration:');
-console.log(`   NODE_ENV: ${config.NODE_ENV}`);
-console.log(`   isProduction: ${config.isProduction}`);
-console.log(`   isLocalTest: ${config.isLocalTest}`);
-console.log(
-    `   DATABASE_URL: ${config.DATABASE_URL ? '[CONFIGURED]' : '[NOT SET]'}`
-);
-console.log(`   Port: ${config.PORT}`);
-
 module.exports = config;

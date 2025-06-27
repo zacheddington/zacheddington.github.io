@@ -81,7 +81,7 @@ const startServer = async () => {
             );
 
             // Set up periodic session cleanup (every hour)
-            if (dbStatus.connected && !config.isLocalTest) {
+            if (dbStatus.connected) {
                 setInterval(async () => {
                     try {
                         await SessionManager.cleanupExpiredSessions();

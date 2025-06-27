@@ -13,16 +13,6 @@ class SessionManager {
         userAgent,
         loginMethod = 'password'
     ) {
-        if (config.isLocalTest) {
-            // For local testing, return mock session
-            return {
-                session_key: 1,
-                session_token: 'test-session-token',
-                expires_at: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours
-                is_active: true,
-            };
-        }
-
         const client = await pool.connect();
         try {
             // Generate unique session token
@@ -53,10 +43,6 @@ class SessionManager {
 
     // Update session activity
     static async updateActivity(sessionToken) {
-        if (config.isLocalTest) {
-            return true;
-        }
-
         const client = await pool.connect();
         try {
             const result = await client.query(
@@ -77,17 +63,6 @@ class SessionManager {
 
     // Validate session
     static async validateSession(sessionToken) {
-        if (config.isLocalTest) {
-            // Return mock user for local testing
-            return {
-                user_key: 1,
-                username: 'admin',
-                session_key: 1,
-                is_active: true,
-                expires_at: new Date(Date.now() + 8 * 60 * 60 * 1000),
-            };
-        }
-
         const client = await pool.connect();
         try {
             const result = await client.query(
@@ -127,10 +102,6 @@ class SessionManager {
 
     // End session (logout)
     static async endSession(sessionToken, reason = 'user_logout') {
-        if (config.isLocalTest) {
-            return true;
-        }
-
         const client = await pool.connect();
         try {
             const result = await client.query(
@@ -156,10 +127,6 @@ class SessionManager {
         reason = 'admin_action',
         excludeSessionToken = null
     ) {
-        if (config.isLocalTest) {
-            return true;
-        }
-
         const client = await pool.connect();
         try {
             let query = `
@@ -187,11 +154,6 @@ class SessionManager {
 
     // Clean up expired sessions
     static async cleanupExpiredSessions() {
-        if (config.isLocalTest) {
-            console.log('Session cleanup skipped in local test mode');
-            return 0;
-        }
-
         const client = await pool.connect();
         try {
             const result = await client.query(`
@@ -212,19 +174,6 @@ class SessionManager {
 
     // Get active sessions for a user
     static async getUserSessions(userKey) {
-        if (config.isLocalTest) {
-            return [
-                {
-                    session_key: 1,
-                    login_time: new Date(),
-                    last_activity: new Date(),
-                    ip_address: '127.0.0.1',
-                    user_agent: 'Chrome on Windows 10/11',
-                    login_method: 'password',
-                },
-            ];
-        }
-
         const client = await pool.connect();
         try {
             const result = await client.query(
@@ -339,38 +288,10 @@ class SessionManager {
     } // Get all sessions for admin view (includes user information)
     static async getAllSessions() {
         try {
-            console.log('🎯 SESSION MANAGER: getAllSessions() method called');
-            console.log(
-                '🎯 SESSION MANAGER: config object:',
-                JSON.stringify(config, null, 2)
-            );
-            console.log('🎯 SESSION MANAGER: pool object exists:', !!pool);
-            console.log(
-                '🔍 SessionManager.getAllSessions called, config.isLocalTest:',
-                config.isLocalTest
-            );
-
-            if (config.isLocalTest) {
-                console.log('📋 Using local test data for sessions');
-                // Return mock data for testing
-                return [
-                    {
-                        session_id: 'test-session-1',
-                        username: 'testuser',
-                        is_active: true,
-                        login_time: new Date(),
-                        last_activity: new Date(),
-                        logout_time: null,
-                        ip_address: '127.0.0.1',
-                        user_agent: 'Chrome on Windows 10/11',
-                    },
-                ];
-            }
             console.log('🗄️ Connecting to production database for sessions...');
             let client;
             try {
                 client = await pool.connect();
-                console.log('✅ Database connection established');
             } catch (err) {
                 console.error('❌ Failed to connect to database:', err.message);
                 throw new Error(`Database connection failed: ${err.message}`);
@@ -378,15 +299,10 @@ class SessionManager {
 
             try {
                 // First, check if the tables exist
-                console.log('🔍 Checking if tables exist...');
                 const sessionTableCheck = await client.query(`
                 SELECT table_name FROM information_schema.tables 
                 WHERE table_schema = 'public' AND table_name = 'tbl_user_session'
             `);
-                console.log(
-                    'Session table exists:',
-                    sessionTableCheck.rows.length > 0
-                );
 
                 if (sessionTableCheck.rows.length === 0) {
                     throw new Error(
@@ -398,10 +314,6 @@ class SessionManager {
                 SELECT table_name FROM information_schema.tables 
                 WHERE table_schema = 'public' AND table_name = 'tbl_user'
             `);
-                console.log(
-                    'User table exists:',
-                    userTableCheck.rows.length > 0
-                );
 
                 if (userTableCheck.rows.length === 0) {
                     throw new Error(
@@ -438,25 +350,9 @@ class SessionManager {
                 LEFT JOIN tbl_user u ON s.user_key = u.user_key
                 ORDER BY s.login_time DESC
             `);
-                console.log(
-                    '✅ Sessions query successful, rows:',
-                    result.rows.length
-                );
                 return result.rows;
             } catch (err) {
-                console.error('❌ SESSION MANAGER ERROR in getAllSessions:', {
-                    message: err.message,
-                    code: err.code,
-                    detail: err.detail,
-                    table: err.table,
-                    column: err.column,
-                    stack: err.stack,
-                    name: err.name,
-                });
-                console.error(
-                    '❌ SESSION MANAGER ERROR - Full error object:',
-                    JSON.stringify(err, Object.getOwnPropertyNames(err), 2)
-                );
+                console.error('SESSION MANAGER ERROR in getAllSessions:', err.message);
 
                 // Re-throw with more context
                 const enhancedError = new Error(
@@ -495,10 +391,6 @@ class SessionManager {
 
     // Revoke a session by session ID
     static async revokeSessionById(sessionId, reason = 'admin_revocation') {
-        if (config.isLocalTest) {
-            return true;
-        }
-
         const client = await pool.connect();
         try {
             const result = await client.query(
@@ -524,10 +416,6 @@ class SessionManager {
         username,
         reason = 'admin_action'
     ) {
-        if (config.isLocalTest) {
-            return 1;
-        }
-
         const client = await pool.connect();
         try {
             // First get the user_key from username

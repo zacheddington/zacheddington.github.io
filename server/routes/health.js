@@ -42,19 +42,6 @@ router.get('/health', authenticateToken, async (req, res) => {
 // Public health check endpoint for basic connectivity testing (no auth required)
 router.get('/health/public', async (req, res) => {
     try {
-        // Check if we're in local development mode without proper database
-        if (config.isLocalTest) {
-            // For local testing, just return success
-            return successResponse(
-                res,
-                {
-                    status: 'healthy',
-                    database: 'local_test_mode',
-                },
-                'System is healthy (local test mode)'
-            );
-        }
-
         const dbStatus = await checkDatabaseConnection();
 
         if (dbStatus.connected) {
@@ -217,7 +204,7 @@ router.get('/health/sessions/debug', async (req, res) => {
             step: 1,
             name: 'config_check',
             success: true,
-            data: { isLocalTest: config.isLocalTest },
+            data: { status: 'production' },
         });
 
         // Step 2: Database connection

@@ -33,19 +33,6 @@ const config = require('../config/environment');
 // Get all roles endpoint for admin management
 router.get('/roles', authenticateToken, requireAdmin, async (req, res) => {
     try {
-        if (config.isLocalTest) {
-            // Return test roles for local development
-            return successResponse(
-                res,
-                [
-                    { role_key: 1, role_name: 'Administrator' },
-                    { role_key: 2, role_name: 'User' },
-                    { role_key: 3, role_name: 'Viewer' },
-                ],
-                'Roles retrieved successfully'
-            );
-        }
-
         // Production database logic
         const rolesResult = await pool.query(
             'SELECT role_key, role_name FROM tbl_role ORDER BY role_name'
@@ -104,22 +91,6 @@ router.post(
                     'Password does not meet security requirements',
                     400,
                     passwordValidation.errors
-                );
-            }
-
-            if (config.isLocalTest) {
-                // For local testing, just return success
-                return createdResponse(
-                    res,
-                    {
-                        username,
-                        firstName,
-                        middleName,
-                        lastName,
-                        email,
-                        roleKey,
-                    },
-                    'User created successfully'
                 );
             }
 
@@ -247,24 +218,6 @@ router.post(
         try {
             const { username } = req.body;
 
-            if (config.isLocalTest) {
-                // For local testing, simulate availability check
-                const unavailableUsernames = ['admin', 'test', 'user', 'guest'];
-                const available = !unavailableUsernames.includes(
-                    username.toLowerCase()
-                );
-                return successResponse(
-                    res,
-                    {
-                        available,
-                        message: available
-                            ? 'Username is available'
-                            : 'Username is already taken',
-                    },
-                    'Username availability checked'
-                );
-            }
-
             // Production database logic
             const result = await pool.query(
                 'SELECT username FROM tbl_user WHERE LOWER(username) = LOWER($1)',
@@ -297,38 +250,6 @@ router.post(
 // Get all users endpoint for admin management
 router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
     try {
-        if (config.isLocalTest) {
-            // Return test users for local development
-            return successResponse(
-                res,
-                [
-                    {
-                        user_key: 1,
-                        username: 'admin',
-                        first_name: 'Test',
-                        middle_name: 'Local',
-                        last_name: 'Admin',
-                        email: 'admin@test.com',
-                        date_created: '2024-01-01T00:00:00.000Z',
-                        roles: ['Administrator'],
-                        role_keys: [1],
-                    },
-                    {
-                        user_key: 2,
-                        username: 'testuser',
-                        first_name: 'Test',
-                        middle_name: null,
-                        last_name: 'User',
-                        email: 'user@test.com',
-                        date_created: '2024-01-02T00:00:00.000Z',
-                        roles: ['User'],
-                        role_keys: [2],
-                    },
-                ],
-                'Users retrieved successfully'
-            );
-        }
-
         // Production database logic
         const usersResult = await pool.query(`
             SELECT 
@@ -372,18 +293,6 @@ router.put(
         try {
             const userId = req.params.userId;
             const { roleKey } = req.body;
-
-            if (config.isLocalTest) {
-                // For local testing, just return success
-                return updatedResponse(
-                    res,
-                    {
-                        userId: userId,
-                        roleKey: roleKey,
-                    },
-                    'User role updated successfully'
-                );
-            }
 
             // Production database logic
             const client = await pool.connect();
@@ -454,26 +363,9 @@ router.delete(
     requireAdmin,
     preventSelfModification,
     async (req, res) => {
-        console.log(
-            `DELETE USER: Starting deletion for user ${req.params.userId}`
-        );
-        console.log(`DELETE USER: Request from origin: ${req.headers.origin}`);
-        console.log(
-            `DELETE USER: User making request: ${req.user?.userId}, isAdmin: ${req.user?.isAdmin}`
-        );
-
         const userId = req.params.userId;
 
         try {
-            if (config.isLocalTest) {
-                // For local testing, just return success
-                return deletedResponse(
-                    res,
-                    { userId: userId },
-                    'User deleted successfully'
-                );
-            }
-
             // Production database logic
             const client = await pool.connect();
             try {

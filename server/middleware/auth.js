@@ -7,15 +7,10 @@ const SessionManager = require('../utils/sessionManager');
 
 // Middleware to authenticate tokens and validate sessions
 const authenticateToken = async (req, res, next) => {
-    console.log(
-        `AUTH: ${req.method} ${req.path} from origin: ${req.headers.origin}`
-    );
-
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        console.log('AUTH: No token provided');
         return res
             .status(401)
             .json({ error: 'Access denied. No token provided.' });
@@ -29,7 +24,6 @@ const authenticateToken = async (req, res, next) => {
         const sessionData = await SessionManager.validateSession(token);
 
         if (!sessionData) {
-            console.log('AUTH: Session invalid or expired');
             return res
                 .status(403)
                 .json({
@@ -53,9 +47,6 @@ const authenticateToken = async (req, res, next) => {
             expiresAt: sessionData.expires_at,
         };
 
-        console.log(
-            `AUTH: User authenticated - ID: ${sessionData.user_key}, Username: ${sessionData.username}`
-        );
         next();
     } catch (err) {
         console.error('AUTH: Token validation failed:', err.message);
@@ -71,12 +62,6 @@ const requireAdmin = async (req, res, next) => {
     }
 
     try {
-        if (config.isLocalTest) {
-            // In local test mode, assume admin privileges
-            console.log('AUTH: Admin access granted (local test mode)');
-            return next();
-        }
-
         // Query user roles from database
         const { pool } = require('../config/database');
         const client = await pool.connect();
@@ -99,9 +84,6 @@ const requireAdmin = async (req, res, next) => {
             );
 
             if (!isAdmin) {
-                console.log(
-                    `AUTH: Admin access denied for user ${req.user.username}`
-                );
                 return res
                     .status(403)
                     .json({
@@ -109,9 +91,6 @@ const requireAdmin = async (req, res, next) => {
                     });
             }
 
-            console.log(
-                `AUTH: Admin access granted for user ${req.user.username}`
-            );
             next();
         } finally {
             client.release();

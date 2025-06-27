@@ -13,27 +13,9 @@ const {
 
 // Get all active sessions (admin only)
 router.get('/sessions', authenticateToken, requireAdmin, async (req, res) => {
-    console.log('🌟 SESSIONS ROUTE: Hit /sessions endpoint');
-    console.log('🌟 SESSIONS ROUTE: User from middleware:', req.user);
     try {
-        console.log('🚀 SESSIONS ENDPOINT: Starting session retrieval');
-        console.log(
-            '🔍 Admin sessions endpoint called by user:',
-            req.user?.userId
-        );
-        console.log('🔍 About to call SessionManager.getAllSessions()');
-
         // Get all sessions across all users for admin view
         const sessions = await SessionManager.getAllSessions();
-
-        console.log(
-            '✅ Sessions retrieved successfully, count:',
-            sessions.length
-        );
-        console.log(
-            '✅ Sessions sample:',
-            JSON.stringify(sessions.slice(0, 2), null, 2)
-        );
 
         return successResponse(
             res,
