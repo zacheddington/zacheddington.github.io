@@ -24,11 +24,9 @@ const authenticateToken = async (req, res, next) => {
         const sessionData = await SessionManager.validateSession(token);
 
         if (!sessionData) {
-            return res
-                .status(403)
-                .json({
-                    error: 'Session expired or invalid. Please log in again.',
-                });
+            return res.status(403).json({
+                error: 'Session expired or invalid. Please log in again.',
+            });
         }
 
         // Attach user and session info to request
@@ -84,11 +82,9 @@ const requireAdmin = async (req, res, next) => {
             );
 
             if (!isAdmin) {
-                return res
-                    .status(403)
-                    .json({
-                        error: 'Access denied. Admin privileges required.',
-                    });
+                return res.status(403).json({
+                    error: 'Access denied. Admin privileges required.',
+                });
             }
 
             next();

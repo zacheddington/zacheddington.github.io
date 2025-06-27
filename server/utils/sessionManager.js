@@ -352,7 +352,10 @@ class SessionManager {
             `);
                 return result.rows;
             } catch (err) {
-                console.error('SESSION MANAGER ERROR in getAllSessions:', err.message);
+                console.error(
+                    'SESSION MANAGER ERROR in getAllSessions:',
+                    err.message
+                );
 
                 // Re-throw with more context
                 const enhancedError = new Error(

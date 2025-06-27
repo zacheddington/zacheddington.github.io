@@ -157,3 +157,6 @@ window.apiClient = {
     validateToken,
     apiRequest,
 };
+
+// Also provide global alias for getAPIUrl for convenience
+window.getAPIUrl = getAPIUrl;
