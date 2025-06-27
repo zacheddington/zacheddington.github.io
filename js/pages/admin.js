@@ -2342,7 +2342,7 @@ function displaySessions(sessions) {
     if (table) {
         table.style.tableLayout = 'fixed';
         table.style.width = '100%';
-    } // Add column resize handles after rendering the table
+    }    // Add column resize handles after rendering the table
     setTimeout(() => {
         window.tableUtils.addTableColumnResizeHandles(
             '.users-table',

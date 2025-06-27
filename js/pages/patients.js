@@ -152,8 +152,8 @@ async function initializeManagePatientsPage() {
         'resize',
         debounce(function () {
             // Only auto-adjust if no saved preferences
-            if (!localStorage.getItem('patientTableColumnWidths')) {
-                adjustPatientColumnWidths();
+            if (!localStorage.getItem('patientsTableColumnWidths')) {
+                window.tableUtils.adjustTableColumnWidths('.users-table');
             } else {
                 // For responsive tables, check if we've crossed a breakpoint
                 const width = window.innerWidth;
@@ -167,10 +167,14 @@ async function initializeManagePatientsPage() {
                     (width >= 768 && window.lastPatientWidth < 768)
                 ) {
                     // We've crossed a responsive breakpoint, adjust columns
-                    adjustPatientColumnWidths();
-                } else {
-                    // Just refresh resize handles
-                    addPatientColumnResizeHandles();
+                    window.tableUtils.adjustTableColumnWidths('.users-table');
+                    // Re-add resize handles after adjustment
+                    setTimeout(() => {
+                        window.tableUtils.addTableColumnResizeHandles(
+                            '.users-table',
+                            'patientsTableColumnWidths'
+                        );
+                    }, 100);
                 }
             }
             window.lastPatientWidth = window.innerWidth;
