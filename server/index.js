@@ -36,12 +36,20 @@ console.log('📋 Registered API routes:');
 app._router.stack.forEach((middleware) => {
     if (middleware.route) {
         // routes registered directly on the app
-        console.log(`   ${Object.keys(middleware.route.methods)} ${middleware.route.path}`);
+        console.log(
+            `   ${Object.keys(middleware.route.methods)} ${
+                middleware.route.path
+            }`
+        );
     } else if (middleware.name === 'router') {
         // routes added as router middleware
         middleware.handle.stack.forEach((handler) => {
             if (handler.route) {
-                console.log(`   ${Object.keys(handler.route.methods)} /api${handler.route.path}`);
+                console.log(
+                    `   ${Object.keys(handler.route.methods)} /api${
+                        handler.route.path
+                    }`
+                );
             }
         });
     }
