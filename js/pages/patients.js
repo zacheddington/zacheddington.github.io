@@ -1035,8 +1035,6 @@ function getSortedPatientsFallback() {
 
 // Display patients in the table
 function displayPatients(patients) {
-    console.log('🔍 displayPatients called with:', patients);
-
     const patientsTableBody = document.getElementById('patientsTableBody');
     const noPatientsFound = document.getElementById('noPatientsFound');
     const tableContainer = document.querySelector('.table-responsive');
@@ -1046,16 +1044,11 @@ function displayPatients(patients) {
         return;
     }
 
-    console.log('✅ Found patientsTableBody element:', patientsTableBody);
-
     if (patients.length === 0) {
-        console.log('⚠️ No patients to display');
         patientsTableBody.innerHTML = '';
         if (noPatientsFound) noPatientsFound.classList.remove('hidden');
         return;
     }
-
-    console.log('📊 Creating patient rows for', patients.length, 'patients');
 
     if (noPatientsFound) noPatientsFound.classList.add('hidden');
 
@@ -1137,59 +1130,10 @@ function displayPatients(patients) {
             return rowHtml;
         })
         .join('');
-    console.log('🔧 Generated HTML length:', htmlRows.length);
-    console.log(
-        '🔧 Sample HTML (first 200 chars):',
-        htmlRows.substring(0, 200)
-    );
 
     patientsTableBody.innerHTML = htmlRows;
-    console.log(
-        '✅ Set patientsTableBody.innerHTML, tbody now contains:',
-        patientsTableBody.children.length,
-        'rows'
-    );
 
-    // Debug: Check table visibility and styles
-    const debugTable = document.getElementById('patientsTable');
-    if (debugTable) {
-        const tableStyles = window.getComputedStyle(debugTable);
-        const tbodyStyles = window.getComputedStyle(patientsTableBody);
-
-        console.log('🔍 Table debug info:');
-        console.log('- Table display:', tableStyles.display);
-        console.log('- Table visibility:', tableStyles.visibility);
-        console.log('- Table opacity:', tableStyles.opacity);
-        console.log('- Table color:', tableStyles.color);
-        console.log('- Table height:', tableStyles.height);
-        console.log('- Tbody display:', tbodyStyles.display);
-        console.log('- Tbody visibility:', tbodyStyles.visibility);
-        console.log('- Tbody opacity:', tbodyStyles.opacity);
-
-        // Check first row if it exists
-        const firstRow = patientsTableBody.children[0];
-        if (firstRow) {
-            const rowStyles = window.getComputedStyle(firstRow);
-            console.log('- First row display:', rowStyles.display);
-            console.log('- First row visibility:', rowStyles.visibility);
-            console.log('- First row opacity:', rowStyles.opacity);
-            console.log('- First row color:', rowStyles.color);
-            console.log('- First row height:', rowStyles.height);
-
-            // Check first cell
-            const firstCell = firstRow.children[0];
-            if (firstCell) {
-                const cellStyles = window.getComputedStyle(firstCell);
-                console.log('- First cell display:', cellStyles.display);
-                console.log('- First cell visibility:', cellStyles.visibility);
-                console.log('- First cell opacity:', cellStyles.opacity);
-                console.log('- First cell color:', cellStyles.color);
-                console.log('- First cell width:', cellStyles.width);
-                console.log('- First cell max-width:', cellStyles.maxWidth);
-                console.log('- First cell innerHTML:', firstCell.innerHTML);
-            }
-        }
-    } // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE
+    // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE
     const table = document.getElementById('patientsTable');
     if (table) {
         // Set table layout to fixed for column resizing to work

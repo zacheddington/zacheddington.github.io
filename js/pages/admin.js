@@ -2161,14 +2161,8 @@ async function loadAllSessions() {
         });
         if (response.ok) {
             const result = await response.json();
-            console.log('📡 Sessions API response:', result);
             allSessions = result.data || [];
             filteredSessions = [...allSessions];
-            console.log(
-                '💾 Stored',
-                allSessions.length,
-                'sessions in allSessions'
-            );
 
             // Display sessions in table
             displaySessions(filteredSessions); // Update stats
@@ -2291,8 +2285,6 @@ function filterSessions() {
 
 // Display sessions in the table
 function displaySessions(sessions) {
-    console.log('🔍 displaySessions called with:', sessions);
-
     // Use the specific ID for session management page
     const tbody = document.querySelector('#sessionsTableBody');
 
@@ -2301,9 +2293,7 @@ function displaySessions(sessions) {
         return;
     }
 
-    console.log('✅ Found tbody element:', tbody);
     if (sessions.length === 0) {
-        console.log('⚠️ No sessions to display');
         tbody.innerHTML = `
             <tr>
                 <td colspan="8" class="no-data">No sessions found</td>
@@ -2311,8 +2301,6 @@ function displaySessions(sessions) {
         `;
         return;
     }
-
-    console.log('📊 Creating session rows for', sessions.length, 'sessions');
 
     const sessionRows = sessions.map((session, index) => {
         const loginTime = new Date(session.login_time).toLocaleString();
@@ -2348,18 +2336,8 @@ function displaySessions(sessions) {
         return rowHtml;
     });
     const finalHtml = sessionRows.join('');
-    console.log('🔧 Generated HTML length:', finalHtml.length);
-    console.log(
-        '🔧 Sample HTML (first 200 chars):',
-        finalHtml.substring(0, 200)
-    );
 
     tbody.innerHTML = finalHtml;
-    console.log(
-        '✅ Set tbody.innerHTML, tbody now contains:',
-        tbody.children.length,
-        'rows'
-    );
 
     // Set table layout to fixed for column resizing to work
     const table = document.querySelector('#sessionsTable');
