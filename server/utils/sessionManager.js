@@ -288,12 +288,11 @@ class SessionManager {
     } // Get all sessions for admin view (includes user information)
     static async getAllSessions() {
         try {
-            console.log('🗄️ Connecting to production database for sessions...');
             let client;
             try {
                 client = await pool.connect();
             } catch (err) {
-                console.error('❌ Failed to connect to database:', err.message);
+                console.error('Failed to connect to database:', err.message);
                 throw new Error(`Database connection failed: ${err.message}`);
             }
 
@@ -323,17 +322,11 @@ class SessionManager {
                 const sessionCount = await client.query(
                     `SELECT COUNT(*) as count FROM tbl_user_session`
                 );
-                console.log(
-                    'Session table record count:',
-                    sessionCount.rows[0].count
-                );
 
                 // If no sessions exist, return empty array
                 if (parseInt(sessionCount.rows[0].count) === 0) {
-                    console.log('📊 No sessions found, returning empty array');
                     return [];
                 }
-                console.log('📊 Executing sessions query...');
                 // Use LEFT JOIN to handle cases where user might not exist
                 const result = await client.query(`
                 SELECT 

@@ -816,40 +816,6 @@ async function loadPatients() {
     }
 }
 
-// Debug function to display information in the DOM
-function showDebugInfo(message, data = null) {
-    let debugDiv = document.getElementById('debugInfo');
-    if (!debugDiv) {
-        debugDiv = document.createElement('div');
-        debugDiv.id = 'debugInfo';
-        debugDiv.style.cssText = `
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: #f0f0f0;
-            border: 1px solid #ccc;
-            padding: 10px;
-            max-width: 400px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 10000;
-            font-family: monospace;
-            font-size: 12px;
-        `;
-        document.body.appendChild(debugDiv);
-    }
-
-    const timestamp = new Date().toLocaleTimeString();
-    const logEntry = document.createElement('div');
-    logEntry.style.marginBottom = '5px';
-    logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
-    if (data) {
-        logEntry.innerHTML += `<br><pre>${JSON.stringify(data, null, 2)}</pre>`;
-    }
-    debugDiv.appendChild(logEntry);
-    debugDiv.scrollTop = debugDiv.scrollHeight;
-}
-
 // Set up patient table sorting functionality using shared utility
 function setupPatientTableSorting() {
     // Define sortable columns - Updated to include Last Updated column
