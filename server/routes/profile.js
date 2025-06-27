@@ -25,6 +25,7 @@ const config = require('../config/environment');
 
 // Get user profile endpoint
 router.get('/user/profile', authenticateToken, async (req, res) => {
+    console.log('🔍 Profile route hit - User ID:', req.user?.id);
     try {
         const userId = req.user.id;
         if (config.isLocalTest) {
