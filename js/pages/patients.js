@@ -771,49 +771,8 @@ async function loadPatients() {
         }
         if (patientsTableBody) {
             patientsTableBody.innerHTML = '';
-        } // Add a test to simulate data if database is unavailable
-        if (API_URL.includes('localhost') && !window.FORCE_REAL_API) {
-            // Test if API is actually available
-            try {
-                const testResponse = await fetch(`${API_URL}/api/health`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                if (!testResponse.ok) {
-                    // Use test data for debugging
-                    const testPatients = [
-                        {
-                            patient_key: 'test-1',
-                            first_name: 'John',
-                            last_name: 'Doe',
-                            middle_name: 'M',
-                            date_of_birth: '1990-01-01',
-                            phone: '555-1234',
-                            accepts_texts: true,
-                            address_1: '123 Main St',
-                            address_2: 'Apt 1',
-                            city: 'Anytown',
-                            state: 'CA',
-                            zip: '12345',
-                            date_created: new Date().toISOString(),
-                            date_updated: new Date().toISOString(),
-                        },
-                    ];
-
-                    allPatients = testPatients;
-                    setupPatientTableSorting();
-                    const sortedPatients = getSortedPatients();
-
-                    displayPatients(sortedPatients);
-
-                    if (patientsLoading) {
-                        patientsLoading.style.display = 'none';
-                    }
-                    return;
-                }
-            } catch (healthError) {
-                // Health check failed, continuing with normal flow...
-            }
         }
+
         const response = await fetch(`${API_URL}/api/patients`, {
             headers: {
                 Authorization: `Bearer ${token}`,

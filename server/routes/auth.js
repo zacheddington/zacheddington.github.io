@@ -31,86 +31,7 @@ router.post(
     validateRequiredFields(['username', 'password']),
     async (req, res) => {
         try {
-            // Check if we're in local development mode without proper database
-            if (config.isLocalTest) {
-                const { username, password } = req.body;
-                if (username === 'admin' && password === 'admin') {
-                    // Create session for local test admin
-                    const { ipAddress, userAgent } =
-                        SessionManager.getClientInfo(req);
-                    const session = await SessionManager.createSession(
-                        1,
-                        ipAddress,
-                        userAgent,
-                        'password'
-                    );
-
-                    return successResponse(
-                        res,
-                        {
-                            token: session.session_token,
-                            user: {
-                                username: 'admin',
-                                firstName: 'Test',
-                                middleName: 'Local',
-                                lastName: 'Admin',
-                                email: 'admin@test.com',
-                                roles: ['admin'],
-                                roleKeys: [1],
-                                isAdmin: true,
-                                passwordChangeRequired: false,
-                                authVersion: '2.0',
-                            },
-                            session: {
-                                expiresAt: session.expires_at,
-                                sessionKey: session.session_key,
-                            },
-                        },
-                        'Login successful'
-                    );
-                } else if (username === 'newuser' && password === 'newuser') {
-                    // Test user that requires password change
-                    const { ipAddress, userAgent } =
-                        SessionManager.getClientInfo(req);
-                    const session = await SessionManager.createSession(
-                        2,
-                        ipAddress,
-                        userAgent,
-                        'password'
-                    );
-
-                    return successResponse(
-                        res,
-                        {
-                            token: session.session_token,
-                            user: {
-                                username: 'newuser',
-                                firstName: 'New',
-                                middleName: '',
-                                lastName: 'User',
-                                email: 'newuser@test.com',
-                                roles: ['user'],
-                                roleKeys: [2],
-                                isAdmin: false,
-                                passwordChangeRequired: true,
-                                authVersion: '2.0',
-                            },
-                            session: {
-                                expiresAt: session.expires_at,
-                                sessionKey: session.session_key,
-                            },
-                        },
-                        'Login successful'
-                    );
-                } else {
-                    return unauthorizedResponse(
-                        res,
-                        'Invalid username or password (use admin/admin for local testing)'
-                    );
-                }
-            }
-
-            // Production database logic
+            // Production database logic only - no test credentials
             const { username, password, twofaToken } = req.body;
 
             // Query user data including name information and roles
@@ -118,7 +39,7 @@ router.post(
                 `SELECT u.*, n.first_name, n.middle_name, n.last_name 
              FROM tbl_user u 
              LEFT JOIN tbl_name_data n ON u.name_key = n.name_key 
-             WHERE LOWER(u.username) = LOWER($1)`,
+             WHERE u.username = $1`,
                 [username]
             );
 
@@ -130,11 +51,12 @@ router.post(
             }
 
             const user = userResult.rows[0];
+
+            // Check password
             const validPassword = await bcrypt.compare(
                 password,
                 user.password_hash
             );
-
             if (!validPassword) {
                 return unauthorizedResponse(
                     res,

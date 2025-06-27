@@ -238,7 +238,6 @@ router.post(
 
 // Get 2FA status
 router.get('/2fa/status', authenticateToken, async (req, res) => {
-    console.log('🔍 2FA status route hit - User ID:', req.user?.userId);
     try {
         const userId = req.user.userId;
 

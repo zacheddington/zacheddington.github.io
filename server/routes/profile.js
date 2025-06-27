@@ -25,26 +25,9 @@ const config = require('../config/environment');
 
 // Get user profile endpoint
 router.get('/user/profile', authenticateToken, async (req, res) => {
-    console.log('🔍 Profile route hit - User ID:', req.user?.userId);
     try {
         const userId = req.user.userId;
-        if (config.isLocalTest) {
-            // For local testing, return mock data
-            return successResponse(
-                res,
-                {
-                    id: userId,
-                    first_name: 'John',
-                    middle_name: 'M',
-                    last_name: 'Doe',
-                    email: 'john.doe@example.com',
-                    role: 'Administrator',
-                    roles: ['Administrator'],
-                    username: 'admin',
-                },
-                'Profile retrieved successfully'
-            );
-        }
+
         // Production database logic
         const client = await pool.connect();
         try {
@@ -118,20 +101,6 @@ router.put(
         try {
             const { firstName, middleName, lastName, email } = req.body;
             const userId = req.user.userId;
-
-            if (config.isLocalTest) {
-                // For local testing, just return success
-                return updatedResponse(
-                    res,
-                    {
-                        firstName,
-                        middleName,
-                        lastName,
-                        email,
-                    },
-                    'Profile updated successfully'
-                );
-            }
 
             // Production database logic
             const client = await pool.connect();
@@ -225,23 +194,6 @@ router.put(
                     400,
                     passwordValidation.errors
                 );
-            }
-
-            if (config.isLocalTest) {
-                // For local testing, just return success if current password is 'admin'
-                if (currentPassword === 'admin') {
-                    return successResponse(
-                        res,
-                        null,
-                        'Password changed successfully'
-                    );
-                } else {
-                    return errorResponse(
-                        res,
-                        'Current password is incorrect',
-                        400
-                    );
-                }
             }
 
             // Production database logic
