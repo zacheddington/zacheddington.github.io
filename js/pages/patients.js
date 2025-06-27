@@ -142,7 +142,7 @@ async function initializeManagePatientsPage() {
 
     // Initialize table formatting and resizing using unified utilities
     window.tableUtils.initializeTableFormatting({
-        tableSelector: '.users-table',
+        tableSelector: '#patientsTable',
         storageKey: 'patientsTableColumnWidths',
         getColumnType: window.tableUtils.getDefaultColumnType,
     });
@@ -153,7 +153,7 @@ async function initializeManagePatientsPage() {
         debounce(function () {
             // Only auto-adjust if no saved preferences
             if (!localStorage.getItem('patientsTableColumnWidths')) {
-                window.tableUtils.adjustTableColumnWidths('.users-table');
+                window.tableUtils.adjustTableColumnWidths('#patientsTable');
             } else {
                 // For responsive tables, check if we've crossed a breakpoint
                 const width = window.innerWidth;
@@ -1035,6 +1035,8 @@ function getSortedPatientsFallback() {
 
 // Display patients in the table
 function displayPatients(patients) {
+    console.log('🔍 displayPatients called with:', patients);
+
     const patientsTableBody = document.getElementById('patientsTableBody');
     const noPatientsFound = document.getElementById('noPatientsFound');
     const tableContainer = document.querySelector('.table-responsive');
@@ -1044,11 +1046,16 @@ function displayPatients(patients) {
         return;
     }
 
+    console.log('✅ Found patientsTableBody element:', patientsTableBody);
+
     if (patients.length === 0) {
+        console.log('⚠️ No patients to display');
         patientsTableBody.innerHTML = '';
         if (noPatientsFound) noPatientsFound.classList.remove('hidden');
         return;
     }
+
+    console.log('📊 Creating patient rows for', patients.length, 'patients');
 
     if (noPatientsFound) noPatientsFound.classList.add('hidden');
 
@@ -1130,7 +1137,18 @@ function displayPatients(patients) {
             return rowHtml;
         })
         .join('');
-    patientsTableBody.innerHTML = htmlRows; // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE
+    console.log('🔧 Generated HTML length:', htmlRows.length);
+    console.log(
+        '🔧 Sample HTML (first 200 chars):',
+        htmlRows.substring(0, 200)
+    );
+
+    patientsTableBody.innerHTML = htmlRows;
+    console.log(
+        '✅ Set patientsTableBody.innerHTML, tbody now contains:',
+        patientsTableBody.children.length,
+        'rows'
+    ); // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE
     const table = document.getElementById('patientsTable');
     if (table) {
         // Set table layout to fixed for column resizing to work
@@ -1144,7 +1162,7 @@ function displayPatients(patients) {
     } // Add resize handles after rendering table content
     setTimeout(() => {
         window.tableUtils.addTableColumnResizeHandles(
-            '.users-table',
+            '#patientsTable',
             'patientsTableColumnWidths'
         );
     }, 100);
