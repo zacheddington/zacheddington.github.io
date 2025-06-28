@@ -42,7 +42,9 @@
    ================================ */
 
 /* Make all table columns resizable - unified styling */
-.users-table th {
+.users-table th,
+#patientsTable th,
+#sessionsTable th {
     position: relative;
     user-select: none; /* Prevent text selection during resizing */
     -webkit-user-select: none; /* Safari */
@@ -73,7 +75,9 @@
 }
 
 /* Improve resize handle visibility on header hover - unified for all tables */
-.users-table th:hover .column-resize-handle {
+.users-table th:hover .column-resize-handle,
+#patientsTable th:hover .column-resize-handle,
+#sessionsTable th:hover .column-resize-handle {
     background-color: var(--color-primary);
     opacity: 0.3;
 }
@@ -91,13 +95,17 @@
 }
 
 /* Smooth resizing performance optimizations - unified for all tables */
-.users-table th {
+.users-table th,
+#patientsTable th,
+#sessionsTable th {
     will-change: auto;
     /* Remove default transition for immediate response during resize */
 }
 
 /* During resizing, optimize for performance - unified for all tables */
-.users-table.resizing th {
+.users-table.resizing th,
+#patientsTable.resizing th,
+#sessionsTable.resizing th {
     transition: none !important;
     will-change: width;
     /* Force hardware acceleration and disable subpixel rendering for performance */
@@ -114,7 +122,9 @@
 }
 
 /* Show a visual feedback for resizing - unified for all tables */
-.users-table.resizing {
+.users-table.resizing,
+#patientsTable.resizing,
+#sessionsTable.resizing {
     user-select: none;
     cursor: col-resize;
 }
@@ -141,23 +151,33 @@
 }
 
 /* Performance optimizations for smooth resizing - unified for all tables */
-.users-table.resizing {
+.users-table.resizing,
+#patientsTable.resizing,
+#sessionsTable.resizing {
     pointer-events: none; /* Prevent unwanted hover effects during resize */
     contain: layout style; /* Optimize repaints */
 }
 
-.users-table.resizing .column-resize-handle {
+.users-table.resizing .column-resize-handle,
+#patientsTable.resizing .column-resize-handle,
+#sessionsTable.resizing .column-resize-handle {
     pointer-events: auto; /* Keep handle interactive */
 }
 
 /* Optimize reflow during resizing - unified for all tables */
 .users-table th,
-.users-table td {
+.users-table td,
+#patientsTable th,
+#patientsTable td,
+#sessionsTable th,
+#sessionsTable td {
     box-sizing: border-box;
 }
 
 /* Improve visual feedback during resize - unified for all tables */
-.users-table.resizing .column-resize-handle.active {
+.users-table.resizing .column-resize-handle.active,
+#patientsTable.resizing .column-resize-handle.active,
+#sessionsTable.resizing .column-resize-handle.active {
     background: linear-gradient(
         to bottom,
         var(--resize-handle-color),
@@ -169,16 +189,22 @@
 }
 
 /* Smooth column width changes - unified for all tables */
-.users-table th:not(.resizing) {
+.users-table th:not(.resizing),
+#patientsTable th:not(.resizing),
+#sessionsTable th:not(.resizing) {
     transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Improve cursor feedback - unified for all tables */
-.users-table.resizing {
+.users-table.resizing,
+#patientsTable.resizing,
+#sessionsTable.resizing {
     cursor: col-resize !important;
 }
 
-.users-table.resizing * {
+.users-table.resizing *,
+#patientsTable.resizing *,
+#sessionsTable.resizing * {
     cursor: col-resize !important;
 }
 

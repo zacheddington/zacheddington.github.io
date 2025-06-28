@@ -429,49 +429,61 @@ function startTableColumnResize(
     const startWidth = header.offsetWidth;
     const handle = event.target;
 
-    // Store initial widths and table width to prevent redistribution
+    // Store initial widths of ALL columns to preserve them
     const headers = Array.from(table.querySelectorAll('th'));
     const initialWidths = headers.map((h) => h.offsetWidth);
-    const initialTableWidth = table.offsetWidth;
-
-    // Apply initial widths immediately to prevent layout shift
+    
+    // Set table to fixed layout IMMEDIATELY to prevent auto-adjustments
+    table.style.tableLayout = 'fixed';
+    
+    // Apply current widths to all headers to lock them in place
     headers.forEach((h, index) => {
         h.style.width = `${initialWidths[index]}px`;
     });
 
-    // Set table to fixed layout
-    table.style.tableLayout = 'fixed';
-    table.style.width = `${initialTableWidth}px`;
+    // Add visual feedback
+    table.classList.add('resizing');
+    handle.classList.add('active');
+
+    let animationId = null;
 
     function doResize(e) {
         const currentX = e.pageX || e.clientX;
         const diff = currentX - startX;
-        const newWidth = Math.max(80, startWidth + diff);
+        const newWidth = Math.max(80, Math.min(500, startWidth + diff));
 
-        // Calculate width difference and update table width accordingly
-        const widthDifference = newWidth - initialWidths[columnIndex];
-        header.style.width = `${newWidth}px`;
+        // Cancel any pending animation frame
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+        }
 
-        // Adjust the table width to accommodate the change
-        const newTableWidth = initialTableWidth + widthDifference;
-        table.style.width = `${newTableWidth}px`;
-
-        // Ensure all other columns maintain their exact original widths
-        headers.forEach((h, index) => {
-            if (index !== columnIndex) {
-                h.style.width = `${initialWidths[index]}px`;
-            }
+        // Use requestAnimationFrame for smooth updates
+        animationId = requestAnimationFrame(() => {
+            // ONLY resize the target column - keep all others exactly the same
+            header.style.width = `${newWidth}px`;
+            
+            // Update ARIA attribute
+            handle.setAttribute('aria-valuenow', newWidth);
+            
+            animationId = null;
         });
-
-        // Update ARIA attribute
-        handle.setAttribute('aria-valuenow', newWidth);
     }
 
     function stopResize() {
+        // Clean up event listeners
         document.removeEventListener('mousemove', doResize);
         document.removeEventListener('mouseup', stopResize);
         document.removeEventListener('touchmove', doResize);
         document.removeEventListener('touchend', stopResize);
+
+        // Cancel any pending animation
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+        }
+
+        // Remove visual feedback
+        table.classList.remove('resizing');
+        handle.classList.remove('active');
 
         // Save preferences after resize
         saveTableColumnWidthPreferences(tableSelector, storageKey);
@@ -480,9 +492,10 @@ function startTableColumnResize(
         announceForScreenReader(`Column ${header.textContent.trim()} resized`);
     }
 
+    // Add event listeners
     document.addEventListener('mousemove', doResize);
     document.addEventListener('mouseup', stopResize);
-    document.addEventListener('touchmove', doResize);
+    document.addEventListener('touchmove', doResize, { passive: false });
     document.addEventListener('touchend', stopResize);
 }
 
@@ -504,149 +517,75 @@ function autoSizeTableColumn(
     const table = document.querySelector(tableSelector);
     if (!table) return;
 
-    // Store initial widths and table width to prevent redistribution
-    const headers = Array.from(table.querySelectorAll('th'));
-    const initialWidths = headers.map((h) => h.offsetWidth);
-    const initialTableWidth = table.offsetWidth;
-    const startWidth = header.offsetWidth;
-
-    // Apply initial widths immediately to prevent layout shift
-    headers.forEach((h, index) => {
-        h.style.width = `${initialWidths[index]}px`;
-    });
-
-    // Set table to fixed layout
+    // Ensure table is in fixed layout mode
     table.style.tableLayout = 'fixed';
-    table.style.width = `${initialTableWidth}px`;
 
-    // Get all cells in this column
+    // Get all cells in this column (including header)
     const cells = Array.from(
-        table.querySelectorAll(`tbody tr td:nth-child(${columnIndex + 1})`)
+        table.querySelectorAll(`tr td:nth-child(${columnIndex + 1}), tr th:nth-child(${columnIndex + 1})`)
     );
 
-    // If table is empty, just use header text for sizing
-    if (cells.length === 0) {
-        const headerText = header.textContent;
-        let maxWidth = Math.max(headerText.length * 10 + 40, 100);
+    if (cells.length === 0) return;
 
-        // Apply column type constraints even for empty tables
-        const columnType = getColumnType(headerText);
-        if (columnType === 'actions') {
-            maxWidth = 120; // Default actions column width
-        }
+    // Create a temporary element to measure text width
+    const measureElement = document.createElement('div');
+    measureElement.style.position = 'absolute';
+    measureElement.style.visibility = 'hidden';
+    measureElement.style.whiteSpace = 'nowrap';
+    measureElement.style.fontSize = getComputedStyle(table).fontSize || '14px';
+    measureElement.style.fontFamily = getComputedStyle(table).fontFamily || 'system-ui';
+    document.body.appendChild(measureElement);
 
-        // Calculate width difference and update table width accordingly
-        const widthDifference = maxWidth - initialWidths[columnIndex];
-        header.style.width = `${maxWidth}px`;
+    let maxWidth = 80; // Minimum width
 
-        // Adjust the table width to accommodate the change
-        const newTableWidth = initialTableWidth + widthDifference;
-        table.style.width = `${newTableWidth}px`;
+    // Measure each cell's content
+    cells.forEach(cell => {
+        const cellText = cell.textContent.trim();
+        if (!cellText) return;
 
-        // Ensure all other columns maintain their exact original widths
-        headers.forEach((h, index) => {
-            if (index !== columnIndex) {
-                h.style.width = `${initialWidths[index]}px`;
-            }
-        });
-
-        saveTableColumnWidthPreferences(tableSelector, storageKey);
-        announceForScreenReader(
-            `Column ${header.textContent.trim()} auto-sized`
-        );
-        return;
-    }
-
-    // Use canvas for accurate text measurement
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-
-    if (!context) {
-        // Fallback to simple calculation if canvas is not available
-        const headerText = header.textContent;
-        let maxWidth = Math.max(headerText.length * 8 + 40, 80);
-
-        // Apply the calculated width with proper width difference handling
-        const widthDifference = maxWidth - initialWidths[columnIndex];
-        header.style.width = `${maxWidth}px`;
-
-        // Adjust the table width to accommodate the change
-        const newTableWidth = initialTableWidth + widthDifference;
-        table.style.width = `${newTableWidth}px`;
-
-        // Ensure all other columns maintain their exact original widths
-        headers.forEach((h, index) => {
-            if (index !== columnIndex) {
-                h.style.width = `${initialWidths[index]}px`;
-            }
-        });
-
-        saveTableColumnWidthPreferences(tableSelector, storageKey);
-        announceForScreenReader(
-            `Column ${header.textContent.trim()} auto-sized`
-        );
-        return;
-    }
-
-    // Measure actual text content for precise sizing
-    context.font = getComputedStyle(table).font || '14px system-ui';
-
-    let maxWidth = 0;
-
-    // Measure header text
-    const headerText = header.textContent.trim();
-    const headerWidth = context.measureText(headerText).width;
-    maxWidth = Math.max(maxWidth, headerWidth + 40); // Add padding
-
-    // Measure all cell contents
-    cells.forEach((cell) => {
-        const text = cell.textContent.trim();
-        if (text) {
-            const textWidth = context.measureText(text).width;
-            maxWidth = Math.max(maxWidth, textWidth + 20); // Add padding
-        }
+        measureElement.textContent = cellText;
+        const textWidth = measureElement.offsetWidth;
+        
+        // Add padding (left + right padding + some buffer)
+        const cellPadding = 32; // Generous padding for readability
+        const totalWidth = textWidth + cellPadding;
+        
+        maxWidth = Math.max(maxWidth, totalWidth);
     });
 
-    // Apply minimum and maximum constraints
-    maxWidth = Math.max(maxWidth, 80); // Minimum width
-    maxWidth = Math.min(maxWidth, 500); // Maximum width
+    // Clean up
+    document.body.removeChild(measureElement);
 
     // Apply column type constraints
-    const columnType = getColumnType(headerText);
-    switch (columnType) {
-        case 'actions':
-            maxWidth = Math.min(maxWidth, 120);
-            break;
-        case 'status':
-            maxWidth = Math.min(maxWidth, 100);
-            break;
-        case 'date':
-        case 'created':
-            maxWidth = Math.min(maxWidth, 150);
-            break;
-        case 'id':
-        case 'mrn':
-            maxWidth = Math.min(maxWidth, 120);
-            break;
-    }
+    const columnType = getColumnType(header.textContent);
+    
+    // Set reasonable min/max constraints based on column type
+    const constraints = {
+        'email': { min: 120, max: 300 },
+        'username': { min: 100, max: 200 },
+        'name': { min: 120, max: 250 },
+        'fullName': { min: 150, max: 280 },
+        'role': { min: 100, max: 180 },
+        'date': { min: 100, max: 150 },
+        'datetime': { min: 140, max: 200 },
+        'phone': { min: 120, max: 160 },
+        'address': { min: 150, max: 350 },
+        'actions': { min: 80, max: 150 },
+        'status': { min: 80, max: 120 },
+        'general': { min: 80, max: 300 }
+    };
 
-    // Calculate width difference and update table width accordingly
-    const widthDifference = maxWidth - initialWidths[columnIndex];
+    const constraint = constraints[columnType] || constraints.general;
+    maxWidth = Math.max(constraint.min, Math.min(constraint.max, maxWidth));
+
+    // Apply the new width
     header.style.width = `${maxWidth}px`;
 
-    // Adjust the table width to accommodate the change
-    const newTableWidth = initialTableWidth + widthDifference;
-    table.style.width = `${newTableWidth}px`;
-
-    // Ensure all other columns maintain their exact original widths
-    headers.forEach((h, index) => {
-        if (index !== columnIndex) {
-            h.style.width = `${initialWidths[index]}px`;
-        }
-    });
-
+    // Save preferences
     saveTableColumnWidthPreferences(tableSelector, storageKey);
-    announceForScreenReader(`Column ${header.textContent.trim()} auto-sized`);
+
+    // Announce change for screen readers
+    announceForScreenReader(`Column ${header.textContent.trim()} auto-sized to ${maxWidth}px`);
 }
 
 /**
