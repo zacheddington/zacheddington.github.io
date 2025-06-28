@@ -39,67 +39,58 @@
                     <p>View and manage active user sessions</p>
                 </div>
 
-                <!-- Session Management Filters -->
+                <!-- Load/Refresh Actions -->
                 <div class="admin-form">
-                    <div class="form-section">
-                        <h3>Session Filters</h3>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="sessionUserFilter"
-                                    >Filter by User</label
-                                >
-                                <input
-                                    type="text"
-                                    id="sessionUserFilter"
-                                    placeholder="Search by username..."
-                                    autocomplete="off"
-                                />
-                                <small class="field-note"
-                                    >Enter username to view specific user's
-                                    sessions</small
-                                >
-                            </div>
-                            <div class="form-group">
-                                <label for="sessionMethodFilter"
-                                    >Login Method</label
-                                >
-                                <select id="sessionMethodFilter">
-                                    <option value="">All Methods</option>
-                                    <option value="password">Password</option>
-                                    <option value="2fa">2FA</option>
-                                    <option value="backup_code">
-                                        Backup Code
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button
-                                type="button"
-                                class="primary-btn"
-                                id="loadSessionsBtn"
-                            >
-                                Load Sessions
-                            </button>
-                            <button
-                                type="button"
-                                class="secondary-btn"
-                                id="refreshSessionsBtn"
-                            >
-                                Refresh
-                            </button>
-                            <button
-                                type="button"
-                                class="danger-btn"
-                                id="cleanupSessionsBtn"
-                            >
-                                Cleanup Expired
-                            </button>
-                        </div>
+                    <div class="form-actions">
+                        <button
+                            type="button"
+                            class="primary-btn"
+                            id="loadSessionsBtn"
+                        >
+                            Load Sessions
+                        </button>
+                        <button
+                            type="button"
+                            class="secondary-btn"
+                            id="refreshSessionsBtn"
+                        >
+                            Refresh
+                        </button>
+                        <button
+                            type="button"
+                            class="danger-btn"
+                            id="cleanupSessionsBtn"
+                        >
+                            Cleanup Expired
+                        </button>
                     </div>
                 </div>
 
                 <!-- Sessions Table -->
+                <div class="user-filter">
+                    <div class="form-group">
+                        <label for="sessionUserFilter">Search Sessions</label>
+                        <input
+                            type="text"
+                            id="sessionUserFilter"
+                            placeholder="Search by username..."
+                            autocomplete="off"
+                        />
+                        <small class="field-note"
+                            >Filter sessions to quickly find specific user
+                            sessions</small
+                        >
+                    </div>
+                    <div class="filter-actions">
+                        <button
+                            type="button"
+                            class="secondary-btn hidden"
+                            id="resetSessionSort"
+                        >
+                            Clear Sort
+                        </button>
+                    </div>
+                </div>
                 <div class="users-table-container">
                     <div class="table-responsive">
                         <table class="users-table" id="sessionsTable">

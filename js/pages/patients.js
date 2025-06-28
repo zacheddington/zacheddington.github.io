@@ -144,42 +144,10 @@ async function initializeManagePatientsPage() {
     window.tableUtils.initializeTableFormatting({
         tableSelector: '#patientsTable',
         storageKey: 'patientsTableColumnWidths',
-        getColumnType: window.tableUtils.getDefaultColumnType,
+        getColumnType: getPatientColumnType,
     });
 
-    // Add event listener for window resize to adjust column widths
-    window.addEventListener(
-        'resize',
-        debounce(function () {
-            // Only auto-adjust if no saved preferences
-            if (!localStorage.getItem('patientsTableColumnWidths')) {
-                window.tableUtils.adjustTableColumnWidths('#patientsTable');
-            } else {
-                // For responsive tables, check if we've crossed a breakpoint
-                const width = window.innerWidth;
-                if (
-                    !window.lastPatientWidth ||
-                    (width < 480 && window.lastPatientWidth >= 480) ||
-                    (width >= 480 &&
-                        width < 768 &&
-                        (window.lastPatientWidth < 480 ||
-                            window.lastPatientWidth >= 768)) ||
-                    (width >= 768 && window.lastPatientWidth < 768)
-                ) {
-                    // We've crossed a responsive breakpoint, adjust columns
-                    window.tableUtils.adjustTableColumnWidths('#patientsTable');
-                    // Re-add resize handles after adjustment
-                    setTimeout(() => {
-                        window.tableUtils.addTableColumnResizeHandles(
-                            '#patientsTable',
-                            'patientsTableColumnWidths'
-                        );
-                    }, 100);
-                }
-            }
-            window.lastPatientWidth = window.innerWidth;
-        }, 250)
-    );
+    // Manage patients page initialized
 }
 
 // Simple debounce function to limit how often a function is called
@@ -1119,7 +1087,7 @@ function displayPatients(patients) {
                 <td class="patient-updated" title="${updatedDate}">${updatedDate}</td>
                 <td class="patient-created" title="${createdDate}">${createdDate}</td>
                 <td>
-                    <div class="patient-actions">
+                    <div class="user-actions">
                         ${editButton}
                         ${deleteButton}
                     </div>
@@ -1132,25 +1100,6 @@ function displayPatients(patients) {
         .join('');
 
     patientsTableBody.innerHTML = htmlRows;
-
-    // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE
-    const table = document.getElementById('patientsTable');
-    if (table) {
-        // Set table layout to fixed for column resizing to work
-        table.style.tableLayout = 'fixed';
-        table.style.width = '100%';
-
-        // Force recalculation by temporarily changing display
-        table.style.display = 'none';
-        table.offsetHeight; // Force reflow
-        table.style.display = 'table';
-    } // Add resize handles after rendering table content
-    setTimeout(() => {
-        window.tableUtils.addTableColumnResizeHandles(
-            '#patientsTable',
-            'patientsTableColumnWidths'
-        );
-    }, 100);
 }
 
 // Display patients in the table while preserving column widths
@@ -1177,10 +1126,6 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
     if (tableContainer) {
         tableContainer.scrollLeft = 0;
     }
-
-    // Set the table to auto layout to allow proper expansion
-    table.style.tableLayout = 'auto';
-    table.style.minWidth = 'max-content'; // Allow table to expand as needed
 
     // Update the table body with new data
     const patientRows = patients
@@ -1244,7 +1189,7 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
                 <td class="patient-updated" title="${updatedDate}">${updatedDate}</td>
                 <td class="patient-created" title="${createdDate}">${createdDate}</td>
                 <td>
-                    <div class="patient-actions">
+                    <div class="user-actions">
                         ${editButton}
                         ${deleteButton}
                     </div>
@@ -1254,14 +1199,7 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
         })
         .join('');
 
-    patientsTableBody.innerHTML = patientRows; // FORCE RESET TABLE LAYOUT TO FIX COLUMN ALIGNMENT ISSUE (same as displayPatients)
-    const patientTable = document.querySelector('#patientsTable');
-    if (patientTable) {
-        patientTable.style.tableLayout = 'auto';
-        patientTable.style.width = '100%'; // Force recalculation by temporarily changing display        patientTable.style.display = 'none';
-        patientTable.offsetHeight; // Force reflow
-        patientTable.style.display = 'table';
-    }
+    patientsTableBody.innerHTML = patientRows;
 
     // Reapply column widths if provided
     if (columnWidths.length > 0) {
@@ -1275,26 +1213,10 @@ function displayPatientsPreserveWidths(patients, columnWidths = []) {
 
     // Add column resize handles
     window.tableUtils.addTableColumnResizeHandles(
-        '.users-table',
-        'patientsTableColumnWidths'
+        '#patientsTable',
+        'patientsTableColumnWidths',
+        getPatientColumnType
     );
-}
-
-// Function to add tooltips to column headers to indicate they can be resized
-function addColumnResizeTooltips() {
-    const table = document.querySelector('#patientsTable');
-    if (!table) return;
-
-    const headers = Array.from(table.querySelectorAll('th'));
-
-    // Add tooltip to each header except the last one (actions column)
-    headers.forEach((header, index) => {
-        if (index < headers.length - 1) {
-            // Skip last column (actions)
-            header.title =
-                'Drag edge to resize column | Double-click to auto-size';
-        }
-    });
 }
 
 // Filter patients based on search input
@@ -1670,6 +1592,26 @@ async function handleEditPatientSubmit(event) {
         btnLoading.classList.add('hidden');
         submitBtn.disabled = false;
     }
+}
+
+// Make functions globally available for inline onclick handlers
+window.editPatient = editPatient;
+window.deletePatient = deletePatient;
+
+// Export functions for global access
+window.patientsPage = {
+    initializePatientsPage,
+    loadPatients,
+    displayPatients,
+    setupEditPatientModal,
+    setupDeletePatientModal,
+    editPatient,
+    deletePatient,
+};
+
+// Export for module systems
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = window.patientsPage;
 }
 
 // Load patient column width preferences from localStorage
@@ -2089,7 +2031,7 @@ function autoSizeColumn(header, columnIndex) {
         let cellText = '';
 
         // Handle different cell types properly
-        if (cell.querySelector('.patient-actions')) {
+        if (cell.querySelector('.user-actions')) {
             // For action cells, measure the actual button content
             const actionButtons = cell.querySelectorAll('button');
             let buttonWidths = 0;
@@ -2155,7 +2097,7 @@ function autoSizeColumn(header, columnIndex) {
     } else if (columnType === 'actions') {
         // Calculate actions column width more precisely based on actual button content
         const actionCells = table.querySelectorAll(
-            'tbody tr td:nth-child(' + (columnIndex + 1) + ') .patient-actions'
+            'tbody tr td:nth-child(' + (columnIndex + 1) + ') .user-actions'
         );
         if (actionCells.length > 0) {
             // Measure actual action buttons
@@ -2199,27 +2141,27 @@ function autoSizeColumn(header, columnIndex) {
     announceForScreenReader(`Column ${header.textContent.trim()} auto-sized`);
 }
 
-// Helper function to determine patient column type
+// Get the column type based on header text for appropriate sizing constraints
 function getPatientColumnType(headerText) {
-    const text = headerText.toLowerCase().trim();
+    const header = headerText.toLowerCase().trim();
 
-    if (text.includes('name')) {
+    if (header.includes('name')) {
         return 'name';
-    } else if (text.includes('birth') || text.includes('dob')) {
-        return 'dob';
-    } else if (text.includes('phone')) {
-        return 'phone';
-    } else if (text.includes('text')) {
-        return 'accepts_texts';
-    } else if (text.includes('address')) {
-        return 'address';
-    } else if (text.includes('updated') || text.includes('created')) {
+    } else if (header.includes('date') || header.includes('birth')) {
         return 'date';
-    } else if (text.includes('action')) {
+    } else if (header.includes('phone')) {
+        return 'phone';
+    } else if (header.includes('text') || header.includes('accepts')) {
+        return 'status';
+    } else if (header.includes('address')) {
+        return 'address';
+    } else if (header.includes('updated') || header.includes('created')) {
+        return 'datetime';
+    } else if (header.includes('action')) {
         return 'actions';
+    } else {
+        return 'general';
     }
-
-    return 'general';
 }
 
 // Setup edit patient modal functionality
@@ -2291,9 +2233,6 @@ window.patientsPage = {
     displayPatients,
     setupEditPatientModal,
     setupDeletePatientModal,
-    savePatientColumnWidthPreferences,
-    adjustPatientColumnWidths,
-    addPatientColumnResizeHandles,
     editPatient,
     deletePatient,
 };

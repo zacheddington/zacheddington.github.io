@@ -22,23 +22,27 @@
    TABLE-SPECIFIC SIZING
    ================================ */
 
-/* Sessions table specific styling - needs more width for 8 columns */
+/* All tables use the same base styling with responsive min-width */
+.users-table {
+    min-width: 1200px; /* Base minimum width for all tables */
+}
+
+/* Sessions table needs more width for 8 columns */
 #sessionsTable {
     min-width: 1400px; /* Wider for 8 columns: User, Status, Login Time, Last Activity, Logout Time, IP Address, Browser, Actions */
 }
 
-/* Patients table specific styling - adequate for 6 columns */
+/* Patients table adequate for 8 columns */
 #patientsTable {
-    min-width: 1000px; /* Adequate for 6 columns: Patient ID, Name, DOB, Phone, Email, Actions */
+    min-width: 1200px; /* Standard width like users table */
 }
 
 /* ================================
    RESIZABLE COLUMNS
    ================================ */
 
-/* Make table columns resizable */
-.users-table th,
-#patientsTable th {
+/* Make all table columns resizable - unified styling */
+.users-table th {
     position: relative;
     user-select: none; /* Prevent text selection during resizing */
     -webkit-user-select: none; /* Safari */
@@ -68,9 +72,8 @@
     outline: none; /* Remove focus outline, we're using background color instead */
 }
 
-/* Improve resize handle visibility on header hover */
-.users-table th:hover .column-resize-handle,
-#patientsTable th:hover .column-resize-handle {
+/* Improve resize handle visibility on header hover - unified for all tables */
+.users-table th:hover .column-resize-handle {
     background-color: var(--color-primary);
     opacity: 0.3;
 }
@@ -87,16 +90,14 @@
     --resize-transition-duration: 0.15s;
 }
 
-/* Smooth resizing performance optimizations */
-.users-table th,
-#patientsTable th {
+/* Smooth resizing performance optimizations - unified for all tables */
+.users-table th {
     will-change: auto;
     /* Remove default transition for immediate response during resize */
 }
 
-/* During resizing, optimize for performance */
-.users-table.resizing th,
-#patientsTable.resizing th {
+/* During resizing, optimize for performance - unified for all tables */
+.users-table.resizing th {
     transition: none !important;
     will-change: width;
     /* Force hardware acceleration and disable subpixel rendering for performance */
@@ -112,9 +113,8 @@
     box-shadow: 0 0 4px rgba(0, 150, 136, 0.3);
 }
 
-/* Show a visual feedback for resizing */
-.users-table.resizing,
-#patientsTable.resizing {
+/* Show a visual feedback for resizing - unified for all tables */
+.users-table.resizing {
     user-select: none;
     cursor: col-resize;
 }
@@ -133,13 +133,6 @@
     box-shadow: 0 0 0 2px rgba(0, 150, 136, 0.5);
 }
 
-/* Show a visual feedback for resizing */
-.users-table.resizing,
-#patientsTable.resizing {
-    cursor: col-resize;
-    user-select: none;
-}
-
 /* Only highlight the specific column being resized, not all columns */
 .column-resize-handle.active {
     background-color: var(--resize-handle-color);
@@ -147,29 +140,24 @@
     width: var(--resize-handle-active-width);
 }
 
-/* Performance optimizations for smooth resizing */
-.users-table.resizing,
-#patientsTable.resizing {
+/* Performance optimizations for smooth resizing - unified for all tables */
+.users-table.resizing {
     pointer-events: none; /* Prevent unwanted hover effects during resize */
     contain: layout style; /* Optimize repaints */
 }
 
-.users-table.resizing .column-resize-handle,
-#patientsTable.resizing .column-resize-handle {
+.users-table.resizing .column-resize-handle {
     pointer-events: auto; /* Keep handle interactive */
 }
 
-/* Optimize reflow during resizing */
+/* Optimize reflow during resizing - unified for all tables */
 .users-table th,
-#patientsTable th,
-.users-table td,
-#patientsTable td {
+.users-table td {
     box-sizing: border-box;
 }
 
-/* Improve visual feedback during resize */
-.users-table.resizing .column-resize-handle.active,
-#patientsTable.resizing .column-resize-handle.active {
+/* Improve visual feedback during resize - unified for all tables */
+.users-table.resizing .column-resize-handle.active {
     background: linear-gradient(
         to bottom,
         var(--resize-handle-color),
@@ -180,20 +168,17 @@
     transition: transform 0.1s ease;
 }
 
-/* Smooth column width changes */
-.users-table th:not(.resizing),
-#patientsTable th:not(.resizing) {
+/* Smooth column width changes - unified for all tables */
+.users-table th:not(.resizing) {
     transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Improve cursor feedback */
-.users-table.resizing,
-#patientsTable.resizing {
+/* Improve cursor feedback - unified for all tables */
+.users-table.resizing {
     cursor: col-resize !important;
 }
 
-.users-table.resizing *,
-#patientsTable.resizing * {
+.users-table.resizing * {
     cursor: col-resize !important;
 }
 
@@ -371,53 +356,6 @@
     min-width: 80px; /* Ensure minimum cell width */
 }
 
-/* Specific table styling overrides to ensure visibility */
-#patientsTable,
-#sessionsTable {
-    display: table !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    color: #333 !important;
-    background-color: white !important;
-}
-
-#patientsTable thead,
-#sessionsTable thead,
-#patientsTable tbody,
-#sessionsTable tbody {
-    display: table-header-group !important;
-    visibility: visible !important;
-}
-
-#patientsTable tbody {
-    display: table-row-group !important;
-}
-
-#patientsTable td,
-#patientsTable th,
-#sessionsTable td,
-#sessionsTable th {
-    color: #333 !important; /* Force text to be visible */
-    background-color: transparent !important; /* Ensure background doesn't hide text */
-    max-width: none !important; /* Override any max-width that might hide content */
-    width: auto !important; /* Allow natural width */
-    display: table-cell !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    font-size: 14px !important; /* Ensure text size is readable */
-    padding: 0.75rem !important; /* Ensure there's padding */
-}
-
-/* Make sure text content is visible */
-#patientsTable td *,
-#sessionsTable td *,
-#patientsTable th *,
-#sessionsTable th * {
-    color: inherit !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
 /* Specific column behavior */
 .users-table td.user-email {
     max-width: none; /* Remove the max-width limit to allow full expansion */
@@ -451,8 +389,7 @@
    TABLE ACTIONS
    ================================ */
 
-.user-actions,
-.patient-actions {
+.user-actions {
     display: flex;
     gap: 0.5rem; /* Reduce gap for more compact layout */
     justify-content: center;
@@ -464,9 +401,7 @@
 
 /* Optimize action buttons for compact sizing */
 .user-actions .btn-edit,
-.user-actions .btn-delete,
-.patient-actions .btn-edit,
-.patient-actions .btn-delete {
+.user-actions .btn-delete {
     font-size: 14px; /* Slightly smaller font */
     padding: 0.4rem 0.6rem; /* Reduce padding for compactness */
     min-width: auto; /* Remove minimum width constraints */
@@ -478,9 +413,7 @@
 /* Remove excessive minimum width constraints from Actions columns */
 /* Let Actions columns size themselves based on actual content */
 .users-table th:last-child,
-.users-table td:last-child,
-#patientsTable th:last-child,
-#patientsTable td:last-child {
+.users-table td:last-child {
     text-align: center;
     padding: 0.5rem;
     width: auto; /* Let the column size itself */
@@ -489,8 +422,7 @@
 }
 
 /* Ensure Actions column content doesn't overflow */
-.users-table th:last-child,
-#patientsTable th:last-child {
+.users-table th:last-child {
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -533,30 +465,6 @@
 .btn-delete:hover {
     background-color: #ffebee;
     border-color: #f44336;
-}
-
-/* Patient Actions Column - remove redundant styles */
-.btn-icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem; /* Slightly smaller */
-    padding: 0.25rem;
-    border-radius: var(--radius-sm);
-    transition: background-color 0.2s ease;
-    min-width: auto; /* Remove minimum width */
-    height: auto; /* Remove fixed height */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-edit:hover {
-    background-color: var(--color-primary-light);
-}
-
-.btn-delete:hover {
-    background-color: var(--color-danger-light);
 }
 
 /* ================================
@@ -655,14 +563,12 @@
 }
 
 @media screen and (max-width: 480px) {
-    .users-table th,
-    #patientsTable th {
+    .users-table th {
         padding: 0.5rem 0.25rem;
         font-size: 0.85rem;
     }
 
-    .users-table td,
-    #patientsTable td {
+    .users-table td {
         padding: 0.5rem 0.25rem;
         font-size: 0.85rem;
     }
@@ -698,14 +604,12 @@
 
 /* Very small screens */
 @media screen and (max-width: 320px) {
-    .users-table th,
-    #patientsTable th {
+    .users-table th {
         padding: 0.4rem 0.2rem;
         font-size: 0.8rem;
     }
 
-    .users-table td,
-    #patientsTable td {
+    .users-table td {
         padding: 0.4rem 0.2rem;
         font-size: 0.8rem;
     }
