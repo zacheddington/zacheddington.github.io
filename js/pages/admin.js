@@ -91,8 +91,8 @@ function adjustColumnWidths() {
     table.style.tableLayout = 'auto';
     table.style.minWidth = 'max-content'; // Allow table to expand as needed
 
-    // Add column resize handles
-    addColumnResizeHandles();
+    // Column resizing is now handled by table-utils.js
+    // addColumnResizeHandles();
 }
 
 // Simple debounce function to limit how often a function is called
@@ -644,22 +644,8 @@ async function loadUsers() {
             setupTableSorting();
             const sortedUsers = getSortedUsers();
 
-            // Check if we have saved column widths
-            try {
-                const savedWidths = JSON.parse(
-                    localStorage.getItem('userTableColumnWidths')
-                );
-                if (savedWidths && Array.isArray(savedWidths)) {
-                    // Display users with saved column widths
-                    displayUsersPreserveWidths(sortedUsers, savedWidths);
-                } else {
-                    // No saved preferences, just display and auto-adjust
-                    displayUsers(sortedUsers);
-                }
-            } catch (e) {
-                // Error applying column widths after loading users
-                displayUsers(sortedUsers);
-            }
+            // Display users
+            displayUsers(sortedUsers);
         } else {
             // Use global auth error handler for consistent experience
             if (response.status === 401 || response.status === 403) {
@@ -784,24 +770,14 @@ function handleSortFallback(columnKey) {
     refreshUsersDisplay();
 }
 
-// Refresh users display while preserving column widths
+// Refresh users display
 function refreshUsersDisplay() {
     // Update reset sort button visibility
     updateResetSortButton();
 
-    // Capture current column widths before making any changes
-    const table = document.querySelector('.users-table');
-    let columnWidths = [];
-
-    if (table) {
-        // Store current column widths
-        const headers = Array.from(table.querySelectorAll('th'));
-        columnWidths = headers.map((header) => header.style.width);
-    }
-
     // Sort and display users
     const sortedUsers = getSortedUsers();
-    displayUsersPreserveWidths(sortedUsers, columnWidths);
+    displayUsers(sortedUsers);
 }
 
 // Update sort indicators using shared utility with fallback
@@ -1254,8 +1230,8 @@ function filterUsers() {
 
     displayUsers(filteredUsers);
 
-    // Adjust column widths based on content after filtering
-    setTimeout(adjustColumnWidths, 100);
+    // Column width adjustments are now handled by table-utils.js
+    // setTimeout(adjustColumnWidths, 100);
 }
 
 // Setup user filter
@@ -2097,12 +2073,12 @@ function loadColumnWidthPreferences() {
 
             table.style.tableLayout = 'fixed';
         } else {
-            // No saved preferences, run auto-sizing algorithm
-            adjustColumnWidths();
+            // Table initialization is now handled by table-utils.js
+            // adjustColumnWidths();
         }
     } catch (error) {
-        // Error loading column width preferences
-        adjustColumnWidths();
+        // Table initialization is now handled by table-utils.js
+        // adjustColumnWidths();
     }
 }
 
@@ -2700,13 +2676,13 @@ function adjustSessionColumnWidths() {
         table.style.tableLayout = 'fixed';
         table.style.width = '100%';
 
-        // Add column resize handles
-        addColumnResizeHandles();
+        // Column resizing is now handled by table-utils.js
+        // addColumnResizeHandles();
 
-        // Save current widths
-        setTimeout(() => {
-            saveSessionColumnPreferences();
-        }, 100);
+        // Column width persistence is now handled by table-utils.js
+        // setTimeout(() => {
+        //     saveSessionColumnPreferences();
+        // }, 100);
     } catch (error) {
         console.error('Error adjusting session column widths:', error);
     }
