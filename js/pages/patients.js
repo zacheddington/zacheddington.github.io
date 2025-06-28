@@ -998,7 +998,7 @@ function displayPatients(patients) {
                 <td class="patient-updated" title="${updatedDate}">${updatedDate}</td>
                 <td class="patient-created" title="${createdDate}">${createdDate}</td>
                 <td>
-                    <div class="user-actions">
+                    <div class="table-actions">
                         ${editButton}
                         ${deleteButton}
                     </div>

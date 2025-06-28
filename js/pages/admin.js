@@ -113,7 +113,7 @@ function setUserActionLoading(userId, isLoading) {
     const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
     if (!userRow) return;
 
-    const actionButtons = userRow.querySelectorAll('.user-actions button');
+    const actionButtons = userRow.querySelectorAll('.table-actions button');
     const roleSelect = userRow.querySelector('.role-select');
 
     if (isLoading) {
@@ -971,7 +971,7 @@ function displayUsers(users) {
                 user.username
             }</td>
                 <td class="user-fullname" title="${fullName}">${fullName}</td>
-                <td class="user-email" title="${user.email}">${
+                <td class="cell-email" title="${user.email}">${
                 user.email
             }</td>                <td>
                     ${
@@ -1000,8 +1000,8 @@ function displayUsers(users) {
                             </span>`
                     }
                 </td>
-                <td class="user-created" title="${createdDate}">${createdDate}</td>                <td>
-                    <div class="user-actions">
+                <td class="cell-date" title="${createdDate}">${createdDate}</td>                <td>
+                    <div class="table-actions">
                         ${
                             !isCurrentUser
                                 ? `<button class="btn-icon btn-delete" onclick="window.adminPage.deleteUser(${user.user_key}, '${user.username}')" title="Delete User">
@@ -1135,7 +1135,7 @@ function displayUsersPreserveWidths(users, columnWidths = []) {
                 user.username
             }</td>
                 <td class="user-fullname" title="${fullName}">${fullName}</td>
-                <td class="user-email" title="${user.email || ''}">${
+                <td class="cell-email" title="${user.email || ''}">${
                 user.email || ''
             }</td>                <td class="user-role" title="Select user role">
                     ${
@@ -1162,8 +1162,8 @@ function displayUsersPreserveWidths(users, columnWidths = []) {
                             : primaryRole
                     }
                 </td>
-                <td class="user-created" title="${createdDate}">${createdDate}</td>                <td>
-                    <div class="user-actions">
+                <td class="cell-date" title="${createdDate}">${createdDate}</td>                <td>
+                    <div class="table-actions">
                         ${
                             !isCurrentUser
                                 ? `<button class="btn-icon btn-delete" onclick="window.adminPage.deleteUser(${user.user_key}, '${user.username}')" title="Delete User">
@@ -1933,7 +1933,7 @@ function autoSizeColumn(header, columnIndex) {
         // Handle different cell types properly
         if (cell.querySelector('.user-full-name')) {
             cellText = cell.querySelector('.user-full-name').textContent.trim();
-        } else if (cell.querySelector('.user-actions')) {
+        } else if (cell.querySelector('.table-actions')) {
             // For action cells, measure the actual button content more accurately
             const actionButtons = cell.querySelectorAll('button');
             let buttonWidths = 0;
@@ -1997,7 +1997,7 @@ function autoSizeColumn(header, columnIndex) {
     } else if (columnType === 'actions') {
         // Calculate actions column width more precisely based on actual button content
         const actionCells = table.querySelectorAll(
-            'tbody tr td:nth-child(' + (columnIndex + 1) + ') .user-actions'
+            'tbody tr td:nth-child(' + (columnIndex + 1) + ') .table-actions'
         );
         if (actionCells.length > 0) {
             // Measure actual action buttons

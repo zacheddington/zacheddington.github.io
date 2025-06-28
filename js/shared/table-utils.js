@@ -432,10 +432,10 @@ function startTableColumnResize(
     // Store initial widths of ALL columns to preserve them
     const headers = Array.from(table.querySelectorAll('th'));
     const initialWidths = headers.map((h) => h.offsetWidth);
-    
+
     // Set table to fixed layout IMMEDIATELY to prevent auto-adjustments
     table.style.tableLayout = 'fixed';
-    
+
     // Apply current widths to all headers to lock them in place
     headers.forEach((h, index) => {
         h.style.width = `${initialWidths[index]}px`;
@@ -461,10 +461,10 @@ function startTableColumnResize(
         animationId = requestAnimationFrame(() => {
             // ONLY resize the target column - keep all others exactly the same
             header.style.width = `${newWidth}px`;
-            
+
             // Update ARIA attribute
             handle.setAttribute('aria-valuenow', newWidth);
-            
+
             animationId = null;
         });
     }
@@ -522,7 +522,11 @@ function autoSizeTableColumn(
 
     // Get all cells in this column (including header)
     const cells = Array.from(
-        table.querySelectorAll(`tr td:nth-child(${columnIndex + 1}), tr th:nth-child(${columnIndex + 1})`)
+        table.querySelectorAll(
+            `tr td:nth-child(${columnIndex + 1}), tr th:nth-child(${
+                columnIndex + 1
+            })`
+        )
     );
 
     if (cells.length === 0) return;
@@ -533,23 +537,24 @@ function autoSizeTableColumn(
     measureElement.style.visibility = 'hidden';
     measureElement.style.whiteSpace = 'nowrap';
     measureElement.style.fontSize = getComputedStyle(table).fontSize || '14px';
-    measureElement.style.fontFamily = getComputedStyle(table).fontFamily || 'system-ui';
+    measureElement.style.fontFamily =
+        getComputedStyle(table).fontFamily || 'system-ui';
     document.body.appendChild(measureElement);
 
     let maxWidth = 80; // Minimum width
 
     // Measure each cell's content
-    cells.forEach(cell => {
+    cells.forEach((cell) => {
         const cellText = cell.textContent.trim();
         if (!cellText) return;
 
         measureElement.textContent = cellText;
         const textWidth = measureElement.offsetWidth;
-        
+
         // Add padding (left + right padding + some buffer)
         const cellPadding = 32; // Generous padding for readability
         const totalWidth = textWidth + cellPadding;
-        
+
         maxWidth = Math.max(maxWidth, totalWidth);
     });
 
@@ -558,21 +563,21 @@ function autoSizeTableColumn(
 
     // Apply column type constraints
     const columnType = getColumnType(header.textContent);
-    
+
     // Set reasonable min/max constraints based on column type
     const constraints = {
-        'email': { min: 120, max: 300 },
-        'username': { min: 100, max: 200 },
-        'name': { min: 120, max: 250 },
-        'fullName': { min: 150, max: 280 },
-        'role': { min: 100, max: 180 },
-        'date': { min: 100, max: 150 },
-        'datetime': { min: 140, max: 200 },
-        'phone': { min: 120, max: 160 },
-        'address': { min: 150, max: 350 },
-        'actions': { min: 80, max: 150 },
-        'status': { min: 80, max: 120 },
-        'general': { min: 80, max: 300 }
+        email: { min: 120, max: 300 },
+        username: { min: 100, max: 200 },
+        name: { min: 120, max: 250 },
+        fullName: { min: 150, max: 280 },
+        role: { min: 100, max: 180 },
+        date: { min: 100, max: 150 },
+        datetime: { min: 140, max: 200 },
+        phone: { min: 120, max: 160 },
+        address: { min: 150, max: 350 },
+        actions: { min: 80, max: 150 },
+        status: { min: 80, max: 120 },
+        general: { min: 80, max: 300 },
     };
 
     const constraint = constraints[columnType] || constraints.general;
@@ -585,7 +590,9 @@ function autoSizeTableColumn(
     saveTableColumnWidthPreferences(tableSelector, storageKey);
 
     // Announce change for screen readers
-    announceForScreenReader(`Column ${header.textContent.trim()} auto-sized to ${maxWidth}px`);
+    announceForScreenReader(
+        `Column ${header.textContent.trim()} auto-sized to ${maxWidth}px`
+    );
 }
 
 /**
