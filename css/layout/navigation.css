@@ -436,77 +436,42 @@ body.is-admin .admin-only {
     }
 }
 
-/* Mobile-only dropdown behavior */
-@media (max-width: 1024px) {
-    /* Ensure admin dropdowns are visible on mobile */
-    body.is-admin .nav-dropdown.mobile-open.admin-only {
-        display: block !important; /* Override admin-only hiding */
+/* Touch device behavior at all screen sizes */
+@supports (pointer: coarse) {
+    /* On touch devices, disable hover and rely on mobile-open class */
+    .nav-dropdown:hover .dropdown-content {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
     }
-
-    /* DEBUG: Super specific selector for dropdown content */
-    body.is-admin .nav-dropdown.mobile-open.admin-only .dropdown-content,
-    .nav-dropdown.mobile-open .dropdown-content {
-        opacity: 1 !important;
-        visibility: visible !important;
-        transform: translateY(0) !important;
-        display: block !important;
-        background: rgb(255, 0, 0) !important; /* RED DEBUG BACKGROUND */
-        border: 3px solid rgb(0, 255, 0) !important; /* GREEN DEBUG BORDER */
-        min-height: 100px !important;
-        position: absolute !important;
-        top: 100% !important;
-        left: 0 !important;
-        z-index: 9999 !important;
-        width: 200px !important;
-    }
-
-    /* DEBUG: Super specific selector for dropdown trigger */
-    body.is-admin .nav-dropdown.mobile-open.admin-only,
-    .nav-dropdown.mobile-open {
-        position: relative !important;
-        background: rgb(255, 255, 0) !important; /* YELLOW DEBUG BACKGROUND */
-        display: block !important;
+    
+    .nav-dropdown:hover .dropdown-arrow {
+        transform: rotate(0deg);
     }
 }
 
-/* ULTIMATE DEBUG: Force dropdown to show no matter what */
-@media (max-width: 1024px) {
-    body.is-admin
-        .top-nav-menu
-        .nav-dropdown.mobile-open.admin-only
-        .dropdown-content,
-    body .top-nav-menu .nav-dropdown.mobile-open .dropdown-content,
-    .app-header .top-nav-menu .nav-dropdown.mobile-open .dropdown-content {
-        opacity: 1 !important;
-        visibility: visible !important;
-        transform: translateY(0) !important;
-        display: block !important;
-        background: red !important;
-        border: 5px solid lime !important;
-        min-height: 150px !important;
-        position: absolute !important;
-        top: 100% !important;
-        left: 0 !important;
-        z-index: 99999 !important;
-        width: 250px !important;
-        margin-top: 5px !important;
-    }
-}
-
-/* Desktop behavior - hover only */
-@media (min-width: 1025px) {
-    .nav-dropdown.mobile-open .dropdown-content {
+/* Small screen mobile behavior (always use touch/click) */
+@media (max-width: 768px) {
+    /* Disable hover completely on small screens */
+    .nav-dropdown:hover .dropdown-content {
         opacity: 0 !important;
         visibility: hidden !important;
         transform: translateY(-10px) !important;
     }
-
-    .nav-dropdown.mobile-open .dropdown-arrow {
+    
+    .nav-dropdown:hover .dropdown-arrow {
         transform: rotate(0deg) !important;
     }
-}
-
-/* Disable transitions that interfere with mobile dropdowns */
-.nav-dropdown.mobile-open .dropdown-content {
-    transition: none !important;
+    
+    /* Ensure mobile-open class works */
+    .nav-dropdown.mobile-open .dropdown-content {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) !important;
+    }
+    
+    /* Ensure admin dropdowns are visible on mobile */
+    body.is-admin .nav-dropdown.mobile-open.admin-only {
+        display: block !important;
+    }
 }

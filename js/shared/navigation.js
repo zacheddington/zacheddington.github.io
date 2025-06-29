@@ -249,11 +249,16 @@ function setupPatientNumberValidation() {
 }
 
 /**
- * Setup mobile-friendly dropdown navigation
+ * Setup navigation dropdowns with unified mouse vs touch detection
+ * Mouse input: Uses CSS :hover dropdowns at all screen sizes
+ * Touch input: Uses JavaScript toggle dropdowns at all screen sizes
  */
 function setupMobileDropdowns() {
     const dropdowns = document.querySelectorAll('.nav-dropdown');
-    console.log('Setting up mobile dropdowns, found:', dropdowns.length);
+    console.log('Setting up unified navigation dropdowns, found:', dropdowns.length);
+
+    // Track input method - starts as unknown
+    let isUsingTouch = null;
 
     dropdowns.forEach((dropdown) => {
         const trigger = dropdown.querySelector('.dropdown-trigger');
@@ -265,27 +270,22 @@ function setupMobileDropdowns() {
         }
 
         // Remove existing listeners to prevent duplicates
-        const existingHandler = trigger._mobileDropdownHandler;
-        if (existingHandler) {
-            trigger.removeEventListener('click', existingHandler);
+        if (trigger._clickHandler) {
+            trigger.removeEventListener('click', trigger._clickHandler);
+        }
+        if (trigger._touchHandler) {
+            trigger.removeEventListener('touchstart', trigger._touchHandler);
         }
 
-        // Create click handler only for mobile screens
-        const clickHandler = function (e) {
-            // Only handle clicks on small screens (mobile/tablet)
-            if (window.innerWidth > 768) {
-                // On desktop, let CSS hover handle dropdowns
-                return;
-            }
-
-            console.log(
-                'Mobile dropdown trigger clicked:',
-                trigger.textContent.trim()
-            );
+        // Touch start handler - detects touch input
+        const touchStartHandler = function (e) {
+            isUsingTouch = true;
+            console.log('Touch input detected on dropdown:', trigger.textContent.trim());
+            
+            // For touch, prevent default click behavior and handle with JS
             e.preventDefault();
-            e.stopPropagation();
-
-            // Close other open dropdowns
+            
+            // Close other dropdowns
             dropdowns.forEach((otherDropdown) => {
                 if (otherDropdown !== dropdown) {
                     otherDropdown.classList.remove('mobile-open');
@@ -296,58 +296,67 @@ function setupMobileDropdowns() {
             dropdown.classList.toggle('mobile-open');
         };
 
-        // Store reference for cleanup
-        trigger._mobileDropdownHandler = clickHandler;
+        // Click handler - handles mouse clicks when not from touch
+        const clickHandler = function (e) {
+            // If we know this is a touch device, prevent navigation and handle with JS
+            if (isUsingTouch === true) {
+                e.preventDefault();
+                console.log('Touch device click prevented - handled by touch logic');
+                return;
+            }
 
-        // Add click listener
+            // For mouse input, let CSS :hover handle dropdowns and allow navigation
+            console.log('Mouse input - allowing CSS :hover and normal navigation');
+            // Don't prevent default - let normal navigation work
+        };
+
+        // Mouse enter handler - detects mouse input
+        const mouseEnterHandler = function (e) {
+            // Only set to false if we haven't detected touch yet
+            if (isUsingTouch === null) {
+                isUsingTouch = false;
+                console.log('Mouse input detected');
+            }
+        };
+
+        // Store references for cleanup
+        trigger._clickHandler = clickHandler;
+        trigger._touchHandler = touchStartHandler;
+        trigger._mouseHandler = mouseEnterHandler;
+
+        // Add event listeners
         trigger.addEventListener('click', clickHandler);
+        trigger.addEventListener('touchstart', touchStartHandler, { passive: false });
+        trigger.addEventListener('mouseenter', mouseEnterHandler);
 
         // Handle clicks on dropdown content links
         const dropdownLinks = content.querySelectorAll('a');
         dropdownLinks.forEach((link) => {
             link.addEventListener('click', function (e) {
-                // Allow normal navigation, just close the dropdown
+                // Close dropdown when link is clicked (for touch devices)
                 dropdown.classList.remove('mobile-open');
-                console.log('Dropdown link clicked, closing dropdown');
             });
         });
     });
 
-    // Close dropdowns when clicking outside (mobile only)
+    // Close dropdowns when clicking outside (for touch devices)
     document.addEventListener('click', function (e) {
-        if (window.innerWidth <= 768 && !e.target.closest('.nav-dropdown')) {
+        if (isUsingTouch && !e.target.closest('.nav-dropdown')) {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
             });
         }
     });
 
-    // Close dropdowns on escape key (mobile only)
+    // Close dropdowns on escape key (for touch devices)
     document.addEventListener('keydown', function (e) {
-        if (window.innerWidth <= 768 && e.key === 'Escape') {
+        if (isUsingTouch && e.key === 'Escape') {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
             });
         }
     });
 }
-
-// Handle window resize to ensure dropdowns work correctly on orientation change
-let resizeTimeout;
-window.addEventListener('resize', function () {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(function () {
-        console.log('Window resized, reinitializing mobile dropdowns');
-
-        // Close all mobile dropdowns when switching to desktop
-        const dropdowns = document.querySelectorAll('.nav-dropdown');
-        dropdowns.forEach((dropdown) => {
-            dropdown.classList.remove('mobile-open');
-        });
-
-        setupMobileDropdowns();
-    }, 250);
-});
 
 // Make navigation utilities available globally
 window.navigation = {
