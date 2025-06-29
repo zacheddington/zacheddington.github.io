@@ -103,35 +103,13 @@
    PATIENT TABLE RESPONSIVE STYLES
    ================================ */
 
-/* Patient table cell styles */
-#patientsTable td {
-    white-space: nowrap; /* Prevent text from wrapping */
-    text-overflow: ellipsis; /* Show ... when text overflows */
-    overflow: hidden; /* Hide overflow content */
-    max-width: 0; /* Required for text-overflow to work with table cells */
-}
-
 /* Column widths removed - let unified table system handle all column sizing */
 /* These CSS rules were interfering with the resize functionality by overriding inline styles */
 
 /* Patient address cell specific style */
 #patientsTable td.patient-address {
-    max-width: none; /* Remove the max-width limit to allow full expansion */
     text-align: left; /* Left-align address text */
     position: relative; /* For potential overflow indicator */
 }
 
 /* End of patients page styles */
-
-/* Cell hover effect to show full content on mobile */
-@media screen and (max-width: 767px) {
-    #patientsTable td:hover {
-        white-space: normal;
-        overflow: visible;
-        max-width: none;
-        z-index: 10;
-        position: relative;
-        background-color: #f8fdff;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    }
-}

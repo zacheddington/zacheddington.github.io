@@ -36,6 +36,9 @@
     vertical-align: middle;
     position: relative;
     white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 0;
     user-select: none;
 }
 
@@ -50,10 +53,34 @@
     border-bottom: var(--border-thin) solid var(--color-border);
     border-right: var(--border-thin) solid var(--color-border-light);
     vertical-align: middle;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 0;
 }
 
 .data-table td:last-child {
     border-right: none;
+}
+
+/* Special handling for address columns that need more space */
+.data-table td.patient-address {
+    text-align: left;
+    position: relative;
+}
+
+/* Allow hover to show full content on smaller screens */
+@media screen and (max-width: 767px) {
+    .data-table td:hover {
+        white-space: normal;
+        overflow: visible;
+        max-width: none;
+        z-index: 10;
+        position: relative;
+        background-color: #f8fdff;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+    }
 }
 
 /* Table Rows */
