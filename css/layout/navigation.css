@@ -196,6 +196,21 @@
     transform: translateY(0);
 }
 
+/* CRITICAL: Override for small screens - higher specificity */
+@media screen and (max-width: 601px) {
+    .top-nav-menu .nav-dropdown:hover .dropdown-content,
+    .top-nav-menu .nav-dropdown.mobile-open .dropdown-content {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) translateX(0) !important;
+        right: 0 !important;
+        left: auto !important;
+        min-width: 200px !important;
+        max-width: calc(100vw - 20px) !important;
+        margin-right: 10px !important;
+    }
+}
+
 .nav-dropdown:hover .dropdown-arrow,
 .nav-dropdown.mobile-open .dropdown-arrow {
     transform: rotate(180deg);
@@ -481,7 +496,7 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
 }
 
 /* Additional rule for small screens with mouse/trackpad */
-@media screen and (max-width: 600px) and (hover: hover) {
+@media screen and (max-width: 601px) and (hover: hover) {
     .nav-dropdown:hover .dropdown-content {
         opacity: 1 !important;
         visibility: visible !important;
@@ -500,7 +515,7 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
 }
 
 /* Ultra-specific rule to debug small screen hover issues */
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 601px) {
     .top-nav-menu .nav-dropdown:hover .dropdown-content {
         opacity: 1 !important;
         visibility: visible !important;
@@ -521,7 +536,7 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
 }
 
 /* DEBUGGING: Force visible dropdown for testing */
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 601px) {
     /* Add red border to dropdown triggers for debugging */
     .nav-dropdown .dropdown-trigger {
         border: 2px solid red !important;
@@ -574,7 +589,7 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
 }
 
 /* DEBUG: Test small screen detection */
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 601px) {
     body::after {
         content: 'DEBUG: Small screen detected (' attr(data-width) ')';
         background: orange;
