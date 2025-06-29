@@ -297,14 +297,16 @@ function setupMobileDropdowns() {
             if (isOpen) {
                 dropdown.classList.remove('mobile-open');
                 // Remove mobile dropdown if it exists
-                const existingMobileDropdown = document.querySelector('.mobile-dropdown-overlay');
+                const existingMobileDropdown = document.querySelector(
+                    '.mobile-dropdown-overlay'
+                );
                 if (existingMobileDropdown) {
                     existingMobileDropdown.remove();
                 }
                 console.log('Closed dropdown');
             } else {
                 dropdown.classList.add('mobile-open');
-                
+
                 // Create mobile dropdown overlay that works
                 const mobileDropdown = document.createElement('div');
                 mobileDropdown.className = 'mobile-dropdown-overlay';
@@ -327,10 +329,10 @@ function setupMobileDropdowns() {
                     max-width: 300px !important;
                     margin: 0 auto !important;
                 `;
-                
+
                 // Style the dropdown links
                 const links = mobileDropdown.querySelectorAll('a');
-                links.forEach(link => {
+                links.forEach((link) => {
                     link.style.cssText = `
                         display: flex !important;
                         align-items: center !important;
@@ -343,29 +345,31 @@ function setupMobileDropdowns() {
                         border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
                         transition: background-color 0.2s ease !important;
                     `;
-                    
+
                     link.addEventListener('click', () => {
                         mobileDropdown.remove();
                         dropdown.classList.remove('mobile-open');
                     });
-                    
-                    link.addEventListener('touchstart', function() {
+
+                    link.addEventListener('touchstart', function () {
                         this.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
                     });
-                    
-                    link.addEventListener('touchend', function() {
+
+                    link.addEventListener('touchend', function () {
                         this.style.backgroundColor = 'transparent';
                     });
                 });
-                
+
                 // Remove last border
                 if (links.length > 0) {
                     links[links.length - 1].style.borderBottom = 'none';
                 }
-                
+
                 document.body.appendChild(mobileDropdown);
                 console.log('Opened dropdown');
             }
+        };
+
         // Store reference for cleanup
         trigger._mobileDropdownHandler = clickHandler;
 
@@ -401,12 +405,17 @@ function setupMobileDropdowns() {
 
     // Close dropdowns when clicking outside
     document.addEventListener('click', function (e) {
-        if (!e.target.closest('.nav-dropdown') && !e.target.closest('.mobile-dropdown-overlay')) {
+        if (
+            !e.target.closest('.nav-dropdown') &&
+            !e.target.closest('.mobile-dropdown-overlay')
+        ) {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
             });
             // Remove mobile dropdown overlay
-            const existingMobileDropdown = document.querySelector('.mobile-dropdown-overlay');
+            const existingMobileDropdown = document.querySelector(
+                '.mobile-dropdown-overlay'
+            );
             if (existingMobileDropdown) {
                 existingMobileDropdown.remove();
             }
@@ -420,7 +429,9 @@ function setupMobileDropdowns() {
                 dropdown.classList.remove('mobile-open');
             });
             // Remove mobile dropdown overlay
-            const existingMobileDropdown = document.querySelector('.mobile-dropdown-overlay');
+            const existingMobileDropdown = document.querySelector(
+                '.mobile-dropdown-overlay'
+            );
             if (existingMobileDropdown) {
                 existingMobileDropdown.remove();
             }
