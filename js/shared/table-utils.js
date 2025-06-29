@@ -2,12 +2,42 @@
 // This replaces all table-specific code with a single unified implementation
 
 /**
+ * Clear legacy localStorage keys that might interfere with unified table system
+ */
+function clearLegacyTableStorage() {
+    const legacyKeys = [
+        'userTableColumnWidths',
+        'sessionTableColumnWidths', 
+        'patientTableColumnWidths',
+        'hasSeenTableResizeTip',
+        'userColumnWidths',
+        'sessionColumnWidths',
+        'patientColumnWidths'
+    ];
+    
+    let clearedKeys = [];
+    legacyKeys.forEach(key => {
+        if (localStorage.getItem(key) !== null) {
+            localStorage.removeItem(key);
+            clearedKeys.push(key);
+        }
+    });
+    
+    if (clearedKeys.length > 0) {
+        console.log(`🧹 TABLE-UTILS: Cleared legacy localStorage keys:`, clearedKeys);
+    }
+}
+
+/**
  * Initialize table formatting and resizing for ANY data table
  * Call this once per page that has tables
  */
 function initializeDataTables() {
     console.log('🔧 TABLE-UTILS: Initializing unified data tables...');
     console.log(`🔧 TABLE-UTILS: Page URL: ${window.location.pathname}`);
+    
+    // Clear any legacy localStorage that might interfere
+    clearLegacyTableStorage();
 
     // Find all data tables on the page
     const tables = document.querySelectorAll('.data-table');
@@ -371,7 +401,7 @@ function autoSizeColumn(header, table, tableId) {
 }
 
 /**
- * Save column preferences to localStorage
+ * Save column preferences to localStorage using unified key format
  */
 function saveColumnPreferences(table, tableId) {
     const headers = table.querySelectorAll('thead th');
@@ -379,28 +409,60 @@ function saveColumnPreferences(table, tableId) {
         (header) => header.style.width || ''
     );
 
-    localStorage.setItem(`table-${tableId}-widths`, JSON.stringify(widths));
+    const storageKey = `table-${tableId}-widths`;
+    localStorage.setItem(storageKey, JSON.stringify(widths));
+    console.log(`💾 TABLE-UTILS: Saved column widths for ${tableId}:`, widths);
 }
 
 /**
- * Load column preferences from localStorage
+ * Load column preferences from localStorage using unified key format
  */
 function loadColumnPreferences(table, tableId) {
     try {
-        const saved = localStorage.getItem(`table-${tableId}-widths`);
-        if (!saved) return;
+        const storageKey = `table-${tableId}-widths`;
+        const saved = localStorage.getItem(storageKey);
+        if (!saved) {
+            console.log(`📂 TABLE-UTILS: No saved widths found for ${tableId}`);
+            return;
+        }
 
         const widths = JSON.parse(saved);
         const headers = table.querySelectorAll('thead th');
+        
+        console.log(`📂 TABLE-UTILS: Loading saved widths for ${tableId}:`, widths);
 
         headers.forEach((header, index) => {
             if (widths[index] && widths[index] !== '') {
                 header.style.width = widths[index];
+                console.log(`   - Column ${index}: ${widths[index]}`);
             }
         });
     } catch (error) {
-        console.warn('Error loading column preferences:', error);
+        console.warn(`❌ TABLE-UTILS: Error loading column preferences for ${tableId}:`, error);
     }
+}
+
+/**
+ * Force reset all table column widths to defaults and clear storage
+ */
+function resetAllTableWidths() {
+    const tables = document.querySelectorAll('.data-table');
+    
+    tables.forEach((table) => {
+        const tableId = table.id || 'unknown';
+        
+        // Clear stored preferences
+        const storageKey = `table-${tableId}-widths`;
+        localStorage.removeItem(storageKey);
+        
+        // Reset all column widths
+        const headers = table.querySelectorAll('thead th');
+        headers.forEach((header) => {
+            header.style.width = '';
+        });
+        
+        console.log(`🔄 TABLE-UTILS: Reset column widths for ${tableId}`);
+    });
 }
 
 /**
@@ -452,6 +514,8 @@ function ensureTableConsistency() {
 window.initializeDataTables = initializeDataTables;
 window.debugTableClasses = debugTableClasses;
 window.ensureTableConsistency = ensureTableConsistency;
+window.clearLegacyTableStorage = clearLegacyTableStorage;
+window.resetAllTableWidths = resetAllTableWidths;
 
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
