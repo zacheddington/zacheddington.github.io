@@ -416,7 +416,7 @@ class SessionManager {
         try {
             // First get the user_key from username
             const userResult = await client.query(
-                'SELECT user_key FROM tbl_user WHERE username = $1',
+                'SELECT user_key FROM tbl_user WHERE LOWER(username) = LOWER($1)',
                 [username]
             );
 

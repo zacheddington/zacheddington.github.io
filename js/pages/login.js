@@ -188,7 +188,7 @@ async function performLogin() {
         }
 
         // Get form data
-        const username = usernameField.value.trim();
+        const username = usernameField.value.trim().toLowerCase();
         const password = passwordField.value;
         const twofaToken = twofaField ? twofaField.value.trim() : null;
 

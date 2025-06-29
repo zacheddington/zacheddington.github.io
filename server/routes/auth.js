@@ -39,7 +39,7 @@ router.post(
                 `SELECT u.*, n.first_name, n.middle_name, n.last_name 
              FROM tbl_user u 
              LEFT JOIN tbl_name_data n ON u.name_key = n.name_key 
-             WHERE u.username = $1`,
+             WHERE LOWER(u.username) = LOWER($1)`,
                 [username]
             );
 
