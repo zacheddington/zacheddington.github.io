@@ -47,6 +47,43 @@
     border-right: none;
 }
 
+/* Sortable Column Styles */
+.data-table th.sortable {
+    cursor: pointer;
+    padding-right: 2rem; /* Make room for sort indicator */
+    position: relative;
+}
+
+.data-table th.sortable:hover {
+    background: rgba(0, 150, 136, 0.1);
+}
+
+.data-table th.sortable::after {
+    content: '';
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.data-table th.sortable.sort-asc::after {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 6px solid var(--color-primary);
+    opacity: 1;
+}
+
+.data-table th.sortable.sort-desc::after {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid var(--color-primary);
+    opacity: 1;
+}
+
 /* Table Cells */
 .data-table td {
     padding: 0.75rem;
@@ -162,41 +199,6 @@
 
 .data-table.resizing * {
     cursor: col-resize !important;
-}
-
-/* Sortable Columns */
-.sortable-column {
-    cursor: pointer;
-    position: relative;
-    padding-right: 30px;
-}
-
-.sortable-column:hover {
-    background: rgba(0, 150, 136, 0.1);
-}
-
-.sort-indicator {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.8rem;
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-.sort-indicator::after {
-    content: '↕';
-}
-
-.sort-indicator.asc::after {
-    content: '↑';
-    opacity: 1;
-}
-
-.sort-indicator.desc::after {
-    content: '↓';
-    opacity: 1;
 }
 
 /* Table Actions */

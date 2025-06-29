@@ -56,6 +56,9 @@ function initializeDataTables() {
 
         // Set up dropdown revert functionality
         setupDropdownRevertHandlers(table);
+
+        // Set up table sorting functionality
+        setupTableSorting(table, tableId);
     });
 }
 
@@ -460,6 +463,195 @@ function setupDropdownRevertHandlers(table) {
 }
 
 /**
+ * Set up table sorting functionality
+ */
+function setupTableSorting(table, tableId) {
+    const headers = table.querySelectorAll('thead th');
+
+    // Store original data for reset functionality
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+
+    // Store original row order
+    const originalRows = Array.from(tbody.querySelectorAll('tr')).map((row) =>
+        row.cloneNode(true)
+    );
+    table.dataset.originalRows = JSON.stringify(
+        originalRows.map((row) => row.outerHTML)
+    );
+
+    headers.forEach((header, index) => {
+        // Skip the last column (Actions) - don't make it sortable
+        if (index === headers.length - 1) return;
+
+        // Make header sortable
+        header.classList.add('sortable');
+        header.setAttribute('data-column-index', index);
+        header.style.cursor = 'pointer';
+
+        // Add click handler
+        header.addEventListener('click', (e) => {
+            // Don't trigger sort if clicking on resize handle
+            if (e.target.classList.contains('resize-handle')) return;
+
+            handleColumnSort(table, header, index);
+        });
+    });
+}
+
+/**
+ * Handle column sorting when header is clicked
+ */
+function handleColumnSort(table, header, columnIndex) {
+    const currentSort = header.dataset.sortDirection || 'none';
+    const tbody = table.querySelector('tbody');
+
+    // Clear all other column sort indicators
+    const allHeaders = table.querySelectorAll('thead th');
+    allHeaders.forEach((h) => {
+        h.classList.remove('sort-asc', 'sort-desc');
+        h.dataset.sortDirection = 'none';
+    });
+
+    let newSortDirection;
+
+    // Determine new sort direction
+    if (currentSort === 'none') {
+        newSortDirection = 'asc';
+    } else if (currentSort === 'asc') {
+        newSortDirection = 'desc';
+    } else {
+        newSortDirection = 'none';
+    }
+
+    // Apply sort or reset to original
+    if (newSortDirection === 'none') {
+        // Reset to original order
+        resetTableToOriginalOrder(table);
+    } else {
+        // Sort the table
+        sortTableByColumn(table, columnIndex, newSortDirection);
+        header.classList.add(`sort-${newSortDirection}`);
+    }
+
+    // Update header state
+    header.dataset.sortDirection = newSortDirection;
+}
+
+/**
+ * Sort table by specified column
+ */
+function sortTableByColumn(table, columnIndex, direction) {
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    // Sort rows based on column content
+    rows.sort((a, b) => {
+        const aCell = a.querySelector(`td:nth-child(${columnIndex + 1})`);
+        const bCell = b.querySelector(`td:nth-child(${columnIndex + 1})`);
+
+        if (!aCell || !bCell) return 0;
+
+        let aVal = getCellSortValue(aCell);
+        let bVal = getCellSortValue(bCell);
+
+        // Handle different data types
+        if (isNumeric(aVal) && isNumeric(bVal)) {
+            aVal = parseFloat(aVal);
+            bVal = parseFloat(bVal);
+        } else if (isDate(aVal) && isDate(bVal)) {
+            aVal = new Date(aVal);
+            bVal = new Date(bVal);
+        } else {
+            // String comparison
+            aVal = aVal.toString().toLowerCase();
+            bVal = bVal.toString().toLowerCase();
+        }
+
+        if (direction === 'asc') {
+            return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+        } else {
+            return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+        }
+    });
+
+    // Clear tbody and append sorted rows
+    tbody.innerHTML = '';
+    rows.forEach((row) => tbody.appendChild(row));
+}
+
+/**
+ * Get the sortable value from a table cell
+ */
+function getCellSortValue(cell) {
+    // Check for data-sort attribute first
+    if (cell.hasAttribute('data-sort')) {
+        return cell.getAttribute('data-sort');
+    }
+
+    // Handle dropdowns/selects - use selected option text
+    const select = cell.querySelector('select');
+    if (select) {
+        const selectedOption = select.options[select.selectedIndex];
+        return selectedOption ? selectedOption.textContent.trim() : '';
+    }
+
+    // Handle nested elements - get text from specific elements
+    const nameElement = cell.querySelector(
+        '.patient-full-name, .user-fullname'
+    );
+    if (nameElement) {
+        return nameElement.textContent.trim();
+    }
+
+    // Default to cell text content
+    return cell.textContent.trim();
+}
+
+/**
+ * Reset table to original row order
+ */
+function resetTableToOriginalOrder(table) {
+    const tbody = table.querySelector('tbody');
+    const originalRowsData = table.dataset.originalRows;
+
+    if (originalRowsData) {
+        try {
+            const originalRowsHtml = JSON.parse(originalRowsData);
+            tbody.innerHTML = originalRowsHtml.join('');
+
+            // Re-initialize dropdowns after resetting
+            setupDropdownRevertHandlers(table);
+        } catch (e) {
+            console.error('Error restoring original table order:', e);
+        }
+    }
+}
+
+/**
+ * Check if a value is numeric
+ */
+function isNumeric(value) {
+    return !isNaN(parseFloat(value)) && isFinite(value);
+}
+
+/**
+ * Check if a value is a date
+ */
+function isDate(value) {
+    // Common date patterns
+    const datePatterns = [
+        /^\d{1,2}\/\d{1,2}\/\d{4}$/, // MM/DD/YYYY or M/D/YYYY
+        /^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD
+        /^\d{1,2}-\d{1,2}-\d{4}$/, // MM-DD-YYYY or M-D-YYYY
+    ];
+
+    return datePatterns.some((pattern) =>
+        pattern.test(value.toString().trim())
+    );
+}
+
+/**
  * Main initialization function - call this on page load
  */
 function initializeTables() {
@@ -480,6 +672,7 @@ window.TableUtils = {
     initializeTableFiltering,
     setupTableFiltering,
     setupDropdownRevertHandlers,
+    setupTableSorting,
     ensureTableConsistency,
     clearLegacyTableStorage,
 };
