@@ -1,9 +1,6 @@
 // Admin Page Module
 // Handles all admin page functionality including user management
 
-// Import table utilities
-import { clearLegacyTableStorage } from '../shared/table-utils.js';
-
 // Global variables for admin page
 let allUsers = [];
 let currentRoles = [];
@@ -67,7 +64,21 @@ function initializeCreateUserPage() {
 // Initialize the manage users page
 async function initializeManageUsersPage() {
     // Clear any legacy localStorage keys that might interfere with unified table system
-    clearLegacyTableStorage();
+    // Use the local implementation instead of import
+    const legacyKeys = [
+        'userTableColumnWidths',
+        'sessionColumnPreferences',
+        'patientTableColumnWidths',
+        'tableColumnPreferences',
+        'userTableSortState',
+        'patientTableSortState',
+    ];
+
+    legacyKeys.forEach((key) => {
+        if (localStorage.getItem(key)) {
+            localStorage.removeItem(key);
+        }
+    });
 
     // Load roles and users - simplified approach matching patients pattern
     try {
@@ -155,18 +166,18 @@ function setupAdminNavigation() {
     const manageSessionsBtn = document.getElementById('manageSessionsBtn');
     if (createUserBtn) {
         createUserBtn.addEventListener('click', function () {
-            window.location.href = '/admin/create-user/';
+            window.location.href = './create-user/';
         });
     }
     if (manageUsersBtn) {
         manageUsersBtn.addEventListener('click', function () {
-            window.location.href = '/admin/manage-users/';
+            window.location.href = './manage-users/';
         });
     }
 
     if (manageSessionsBtn) {
         manageSessionsBtn.addEventListener('click', function () {
-            window.location.href = '/admin/manage-sessions/';
+            window.location.href = './manage-sessions/';
         });
     }
     // Cancel button handler

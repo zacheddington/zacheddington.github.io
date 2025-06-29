@@ -124,6 +124,27 @@
     .hide-mobile {
         display: none;
     }
+
+    /* Fix dropdown positioning on very small screens */
+    .dropdown-content {
+        right: 0 !important;
+        left: auto !important;
+        min-width: 200px !important;
+        max-width: calc(100vw - 20px) !important;
+        transform: translateX(0) !important;
+        margin-left: 0 !important;
+        margin-right: 10px !important;
+    }
+
+    /* Ensure dropdowns don't get cut off */
+    .nav-dropdown {
+        position: static !important;
+    }
+
+    .nav-dropdown .dropdown-content {
+        position: absolute !important;
+        z-index: 9999 !important;
+    }
 }
 
 /* ================================
