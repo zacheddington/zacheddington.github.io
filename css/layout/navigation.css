@@ -385,16 +385,63 @@ body.is-admin .admin-only {
 
     /* Better dropdown positioning for very small screens */
     .dropdown-content {
-        left: -70px; /* Center even better on very small screens */
-        min-width: 200px;
+        /* Use right positioning to prevent off-screen clipping */
+        left: auto;
+        right: 0;
+        min-width: 180px;
         max-width: 85vw;
         font-size: 0.8rem;
+        /* Ensure it's always visible */
+        z-index: 9999 !important;
+    }
+
+    /* For admin dropdown specifically, position from right edge */
+    .nav-dropdown:last-child .dropdown-content {
+        right: 0;
+        left: auto;
+    }
+
+    /* For patient dropdown, adjust to not go off left edge */
+    .nav-dropdown:not(:last-child) .dropdown-content {
+        left: 0;
+        right: auto;
+        transform-origin: left top;
     }
 
     /* Ensure dropdown items are touchable */
     .dropdown-content a {
         padding: 0.8rem;
         min-height: 44px;
+    }
+
+    /* Debug and fix for very small screens - ensure dropdowns are always visible */
+    .nav-dropdown.mobile-open .dropdown-content {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) !important;
+        display: block !important;
+        z-index: 99999 !important;
+        position: absolute !important;
+        background: rgba(var(--color-primary-rgb), 0.95) !important;
+        border: 2px solid rgba(255, 255, 255, 0.5) !important;
+    }
+
+    /* Ensure container doesn't clip dropdown */
+    .top-nav-menu,
+    .app-header {
+        overflow: visible !important;
+    }
+
+    /* Make sure nav items don't hide the dropdown */
+    .nav-dropdown {
+        position: relative;
+        overflow: visible !important;
+    }
+
+    /* Force dropdown trigger to be clickable */
+    .nav-dropdown .dropdown-trigger {
+        pointer-events: auto !important;
+        touch-action: manipulation !important;
     }
 }
 
@@ -444,9 +491,17 @@ body.is-admin .admin-only {
         visibility: hidden;
         transform: translateY(-10px);
     }
-    
+
     .nav-dropdown:hover .dropdown-arrow {
         transform: rotate(0deg);
+    }
+
+    /* But ensure mobile-open always works on touch devices */
+    .nav-dropdown.mobile-open .dropdown-content {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) !important;
+        z-index: 9999 !important;
     }
 }
 
@@ -458,18 +513,19 @@ body.is-admin .admin-only {
         visibility: hidden !important;
         transform: translateY(-10px) !important;
     }
-    
+
     .nav-dropdown:hover .dropdown-arrow {
         transform: rotate(0deg) !important;
     }
-    
+
     /* Ensure mobile-open class works */
     .nav-dropdown.mobile-open .dropdown-content {
         opacity: 1 !important;
         visibility: visible !important;
         transform: translateY(0) !important;
+        z-index: 9999 !important;
     }
-    
+
     /* Ensure admin dropdowns are visible on mobile */
     body.is-admin .nav-dropdown.mobile-open.admin-only {
         display: block !important;

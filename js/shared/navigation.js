@@ -255,7 +255,10 @@ function setupPatientNumberValidation() {
  */
 function setupMobileDropdowns() {
     const dropdowns = document.querySelectorAll('.nav-dropdown');
-    console.log('Setting up unified navigation dropdowns, found:', dropdowns.length);
+    console.log(
+        'Setting up unified navigation dropdowns, found:',
+        dropdowns.length
+    );
 
     // Track input method - starts as unknown
     let isUsingTouch = null;
@@ -280,11 +283,15 @@ function setupMobileDropdowns() {
         // Touch start handler - detects touch input
         const touchStartHandler = function (e) {
             isUsingTouch = true;
-            console.log('Touch input detected on dropdown:', trigger.textContent.trim());
-            
+            console.log(
+                'Touch input detected on dropdown:',
+                trigger.textContent.trim()
+            );
+            console.log('Screen width:', window.innerWidth);
+
             // For touch, prevent default click behavior and handle with JS
             e.preventDefault();
-            
+
             // Close other dropdowns
             dropdowns.forEach((otherDropdown) => {
                 if (otherDropdown !== dropdown) {
@@ -293,7 +300,28 @@ function setupMobileDropdowns() {
             });
 
             // Toggle current dropdown
+            const wasOpen = dropdown.classList.contains('mobile-open');
             dropdown.classList.toggle('mobile-open');
+
+            console.log('Dropdown toggled:', wasOpen ? 'closed' : 'opened');
+            console.log('Dropdown classes:', dropdown.className);
+            console.log('Dropdown content element:', content);
+
+            // Debug positioning for very small screens
+            if (window.innerWidth <= 425) {
+                setTimeout(() => {
+                    const rect = content.getBoundingClientRect();
+                    console.log('Dropdown position at 425px or smaller:', {
+                        left: rect.left,
+                        right: rect.right,
+                        top: rect.top,
+                        bottom: rect.bottom,
+                        width: rect.width,
+                        height: rect.height,
+                        visible: rect.width > 0 && rect.height > 0,
+                    });
+                }, 100);
+            }
         };
 
         // Click handler - handles mouse clicks when not from touch
@@ -301,12 +329,16 @@ function setupMobileDropdowns() {
             // If we know this is a touch device, prevent navigation and handle with JS
             if (isUsingTouch === true) {
                 e.preventDefault();
-                console.log('Touch device click prevented - handled by touch logic');
+                console.log(
+                    'Touch device click prevented - handled by touch logic'
+                );
                 return;
             }
 
             // For mouse input, let CSS :hover handle dropdowns and allow navigation
-            console.log('Mouse input - allowing CSS :hover and normal navigation');
+            console.log(
+                'Mouse input - allowing CSS :hover and normal navigation'
+            );
             // Don't prevent default - let normal navigation work
         };
 
@@ -326,7 +358,9 @@ function setupMobileDropdowns() {
 
         // Add event listeners
         trigger.addEventListener('click', clickHandler);
-        trigger.addEventListener('touchstart', touchStartHandler, { passive: false });
+        trigger.addEventListener('touchstart', touchStartHandler, {
+            passive: false,
+        });
         trigger.addEventListener('mouseenter', mouseEnterHandler);
 
         // Handle clicks on dropdown content links
