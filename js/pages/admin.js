@@ -1487,7 +1487,8 @@ function updateCreateUserSubmitButton() {
 }
 
 // Function to add resize handles to table columns
-function addColumnResizeHandles() {
+// LEGACY - DO NOT USE - Replaced by unified table utilities
+function legacyAddColumnResizeHandles() {
     const table = document.querySelector('.users-table');
     if (!table) {
         console.error('❌ No table found with .users-table class');
@@ -1523,7 +1524,7 @@ function addColumnResizeHandles() {
 
             // Add resize listeners for mouse
             resizeHandle.addEventListener('mousedown', function (e) {
-                startColumnResize(e, header, index);
+                legacyStartColumnResize(e, header, index);
             });
 
             // Add touch support
@@ -1533,14 +1534,14 @@ function addColumnResizeHandles() {
                     // Prevent scrolling while resizing
                     e.preventDefault();
                     const touch = e.touches[0];
-                    startColumnResize(touch, header, index);
+                    legacyStartColumnResize(touch, header, index);
                 },
                 { passive: false }
             ); // Add double-click to auto-size functionality
             resizeHandle.addEventListener('dblclick', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                autoSizeColumn(header, index);
+                legacyAutoSizeColumn(header, index);
             });
             // Also add double-click to the header itself for better UX
             header.addEventListener('dblclick', function (e) {
@@ -1552,7 +1553,7 @@ function addColumnResizeHandles() {
                 ) {
                     e.preventDefault();
                     e.stopPropagation();
-                    autoSizeColumn(header, index);
+                    legacyAutoSizeColumn(header, index);
                 }
             });
 
@@ -1571,7 +1572,7 @@ function addColumnResizeHandles() {
                 // Enter key to auto-size
                 else if (e.key === 'Enter') {
                     e.preventDefault();
-                    autoSizeColumn(header, index);
+                    legacyAutoSizeColumn(header, index);
                 }
             });
         }
@@ -1579,7 +1580,8 @@ function addColumnResizeHandles() {
 }
 
 // Function to handle column resizing
-function startColumnResize(event, header, columnIndex) {
+// LEGACY - DO NOT USE - Replaced by unified table utilities  
+function legacyStartColumnResize(event, header, columnIndex) {
     // Accept both mouse and touch events
     if (event.preventDefault) event.preventDefault();
 
@@ -1763,7 +1765,8 @@ function announceForScreenReader(message) {
 }
 
 // Enhanced auto-size function that measures actual content width
-function autoSizeColumn(header, columnIndex) {
+// LEGACY - DO NOT USE - Replaced by unified table utilities
+function legacyAutoSizeColumn(header, columnIndex) {
     const table = document.querySelector('.users-table');
     if (!table) return;
 
