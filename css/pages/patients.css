@@ -111,48 +111,8 @@
     max-width: 0; /* Required for text-overflow to work with table cells */
 }
 
-/* Column widths - min-width instead of fixed width for responsive behavior */
-#patientsTable th:nth-child(1) {
-    min-width: 150px;
-    width: 18%;
-} /* Name */
-
-#patientsTable th:nth-child(2) {
-    min-width: 110px;
-    width: 12%;
-} /* Date of Birth */
-
-#patientsTable th:nth-child(3) {
-    min-width: 120px;
-    width: 12%;
-} /* Phone */
-
-#patientsTable th:nth-child(4) {
-    min-width: 100px;
-    width: 10%;
-} /* Accepts Texts */
-
-#patientsTable th:nth-child(5) {
-    min-width: 200px;
-    width: 25%;
-} /* Address - larger for potentially long addresses */
-
-#patientsTable th:nth-child(6) {
-    min-width: 110px;
-    width: 12%;
-} /* Last Updated */
-
-#patientsTable th:nth-child(7) {
-    min-width: 100px;
-    width: 11%;
-} /* Created */
-
-#patientsTable th:nth-child(8) {
-    text-align: center;
-    padding: 0.5rem 0.75rem;
-    min-width: 130px;
-    white-space: nowrap;
-} /* Actions - ensure this has enough space and doesn't get cut off */
+/* Column widths removed - let unified table system handle all column sizing */
+/* These CSS rules were interfering with the resize functionality by overriding inline styles */
 
 /* Patient address cell specific style */
 #patientsTable td.patient-address {
