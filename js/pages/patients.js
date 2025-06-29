@@ -141,11 +141,8 @@ async function initializeManagePatientsPage() {
     // Setup delete patient modal
     setupDeletePatientModal();
 
-    // Initialize table formatting and resizing using unified utilities
-    window.tableUtils.initializeTableFormatting({
-        tableSelector: '.data-table',
-        storageKey: 'patientsTableColumnWidths',
-    });
+    // Tables are auto-initialized by table-utils.js
+    console.log('✅ Patients page initialized');
 }
 
 // Simple debounce function to limit how often a function is called

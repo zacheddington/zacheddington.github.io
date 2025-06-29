@@ -72,13 +72,8 @@ function initializeManageUsersPage() {
 
     setupUserFilter();
 
-    // Initialize table formatting and resizing using unified utilities
-    window.tableUtils.initializeTableFormatting({
-        tableSelector: '.data-table',
-        storageKey: 'userTableColumnWidths',
-    });
-
-    // Manage users page initialized
+    // Tables are auto-initialized by table-utils.js
+    console.log('✅ Manage users page initialized');
 }
 
 // Simple debounce function to limit how often a function is called
@@ -1985,11 +1980,7 @@ let currentSessionSort = { column: null, direction: null };
 // Initialize session management
 async function initializeSessionManagement() {
     try {
-        // Initialize table formatting and resizing using unified utilities
-        window.tableUtils.initializeTableFormatting({
-            tableSelector: '.data-table',
-            storageKey: 'sessionTableColumnWidths',
-        });
+        // Tables are auto-initialized by table-utils.js
 
         // Load all sessions
         await loadAllSessions();

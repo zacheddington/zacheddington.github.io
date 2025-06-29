@@ -161,17 +161,7 @@
     position: relative; /* For potential overflow indicator */
 }
 
-/* Ensure the table container allows full scrolling */
-.users-table-container .table-responsive {
-    overflow-x: auto;
-    padding-right: 1rem; /* Add padding to ensure Actions column is fully visible */
-}
-
-/* Force table to maintain minimum width to show all columns */
-#patientsTable {
-    min-width: 1000px; /* Ensure table is wide enough for all 8 columns */
-    table-layout: auto; /* Allow columns to adjust to content */
-}
+/* End of patients page styles */
 
 /* Cell hover effect to show full content on mobile */
 @media screen and (max-width: 767px) {

@@ -7,29 +7,29 @@
  */
 function initializeDataTables() {
     console.log('🔧 Initializing unified data tables...');
-    
+
     // Find all data tables on the page
     const tables = document.querySelectorAll('.data-table');
-    
+
     if (tables.length === 0) {
         console.warn('⚠️ No .data-table elements found on this page');
         return;
     }
-    
+
     tables.forEach((table, index) => {
         const tableId = table.id || `data-table-${index}`;
         console.log(`📋 Setting up table: ${tableId}`);
-        
+
         // Set up the table for resizing
         setupTableResizing(table, tableId);
-        
+
         // Load any saved column preferences
         loadColumnPreferences(table, tableId);
-        
+
         // Add resize handles
         addResizeHandles(table, tableId);
     });
-    
+
     console.log('✅ All data tables initialized successfully');
 }
 
@@ -40,7 +40,7 @@ function setupTableResizing(table, tableId) {
     // Ensure table has proper styling for resizing
     table.style.tableLayout = 'auto'; // Allow natural column sizing
     table.style.width = '100%'; // Fill container
-    
+
     // Add necessary classes
     table.classList.add('resizable-table');
 }
@@ -50,25 +50,27 @@ function setupTableResizing(table, tableId) {
  */
 function addResizeHandles(table, tableId) {
     const headers = table.querySelectorAll('thead th');
-    
+
     // Remove any existing handles first
-    table.querySelectorAll('.resize-handle').forEach(handle => handle.remove());
-    
+    table
+        .querySelectorAll('.resize-handle')
+        .forEach((handle) => handle.remove());
+
     headers.forEach((header, index) => {
         // Skip the last column (usually Actions)
         if (index < headers.length - 1) {
             const handle = document.createElement('div');
             handle.className = 'resize-handle';
             handle.setAttribute('data-column', index);
-            
+
             // Make it accessible
             handle.setAttribute('role', 'separator');
             handle.setAttribute('aria-orientation', 'vertical');
             handle.setAttribute('tabindex', '0');
             handle.setAttribute('title', 'Drag to resize column');
-            
+
             header.appendChild(handle);
-            
+
             // Add event listeners
             setupResizeListeners(handle, header, table, tableId);
         }
@@ -82,54 +84,54 @@ function setupResizeListeners(handle, header, table, tableId) {
     let isResizing = false;
     let startX = 0;
     let startWidth = 0;
-    
+
     // Mouse down event
     handle.addEventListener('mousedown', (e) => {
         isResizing = true;
         startX = e.pageX;
         startWidth = header.offsetWidth;
-        
+
         table.classList.add('resizing');
         handle.classList.add('active');
-        
+
         // Prevent text selection
         document.body.style.userSelect = 'none';
-        
+
         e.preventDefault();
     });
-    
+
     // Mouse move event (on document to catch moves outside the handle)
     document.addEventListener('mousemove', (e) => {
         if (!isResizing) return;
-        
+
         const deltaX = e.pageX - startX;
         const newWidth = Math.max(50, startWidth + deltaX); // Minimum 50px
-        
+
         // Apply the new width directly to the column
         header.style.width = `${newWidth}px`;
-        
+
         e.preventDefault();
     });
-    
+
     // Mouse up event
     document.addEventListener('mouseup', () => {
         if (!isResizing) return;
-        
+
         isResizing = false;
         table.classList.remove('resizing');
         handle.classList.remove('active');
         document.body.style.userSelect = '';
-        
+
         // Save the new column widths
         saveColumnPreferences(table, tableId);
     });
-    
+
     // Double-click to auto-size
     handle.addEventListener('dblclick', (e) => {
         e.preventDefault();
         autoSizeColumn(header, table, tableId);
     });
-    
+
     // Keyboard support
     handle.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
@@ -151,23 +153,26 @@ function setupResizeListeners(handle, header, table, tableId) {
  */
 function autoSizeColumn(header, table, tableId) {
     const columnIndex = Array.from(header.parentNode.children).indexOf(header);
-    const cells = table.querySelectorAll(`td:nth-child(${columnIndex + 1}), th:nth-child(${columnIndex + 1})`);
-    
+    const cells = table.querySelectorAll(
+        `td:nth-child(${columnIndex + 1}), th:nth-child(${columnIndex + 1})`
+    );
+
     // Create temporary element to measure text width
     const measurer = document.createElement('div');
-    measurer.style.cssText = 'position: absolute; visibility: hidden; white-space: nowrap; font: inherit;';
+    measurer.style.cssText =
+        'position: absolute; visibility: hidden; white-space: nowrap; font: inherit;';
     document.body.appendChild(measurer);
-    
+
     let maxWidth = 80; // Minimum width
-    
-    cells.forEach(cell => {
+
+    cells.forEach((cell) => {
         measurer.textContent = cell.textContent.trim();
         const textWidth = measurer.offsetWidth;
         maxWidth = Math.max(maxWidth, textWidth + 40); // Add padding
     });
-    
+
     document.body.removeChild(measurer);
-    
+
     // Apply the calculated width
     header.style.width = `${maxWidth}px`;
     saveColumnPreferences(table, tableId);
@@ -178,8 +183,10 @@ function autoSizeColumn(header, table, tableId) {
  */
 function saveColumnPreferences(table, tableId) {
     const headers = table.querySelectorAll('thead th');
-    const widths = Array.from(headers).map(header => header.style.width || '');
-    
+    const widths = Array.from(headers).map(
+        (header) => header.style.width || ''
+    );
+
     localStorage.setItem(`table-${tableId}-widths`, JSON.stringify(widths));
 }
 
@@ -190,10 +197,10 @@ function loadColumnPreferences(table, tableId) {
     try {
         const saved = localStorage.getItem(`table-${tableId}-widths`);
         if (!saved) return;
-        
+
         const widths = JSON.parse(saved);
         const headers = table.querySelectorAll('thead th');
-        
+
         headers.forEach((header, index) => {
             if (widths[index] && widths[index] !== '') {
                 header.style.width = widths[index];

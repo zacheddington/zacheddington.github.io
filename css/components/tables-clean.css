@@ -157,12 +157,12 @@
     .data-table {
         font-size: 0.8rem;
     }
-    
+
     .data-table th,
     .data-table td {
         padding: 0.5rem;
     }
-    
+
     .resize-handle {
         width: 6px;
     }

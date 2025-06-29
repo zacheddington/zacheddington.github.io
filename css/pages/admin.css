@@ -219,31 +219,4 @@
     padding: 2rem;
 }
 
-/* Responsive design for session table */
-@media (max-width: 768px) {
-    .sessions-table-container {
-        margin: 0 -1rem;
-        border-radius: 0;
-    }
-
-    .sessions-table th,
-    .sessions-table td {
-        padding: 8px 4px;
-        font-size: 0.875rem;
-    }
-
-    .session-actions {
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .session-stats {
-        flex-wrap: wrap;
-        gap: 1rem;
-    }
-
-    .stat-item {
-        flex: 1;
-        min-width: calc(50% - 0.5rem);
-    }
-}
+/* End of admin page styles */
