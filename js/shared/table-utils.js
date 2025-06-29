@@ -141,6 +141,9 @@ function setupResizeListeners(handle, header, table, tableId) {
             header.style.minWidth = `${newWidth}px`;
             header.style.maxWidth = `${newWidth}px`;
 
+            // Calculate and update total table width
+            updateTableWidth(table);
+
             moveEvent.preventDefault();
         };
 
@@ -213,14 +216,14 @@ function setupResizeListeners(handle, header, table, tableId) {
 }
 
 /**
- * Set up table for resizing (fixed layout, etc.)
+ * Set up table for resizing (fixed layout for precise control)
  */
 function setupTableResizing(table, tableId) {
-    // Force fixed table layout for consistent resizing
+    // Use fixed table layout for precise column control
     table.style.tableLayout = 'fixed';
-    // Set minimum width but allow expansion
-    table.style.minWidth = '100%';
+    // Start with auto width for dynamic sizing
     table.style.width = 'auto';
+    table.style.minWidth = '100%';
 
     // Add a class for styling
     table.classList.add('resizable-table');
@@ -286,18 +289,32 @@ function loadColumnPreferences(table, tableId) {
  * Ensure table remains consistent after resize operations
  */
 function ensureTableConsistency(table) {
-    // Critical: Maintain fixed table layout
+    // Maintain fixed table layout for precise control
     if (table.style.tableLayout !== 'fixed') {
         table.style.tableLayout = 'fixed';
     }
 
-    // Ensure table has proper dynamic width settings
-    if (!table.style.minWidth) {
-        table.style.minWidth = '100%';
-    }
-    if (table.style.width !== 'auto') {
-        table.style.width = 'auto';
-    }
+    // Update table width based on column widths
+    updateTableWidth(table);
+}
+
+/**
+ * Update table width based on sum of column widths
+ */
+function updateTableWidth(table) {
+    const headers = table.querySelectorAll('thead th');
+    let totalWidth = 0;
+
+    headers.forEach((header) => {
+        const width = parseInt(header.style.width) || header.offsetWidth || 150; // Default width if not set
+        totalWidth += width;
+    });
+
+    // Set table width to sum of columns, but maintain minimum of 100%
+    const containerWidth = table.parentElement.offsetWidth;
+    const finalWidth = Math.max(totalWidth, containerWidth);
+
+    table.style.width = `${finalWidth}px`;
 }
 
 /**
