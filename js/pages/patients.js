@@ -143,7 +143,7 @@ async function initializeManagePatientsPage() {
 
     // Initialize table formatting and resizing using unified utilities
     window.tableUtils.initializeTableFormatting({
-        tableSelector: '#patientsTable',
+        tableSelector: '.data-table',
         storageKey: 'patientsTableColumnWidths',
     });
 }
