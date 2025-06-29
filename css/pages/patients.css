@@ -72,11 +72,6 @@
     color: var(--color-white);
 }
 
-.patient-created {
-    color: var(--color-text-muted);
-    font-size: 0.85rem;
-}
-
 /* ================================
    PATIENT BUTTON OVERRIDES
    ================================ */
