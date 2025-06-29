@@ -451,9 +451,9 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
     }
 }
 
-/* Touch device behavior at all screen sizes */
-@supports (pointer: coarse) {
-    /* On touch devices, disable hover and rely on mobile-open class */
+/* Touch device behavior - only disable hover on primary touch devices */
+@media (hover: none) and (pointer: coarse) {
+    /* On primary touch devices (phones/tablets), disable hover and rely on mobile-open class */
     .nav-dropdown:hover .dropdown-content {
         opacity: 0;
         visibility: hidden;
@@ -463,8 +463,6 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
     .nav-dropdown:hover .dropdown-arrow {
         transform: rotate(0deg);
     }
-
-    /* But ensure mobile-open always works on touch devices - handled by main rule */
 }
 
 /* CRITICAL: Ensure CSS hover always works at ALL screen sizes for mouse users */
@@ -475,6 +473,24 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         visibility: visible !important;
         transform: translateY(0) !important;
         display: block !important;
+    }
+
+    .nav-dropdown:hover .dropdown-arrow {
+        transform: rotate(180deg) !important;
+    }
+}
+
+/* Additional rule for small screens with mouse/trackpad */
+@media screen and (max-width: 600px) and (hover: hover) {
+    .nav-dropdown:hover .dropdown-content {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) !important;
+        display: block !important;
+        right: 0 !important;
+        left: auto !important;
+        min-width: 200px !important;
+        max-width: calc(100vw - 20px) !important;
     }
 
     .nav-dropdown:hover .dropdown-arrow {

@@ -116,8 +116,8 @@
     }
 }
 
-/* MOBILE (575px and below) */
-@media screen and (max-width: 575px) {
+/* MOBILE (600px and below) */
+@media screen and (max-width: 600px) {
     .show-mobile {
         display: block;
     }
@@ -125,7 +125,7 @@
         display: none;
     }
 
-    /* Fix dropdown positioning on very small screens */
+    /* Fix dropdown positioning on small screens */
     .dropdown-content {
         right: 0 !important;
         left: auto !important;
@@ -144,6 +144,18 @@
     .nav-dropdown .dropdown-content {
         position: absolute !important;
         z-index: 9999 !important;
+    }
+
+    /* CRITICAL: Force hover to work on small screens regardless of input method */
+    .nav-dropdown:hover .dropdown-content {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) !important;
+        display: block !important;
+    }
+
+    .nav-dropdown:hover .dropdown-arrow {
+        transform: rotate(180deg) !important;
     }
 }
 
