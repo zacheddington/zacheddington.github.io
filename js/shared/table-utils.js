@@ -228,6 +228,7 @@ function setupResizeListeners(handle, header, table, tableId) {
             console.log(
                 `🖱️ TABLE-UTILS: Mouse UP on ${tableId} - final width: ${header.offsetWidth}px`
             );
+            console.log(`   - Header style.width before cleanup: ${header.style.width}`);
 
             isResizing = false;
             table.classList.remove('resizing');
@@ -238,8 +239,14 @@ function setupResizeListeners(handle, header, table, tableId) {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
 
+            console.log(`   - Header style.width after cleanup: ${header.style.width}`);
+            console.log(`   - About to call saveColumnPreferences for ${tableId}`);
+
             // Save the new column widths
             saveColumnPreferences(table, tableId);
+            
+            console.log(`   - Header style.width after save: ${header.style.width}`);
+            console.log(`   - Header offsetWidth after save: ${header.offsetWidth}px`);
         };
 
         // Add the scoped event listeners
