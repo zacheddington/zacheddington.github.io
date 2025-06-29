@@ -172,9 +172,6 @@ function setupTopNavigation() {
             }
         });
     }
-
-    // Setup mobile dropdowns
-    setupMobileDropdowns();
 }
 
 // Set active navigation item based on current page
@@ -295,9 +292,17 @@ function setupMobileDropdowns() {
         // Store reference for cleanup
         trigger._mobileDropdownHandler = clickHandler;
 
-        // Add event listeners for both click and touch
+        // Add primary event listener
         trigger.addEventListener('click', clickHandler);
-        trigger.addEventListener('touchend', clickHandler, { passive: false });
+
+        // Only add touchend for actual touch devices to prevent double-firing
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            trigger.addEventListener('touchend', function(e) {
+                // Prevent the click event from also firing
+                e.preventDefault();
+                clickHandler(e);
+            }, { passive: false });
+        }
 
         // Handle clicks on dropdown content links
         const dropdownLinks = content.querySelectorAll('a');
