@@ -38,6 +38,10 @@
 .patient-full-name {
     font-weight: var(--font-weight-semibold);
     color: var(--color-primary);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 100%;
 }
 
 .patient-actions {

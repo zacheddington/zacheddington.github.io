@@ -59,6 +59,16 @@
     max-width: 0;
 }
 
+/* Ensure nested elements in table cells also show ellipsis */
+.data-table td > div,
+.data-table td > span {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 100%;
+    display: block;
+}
+
 .data-table td:last-child {
     border-right: none;
 }
