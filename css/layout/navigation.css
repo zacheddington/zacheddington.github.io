@@ -485,15 +485,37 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
     .nav-dropdown:hover .dropdown-content {
         opacity: 1 !important;
         visibility: visible !important;
-        transform: translateY(0) !important;
+        transform: translateY(0) translateX(0) !important;
         display: block !important;
         right: 0 !important;
         left: auto !important;
         min-width: 200px !important;
         max-width: calc(100vw - 20px) !important;
+        margin-right: 10px !important;
     }
 
     .nav-dropdown:hover .dropdown-arrow {
         transform: rotate(180deg) !important;
+    }
+}
+
+/* Ultra-specific rule to debug small screen hover issues */
+@media screen and (max-width: 600px) {
+    .top-nav-menu .nav-dropdown:hover .dropdown-content {
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: block !important;
+        position: absolute !important;
+        top: 100% !important;
+        right: 0 !important;
+        left: auto !important;
+        transform: translateY(0) translateX(0) !important;
+        z-index: 10000 !important;
+        background: rgba(var(--color-primary-rgb), 0.95) !important;
+        border: 2px solid rgba(255, 255, 255, 0.5) !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+        min-width: 200px !important;
+        max-width: calc(100vw - 20px) !important;
+        margin-right: 10px !important;
     }
 }
