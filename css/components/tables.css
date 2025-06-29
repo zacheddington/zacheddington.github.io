@@ -80,12 +80,7 @@
     right: 0;
     width: 4px;
     height: 100%;
-    background: rgba(
-        0,
-        123,
-        255,
-        0.1
-    ); /* Slightly visible by default for testing */
+    background: transparent; /* Back to transparent since functionality is confirmed working */
     cursor: col-resize;
     z-index: 100; /* Increased to ensure it's always on top */
     transition: background-color 0.2s ease;

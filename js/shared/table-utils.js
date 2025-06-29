@@ -119,17 +119,15 @@ function addResizeHandles(table, tableId) {
             // Add event listeners
             setupResizeListeners(handle, header, table, tableId);
 
-            // Add hover debugging
+            // Add hover debugging (minimal for production)
             handle.addEventListener('mouseenter', () => {
-                console.log(
-                    `🖱️ TABLE-UTILS: Mouse ENTER on ${tableId} resize handle for "${header.textContent.trim()}"`
-                );
+                // Optional: uncomment for debugging
+                // console.log(`🖱️ TABLE-UTILS: Mouse ENTER on ${tableId} resize handle for "${header.textContent.trim()}"`);
             });
 
             handle.addEventListener('mouseleave', () => {
-                console.log(
-                    `🖱️ TABLE-UTILS: Mouse LEAVE on ${tableId} resize handle for "${header.textContent.trim()}"`
-                );
+                // Optional: uncomment for debugging
+                // console.log(`🖱️ TABLE-UTILS: Mouse LEAVE on ${tableId} resize handle for "${header.textContent.trim()}"`);
             });
 
             // Add click debugging to test if handles are reachable
@@ -176,41 +174,49 @@ function setupResizeListeners(handle, header, table, tableId) {
         // Prevent text selection
         document.body.style.userSelect = 'none';
 
+        // Create scoped mouse move handler
+        const handleMouseMove = (moveEvent) => {
+            if (!isResizing) return;
+
+            const deltaX = moveEvent.pageX - startX;
+            const newWidth = Math.max(50, startWidth + deltaX); // Minimum 50px
+
+            console.log(
+                `🖱️ TABLE-UTILS: Mouse MOVE on ${tableId} - deltaX: ${deltaX}, newWidth: ${newWidth}px, pageX: ${moveEvent.pageX}, startX: ${startX}`
+            );
+
+            // Apply the new width directly to the column
+            header.style.width = `${newWidth}px`;
+
+            moveEvent.preventDefault();
+        };
+
+        // Create scoped mouse up handler
+        const handleMouseUp = (upEvent) => {
+            if (!isResizing) return;
+
+            console.log(
+                `🖱️ TABLE-UTILS: Mouse UP on ${tableId} - final width: ${header.offsetWidth}px`
+            );
+
+            isResizing = false;
+            table.classList.remove('resizing');
+            handle.classList.remove('active');
+            document.body.style.userSelect = '';
+
+            // Clean up event listeners
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+
+            // Save the new column widths
+            saveColumnPreferences(table, tableId);
+        };
+
+        // Add the scoped event listeners
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+
         e.preventDefault();
-    });
-
-    // Mouse move event (on document to catch moves outside the handle)
-    document.addEventListener('mousemove', (e) => {
-        if (!isResizing) return;
-
-        const deltaX = e.pageX - startX;
-        const newWidth = Math.max(50, startWidth + deltaX); // Minimum 50px
-
-        console.log(
-            `🖱️ TABLE-UTILS: Mouse MOVE on ${tableId} - deltaX: ${deltaX}, newWidth: ${newWidth}px`
-        );
-
-        // Apply the new width directly to the column
-        header.style.width = `${newWidth}px`;
-
-        e.preventDefault();
-    });
-
-    // Mouse up event
-    document.addEventListener('mouseup', () => {
-        if (!isResizing) return;
-
-        console.log(
-            `🖱️ TABLE-UTILS: Mouse UP on ${tableId} - final width: ${header.offsetWidth}px`
-        );
-
-        isResizing = false;
-        table.classList.remove('resizing');
-        handle.classList.remove('active');
-        document.body.style.userSelect = '';
-
-        // Save the new column widths
-        saveColumnPreferences(table, tableId);
     });
 
     // Double-click to auto-size
