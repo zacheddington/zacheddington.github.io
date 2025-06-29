@@ -19,15 +19,41 @@ function initializeDataTables() {
     tables.forEach((table, index) => {
         const tableId = table.id || `data-table-${index}`;
         console.log(`📋 Setting up table: ${tableId}`);
+        console.log(`   - Classes: ${table.className}`);
+        console.log(
+            `   - Current style.tableLayout: ${
+                table.style.tableLayout || 'not set'
+            }`
+        );
+        console.log(
+            `   - Current style.width: ${table.style.width || 'not set'}`
+        );
+        console.log(
+            `   - Headers count: ${table.querySelectorAll('thead th').length}`
+        );
+        console.log(
+            `   - Existing resize handles: ${
+                table.querySelectorAll('.resize-handle').length
+            }`
+        );
 
         // Set up the table for resizing
         setupTableResizing(table, tableId);
+        console.log(
+            `   - After setupTableResizing - tableLayout: ${table.style.tableLayout}, width: ${table.style.width}`
+        );
 
         // Load any saved column preferences
         loadColumnPreferences(table, tableId);
+        console.log(`   - After loadColumnPreferences`);
 
         // Add resize handles
         addResizeHandles(table, tableId);
+        console.log(
+            `   - After addResizeHandles - handles: ${
+                table.querySelectorAll('.resize-handle').length
+            }`
+        );
     });
 
     console.log('✅ All data tables initialized successfully');

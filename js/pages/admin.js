@@ -4,7 +4,6 @@
 // Global variables for admin page
 let allUsers = [];
 let currentRoles = [];
-let currentSort = { column: null, direction: null };
 
 // Initialize admin page
 function initializeAdminPage() {
@@ -64,14 +63,54 @@ function initializeCreateUserPage() {
 
 // Initialize the manage users page
 function initializeManageUsersPage() {
+    console.log('🔧 ADMIN: Starting manage users page initialization');
+
     // Clear any legacy localStorage keys that might interfere with unified table system
     localStorage.removeItem('userTableColumnWidths');
     localStorage.removeItem('sessionColumnPreferences');
-    
+    console.log('🔧 ADMIN: Cleared legacy localStorage keys');
+
+    // Check table state before data loading
+    const usersTable = document.querySelector('#usersTable');
+    if (usersTable) {
+        console.log('🔧 ADMIN: Users table found before data load');
+        console.log(`   - Classes: ${usersTable.className}`);
+        console.log(
+            `   - Style.tableLayout: ${
+                usersTable.style.tableLayout || 'not set'
+            }`
+        );
+        console.log(`   - Style.width: ${usersTable.style.width || 'not set'}`);
+        console.log(
+            `   - Resize handles: ${
+                usersTable.querySelectorAll('.resize-handle').length
+            }`
+        );
+    }
+
     // Load roles first, then users - handle async internally
     (async () => {
         await loadRolesForUserManagement();
         await loadUsers();
+
+        // Check table state after data loading
+        if (usersTable) {
+            console.log('🔧 ADMIN: Users table state after data load');
+            console.log(`   - Classes: ${usersTable.className}`);
+            console.log(
+                `   - Style.tableLayout: ${
+                    usersTable.style.tableLayout || 'not set'
+                }`
+            );
+            console.log(
+                `   - Style.width: ${usersTable.style.width || 'not set'}`
+            );
+            console.log(
+                `   - Resize handles: ${
+                    usersTable.querySelectorAll('.resize-handle').length
+                }`
+            );
+        }
     })();
 
     setupUserFilter();
@@ -597,11 +636,10 @@ async function loadUsers() {
         if (response.ok) {
             const result = await response.json();
             allUsers = result.data; // Extract data from response object
-            setupTableSorting();
-            const sortedUsers = getSortedUsers();
 
-            // Display users
-            displayUsers(sortedUsers);
+            // Display users (unified table system handles all table behavior)
+            const usersToShow = getUsersForDisplay();
+            displayUsers(usersToShow);
         } else {
             // Use global auth error handler for consistent experience
             if (response.status === 401 || response.status === 403) {
@@ -660,215 +698,56 @@ async function loadRolesForUserManagement() {
     }
 }
 
-// Setup table sorting using shared utility
-function setupTableSorting() {
-    // Define sortable columns (exclude Actions column)
-    const sortableColumns = [
-        { index: 0, key: 'username', label: 'Username' },
-        { index: 1, key: 'fullName', label: 'Full Name' },
-        { index: 2, key: 'email', label: 'Email' },
-        { index: 3, key: 'role', label: 'Role' },
-        { index: 4, key: 'created', label: 'Created' },
-    ];
-
-    // Use shared table sorting utility
-    if (window.tableUtils) {
-        window.tableUtils.setupTableSorting({
-            tableId: 'usersTable',
-            sortableColumns: sortableColumns,
-            currentSort: currentSort,
-            handleSort: handleSort,
-            updateSortIndicators: updateSortIndicators,
-        });
-    }
-}
-
-// Handle table sorting using shared utility
-function handleSort(columnKey) {
-    // Use shared table sorting utility for logic
-    if (window.tableUtils) {
-        window.tableUtils.handleTableSort(
-            columnKey,
-            currentSort,
-            updateSortIndicators,
-            refreshUsersDisplay
-        );
-    } else {
-        // Fallback to original logic
-        handleSortFallback(columnKey);
-    }
-}
-
-// Fallback sort handler for when shared utility isn't available
-function handleSortFallback(columnKey) {
-    // Determine new sort direction
-    if (currentSort.column === columnKey) {
-        // Same column clicked
-        if (currentSort.direction === null) {
-            currentSort.direction = 'asc';
-        } else if (currentSort.direction === 'asc') {
-            currentSort.direction = 'desc';
-        } else {
-            currentSort.direction = null;
-        }
-    } else {
-        // Different column clicked
-        currentSort.column = columnKey;
-        currentSort.direction = 'asc';
-    }
-
-    // Update sort indicators
-    updateSortIndicators();
-    // Update reset sort button visibility
-    updateResetSortButton();
-
-    // Refresh display
-    refreshUsersDisplay();
-}
-
-// Refresh users display
-function refreshUsersDisplay() {
-    // Update reset sort button visibility
-    updateResetSortButton();
-
-    // Sort and display users
-    const sortedUsers = getSortedUsers();
-    displayUsers(sortedUsers);
-}
-
-// Update sort indicators using shared utility with fallback
-function updateSortIndicators() {
-    if (window.tableUtils) {
-        window.tableUtils.updateTableSortIndicators('usersTable', currentSort);
-    } else {
-        // Fallback to original logic
-        const indicators = document.querySelectorAll('.sort-indicator');
-
-        indicators.forEach((indicator) => {
-            const column = indicator.dataset.column;
-            if (column === currentSort.column) {
-                if (currentSort.direction === 'asc') {
-                    indicator.textContent = ' ↑';
-                } else if (currentSort.direction === 'desc') {
-                    indicator.textContent = ' ↓';
-                } else {
-                    indicator.textContent = '';
-                }
-            } else {
-                indicator.textContent = '';
-            }
-        });
-    }
-}
-
-// Update reset sort button visibility
-function updateResetSortButton() {
-    const resetBtn = document.getElementById('resetSort');
-    if (resetBtn) {
-        resetBtn.style.display = currentSort.column ? 'inline-block' : 'none';
-    }
-}
-
-// Get sorted users using shared utility with fallback
-function getSortedUsers() {
-    if (window.tableUtils) {
-        return window.tableUtils.sortTableData(
-            allUsers,
-            currentSort,
-            getUserValueForSort
-        );
-    } else {
-        // Fallback to original logic
-        return getSortedUsersFallback();
-    }
-}
-
-// Extract sortable value from user object for shared utility
-function getUserValueForSort(user, columnKey) {
-    switch (columnKey) {
-        case 'username':
-            return user.username?.toLowerCase() || '';
-        case 'fullName':
-            return `${user.first_name} ${user.last_name}`.toLowerCase();
-        case 'email':
-            return user.email?.toLowerCase() || '';
-        case 'role':
-            return user.roles && user.roles[0]
-                ? user.roles[0].toLowerCase()
-                : '';
-        case 'created':
-            return user.date_created
-                ? new Date(user.date_created)
-                : new Date(0);
-        default:
-            return '';
-    }
-}
-
-// Fallback sort function for when shared utility isn't available
-function getSortedUsersFallback() {
-    if (!currentSort.column || !currentSort.direction) {
-        return allUsers;
-    }
-
-    return [...allUsers].sort((a, b) => {
-        let aValue, bValue;
-
-        switch (currentSort.column) {
-            case 'username':
-                aValue = a.username?.toLowerCase() || '';
-                bValue = b.username?.toLowerCase() || '';
-                break;
-            case 'fullName':
-                aValue = `${a.first_name} ${a.last_name}`.toLowerCase();
-                bValue = `${b.first_name} ${b.last_name}`.toLowerCase();
-                break;
-            case 'email':
-                aValue = a.email?.toLowerCase() || '';
-                bValue = b.email?.toLowerCase() || '';
-                break;
-            case 'role':
-                aValue = a.roles && a.roles[0] ? a.roles[0].toLowerCase() : '';
-                bValue = b.roles && b.roles[0] ? b.roles[0].toLowerCase() : '';
-                break;
-            case 'created':
-                // Better date handling for sorting
-                aValue = a.date_created
-                    ? new Date(a.date_created)
-                    : new Date(0);
-                bValue = b.date_created
-                    ? new Date(b.date_created)
-                    : new Date(0);
-
-                // Check if dates are valid
-                if (isNaN(aValue.getTime())) aValue = new Date(0);
-                if (isNaN(bValue.getTime())) bValue = new Date(0);
-                break;
-            default:
-                return 0;
-        }
-
-        if (aValue < bValue) return currentSort.direction === 'asc' ? -1 : 1;
-        if (aValue > bValue) return currentSort.direction === 'asc' ? 1 : -1;
-        return 0;
-    });
+// Simple function that returns users for display (no sorting - let table handle that)
+function getUsersForDisplay() {
+    return allUsers; // Return all users unsorted - let unified table system handle everything
 }
 
 // Display users in table
 function displayUsers(users) {
+    console.log('🔧 ADMIN: displayUsers called with', users.length, 'users');
+
     const usersTableBody = document.getElementById('usersTableBody');
     const noUsersFound = document.getElementById('noUsersFound');
     const tableContainer = document.querySelector('.table-responsive');
+    const usersTable = document.querySelector('#usersTable');
 
-    if (!usersTableBody) return;
+    if (!usersTableBody) {
+        console.warn('🔧 ADMIN: usersTableBody not found');
+        return;
+    }
+
+    // Log table state before display
+    if (usersTable) {
+        console.log('🔧 ADMIN: Table state before displayUsers');
+        console.log(
+            `   - Style.tableLayout: ${
+                usersTable.style.tableLayout || 'not set'
+            }`
+        );
+        console.log(`   - Style.width: ${usersTable.style.width || 'not set'}`);
+        console.log(
+            `   - Resize handles: ${
+                usersTable.querySelectorAll('.resize-handle').length
+            }`
+        );
+        console.log(
+            `   - Has data-table class: ${usersTable.classList.contains(
+                'data-table'
+            )}`
+        );
+    }
 
     if (users.length === 0) {
         usersTableBody.innerHTML = '';
         if (noUsersFound) noUsersFound.classList.remove('hidden');
+        console.log('🔧 ADMIN: No users to display');
         return;
     }
 
-    if (noUsersFound) noUsersFound.classList.add('hidden'); // Reset scroll position when displaying new data
+    if (noUsersFound) noUsersFound.classList.add('hidden');
+
+    // Reset scroll position when displaying new data
     if (tableContainer) {
         tableContainer.scrollLeft = 0;
     }
@@ -971,6 +850,22 @@ function displayUsers(users) {
         `;
         })
         .join('');
+
+    // Log table state after display
+    if (usersTable) {
+        console.log('🔧 ADMIN: Table state after displayUsers');
+        console.log(
+            `   - Style.tableLayout: ${
+                usersTable.style.tableLayout || 'not set'
+            }`
+        );
+        console.log(`   - Style.width: ${usersTable.style.width || 'not set'}`);
+        console.log(
+            `   - Resize handles: ${
+                usersTable.querySelectorAll('.resize-handle').length
+            }`
+        );
+    }
 }
 
 // Filter users
@@ -980,8 +875,8 @@ function filterUsers() {
         .value.toLowerCase();
 
     if (!filterValue.trim()) {
-        const sortedUsers = getSortedUsers();
-        displayUsers(sortedUsers);
+        const usersToShow = getUsersForDisplay();
+        displayUsers(usersToShow);
         return;
     }
     const filteredUsers = allUsers.filter((user) => {
@@ -1006,9 +901,6 @@ function filterUsers() {
     });
 
     displayUsers(filteredUsers);
-
-    // Column width adjustments are now handled by table-utils.js
-    // setTimeout(adjustColumnWidths, 100);
 }
 
 // Setup user filter
@@ -1326,8 +1218,6 @@ function updateCreateUserSubmitButton() {
         submitBtn.textContent = 'Create User';
     }
 }
-
-
 
 // Session Management Functions
 // ============================
