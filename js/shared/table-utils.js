@@ -66,6 +66,9 @@ function initializeDataTables() {
         // Set up row selection functionality
         setupRowSelection(table);
 
+        // Fix mobile select behavior
+        fixMobileSelectBehavior(table);
+
         // Set intelligent default column widths
         setDefaultColumnWidths(table, tableId);
     });
@@ -850,4 +853,42 @@ window.TableUtils = {
     clearLegacyTableStorage,
     setDefaultColumnWidths,
     handleWindowResize,
+    fixMobileSelectBehavior,
 };
+
+/**
+ * Fix mobile select dropdown behavior
+ */
+function fixMobileSelectBehavior(table) {
+    const selects = table.querySelectorAll('select');
+
+    selects.forEach((select) => {
+        // Add mobile-specific event handling
+        select.addEventListener(
+            'touchstart',
+            function (e) {
+                // Ensure the select element can receive focus on mobile
+                e.stopPropagation();
+            },
+            { passive: true }
+        );
+
+        select.addEventListener(
+            'touchend',
+            function (e) {
+                // Prevent any interference with native select behavior
+                e.stopPropagation();
+            },
+            { passive: true }
+        );
+
+        // Ensure select is focusable on mobile
+        if (!select.hasAttribute('tabindex')) {
+            select.setAttribute('tabindex', '0');
+        }
+
+        // Add styles to ensure proper mobile interaction
+        select.style.zIndex = '1000';
+        select.style.position = 'relative';
+    });
+}
