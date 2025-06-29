@@ -332,9 +332,31 @@ function autoSizeColumn(header, table, tableId) {
     let maxWidth = 80; // Minimum width
 
     cells.forEach((cell) => {
-        measurer.textContent = cell.textContent.trim();
-        const textWidth = measurer.offsetWidth;
-        maxWidth = Math.max(maxWidth, textWidth + 40); // Add padding
+        let textToMeasure = '';
+
+        // Handle dropdowns/select elements specially
+        const selectElement = cell.querySelector('select');
+        if (selectElement) {
+            // For dropdowns, find the longest option text instead of concatenated text
+            let longestOptionText = '';
+            const options = selectElement.querySelectorAll('option');
+            options.forEach((option) => {
+                if (option.textContent.length > longestOptionText.length) {
+                    longestOptionText = option.textContent;
+                }
+            });
+            textToMeasure = longestOptionText.trim();
+            // Add extra space for dropdown arrow
+            measurer.textContent = textToMeasure;
+            const textWidth = measurer.offsetWidth;
+            maxWidth = Math.max(maxWidth, textWidth + 60); // Extra padding for dropdown arrow
+        } else {
+            // For regular cells, use the text content
+            textToMeasure = cell.textContent.trim();
+            measurer.textContent = textToMeasure;
+            const textWidth = measurer.offsetWidth;
+            maxWidth = Math.max(maxWidth, textWidth + 40); // Regular padding
+        }
     });
 
     document.body.removeChild(measurer);
