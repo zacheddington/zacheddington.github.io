@@ -252,13 +252,6 @@ function setupPatientNumberValidation() {
  * Setup mobile-friendly dropdown navigation
  */
 function setupMobileDropdowns() {
-    // Prevent multiple setups
-    if (window._mobileDropdownsSetup) {
-        console.log('Mobile dropdowns already setup, skipping...');
-        return;
-    }
-    window._mobileDropdownsSetup = true;
-
     const dropdowns = document.querySelectorAll('.nav-dropdown');
     console.log('Setting up mobile dropdowns, found:', dropdowns.length);
 
@@ -277,153 +270,37 @@ function setupMobileDropdowns() {
             trigger.removeEventListener('click', existingHandler);
         }
 
-        // Create new click handler for all screen sizes (no CSS hover anymore)
+        // Create click handler only for mobile screens
         const clickHandler = function (e) {
+            // Only handle clicks on small screens (mobile/tablet)
+            if (window.innerWidth > 768) {
+                // On desktop, let CSS hover handle dropdowns
+                return;
+            }
+
             console.log(
-                'Dropdown trigger clicked:',
+                'Mobile dropdown trigger clicked:',
                 trigger.textContent.trim()
             );
-
-            // Always prevent default and show dropdown overlay
             e.preventDefault();
             e.stopPropagation();
 
-            // Close other open dropdowns and remove any existing mobile overlays
+            // Close other open dropdowns
             dropdowns.forEach((otherDropdown) => {
                 if (otherDropdown !== dropdown) {
                     otherDropdown.classList.remove('mobile-open');
                 }
             });
 
-            // Remove any existing mobile dropdown overlays
-            const existingMobileDropdowns = document.querySelectorAll(
-                '.mobile-dropdown-overlay'
-            );
-            existingMobileDropdowns.forEach((overlay) => overlay.remove());
-
             // Toggle current dropdown
-            const isOpen = dropdown.classList.contains('mobile-open');
-            if (isOpen) {
-                dropdown.classList.remove('mobile-open');
-                console.log('Closed dropdown');
-            } else {
-                dropdown.classList.add('mobile-open');
-
-                // Create mobile dropdown overlay that works on all screen sizes
-                const mobileDropdown = document.createElement('div');
-                mobileDropdown.className = 'mobile-dropdown-overlay';
-                mobileDropdown.innerHTML = content.innerHTML;
-
-                // Calculate positioning based on screen size
-                const isVerySmall = window.innerWidth <= 375;
-                const isSmall = window.innerWidth <= 425;
-                const topPosition = isVerySmall ? '50px' : '60px';
-                const horizontalMargin = isVerySmall
-                    ? '5px'
-                    : isSmall
-                    ? '8px'
-                    : '10px';
-
-                mobileDropdown.style.cssText = `
-                    position: fixed !important;
-                    top: ${topPosition} !important;
-                    right: ${horizontalMargin} !important;
-                    left: ${horizontalMargin} !important;
-                    background: rgba(0, 150, 136, 0.98) !important;
-                    backdrop-filter: blur(15px) !important;
-                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-                    border-radius: 8px !important;
-                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
-                    z-index: 99999 !important;
-                    display: block !important;
-                    opacity: 1 !important;
-                    visibility: visible !important;
-                    padding: 0 !important;
-                    max-width: ${isVerySmall ? '280px' : '320px'} !important;
-                    margin: 0 auto !important;
-                    transform: translateY(0) !important;
-                `;
-
-                // Style the dropdown links with responsive sizing
-                const links = mobileDropdown.querySelectorAll('a');
-                const linkPadding = isVerySmall ? '14px 16px' : '16px 20px';
-                const fontSize = isVerySmall ? '15px' : '16px';
-
-                links.forEach((link, index) => {
-                    link.style.cssText = `
-                        display: flex !important;
-                        align-items: center !important;
-                        gap: 12px !important;
-                        padding: ${linkPadding} !important;
-                        color: rgba(255, 255, 255, 0.95) !important;
-                        text-decoration: none !important;
-                        font-weight: 500 !important;
-                        font-size: ${fontSize} !important;
-                        border-bottom: ${
-                            index === links.length - 1
-                                ? 'none'
-                                : '1px solid rgba(255, 255, 255, 0.1)'
-                        } !important;
-                        transition: background-color 0.2s ease !important;
-                        background-color: transparent !important;
-                    `;
-
-                    // Remove any unwanted highlights or focus styles
-                    link.addEventListener('click', (e) => {
-                        mobileDropdown.remove();
-                        dropdown.classList.remove('mobile-open');
-                    });
-
-                    // Touch feedback without yellow highlighting
-                    link.addEventListener(
-                        'touchstart',
-                        function (e) {
-                            this.style.backgroundColor =
-                                'rgba(255, 255, 255, 0.1) !important';
-                        },
-                        { passive: true }
-                    );
-
-                    link.addEventListener(
-                        'touchend',
-                        function (e) {
-                            setTimeout(() => {
-                                this.style.backgroundColor =
-                                    'transparent !important';
-                            }, 150);
-                        },
-                        { passive: true }
-                    );
-
-                    // Prevent unwanted focus styles
-                    link.addEventListener('focus', function (e) {
-                        this.blur();
-                    });
-                });
-
-                document.body.appendChild(mobileDropdown);
-                console.log('Opened dropdown with overlay');
-            }
+            dropdown.classList.toggle('mobile-open');
         };
 
         // Store reference for cleanup
         trigger._mobileDropdownHandler = clickHandler;
 
-        // Add primary event listener
+        // Add click listener
         trigger.addEventListener('click', clickHandler);
-
-        // Add touch handling for touch devices to prevent double-firing
-        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-            trigger.addEventListener(
-                'touchend',
-                function (e) {
-                    // Prevent the click event from also firing
-                    e.preventDefault();
-                    clickHandler(e);
-                },
-                { passive: false }
-            );
-        }
 
         // Handle clicks on dropdown content links
         const dropdownLinks = content.querySelectorAll('a');
@@ -436,34 +313,21 @@ function setupMobileDropdowns() {
         });
     });
 
-    // Close dropdowns when clicking outside
+    // Close dropdowns when clicking outside (mobile only)
     document.addEventListener('click', function (e) {
-        if (
-            !e.target.closest('.nav-dropdown') &&
-            !e.target.closest('.mobile-dropdown-overlay')
-        ) {
+        if (window.innerWidth <= 768 && !e.target.closest('.nav-dropdown')) {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
             });
-            // Remove all mobile dropdown overlays
-            const existingMobileDropdowns = document.querySelectorAll(
-                '.mobile-dropdown-overlay'
-            );
-            existingMobileDropdowns.forEach((overlay) => overlay.remove());
         }
     });
 
-    // Close dropdowns on escape key
+    // Close dropdowns on escape key (mobile only)
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
+        if (window.innerWidth <= 768 && e.key === 'Escape') {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
             });
-            // Remove all mobile dropdown overlays
-            const existingMobileDropdowns = document.querySelectorAll(
-                '.mobile-dropdown-overlay'
-            );
-            existingMobileDropdowns.forEach((overlay) => overlay.remove());
         }
     });
 }
@@ -480,12 +344,6 @@ window.addEventListener('resize', function () {
         dropdowns.forEach((dropdown) => {
             dropdown.classList.remove('mobile-open');
         });
-
-        // Remove all mobile dropdown overlays
-        const existingMobileDropdowns = document.querySelectorAll(
-            '.mobile-dropdown-overlay'
-        );
-        existingMobileDropdowns.forEach((overlay) => overlay.remove());
 
         setupMobileDropdowns();
     }, 250);

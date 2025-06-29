@@ -188,18 +188,21 @@
     stroke: currentColor;
 }
 
-/* Only show dropdowns when explicitly opened via JavaScript */
+/* Show dropdowns on hover (desktop) or when explicitly opened (mobile) */
+.nav-dropdown:hover .dropdown-content,
 .nav-dropdown.mobile-open .dropdown-content {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
 }
 
+.nav-dropdown:hover .dropdown-arrow,
 .nav-dropdown.mobile-open .dropdown-arrow {
     transform: rotate(180deg);
 }
 
-/* Ensure dropdown appears above other content only when explicitly opened */
+/* Ensure dropdown appears above other content */
+.nav-dropdown:hover,
 .nav-dropdown.mobile-open {
     z-index: calc(var(--z-modal) + 1);
 }
@@ -506,20 +509,4 @@ body.is-admin .admin-only {
 /* Disable transitions that interfere with mobile dropdowns */
 .nav-dropdown.mobile-open .dropdown-content {
     transition: none !important;
-}
-
-/* Prevent unwanted focus/touch highlighting */
-.mobile-dropdown-overlay a:focus,
-.mobile-dropdown-overlay a:active {
-    outline: none !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-    -webkit-tap-highlight-color: transparent !important;
-}
-
-/* Ensure mobile dropdown overlay is above everything */
-.mobile-dropdown-overlay {
-    position: fixed !important;
-    z-index: 999999 !important;
-    pointer-events: auto !important;
 }
