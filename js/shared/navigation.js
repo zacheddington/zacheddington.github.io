@@ -296,182 +296,76 @@ function setupMobileDropdowns() {
             const isOpen = dropdown.classList.contains('mobile-open');
             if (isOpen) {
                 dropdown.classList.remove('mobile-open');
+                // Remove mobile dropdown if it exists
+                const existingMobileDropdown = document.querySelector('.mobile-dropdown-overlay');
+                if (existingMobileDropdown) {
+                    existingMobileDropdown.remove();
+                }
                 console.log('Closed dropdown');
-                console.log(
-                    'DEBUG: Dropdown classes after close:',
-                    dropdown.className
-                );
             } else {
                 dropdown.classList.add('mobile-open');
+                
+                // Create mobile dropdown overlay that works
+                const mobileDropdown = document.createElement('div');
+                mobileDropdown.className = 'mobile-dropdown-overlay';
+                mobileDropdown.innerHTML = content.innerHTML;
+                mobileDropdown.style.cssText = `
+                    position: fixed !important;
+                    top: 60px !important;
+                    right: 10px !important;
+                    left: 10px !important;
+                    background: rgba(0, 150, 136, 0.95) !important;
+                    backdrop-filter: blur(10px) !important;
+                    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+                    border-radius: 8px !important;
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+                    z-index: 9999 !important;
+                    display: block !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    padding: 0 !important;
+                    max-width: 300px !important;
+                    margin: 0 auto !important;
+                `;
+                
+                // Style the dropdown links
+                const links = mobileDropdown.querySelectorAll('a');
+                links.forEach(link => {
+                    link.style.cssText = `
+                        display: flex !important;
+                        align-items: center !important;
+                        gap: 12px !important;
+                        padding: 16px 20px !important;
+                        color: rgba(255, 255, 255, 0.95) !important;
+                        text-decoration: none !important;
+                        font-weight: 500 !important;
+                        font-size: 16px !important;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                        transition: background-color 0.2s ease !important;
+                    `;
+                    
+                    link.addEventListener('click', () => {
+                        mobileDropdown.remove();
+                        dropdown.classList.remove('mobile-open');
+                    });
+                    
+                    link.addEventListener('touchstart', function() {
+                        this.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                    });
+                    
+                    link.addEventListener('touchend', function() {
+                        this.style.backgroundColor = 'transparent';
+                    });
+                });
+                
+                // Remove last border
+                if (links.length > 0) {
+                    links[links.length - 1].style.borderBottom = 'none';
+                }
+                
+                document.body.appendChild(mobileDropdown);
                 console.log('Opened dropdown');
-                console.log(
-                    'DEBUG: Dropdown classes after open:',
-                    dropdown.className
-                );
-                console.log('DEBUG: Dropdown content element:', content);
-                console.log('DEBUG: Body classes:', document.body.className);
-                console.log(
-                    'DEBUG: Is admin body?',
-                    document.body.classList.contains('is-admin')
-                );
-                console.log('DEBUG: Window width:', window.innerWidth);
-
-                const computedStyle = window.getComputedStyle(content);
-                console.log(
-                    'DEBUG: Dropdown content opacity:',
-                    computedStyle.opacity
-                );
-                console.log(
-                    'DEBUG: Dropdown content visibility:',
-                    computedStyle.visibility
-                );
-                console.log(
-                    'DEBUG: Dropdown content display:',
-                    computedStyle.display
-                );
-                console.log(
-                    'DEBUG: Dropdown content background:',
-                    computedStyle.backgroundColor
-                );
-                console.log(
-                    'DEBUG: Dropdown content border:',
-                    computedStyle.border
-                );
-                console.log(
-                    'DEBUG: Dropdown content z-index:',
-                    computedStyle.zIndex
-                );
-                console.log(
-                    'DEBUG: Dropdown content position:',
-                    computedStyle.position
-                );
-
-                // Try to force the styles directly via JavaScript to test
-                // Use the same aggressive approach that worked for the test element
-                content.style.cssText = `
-                    transition: none !important;
-                    opacity: 1 !important;
-                    visibility: visible !important;
-                    background: red !important;
-                    border: 5px solid lime !important;
-                    z-index: 999999 !important;
-                    display: block !important;
-                    position: fixed !important;
-                    top: 150px !important;
-                    left: 20px !important;
-                    width: 250px !important;
-                    height: 150px !important;
-                    pointer-events: auto !important;
-                `;
-
-                // Log the dropdown content to see what's inside
-                console.log('DEBUG: Dropdown innerHTML:', content.innerHTML);
-                console.log(
-                    'DEBUG: Dropdown children count:',
-                    content.children.length
-                );
-
-                // Try to force the styles directly via JavaScript to test
-                // Use the same aggressive approach that worked for the test element
-                content.style.cssText = `
-                    transition: none !important;
-                    opacity: 1 !important;
-                    visibility: visible !important;
-                    background: red !important;
-                    border: 5px solid lime !important;
-                    z-index: 999999 !important;
-                    display: block !important;
-                    position: fixed !important;
-                    top: 150px !important;
-                    left: 20px !important;
-                    width: 250px !important;
-                    height: 150px !important;
-                    pointer-events: auto !important;
-                `;
-
-                // Since the original element isn't showing, let's create a clone
-                const clonedDropdown = content.cloneNode(true);
-                clonedDropdown.innerHTML = `
-                    <div style="color: white !important; font-size: 16px !important; padding: 10px !important; font-weight: bold !important;">
-                        CLONED DROPDOWN - SHOULD BE VISIBLE!
-                    </div>
-                    ${content.innerHTML}
-                `;
-                clonedDropdown.style.cssText = `
-                    transition: none !important;
-                    opacity: 1 !important;
-                    visibility: visible !important;
-                    background: blue !important;
-                    border: 5px solid yellow !important;
-                    z-index: 999999 !important;
-                    display: block !important;
-                    position: fixed !important;
-                    top: 200px !important;
-                    left: 20px !important;
-                    width: 250px !important;
-                    height: 150px !important;
-                    pointer-events: auto !important;
-                `;
-                document.body.appendChild(clonedDropdown);
-
-                // Create a test element that should definitely be visible
-                const testDiv = document.createElement('div');
-                testDiv.innerHTML = 'TEST DROPDOWN - YOU SHOULD SEE THIS!';
-                testDiv.style.cssText = `
-                    position: fixed !important;
-                    top: 100px !important;
-                    left: 20px !important;
-                    width: 300px !important;
-                    height: 100px !important;
-                    background: lime !important;
-                    color: black !important;
-                    border: 5px solid blue !important;
-                    z-index: 999999 !important;
-                    font-size: 16px !important;
-                    font-weight: bold !important;
-                    display: block !important;
-                    opacity: 1 !important;
-                    visibility: visible !important;
-                    pointer-events: auto !important;
-                `;
-                document.body.appendChild(testDiv);
-
-                // Remove test elements after 3 seconds
-                setTimeout(() => {
-                    if (testDiv.parentNode) {
-                        testDiv.parentNode.removeChild(testDiv);
-                    }
-                    if (clonedDropdown.parentNode) {
-                        clonedDropdown.parentNode.removeChild(clonedDropdown);
-                    }
-                }, 3000);
-
-                // Get positioning info
-                const rect = content.getBoundingClientRect();
-                console.log('DEBUG: Dropdown positioning:');
-                console.log('  - Top:', rect.top);
-                console.log('  - Left:', rect.left);
-                console.log('  - Bottom:', rect.bottom);
-                console.log('  - Right:', rect.right);
-                console.log('  - Width:', rect.width);
-                console.log('  - Height:', rect.height);
-                console.log('  - Viewport height:', window.innerHeight);
-                console.log('  - Viewport width:', window.innerWidth);
-
-                // Check if it's visible in viewport
-                const isVisible =
-                    rect.top < window.innerHeight &&
-                    rect.bottom > 0 &&
-                    rect.left < window.innerWidth &&
-                    rect.right > 0;
-                console.log('  - Is in viewport?', isVisible);
-
-                console.log(
-                    'DEBUG: Forced styles applied directly via JS (transitions disabled)'
-                );
             }
-        };
-
         // Store reference for cleanup
         trigger._mobileDropdownHandler = clickHandler;
 
@@ -507,10 +401,15 @@ function setupMobileDropdowns() {
 
     // Close dropdowns when clicking outside
     document.addEventListener('click', function (e) {
-        if (!e.target.closest('.nav-dropdown')) {
+        if (!e.target.closest('.nav-dropdown') && !e.target.closest('.mobile-dropdown-overlay')) {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
             });
+            // Remove mobile dropdown overlay
+            const existingMobileDropdown = document.querySelector('.mobile-dropdown-overlay');
+            if (existingMobileDropdown) {
+                existingMobileDropdown.remove();
+            }
         }
     });
 
@@ -520,6 +419,11 @@ function setupMobileDropdowns() {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
             });
+            // Remove mobile dropdown overlay
+            const existingMobileDropdown = document.querySelector('.mobile-dropdown-overlay');
+            if (existingMobileDropdown) {
+                existingMobileDropdown.remove();
+            }
         }
     });
 }
