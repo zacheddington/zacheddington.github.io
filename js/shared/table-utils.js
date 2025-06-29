@@ -561,29 +561,7 @@ function autoSizeTableColumn(
     // Clean up
     document.body.removeChild(measureElement);
 
-    // Apply column type constraints
-    const columnType = getColumnType(header.textContent);
-
-    // Set reasonable min/max constraints based on column type
-    const constraints = {
-        email: { min: 120, max: 300 },
-        username: { min: 100, max: 200 },
-        name: { min: 120, max: 250 },
-        fullName: { min: 150, max: 280 },
-        role: { min: 100, max: 180 },
-        date: { min: 100, max: 150 },
-        datetime: { min: 140, max: 200 },
-        phone: { min: 120, max: 160 },
-        address: { min: 150, max: 350 },
-        actions: { min: 80, max: 150 },
-        status: { min: 80, max: 120 },
-        general: { min: 80, max: 300 },
-    };
-
-    const constraint = constraints[columnType] || constraints.general;
-    maxWidth = Math.max(constraint.min, Math.min(constraint.max, maxWidth));
-
-    // Apply the new width
+    // Apply the new width directly without constraints
     header.style.width = `${maxWidth}px`;
 
     // Save preferences

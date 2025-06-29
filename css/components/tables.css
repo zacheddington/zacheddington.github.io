@@ -19,20 +19,6 @@
 /* Filter inputs inherit unified styling from forms.css */
 
 /* ================================
-   TABLE-SPECIFIC SIZING
-   ================================ */
-
-/* All tables use the same base styling with responsive min-width */
-.data-table {
-    min-width: 1200px; /* Base minimum width for all tables */
-}
-
-/* Sessions table needs more width for 8 columns */
-.data-table.sessions-table {
-    min-width: 1400px; /* Wider for 8 columns: User, Status, Login Time, Last Activity, Logout Time, IP Address, Browser, Actions */
-}
-
-/* ================================
    RESIZABLE COLUMNS
    ================================ */
 
@@ -219,7 +205,7 @@
     font-size: 0.9rem;
     table-layout: auto; /* Change to auto to allow proper column sizing */
     display: table;
-    min-width: 1200px; /* Ensure table is wide enough for all columns */
+    /* No minimum width - let table size itself based on content */
 }
 
 .data-table thead {
@@ -253,104 +239,6 @@
     transition: width 0.1s ease-out; /* Smooth width transitions */
     overflow: hidden; /* Prevent content from overflowing during resize */
 }
-
-/* ================================
-   TABLE-SPECIFIC COLUMN WIDTHS
-   ================================ */
-
-/* Users table column widths - min-width instead of fixed width for responsive behavior */
-.data-table.users-table th:nth-child(1) {
-    min-width: 120px;
-    width: 15%;
-} /* Username */
-.data-table.users-table th:nth-child(2) {
-    min-width: 150px;
-    width: 20%;
-} /* Full Name */
-.data-table.users-table th:nth-child(3) {
-    min-width: 200px;
-    width: 30%;
-} /* Email - larger for potentially long emails */
-.data-table.users-table th:nth-child(4) {
-    min-width: 100px;
-    width: 15%;
-} /* Role */
-.data-table.users-table th:nth-child(5) {
-    min-width: 100px;
-    width: 12%;
-} /* Created */
-.data-table.users-table th:nth-child(6) {
-    min-width: 130px;
-    width: 15%;
-} /* Actions */
-
-/* Patients table column widths */
-.data-table.patients-table th:nth-child(1) {
-    min-width: 120px;
-    width: 15%;
-} /* Patient ID */
-.data-table.patients-table th:nth-child(2) {
-    min-width: 150px;
-    width: 20%;
-} /* First Name */
-.data-table.patients-table th:nth-child(3) {
-    min-width: 150px;
-    width: 20%;
-} /* Last Name */
-.data-table.patients-table th:nth-child(4) {
-    min-width: 100px;
-    width: 10%;
-} /* DOB */
-.data-table.patients-table th:nth-child(5) {
-    min-width: 80px;
-    width: 8%;
-} /* Gender */
-.data-table.patients-table th:nth-child(6) {
-    min-width: 120px;
-    width: 12%;
-} /* Phone */
-.data-table.patients-table th:nth-child(7) {
-    min-width: 100px;
-    width: 10%;
-} /* Created */
-.data-table.patients-table th:nth-child(8) {
-    min-width: 130px;
-    width: 15%;
-} /* Actions */
-
-/* Sessions table column widths */
-.data-table.sessions-table th:nth-child(1) {
-    min-width: 120px;
-    width: 12%;
-} /* User */
-.data-table.sessions-table th:nth-child(2) {
-    min-width: 80px;
-    width: 8%;
-} /* Status */
-.data-table.sessions-table th:nth-child(3) {
-    min-width: 140px;
-    width: 15%;
-} /* Login Time */
-.data-table.sessions-table th:nth-child(4) {
-    min-width: 140px;
-    width: 15%;
-} /* Last Activity */
-.data-table.sessions-table th:nth-child(5) {
-    min-width: 140px;
-    width: 15%;
-} /* Logout Time */
-.data-table.sessions-table th:nth-child(6) {
-    min-width: 120px;
-    width: 12%;
-} /* IP Address */
-.data-table.sessions-table th:nth-child(7) {
-    min-width: 150px;
-    width: 18%;
-} /* Browser */
-.data-table.sessions-table th:nth-child(8) {
-    min-width: 100px;
-    width: 10%;
-} /* Actions */
 
 .data-table th:last-child {
     border-right: none;
@@ -419,7 +307,6 @@
     overflow: hidden; /* Hide overflow content */
     position: relative; /* For hover effect */
     color: var(--color-text, #333); /* Ensure text color is visible */
-    min-width: 80px; /* Ensure minimum cell width */
 }
 
 /* Specific column behavior */
@@ -483,8 +370,6 @@
     text-align: center;
     padding: 0.5rem;
     width: auto; /* Let the column size itself */
-    min-width: 90px; /* Reasonable minimum */
-    max-width: 160px; /* Prevent excessive width */
 }
 
 /* Ensure Actions column content doesn't overflow */
@@ -502,7 +387,6 @@
 
 .role-select {
     /* Inherits unified input styling from forms.css */
-    min-width: 120px;
     font-size: 0.85rem;
     /* Prevent browser from auto-generating tooltips from option values */
     -webkit-appearance: none;
@@ -691,7 +575,6 @@
     /* Maintain table layout during resize */
     table-layout: fixed !important;
     width: auto !important;
-    min-width: max-content;
     /* Prevent any transition animations during resize */
     transition: none !important;
 }

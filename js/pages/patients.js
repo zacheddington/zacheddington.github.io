@@ -62,28 +62,6 @@ function canDeletePatients() {
 }
 
 // Get the column type based on header text for appropriate sizing constraints
-function getPatientColumnType(headerText) {
-    const header = headerText.toLowerCase().trim();
-
-    if (header.includes('name')) {
-        return 'name';
-    } else if (header.includes('date') || header.includes('birth')) {
-        return 'date';
-    } else if (header.includes('phone')) {
-        return 'phone';
-    } else if (header.includes('text') || header.includes('accepts')) {
-        return 'status';
-    } else if (header.includes('address')) {
-        return 'address';
-    } else if (header.includes('updated') || header.includes('created')) {
-        return 'datetime';
-    } else if (header.includes('action')) {
-        return 'actions';
-    } else {
-        return 'general';
-    }
-}
-
 // Initialize patients page functionality
 function initializePatientsPage() {
     // Determine which page we're on and initialize accordingly
@@ -167,7 +145,6 @@ async function initializeManagePatientsPage() {
     window.tableUtils.initializeTableFormatting({
         tableSelector: '#patientsTable',
         storageKey: 'patientsTableColumnWidths',
-        getColumnType: getPatientColumnType,
     });
 }
 

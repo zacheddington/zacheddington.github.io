@@ -76,7 +76,6 @@ function initializeManageUsersPage() {
     window.tableUtils.initializeTableFormatting({
         tableSelector: '.users-table',
         storageKey: 'userTableColumnWidths',
-        getColumnType: getAdminColumnType,
     });
 
     // Manage users page initialized
@@ -134,35 +133,6 @@ function setUserActionLoading(userId, isLoading) {
             roleSelect.disabled = false;
             roleSelect.style.opacity = '1';
         }
-    }
-}
-
-// Get the column type based on header text for appropriate sizing constraints
-function getAdminColumnType(headerText) {
-    const header = headerText.toLowerCase().trim();
-
-    if (header.includes('email')) {
-        return 'email';
-    } else if (header.includes('username') || header.includes('user')) {
-        return 'username';
-    } else if (header.includes('name') || header.includes('full name')) {
-        return 'name';
-    } else if (header.includes('role')) {
-        return 'role';
-    } else if (header.includes('created') || header.includes('date')) {
-        return 'created';
-    } else if (header.includes('action')) {
-        return 'actions';
-    } else if (header.includes('status')) {
-        return 'status';
-    } else if (header.includes('login') || header.includes('activity')) {
-        return 'datetime';
-    } else if (header.includes('ip') || header.includes('address')) {
-        return 'ip';
-    } else if (header.includes('browser')) {
-        return 'browser';
-    } else {
-        return 'general';
     }
 }
 
@@ -1020,8 +990,7 @@ function displayUsers(users) {
     setTimeout(() => {
         window.tableUtils.addTableColumnResizeHandles(
             '.users-table',
-            'userTableColumnWidths',
-            getAdminColumnType
+            'userTableColumnWidths'
         );
     }, 100);
 }
@@ -1191,8 +1160,7 @@ function displayUsersPreserveWidths(users, columnWidths = []) {
     // Add column resize handles
     window.tableUtils.addTableColumnResizeHandles(
         '.users-table',
-        'userTableColumnWidths',
-        getAdminColumnType
+        'userTableColumnWidths'
     );
 }
 
@@ -1856,12 +1824,6 @@ function autoSizeColumn(header, columnIndex) {
         const headerText = header.textContent;
         let maxWidth = Math.max(headerText.length * 10 + 40, 100); // Slightly more generous for headers
 
-        // Apply column type constraints even for empty tables
-        const columnType = getAdminColumnType(headerText);
-        if (columnType === 'actions') {
-            maxWidth = 120; // Default actions column width
-        }
-
         // Calculate width difference and update table width accordingly
         const widthDifference = maxWidth - initialWidths[columnIndex];
         header.style.width = `${maxWidth}px`;
@@ -1976,49 +1938,6 @@ function autoSizeColumn(header, columnIndex) {
         }
     });
 
-    // Apply constraints based on column type
-    const columnType = getAdminColumnType(header.textContent);
-
-    if (columnType === 'email') {
-        maxWidth = Math.min(maxWidth, 400); // Email column max width for long emails
-        maxWidth = Math.max(maxWidth, 200); // Email column min width
-    } else if (columnType === 'username') {
-        maxWidth = Math.min(maxWidth, 200); // Username column max width
-        maxWidth = Math.max(maxWidth, 120); // Username column min width
-    } else if (columnType === 'name') {
-        maxWidth = Math.min(maxWidth, 250); // Name column max width
-        maxWidth = Math.max(maxWidth, 150); // Name column min width
-    } else if (columnType === 'role') {
-        maxWidth = Math.min(maxWidth, 150); // Role column max width
-        maxWidth = Math.max(maxWidth, 100); // Role column min width
-    } else if (columnType === 'created') {
-        maxWidth = Math.min(maxWidth, 150); // Created column max width
-        maxWidth = Math.max(maxWidth, 100); // Created column min width
-    } else if (columnType === 'actions') {
-        // Calculate actions column width more precisely based on actual button content
-        const actionCells = table.querySelectorAll(
-            'tbody tr td:nth-child(' + (columnIndex + 1) + ') .table-actions'
-        );
-        if (actionCells.length > 0) {
-            // Measure actual action buttons
-            const sampleCell = actionCells[0];
-            const buttons = sampleCell.querySelectorAll('button');
-            let totalButtonWidth = 0;
-            buttons.forEach((btn) => {
-                totalButtonWidth += btn.offsetWidth || 80; // fallback width if not measured
-            });
-            totalButtonWidth += buttons.length > 1 ? 10 : 0; // gap between buttons
-            totalButtonWidth += 20; // cell padding
-            maxWidth = Math.max(totalButtonWidth, 100); // minimum 100px
-            maxWidth = Math.min(maxWidth, 180); // maximum 180px to prevent excessive width
-        } else {
-            maxWidth = 120; // default fallback for actions column
-        }
-    } else {
-        maxWidth = Math.min(maxWidth, 300); // General max width
-        maxWidth = Math.max(maxWidth, 100); // Minimum width for readability
-    }
-
     // Apply the calculated width to the target column only
     const widthDifference = maxWidth - initialWidths[columnIndex];
     header.style.width = `${maxWidth}px`;
@@ -2097,7 +2016,6 @@ async function initializeSessionManagement() {
         window.tableUtils.initializeTableFormatting({
             tableSelector: '#sessionsTable',
             storageKey: 'sessionTableColumnWidths',
-            getColumnType: getAdminColumnType,
         });
 
         // Load all sessions
@@ -2324,8 +2242,7 @@ function displaySessions(sessions) {
     setTimeout(() => {
         window.tableUtils.addTableColumnResizeHandles(
             '#sessionsTable',
-            'sessionTableColumnWidths',
-            getAdminColumnType
+            'sessionTableColumnWidths'
         );
     }, 100);
 }
