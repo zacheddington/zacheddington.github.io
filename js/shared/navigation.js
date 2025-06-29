@@ -314,9 +314,36 @@ function setupMobileDropdowns() {
                     'DEBUG: Is admin body?',
                     document.body.classList.contains('is-admin')
                 );
+                console.log('DEBUG: Window width:', window.innerWidth);
+
+                const computedStyle = window.getComputedStyle(content);
                 console.log(
-                    'DEBUG: Dropdown content computed style:',
-                    window.getComputedStyle(content)
+                    'DEBUG: Dropdown content opacity:',
+                    computedStyle.opacity
+                );
+                console.log(
+                    'DEBUG: Dropdown content visibility:',
+                    computedStyle.visibility
+                );
+                console.log(
+                    'DEBUG: Dropdown content display:',
+                    computedStyle.display
+                );
+                console.log(
+                    'DEBUG: Dropdown content background:',
+                    computedStyle.backgroundColor
+                );
+                console.log(
+                    'DEBUG: Dropdown content border:',
+                    computedStyle.border
+                );
+                console.log(
+                    'DEBUG: Dropdown content z-index:',
+                    computedStyle.zIndex
+                );
+                console.log(
+                    'DEBUG: Dropdown content position:',
+                    computedStyle.position
                 );
             }
         };

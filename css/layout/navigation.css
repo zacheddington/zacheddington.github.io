@@ -437,27 +437,34 @@ body.is-admin .admin-only {
 
 /* Mobile-only dropdown behavior */
 @media (max-width: 1024px) {
-    .nav-dropdown.mobile-open.admin-only {
+    /* Ensure admin dropdowns are visible on mobile */
+    body.is-admin .nav-dropdown.mobile-open.admin-only {
         display: block !important; /* Override admin-only hiding */
     }
 
+    /* DEBUG: Super specific selector for dropdown content */
+    body.is-admin .nav-dropdown.mobile-open.admin-only .dropdown-content,
     .nav-dropdown.mobile-open .dropdown-content {
         opacity: 1 !important;
         visibility: visible !important;
         transform: translateY(0) !important;
         display: block !important;
-        background: #ff0000 !important; /* RED DEBUG BACKGROUND */
-        border: 3px solid #00ff00 !important; /* GREEN DEBUG BORDER */
+        background: rgb(255, 0, 0) !important; /* RED DEBUG BACKGROUND */
+        border: 3px solid rgb(0, 255, 0) !important; /* GREEN DEBUG BORDER */
         min-height: 100px !important;
         position: absolute !important;
         top: 100% !important;
         left: 0 !important;
         z-index: 9999 !important;
+        width: 200px !important;
     }
 
+    /* DEBUG: Super specific selector for dropdown trigger */
+    body.is-admin .nav-dropdown.mobile-open.admin-only,
     .nav-dropdown.mobile-open {
         position: relative !important;
-        background: #ffff00 !important; /* YELLOW DEBUG BACKGROUND */
+        background: rgb(255, 255, 0) !important; /* YELLOW DEBUG BACKGROUND */
+        display: block !important;
     }
 }
 
