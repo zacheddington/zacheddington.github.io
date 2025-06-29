@@ -193,9 +193,8 @@ function adjustTableColumnWidths(tableSelector) {
     const table = document.querySelector(tableSelector);
     if (!table) return;
 
-    // Use auto layout to allow table to expand beyond container width
-    table.style.tableLayout = 'auto';
-    table.style.minWidth = 'max-content'; // Allow table to expand as needed
+    // Don't switch table layout - keep it as is to prevent jumping
+    // table.style.minWidth = 'max-content'; // Allow table to expand as needed
 }
 
 /**
@@ -493,9 +492,6 @@ function autoSizeTableColumn(header, columnIndex, tableSelector, storageKey) {
     const table = document.querySelector(tableSelector);
     if (!table) return;
 
-    // Ensure table is in fixed layout mode
-    table.style.tableLayout = 'fixed';
-
     // Get all cells in this column (including header)
     const cells = Array.from(
         table.querySelectorAll(
@@ -584,8 +580,6 @@ function loadTableColumnWidthPreferences(tableSelector, storageKey) {
                     header.style.width = savedWidths[index];
                 }
             });
-
-            table.style.tableLayout = 'fixed';
         } else {
             // No saved preferences, run auto-sizing algorithm
             adjustTableColumnWidths(tableSelector);

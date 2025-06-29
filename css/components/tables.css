@@ -149,11 +149,6 @@
     transition: transform 0.1s ease;
 }
 
-/* Smooth column width changes - unified for all tables */
-.data-table th:not(.resizing) {
-    transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 /* Improve cursor feedback - unified for all tables */
 .data-table.resizing {
     cursor: col-resize !important;
@@ -236,7 +231,6 @@
     position: sticky; /* Keep headers visible when scrolling */
     top: 0;
     z-index: 2;
-    transition: width 0.1s ease-out; /* Smooth width transitions */
     overflow: hidden; /* Prevent content from overflowing during resize */
 }
 
@@ -344,32 +338,27 @@
 
 .table-actions {
     display: flex;
-    gap: 0.5rem; /* Reduce gap for more compact layout */
+    gap: 0.5rem;
     justify-content: center;
     align-items: center;
-    white-space: nowrap; /* Prevent wrapping of action buttons */
-    min-width: fit-content; /* Use only the space needed */
-    max-width: 160px; /* Prevent excessive width */
+    white-space: nowrap;
 }
 
 /* Optimize action buttons for compact sizing */
 .table-actions .btn-edit,
 .table-actions .btn-delete {
-    font-size: 14px; /* Slightly smaller font */
-    padding: 0.4rem 0.6rem; /* Reduce padding for compactness */
-    min-width: auto; /* Remove minimum width constraints */
+    font-size: 14px;
+    padding: 0.4rem 0.6rem;
     white-space: nowrap;
     border-radius: var(--radius-sm);
     line-height: 1.2;
 }
 
-/* Remove excessive minimum width constraints from Actions columns */
 /* Let Actions columns size themselves based on actual content */
 .data-table th:last-child,
 .data-table td:last-child {
     text-align: center;
     padding: 0.5rem;
-    width: auto; /* Let the column size itself */
 }
 
 /* Ensure Actions column content doesn't overflow */
@@ -397,10 +386,8 @@
 /* Table action buttons - optimized for compact layout */
 .btn-edit,
 .btn-delete {
-    font-size: 14px; /* Smaller, more compact size */
-    padding: 0.4rem 0.6rem; /* Reduce padding */
-    min-width: auto; /* Remove width constraints */
-    height: auto; /* Remove fixed height */
+    font-size: 14px;
+    padding: 0.4rem 0.6rem;
     box-shadow: var(--shadow-sm);
     white-space: nowrap;
     border-radius: var(--radius-sm);
