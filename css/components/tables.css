@@ -25,6 +25,28 @@
     table-layout: fixed;
 }
 
+/* Prevent table from being focusable */
+.data-table,
+.data-table * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Allow selection for specific interactive elements */
+.data-table input,
+.data-table select,
+.data-table textarea,
+.data-table button {
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
+}
+
 /* Table Headers */
 .data-table th {
     background: var(--color-table-header);
@@ -170,7 +192,6 @@
 /* Active (Selected) Row */
 .data-table tbody tr.active {
     background-color: #e3f2fd !important;
-    border-left: 3px solid var(--color-secondary);
 }
 
 .data-table tbody tr.active:hover {
@@ -180,6 +201,20 @@
 /* Prevent text selection cursor on table cells */
 .data-table td {
     user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Prevent focus on table cells and rows */
+.data-table td,
+.data-table tr {
+    outline: none;
+}
+
+.data-table td:focus,
+.data-table tr:focus {
+    outline: none;
 }
 
 /* Resize Handles */

@@ -684,8 +684,14 @@ function setupRowSelection(table) {
         // Add active class to the clicked row
         targetRow.classList.add('active');
 
-        // Prevent text selection
+        // Prevent text selection and focus
         e.preventDefault();
+        e.stopPropagation();
+
+        // Ensure no element receives focus
+        if (document.activeElement && document.activeElement.blur) {
+            document.activeElement.blur();
+        }
     });
 }
 
