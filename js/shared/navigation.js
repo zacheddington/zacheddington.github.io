@@ -270,8 +270,10 @@ function setupMobileDropdowns() {
             );
 
             // Check if we're on a mobile device or small screen
-            const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth <= 1024);
-            
+            const isMobile =
+                window.innerWidth <= 768 ||
+                ('ontouchstart' in window && window.innerWidth <= 1024);
+
             if (!isMobile) {
                 // On desktop, allow normal navigation to the main page
                 // Don't prevent default, let the link work normally
@@ -295,9 +297,22 @@ function setupMobileDropdowns() {
             if (isOpen) {
                 dropdown.classList.remove('mobile-open');
                 console.log('Closed dropdown');
+                console.log(
+                    'DEBUG: Dropdown classes after close:',
+                    dropdown.className
+                );
             } else {
                 dropdown.classList.add('mobile-open');
                 console.log('Opened dropdown');
+                console.log(
+                    'DEBUG: Dropdown classes after open:',
+                    dropdown.className
+                );
+                console.log('DEBUG: Dropdown content element:', content);
+                console.log(
+                    'DEBUG: Dropdown content computed style:',
+                    window.getComputedStyle(content)
+                );
             }
         };
 
@@ -309,14 +324,18 @@ function setupMobileDropdowns() {
 
         // Only add touchend for actual touch devices to prevent double-firing
         if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-            trigger.addEventListener('touchend', function(e) {
-                // Only handle touchend on mobile screens
-                if (window.innerWidth <= 768) {
-                    // Prevent the click event from also firing
-                    e.preventDefault();
-                    clickHandler(e);
-                }
-            }, { passive: false });
+            trigger.addEventListener(
+                'touchend',
+                function (e) {
+                    // Only handle touchend on mobile screens
+                    if (window.innerWidth <= 768) {
+                        // Prevent the click event from also firing
+                        e.preventDefault();
+                        clickHandler(e);
+                    }
+                },
+                { passive: false }
+            );
         }
 
         // Handle clicks on dropdown content links
@@ -355,13 +374,13 @@ window.addEventListener('resize', function () {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(function () {
         console.log('Window resized, reinitializing mobile dropdowns');
-        
+
         // Close all mobile dropdowns when switching to desktop
         const dropdowns = document.querySelectorAll('.nav-dropdown');
         dropdowns.forEach((dropdown) => {
             dropdown.classList.remove('mobile-open');
         });
-        
+
         setupMobileDropdowns();
     }, 250);
 });

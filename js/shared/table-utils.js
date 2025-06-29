@@ -36,9 +36,7 @@ function initializeDataTables() {
     const tables = document.querySelectorAll('.data-table');
 
     if (tables.length === 0) {
-        console.warn(
-            '⚠️ TABLE-UTILS: No .data-table elements found on this page'
-        );
+        // No tables found - this is normal for pages without tables
         return;
     }
 
