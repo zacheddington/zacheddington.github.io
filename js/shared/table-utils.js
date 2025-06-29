@@ -304,8 +304,6 @@ function addTableColumnResizeHandles(
             resizeHandle.className = 'column-resize-handle';
             resizeHandle.setAttribute('role', 'separator');
             resizeHandle.setAttribute('aria-orientation', 'vertical');
-            resizeHandle.setAttribute('aria-valuemin', '80'); // Minimum width
-            resizeHandle.setAttribute('aria-valuemax', '500'); // Maximum width
             resizeHandle.setAttribute('aria-valuenow', header.offsetWidth);
             resizeHandle.setAttribute('tabindex', '0'); // Make focusable for keyboard
             header.appendChild(resizeHandle);
@@ -349,13 +347,7 @@ function addTableColumnResizeHandles(
             resizeHandle.addEventListener('dblclick', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                autoSizeTableColumn(
-                    header,
-                    index,
-                    tableSelector,
-                    storageKey,
-                    getColumnType
-                );
+                autoSizeTableColumn(header, index, tableSelector, storageKey);
             });
 
             // Also add double-click to the header itself for better UX
@@ -372,8 +364,7 @@ function addTableColumnResizeHandles(
                         header,
                         index,
                         tableSelector,
-                        storageKey,
-                        getColumnType
+                        storageKey
                     );
                 }
             });
@@ -385,7 +376,7 @@ function addTableColumnResizeHandles(
                     e.preventDefault();
                     const currentWidth = header.offsetWidth;
                     const step = e.key === 'ArrowLeft' ? -10 : 10;
-                    const newWidth = Math.max(80, currentWidth + step);
+                    const newWidth = Math.max(10, currentWidth + step); // Allow very small widths
                     header.style.width = newWidth + 'px';
                     this.setAttribute('aria-valuenow', newWidth);
                     saveTableColumnWidthPreferences(tableSelector, storageKey);
@@ -397,8 +388,7 @@ function addTableColumnResizeHandles(
                         header,
                         index,
                         tableSelector,
-                        storageKey,
-                        getColumnType
+                        storageKey
                     );
                 }
             });
@@ -429,17 +419,10 @@ function startTableColumnResize(
     const startWidth = header.offsetWidth;
     const handle = event.target;
 
-    // Store initial widths of ALL columns to preserve them
+    // Store initial state
     const headers = Array.from(table.querySelectorAll('th'));
-    const initialWidths = headers.map((h) => h.offsetWidth);
 
-    // Set table to fixed layout IMMEDIATELY to prevent auto-adjustments
-    table.style.tableLayout = 'fixed';
-
-    // Apply current widths to all headers to lock them in place
-    headers.forEach((h, index) => {
-        h.style.width = `${initialWidths[index]}px`;
-    });
+    // Don't change table layout - keep it as auto for natural behavior
 
     // Add visual feedback
     table.classList.add('resizing');
@@ -450,7 +433,7 @@ function startTableColumnResize(
     function doResize(e) {
         const currentX = e.pageX || e.clientX;
         const diff = currentX - startX;
-        const newWidth = Math.max(80, Math.min(500, startWidth + diff));
+        const newWidth = Math.max(10, startWidth + diff); // Allow very small widths, no maximum
 
         // Cancel any pending animation frame
         if (animationId) {
@@ -505,15 +488,8 @@ function startTableColumnResize(
  * @param {number} columnIndex - Index of the column
  * @param {string} tableSelector - CSS selector for the table
  * @param {string} storageKey - LocalStorage key for saving preferences
- * @param {Function} getColumnType - Function to determine column type
  */
-function autoSizeTableColumn(
-    header,
-    columnIndex,
-    tableSelector,
-    storageKey,
-    getColumnType = getDefaultColumnType
-) {
+function autoSizeTableColumn(header, columnIndex, tableSelector, storageKey) {
     const table = document.querySelector(tableSelector);
     if (!table) return;
 
