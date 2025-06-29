@@ -361,6 +361,35 @@ function setupMobileDropdowns() {
                 content.style.width = '200px';
                 content.style.height = '150px';
 
+                // Create a test element that should definitely be visible
+                const testDiv = document.createElement('div');
+                testDiv.innerHTML = 'TEST DROPDOWN - YOU SHOULD SEE THIS!';
+                testDiv.style.cssText = `
+                    position: fixed !important;
+                    top: 100px !important;
+                    left: 20px !important;
+                    width: 300px !important;
+                    height: 100px !important;
+                    background: lime !important;
+                    color: black !important;
+                    border: 5px solid blue !important;
+                    z-index: 999999 !important;
+                    font-size: 16px !important;
+                    font-weight: bold !important;
+                    display: block !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    pointer-events: auto !important;
+                `;
+                document.body.appendChild(testDiv);
+                
+                // Remove it after 3 seconds
+                setTimeout(() => {
+                    if (testDiv.parentNode) {
+                        testDiv.parentNode.removeChild(testDiv);
+                    }
+                }, 3000);
+
                 // Get positioning info
                 const rect = content.getBoundingClientRect();
                 console.log('DEBUG: Dropdown positioning:');
