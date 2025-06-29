@@ -917,6 +917,12 @@ function displayPatients(patients) {
         .join('');
 
     patientsTableBody.innerHTML = htmlRows;
+
+    // Re-initialize tables after content is populated to ensure resize handles work
+    console.log('🔧 PATIENTS: Re-initializing tables after populating patient content');
+    if (window.initializeDataTables) {
+        window.initializeDataTables();
+    }
 }
 
 // Filter patients based on search input

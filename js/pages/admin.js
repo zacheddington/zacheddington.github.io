@@ -795,6 +795,12 @@ function displayUsers(users) {
         `;
         })
         .join('');
+
+    // Re-initialize tables after content is populated to ensure resize handles work
+    console.log('🔧 ADMIN: Re-initializing tables after populating user content');
+    if (window.initializeDataTables) {
+        window.initializeDataTables();
+    }
 }
 
 // Filter users
@@ -1355,6 +1361,12 @@ function displaySessions(sessions) {
     const finalHtml = sessionRows.join('');
 
     tbody.innerHTML = finalHtml;
+
+    // Re-initialize tables after content is populated to ensure resize handles work
+    console.log('🔧 ADMIN: Re-initializing tables after populating session content');
+    if (window.initializeDataTables) {
+        window.initializeDataTables();
+    }
 
     // Set table layout to fixed for column resizing to work
     // Sessions table rendered successfully
