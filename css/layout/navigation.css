@@ -354,9 +354,37 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
 
     /* Better dropdown positioning for small screens */
     .dropdown-content {
-        left: -50px; /* Center better on small screens */
+        left: 0; /* Keep dropdown aligned with trigger, don't push off-screen */
         min-width: 220px;
-        max-width: 90vw;
+        max-width: 90vw; /* Ensure it fits on screen */
+    }
+
+    /* Ensure dropdown containers never clip content at any screen size */
+    @media (max-width: 600px) {
+        .top-nav-menu,
+        .app-header,
+        .nav-dropdown {
+            overflow: visible !important;
+        }
+
+        /* Fix dropdown positioning to stay on screen */
+        .dropdown-content {
+            /* Use viewport-aware positioning */
+            max-width: calc(100vw - 20px) !important;
+            /* Ensure proper z-index */
+            z-index: 99999 !important;
+        }
+
+        /* For very narrow screens, position dropdowns more carefully */
+        .nav-dropdown:first-of-type .dropdown-content {
+            left: 0 !important;
+            right: auto !important;
+        }
+
+        .nav-dropdown:last-of-type .dropdown-content {
+            right: 0 !important;
+            left: auto !important;
+        }
     }
 
     .app-header::-webkit-scrollbar {
@@ -507,5 +535,20 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         visibility: visible !important;
         transform: translateY(0) !important;
         z-index: 9999 !important;
+    }
+}
+
+/* CRITICAL: Ensure CSS hover always works at ALL screen sizes for mouse users */
+/* This overrides any media query that might disable hover */
+@media (hover: hover) and (pointer: fine) {
+    .nav-dropdown:hover .dropdown-content {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) !important;
+        display: block !important;
+    }
+
+    .nav-dropdown:hover .dropdown-arrow {
+        transform: rotate(180deg) !important;
     }
 }
