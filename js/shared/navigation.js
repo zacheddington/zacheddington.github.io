@@ -307,6 +307,8 @@ function setupMobileDropdowns() {
             const isOpen = dropdown.classList.contains('mobile-open');
             if (isOpen) {
                 dropdown.classList.remove('mobile-open');
+                dropdown.classList.remove('hover-disabled');
+                document.body.classList.remove('mobile-dropdown-active');
                 console.log('Closed dropdown');
             } else {
                 dropdown.classList.add('mobile-open');
@@ -377,6 +379,7 @@ function setupMobileDropdowns() {
                     link.addEventListener('click', (e) => {
                         mobileDropdown.remove();
                         dropdown.classList.remove('mobile-open');
+                        dropdown.classList.remove('hover-disabled');
                         document.body.classList.remove(
                             'mobile-dropdown-active'
                         );
@@ -420,6 +423,29 @@ function setupMobileDropdowns() {
         // Add primary event listener
         trigger.addEventListener('click', clickHandler);
 
+        // Prevent hover effects when we're in mobile/touch mode
+        const preventHover = function(e) {
+            const isTouchDevice =
+                'ontouchstart' in window ||
+                navigator.maxTouchPoints > 0 ||
+                navigator.msMaxTouchPoints > 0;
+            const shouldShowDropdown =
+                window.innerWidth <= 1024 ||
+                (isTouchDevice && window.innerWidth <= 1440);
+                
+            if (shouldShowDropdown) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Force disable hover state
+                dropdown.classList.add('hover-disabled');
+                document.body.classList.add('mobile-dropdown-active');
+            }
+        };
+
+        // Add mouseenter/mouseleave to prevent unwanted hover in touch mode
+        trigger.addEventListener('mouseenter', preventHover);
+        dropdown.addEventListener('mouseenter', preventHover);
+
         // Improved touch handling to prevent conflicts
         if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
             trigger.addEventListener(
@@ -450,6 +476,8 @@ function setupMobileDropdowns() {
             link.addEventListener('click', function (e) {
                 // Allow normal navigation, just close the dropdown
                 dropdown.classList.remove('mobile-open');
+                dropdown.classList.remove('hover-disabled');
+                document.body.classList.remove('mobile-dropdown-active');
                 console.log('Dropdown link clicked, closing dropdown');
             });
         });
@@ -463,6 +491,7 @@ function setupMobileDropdowns() {
         ) {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
+                dropdown.classList.remove('hover-disabled');
             });
             // Remove all mobile dropdown overlays
             const existingMobileDropdowns = document.querySelectorAll(
@@ -479,6 +508,7 @@ function setupMobileDropdowns() {
         if (e.key === 'Escape') {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
+                dropdown.classList.remove('hover-disabled');
             });
             // Remove all mobile dropdown overlays
             const existingMobileDropdowns = document.querySelectorAll(
@@ -502,6 +532,7 @@ window.addEventListener('resize', function () {
         const dropdowns = document.querySelectorAll('.nav-dropdown');
         dropdowns.forEach((dropdown) => {
             dropdown.classList.remove('mobile-open');
+            dropdown.classList.remove('hover-disabled');
         });
 
         // Remove all mobile dropdown overlays
