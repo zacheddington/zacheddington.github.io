@@ -6,19 +6,25 @@
  * Call this once per page that has tables
  */
 function initializeDataTables() {
-    console.log('🔧 Initializing unified data tables...');
+    console.log('🔧 TABLE-UTILS: Initializing unified data tables...');
+    console.log(`🔧 TABLE-UTILS: Page URL: ${window.location.pathname}`);
 
     // Find all data tables on the page
     const tables = document.querySelectorAll('.data-table');
 
     if (tables.length === 0) {
-        console.warn('⚠️ No .data-table elements found on this page');
+        console.warn(
+            '⚠️ TABLE-UTILS: No .data-table elements found on this page'
+        );
         return;
     }
 
+    console.log(`🔧 TABLE-UTILS: Found ${tables.length} tables to initialize`);
+
     tables.forEach((table, index) => {
         const tableId = table.id || `data-table-${index}`;
-        console.log(`📋 Setting up table: ${tableId}`);
+        console.log(`📋 TABLE-UTILS: Setting up table: ${tableId}`);
+        console.log(`   - Page: ${window.location.pathname}`);
         console.log(`   - Classes: ${table.className}`);
         console.log(
             `   - Current style.tableLayout: ${
@@ -54,9 +60,13 @@ function initializeDataTables() {
                 table.querySelectorAll('.resize-handle').length
             }`
         );
+
+        console.log(
+            `✅ TABLE-UTILS: Table ${tableId} initialized successfully`
+        );
     });
 
-    console.log('✅ All data tables initialized successfully');
+    console.log('✅ TABLE-UTILS: All data tables initialized successfully');
 }
 
 /**

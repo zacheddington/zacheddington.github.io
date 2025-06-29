@@ -1225,7 +1225,6 @@ function updateCreateUserSubmitButton() {
 // Global variables for session management
 let allSessions = [];
 let filteredSessions = [];
-let currentSessionSort = { column: null, direction: null };
 
 // Initialize session management
 async function initializeSessionManagement() {

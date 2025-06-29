@@ -3,7 +3,6 @@
 
 // Global state for patient management
 let allPatients = [];
-let currentPatientSort = { column: null, direction: null };
 
 // Utility function to format date without timezone issues
 function formatDateForDisplay(dateString) {
@@ -764,11 +763,8 @@ async function loadPatients() {
             const result = await response.json();
             allPatients = result.data; // Extract data from response object
 
-            setupPatientTableSorting();
-            const sortedPatients = getSortedPatients();
-
-            // Always use default display for now
-            displayPatients(sortedPatients);
+            // Display patients (unified table system handles all table behavior)
+            displayPatients(allPatients);
         } else {
             // Use global auth error handler for consistent experience
             if (response.status === 401 || response.status === 403) {
@@ -794,114 +790,52 @@ async function loadPatients() {
     }
 }
 
-// Set up patient table sorting functionality using shared utility
-function setupPatientTableSorting() {
-    // Define sortable columns
-    const sortableColumns = [
-        { index: 0, key: 'fullName', label: 'Name' },
-        { index: 1, key: 'dateOfBirth', label: 'Date of Birth' },
-        { index: 2, key: 'phone', label: 'Phone' },
-        { index: 3, key: 'acceptsTexts', label: 'Accepts Texts' },
-        { index: 4, key: 'address', label: 'Address' },
-        { index: 5, key: 'updated', label: 'Last Updated' },
-        { index: 6, key: 'created', label: 'Created' },
-    ];
-
-    // Use shared table sorting utility
-    if (window.tableUtils) {
-        window.tableUtils.setupTableSorting({
-            tableId: 'patientsTable',
-            sortableColumns: sortableColumns,
-            currentSort: currentPatientSort,
-            handleSort: handlePatientSort,
-            updateSortIndicators: updatePatientSortIndicators,
-        });
-    }
-}
-
-// Handle patient table sorting using shared utility
-function handlePatientSort(columnKey) {
-    // Use shared table sorting utility for logic
-    if (window.tableUtils) {
-        window.tableUtils.handleTableSort(
-            columnKey,
-            currentPatientSort,
-            updatePatientSortIndicators,
-            refreshPatientsDisplay
-        );
-    }
-}
-
-// Refresh patients display
-function refreshPatientsDisplay() {
-    const sortedPatients = getSortedPatients();
-    displayPatients(sortedPatients);
-}
-
-// Update visual sort indicators using shared utility
-function updatePatientSortIndicators() {
-    if (window.tableUtils) {
-        window.tableUtils.updateTableSortIndicators(
-            'patientsTable',
-            currentPatientSort
-        );
-    }
-}
-
-// Get sorted patient list using shared utility
-function getSortedPatients() {
-    if (window.tableUtils) {
-        return window.tableUtils.sortTableData(
-            allPatients,
-            currentPatientSort,
-            getPatientValueForSort
-        );
-    } else {
-        return allPatients;
-    }
-}
-
-// Extract sortable value from patient object for shared utility
-function getPatientValueForSort(patient, columnKey) {
-    switch (columnKey) {
-        case 'fullName':
-            return `${patient.first_name} ${patient.last_name}`.toLowerCase();
-        case 'dateOfBirth':
-            return patient.date_of_birth
-                ? new Date(patient.date_of_birth)
-                : new Date(0);
-        case 'address':
-            return patient.address?.toLowerCase() || '';
-        case 'phone':
-            return patient.phone || '';
-        case 'acceptsTexts':
-            return patient.accepts_texts ? 'yes' : 'no';
-        case 'updated':
-            return patient.date_updated
-                ? new Date(patient.date_updated)
-                : new Date(0);
-        case 'created':
-            return patient.date_created
-                ? new Date(patient.date_created)
-                : new Date(0);
-        default:
-            return '';
-    }
-}
-
 // Display patients in the table
 function displayPatients(patients) {
+    console.log(
+        '🔧 PATIENTS: displayPatients called with',
+        patients.length,
+        'patients'
+    );
+
     const patientsTableBody = document.getElementById('patientsTableBody');
     const noPatientsFound = document.getElementById('noPatientsFound');
+    const patientsTable = document.querySelector('#patientsTable');
 
     if (!patientsTableBody) {
-        console.error('❌ patientsTableBody not found in displayPatients');
+        console.error(
+            '❌ PATIENTS: patientsTableBody not found in displayPatients'
+        );
         return;
+    }
+
+    // Log table state before display
+    if (patientsTable) {
+        console.log('🔧 PATIENTS: Table state before displayPatients');
+        console.log(
+            `   - Style.tableLayout: ${
+                patientsTable.style.tableLayout || 'not set'
+            }`
+        );
+        console.log(
+            `   - Style.width: ${patientsTable.style.width || 'not set'}`
+        );
+        console.log(
+            `   - Resize handles: ${
+                patientsTable.querySelectorAll('.resize-handle').length
+            }`
+        );
+        console.log(
+            `   - Has data-table class: ${patientsTable.classList.contains(
+                'data-table'
+            )}`
+        );
     }
 
     if (patients.length === 0) {
         patientsTableBody.innerHTML = '';
         if (noPatientsFound) noPatientsFound.classList.remove('hidden');
+        console.log('🔧 PATIENTS: No patients to display');
         return;
     }
 
@@ -992,8 +926,7 @@ function filterPatients() {
         .value.toLowerCase();
 
     if (!filterValue.trim()) {
-        const sortedPatients = getSortedPatients();
-        displayPatients(sortedPatients);
+        displayPatients(allPatients);
         return;
     }
 
