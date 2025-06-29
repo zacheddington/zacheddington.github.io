@@ -519,3 +519,64 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         margin-right: 10px !important;
     }
 }
+
+/* DEBUGGING: Force visible dropdown for testing */
+@media screen and (max-width: 600px) {
+    /* Add red border to dropdown triggers for debugging */
+    .nav-dropdown .dropdown-trigger {
+        border: 2px solid red !important;
+        background: rgba(255, 0, 0, 0.2) !important;
+    }
+
+    /* Force dropdown to always show for debugging */
+    .nav-dropdown .dropdown-content {
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: block !important;
+        position: absolute !important;
+        top: 100% !important;
+        right: 0 !important;
+        left: auto !important;
+        transform: translateY(0) translateX(0) !important;
+        z-index: 10000 !important;
+        background: yellow !important;
+        border: 3px solid red !important;
+        color: black !important;
+        min-width: 200px !important;
+        max-width: calc(100vw - 20px) !important;
+        margin-right: 10px !important;
+    }
+
+    /* Debug message */
+    .nav-dropdown .dropdown-content::before {
+        content: 'DEBUG: Dropdown should be visible!';
+        display: block;
+        padding: 10px;
+        background: red;
+        color: white;
+        font-weight: bold;
+    }
+}
+
+/* DEBUG: Test if ANY media query is working */
+@media screen {
+    body::after {
+        content: 'DEBUG: Basic media query working';
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: purple;
+        color: white;
+        padding: 5px;
+        z-index: 99999;
+        font-size: 12px;
+    }
+}
+
+/* DEBUG: Test small screen detection */
+@media screen and (max-width: 600px) {
+    body::after {
+        content: 'DEBUG: Small screen detected (' attr(data-width) ')';
+        background: orange;
+    }
+}

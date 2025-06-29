@@ -149,14 +149,48 @@ function createProperNavigation() {
     `;
     headerContainer.insertAdjacentHTML('beforeend', fallbackNav);
     setupTopNavigation(); // Update admin menu visibility for fallback navigation too
-    if (window.authUtils && window.authUtils.updateAdminMenuItem) {
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
-        // Use proper admin detection
-        const isAdmin = window.authUtils.isUserAdmin
-            ? window.authUtils.isUserAdmin(userData)
-            : false;
-        window.authUtils.updateAdminMenuItem(isAdmin);
-    }
+
+    // DEBUG: Check media queries and screen size
+    console.log('🔍 DEBUG: Screen width:', window.innerWidth);
+    console.log('🔍 DEBUG: Screen height:', window.innerHeight);
+    console.log(
+        '🔍 DEBUG: Viewport width:',
+        document.documentElement.clientWidth
+    );
+
+    // Check media query matches
+    const mediaQueries = [
+        {
+            name: 'max-width: 600px',
+            query: window.matchMedia('(max-width: 600px)'),
+        },
+        { name: 'hover: hover', query: window.matchMedia('(hover: hover)') },
+        { name: 'pointer: fine', query: window.matchMedia('(pointer: fine)') },
+        {
+            name: 'pointer: coarse',
+            query: window.matchMedia('(pointer: coarse)'),
+        },
+        { name: 'hover: none', query: window.matchMedia('(hover: none)') },
+    ];
+
+    mediaQueries.forEach((mq) => {
+        console.log(`🔍 DEBUG: ${mq.name}:`, mq.query.matches);
+    });
+
+    // Set data attribute for CSS debugging
+    document.body.setAttribute('data-width', window.innerWidth);
+
+    // Add resize listener for continuous debugging
+    window.addEventListener('resize', () => {
+        const width = window.innerWidth;
+        document.body.setAttribute('data-width', width);
+        console.log('🔍 DEBUG: Window resized to:', width);
+
+        // Re-check media queries
+        mediaQueries.forEach((mq) => {
+            console.log(`🔍 DEBUG: ${mq.name}:`, mq.query.matches);
+        });
+    });
 }
 
 // Setup top navigation functionality
@@ -257,16 +291,30 @@ function setupPatientNumberValidation() {
 function setupMobileDropdowns() {
     const dropdowns = document.querySelectorAll('.nav-dropdown');
 
+    // DEBUG: Log dropdown setup
+    console.log('🔍 DEBUG: Setting up dropdowns, found:', dropdowns.length);
+
     // Track input method - starts as unknown
     let isUsingTouch = null;
 
-    dropdowns.forEach((dropdown) => {
+    dropdowns.forEach((dropdown, index) => {
         const trigger = dropdown.querySelector('.dropdown-trigger');
         const content = dropdown.querySelector('.dropdown-content');
 
+        console.log(`🔍 DEBUG: Dropdown ${index}:`, {
+            trigger: !!trigger,
+            content: !!content,
+        });
+
         if (!trigger || !content) {
+            console.log(`❌ DEBUG: Missing elements for dropdown ${index}`);
             return;
         }
+
+        // DEBUG: Add visual indicators
+        trigger.style.border = '2px solid blue';
+        content.style.border = '3px solid green';
+        console.log(`✅ DEBUG: Added visual indicators to dropdown ${index}`);
 
         // Remove existing listeners to prevent duplicates
         if (trigger._clickHandler) {
