@@ -61,12 +61,17 @@ function initializeDataTables() {
  */
 function setupTableResizing(table, tableId) {
     // Use fixed layout to preserve exact column widths after resize
-    table.style.tableLayout = 'fixed'; // Changed from 'auto' to 'fixed'
-    table.style.width = '100%'; // Fill container
+    table.style.tableLayout = 'fixed';
+    table.style.width = 'auto'; // Allow dynamic sizing
+    table.style.minWidth = '100%'; // Minimum container width
 
     // Add necessary classes - ensure it's added consistently
     if (!table.classList.contains('resizable-table')) {
         table.classList.add('resizable-table');
+    }
+
+    if (tableId) {
+        table.classList.add(`${tableId}-table`);
     }
 }
 
@@ -162,6 +167,9 @@ function setupResizeListeners(handle, header, table, tableId) {
             document.body.style.webkitUserSelect = '';
             document.body.style.mozUserSelect = '';
 
+            // Update table width after resize completion
+            updateTableWidth(table);
+
             // Save the new width
             saveColumnWidth(
                 table,
@@ -201,6 +209,12 @@ function setupResizeListeners(handle, header, table, tableId) {
             const step = e.key === 'ArrowLeft' ? -10 : 10;
             const newWidth = Math.max(50, currentWidth + step);
             header.style.width = `${newWidth}px`;
+            header.style.minWidth = `${newWidth}px`;
+            header.style.maxWidth = `${newWidth}px`;
+
+            // Update table width after keyboard resize
+            updateTableWidth(table);
+
             saveColumnWidth(
                 table,
                 tableId,
@@ -213,23 +227,6 @@ function setupResizeListeners(handle, header, table, tableId) {
             autoSizeColumn(header, table, tableId);
         }
     });
-}
-
-/**
- * Set up table for resizing (fixed layout for precise control)
- */
-function setupTableResizing(table, tableId) {
-    // Use fixed table layout for precise column control
-    table.style.tableLayout = 'fixed';
-    // Start with auto width for dynamic sizing
-    table.style.width = 'auto';
-    table.style.minWidth = '100%';
-
-    // Add a class for styling
-    table.classList.add('resizable-table');
-    if (tableId) {
-        table.classList.add(`${tableId}-table`);
-    }
 }
 
 /**
