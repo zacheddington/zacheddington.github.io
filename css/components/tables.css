@@ -21,7 +21,7 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
-    table-layout: auto;
+    table-layout: fixed; /* Changed from auto to fixed to preserve column widths */
 }
 
 /* Table Headers */

@@ -103,8 +103,8 @@ function initializeDataTables() {
  * Set up table for resizing behavior
  */
 function setupTableResizing(table, tableId) {
-    // Ensure table has proper styling for resizing
-    table.style.tableLayout = 'auto'; // Allow natural column sizing
+    // Use fixed layout to preserve exact column widths after resize
+    table.style.tableLayout = 'fixed'; // Changed from 'auto' to 'fixed'
     table.style.width = '100%'; // Fill container
 
     // Add necessary classes - ensure it's added consistently
