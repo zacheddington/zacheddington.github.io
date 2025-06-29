@@ -414,7 +414,7 @@ body.is-admin .admin-only {
         min-height: 44px;
     }
 
-    /* Debug and fix for very small screens - ensure dropdowns are always visible */
+    /* Ensure dropdowns are always visible on very small screens */
     .nav-dropdown.mobile-open .dropdown-content {
         opacity: 1 !important;
         visibility: visible !important;
@@ -438,7 +438,7 @@ body.is-admin .admin-only {
         overflow: visible !important;
     }
 
-    /* Force dropdown trigger to be clickable */
+    /* Ensure dropdown trigger is clickable */
     .nav-dropdown .dropdown-trigger {
         pointer-events: auto !important;
         touch-action: manipulation !important;
