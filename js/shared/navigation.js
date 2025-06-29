@@ -268,6 +268,18 @@ function setupMobileDropdowns() {
                 'Dropdown trigger clicked:',
                 trigger.textContent.trim()
             );
+
+            // Check if we're on a mobile device or small screen
+            const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth <= 1024);
+            
+            if (!isMobile) {
+                // On desktop, allow normal navigation to the main page
+                // Don't prevent default, let the link work normally
+                console.log('Desktop mode: allowing navigation');
+                return;
+            }
+
+            // Mobile behavior: toggle dropdown
             e.preventDefault();
             e.stopPropagation();
 
@@ -298,9 +310,12 @@ function setupMobileDropdowns() {
         // Only add touchend for actual touch devices to prevent double-firing
         if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
             trigger.addEventListener('touchend', function(e) {
-                // Prevent the click event from also firing
-                e.preventDefault();
-                clickHandler(e);
+                // Only handle touchend on mobile screens
+                if (window.innerWidth <= 768) {
+                    // Prevent the click event from also firing
+                    e.preventDefault();
+                    clickHandler(e);
+                }
             }, { passive: false });
         }
 
@@ -340,6 +355,13 @@ window.addEventListener('resize', function () {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(function () {
         console.log('Window resized, reinitializing mobile dropdowns');
+        
+        // Close all mobile dropdowns when switching to desktop
+        const dropdowns = document.querySelectorAll('.nav-dropdown');
+        dropdowns.forEach((dropdown) => {
+            dropdown.classList.remove('mobile-open');
+        });
+        
         setupMobileDropdowns();
     }, 250);
 });

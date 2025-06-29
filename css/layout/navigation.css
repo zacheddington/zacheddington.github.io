@@ -434,3 +434,34 @@ body.is-admin .admin-only {
         align-items: center;
     }
 }
+
+/* Mobile-only dropdown behavior */
+@media (max-width: 1024px) {
+    .nav-dropdown.mobile-open .dropdown-content {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) !important;
+        display: block !important;
+    }
+
+    .nav-dropdown.mobile-open .dropdown-arrow {
+        transform: rotate(180deg) !important;
+    }
+
+    .nav-dropdown.mobile-open {
+        z-index: calc(var(--z-modal) + 1) !important;
+    }
+}
+
+/* Desktop behavior - hover only */
+@media (min-width: 1025px) {
+    .nav-dropdown.mobile-open .dropdown-content {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transform: translateY(-10px) !important;
+    }
+    
+    .nav-dropdown.mobile-open .dropdown-arrow {
+        transform: rotate(0deg) !important;
+    }
+}
