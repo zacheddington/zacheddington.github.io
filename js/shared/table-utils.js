@@ -77,11 +77,17 @@ function setupTableResizing(table, tableId) {
     table.style.tableLayout = 'auto'; // Allow natural column sizing
     table.style.width = '100%'; // Fill container
 
-    // Add necessary classes with detailed logging
-    console.log(`🔧 TABLE-UTILS: Adding resizable-table class to ${tableId}`);
-    console.log(`   - Classes before: ${table.className}`);
-    table.classList.add('resizable-table');
-    console.log(`   - Classes after: ${table.className}`);
+    // Add necessary classes - ensure it's added consistently
+    if (!table.classList.contains('resizable-table')) {
+        table.classList.add('resizable-table');
+        console.log(
+            `🔧 TABLE-UTILS: Added resizable-table class to ${tableId}`
+        );
+    } else {
+        console.log(
+            `🔧 TABLE-UTILS: ${tableId} already has resizable-table class`
+        );
+    }
 }
 
 /**
@@ -261,25 +267,54 @@ function debugTableClasses() {
     });
 }
 
+/**
+ * Ensure all tables have consistent classes (call this after page load)
+ */
+function ensureTableConsistency() {
+    const tables = document.querySelectorAll('.data-table');
+    console.log('🔧 TABLE-UTILS: Ensuring table consistency...');
+
+    tables.forEach((table) => {
+        const tableId = table.id || 'unknown';
+
+        // Ensure all tables have resizable-table class
+        if (!table.classList.contains('resizable-table')) {
+            table.classList.add('resizable-table');
+            console.log(
+                `🔧 TABLE-UTILS: Added missing resizable-table class to ${tableId}`
+            );
+        }
+
+        // Ensure consistent styling
+        if (table.style.tableLayout !== 'auto') {
+            table.style.tableLayout = 'auto';
+            console.log(`🔧 TABLE-UTILS: Fixed tableLayout for ${tableId}`);
+        }
+
+        if (table.style.width !== '100%') {
+            table.style.width = '100%';
+            console.log(`🔧 TABLE-UTILS: Fixed width for ${tableId}`);
+        }
+    });
+
+    // Final verification
+    debugTableClasses();
+}
+
 // Export for global use
 window.initializeDataTables = initializeDataTables;
 window.debugTableClasses = debugTableClasses;
-
-// Add periodic debugging (will be removed later)
-setTimeout(() => {
-    console.log('🔍 TABLE-DEBUG: Checking table classes after 2 seconds...');
-    debugTableClasses();
-}, 2000);
-
-setTimeout(() => {
-    console.log('🔍 TABLE-DEBUG: Checking table classes after 5 seconds...');
-    debugTableClasses();
-}, 5000);
+window.ensureTableConsistency = ensureTableConsistency;
 
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeDataTables);
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeDataTables();
+        // Ensure consistency after a brief delay to allow for any late-loading content
+        setTimeout(ensureTableConsistency, 1000);
+    });
 } else {
     // DOM is already ready
     initializeDataTables();
+    setTimeout(ensureTableConsistency, 1000);
 }
