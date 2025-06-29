@@ -77,8 +77,11 @@ function setupTableResizing(table, tableId) {
     table.style.tableLayout = 'auto'; // Allow natural column sizing
     table.style.width = '100%'; // Fill container
 
-    // Add necessary classes
+    // Add necessary classes with detailed logging
+    console.log(`🔧 TABLE-UTILS: Adding resizable-table class to ${tableId}`);
+    console.log(`   - Classes before: ${table.className}`);
     table.classList.add('resizable-table');
+    console.log(`   - Classes after: ${table.className}`);
 }
 
 /**
@@ -247,8 +250,31 @@ function loadColumnPreferences(table, tableId) {
     }
 }
 
+/**
+ * Debug function to track table class changes over time
+ */
+function debugTableClasses() {
+    const tables = document.querySelectorAll('.data-table');
+    console.log('🔍 TABLE-DEBUG: Current table classes:');
+    tables.forEach((table) => {
+        console.log(`   - ${table.id}: ${table.className}`);
+    });
+}
+
 // Export for global use
 window.initializeDataTables = initializeDataTables;
+window.debugTableClasses = debugTableClasses;
+
+// Add periodic debugging (will be removed later)
+setTimeout(() => {
+    console.log('🔍 TABLE-DEBUG: Checking table classes after 2 seconds...');
+    debugTableClasses();
+}, 2000);
+
+setTimeout(() => {
+    console.log('🔍 TABLE-DEBUG: Checking table classes after 5 seconds...');
+    debugTableClasses();
+}, 5000);
 
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
