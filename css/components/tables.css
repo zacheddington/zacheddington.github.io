@@ -62,12 +62,30 @@
 
 /* Ensure nested elements in table cells also show ellipsis */
 .data-table td > div,
-.data-table td > span {
+.data-table td > span,
+.data-table td > select {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     max-width: 100%;
     display: block;
+}
+
+/* Special handling for select elements in table cells */
+.data-table td select {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.25rem 1.5rem 0.25rem 0.5rem;
+    background: var(--color-white);
+    font-size: 0.875rem;
+    width: 100%;
+    min-width: 0;
+    text-overflow: ellipsis;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1rem;
+    appearance: none;
 }
 
 .data-table td:last-child {

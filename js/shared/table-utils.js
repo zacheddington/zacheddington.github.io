@@ -346,10 +346,10 @@ function autoSizeColumn(header, table, tableId) {
                 }
             });
             textToMeasure = longestOptionText.trim();
-            // Add extra space for dropdown arrow
+            // Add extra space for dropdown arrow and internal padding
             measurer.textContent = textToMeasure;
             const textWidth = measurer.offsetWidth;
-            maxWidth = Math.max(maxWidth, textWidth + 60); // Extra padding for dropdown arrow
+            maxWidth = Math.max(maxWidth, textWidth + 80); // Increased from 60 to 80 for dropdown UI elements
         } else {
             // For regular cells, use the text content
             textToMeasure = cell.textContent.trim();
