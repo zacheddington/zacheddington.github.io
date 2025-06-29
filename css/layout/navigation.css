@@ -216,6 +216,11 @@ body.is-admin .admin-only {
     display: block !important;
 }
 
+/* Ensure admin dropdowns are visible when opened */
+body.is-admin .nav-dropdown.mobile-open.admin-only {
+    display: block !important;
+}
+
 /* Responsive Design - Better zoom handling */
 @media (max-width: 1200px) {
     .top-nav-menu {
@@ -502,32 +507,5 @@ body.is-admin .admin-only {
         visibility: visible !important;
         transform: translateY(0) !important;
         z-index: 9999 !important;
-    }
-}
-
-/* Small screen mobile behavior (always use touch/click) */
-@media (max-width: 768px) {
-    /* Disable hover completely on small screens */
-    .nav-dropdown:hover .dropdown-content {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        transform: translateY(-10px) !important;
-    }
-
-    .nav-dropdown:hover .dropdown-arrow {
-        transform: rotate(0deg) !important;
-    }
-
-    /* Ensure mobile-open class works */
-    .nav-dropdown.mobile-open .dropdown-content {
-        opacity: 1 !important;
-        visibility: visible !important;
-        transform: translateY(0) !important;
-        z-index: 9999 !important;
-    }
-
-    /* Ensure admin dropdowns are visible on mobile */
-    body.is-admin .nav-dropdown.mobile-open.admin-only {
-        display: block !important;
     }
 }
