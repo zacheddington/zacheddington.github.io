@@ -141,7 +141,6 @@ async function initializeManagePatientsPage() {
     setupDeletePatientModal();
 
     // Tables are auto-initialized by table-utils.js
-    console.log('✅ Patients page initialized');
 }
 
 // Simple debounce function to limit how often a function is called
@@ -792,50 +791,18 @@ async function loadPatients() {
 
 // Display patients in the table
 function displayPatients(patients) {
-    console.log(
-        '🔧 PATIENTS: displayPatients called with',
-        patients.length,
-        'patients'
-    );
-
     const patientsTableBody = document.getElementById('patientsTableBody');
     const noPatientsFound = document.getElementById('noPatientsFound');
     const patientsTable = document.querySelector('#patientsTable');
 
     if (!patientsTableBody) {
-        console.error(
-            '❌ PATIENTS: patientsTableBody not found in displayPatients'
-        );
+        console.error('patientsTableBody not found in displayPatients');
         return;
-    }
-
-    // Log table state before display
-    if (patientsTable) {
-        console.log('🔧 PATIENTS: Table state before displayPatients');
-        console.log(
-            `   - Style.tableLayout: ${
-                patientsTable.style.tableLayout || 'not set'
-            }`
-        );
-        console.log(
-            `   - Style.width: ${patientsTable.style.width || 'not set'}`
-        );
-        console.log(
-            `   - Resize handles: ${
-                patientsTable.querySelectorAll('.resize-handle').length
-            }`
-        );
-        console.log(
-            `   - Has data-table class: ${patientsTable.classList.contains(
-                'data-table'
-            )}`
-        );
     }
 
     if (patients.length === 0) {
         patientsTableBody.innerHTML = '';
         if (noPatientsFound) noPatientsFound.classList.remove('hidden');
-        console.log('🔧 PATIENTS: No patients to display');
         return;
     }
 
@@ -919,9 +886,6 @@ function displayPatients(patients) {
     patientsTableBody.innerHTML = htmlRows;
 
     // Re-initialize tables after content is populated to ensure resize handles work
-    console.log(
-        '🔧 PATIENTS: Re-initializing tables after populating patient content'
-    );
     if (window.initializeDataTables) {
         window.initializeDataTables();
     }

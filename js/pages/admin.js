@@ -63,12 +63,9 @@ function initializeCreateUserPage() {
 
 // Initialize the manage users page
 async function initializeManageUsersPage() {
-    console.log('🔧 ADMIN: Starting manage users page initialization');
-
     // Clear any legacy localStorage keys that might interfere with unified table system
     localStorage.removeItem('userTableColumnWidths');
     localStorage.removeItem('sessionColumnPreferences');
-    console.log('🔧 ADMIN: Cleared legacy localStorage keys');
 
     // Load roles and users - simplified approach matching patients pattern
     try {
@@ -82,7 +79,6 @@ async function initializeManageUsersPage() {
     setupUserFilter();
 
     // Tables are auto-initialized by table-utils.js
-    console.log('✅ Manage users page initialized');
 }
 
 // Simple debounce function to limit how often a function is called
@@ -671,22 +667,19 @@ function getUsersForDisplay() {
 
 // Display users in table
 function displayUsers(users) {
-    console.log('🔧 ADMIN: displayUsers called with', users.length, 'users');
-
     const usersTableBody = document.getElementById('usersTableBody');
     const noUsersFound = document.getElementById('noUsersFound');
     const tableContainer = document.querySelector('.table-responsive');
     const usersTable = document.querySelector('#usersTable');
 
     if (!usersTableBody) {
-        console.warn('🔧 ADMIN: usersTableBody not found');
+        console.warn('usersTableBody not found');
         return;
     }
 
     if (users.length === 0) {
         usersTableBody.innerHTML = '';
         if (noUsersFound) noUsersFound.classList.remove('hidden');
-        console.log('🔧 ADMIN: No users to display');
         return;
     }
 
@@ -797,9 +790,6 @@ function displayUsers(users) {
         .join('');
 
     // Re-initialize tables after content is populated to ensure resize handles work
-    console.log(
-        '🔧 ADMIN: Re-initializing tables after populating user content'
-    );
     if (window.initializeDataTables) {
         window.initializeDataTables();
     }
@@ -1273,45 +1263,14 @@ function filterSessions() {
 
 // Display sessions in the table
 function displaySessions(sessions) {
-    console.log(
-        '🔧 ADMIN: displaySessions called with',
-        sessions.length,
-        'sessions'
-    );
-
     // Use the specific ID for session management page
     const tbody = document.querySelector('#sessionsTableBody');
     const noSessionsFound = document.getElementById('noSessionsFound');
     const sessionsTable = document.querySelector('#sessionsTable');
 
     if (!tbody) {
-        console.error(
-            '❌ ADMIN: No tbody element found with #sessionsTableBody'
-        );
+        console.error('No tbody element found with #sessionsTableBody');
         return;
-    }
-
-    // Log table state before display
-    if (sessionsTable) {
-        console.log('🔧 ADMIN: Sessions table state before displaySessions');
-        console.log(
-            `   - Style.tableLayout: ${
-                sessionsTable.style.tableLayout || 'not set'
-            }`
-        );
-        console.log(
-            `   - Style.width: ${sessionsTable.style.width || 'not set'}`
-        );
-        console.log(
-            `   - Resize handles: ${
-                sessionsTable.querySelectorAll('.resize-handle').length
-            }`
-        );
-        console.log(
-            `   - Has data-table class: ${sessionsTable.classList.contains(
-                'data-table'
-            )}`
-        );
     }
 
     if (sessions.length === 0) {
@@ -1321,7 +1280,6 @@ function displaySessions(sessions) {
             </tr>
         `;
         if (noSessionsFound) noSessionsFound.classList.remove('hidden');
-        console.log('🔧 ADMIN: No sessions to display');
         return;
     }
 
@@ -1365,9 +1323,6 @@ function displaySessions(sessions) {
     tbody.innerHTML = finalHtml;
 
     // Re-initialize tables after content is populated to ensure resize handles work
-    console.log(
-        '🔧 ADMIN: Re-initializing tables after populating session content'
-    );
     if (window.initializeDataTables) {
         window.initializeDataTables();
     }
