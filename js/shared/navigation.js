@@ -309,6 +309,11 @@ function setupMobileDropdowns() {
                     dropdown.className
                 );
                 console.log('DEBUG: Dropdown content element:', content);
+                console.log('DEBUG: Body classes:', document.body.className);
+                console.log(
+                    'DEBUG: Is admin body?',
+                    document.body.classList.contains('is-admin')
+                );
                 console.log(
                     'DEBUG: Dropdown content computed style:',
                     window.getComputedStyle(content)

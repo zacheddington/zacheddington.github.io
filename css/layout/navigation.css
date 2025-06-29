@@ -437,6 +437,10 @@ body.is-admin .admin-only {
 
 /* Mobile-only dropdown behavior */
 @media (max-width: 1024px) {
+    .nav-dropdown.mobile-open.admin-only {
+        display: block !important; /* Override admin-only hiding */
+    }
+
     .nav-dropdown.mobile-open .dropdown-content {
         opacity: 1 !important;
         visibility: visible !important;
