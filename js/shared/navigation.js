@@ -355,6 +355,32 @@ function setupMobileDropdowns() {
                 content.style.border = '3px solid green';
                 content.style.zIndex = '9999';
                 content.style.display = 'block';
+                content.style.position = 'fixed';
+                content.style.top = '50px';
+                content.style.left = '10px';
+                content.style.width = '200px';
+                content.style.height = '150px';
+
+                // Get positioning info
+                const rect = content.getBoundingClientRect();
+                console.log('DEBUG: Dropdown positioning:');
+                console.log('  - Top:', rect.top);
+                console.log('  - Left:', rect.left);
+                console.log('  - Bottom:', rect.bottom);
+                console.log('  - Right:', rect.right);
+                console.log('  - Width:', rect.width);
+                console.log('  - Height:', rect.height);
+                console.log('  - Viewport height:', window.innerHeight);
+                console.log('  - Viewport width:', window.innerWidth);
+
+                // Check if it's visible in viewport
+                const isVisible =
+                    rect.top < window.innerHeight &&
+                    rect.bottom > 0 &&
+                    rect.left < window.innerWidth &&
+                    rect.right > 0;
+                console.log('  - Is in viewport?', isVisible);
+
                 console.log(
                     'DEBUG: Forced styles applied directly via JS (transitions disabled)'
                 );
