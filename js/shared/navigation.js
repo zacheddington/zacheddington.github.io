@@ -364,6 +364,23 @@ function setupMobileDropdowns() {
                     pointer-events: auto !important;
                 `;
 
+                // Log the dropdown content to see what's inside
+                console.log('DEBUG: Dropdown innerHTML:', content.innerHTML);
+                console.log(
+                    'DEBUG: Dropdown children count:',
+                    content.children.length
+                );
+
+                // Add debug text to make sure it has visible content
+                const originalContent = content.innerHTML;
+                content.innerHTML = `
+                    <div style="color: white !important; font-size: 16px !important; padding: 10px !important; font-weight: bold !important;">
+                        DROPDOWN MENU SHOULD BE HERE!
+                        <br>Original content below:
+                    </div>
+                    ${originalContent}
+                `;
+
                 // Create a test element that should definitely be visible
                 const testDiv = document.createElement('div');
                 testDiv.innerHTML = 'TEST DROPDOWN - YOU SHOULD SEE THIS!';
@@ -386,11 +403,12 @@ function setupMobileDropdowns() {
                 `;
                 document.body.appendChild(testDiv);
 
-                // Remove it after 3 seconds
+                // Remove test element and restore content after 3 seconds
                 setTimeout(() => {
                     if (testDiv.parentNode) {
                         testDiv.parentNode.removeChild(testDiv);
                     }
+                    content.innerHTML = originalContent;
                 }, 3000);
 
                 // Get positioning info
