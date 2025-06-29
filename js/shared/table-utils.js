@@ -259,6 +259,56 @@ function debugTableResizeHandles() {
 window.debugTableResizeHandles = debugTableResizeHandles;
 
 /**
+ * Test function to simulate resize handle interactions
+ * Call this from browser console: testResizeHandleInteraction()
+ */
+function testResizeHandleInteraction() {
+    console.log('🧪 TEST: Simulating resize handle interactions...');
+    
+    const tables = document.querySelectorAll('.data-table');
+    
+    tables.forEach((table) => {
+        const tableId = table.id || 'unknown';
+        const handles = table.querySelectorAll('.resize-handle');
+        
+        console.log(`📋 Testing table: ${tableId}`);
+        
+        handles.forEach((handle, index) => {
+            console.log(`   Testing handle ${index}...`);
+            
+            // Simulate mouseenter
+            const enterEvent = new MouseEvent('mouseenter', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            });
+            handle.dispatchEvent(enterEvent);
+            
+            // Simulate mouseleave
+            const leaveEvent = new MouseEvent('mouseleave', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            });
+            handle.dispatchEvent(leaveEvent);
+            
+            // Try to trigger a mousedown event
+            const downEvent = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+                pageX: 100,
+                pageY: 100
+            });
+            handle.dispatchEvent(downEvent);
+        });
+    });
+}
+
+// Make it globally available for console debugging
+window.testResizeHandleInteraction = testResizeHandleInteraction;
+
+/**
  * Auto-size a column based on its content
  */
 function autoSizeColumn(header, table, tableId) {
