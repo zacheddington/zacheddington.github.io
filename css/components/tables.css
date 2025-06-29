@@ -18,10 +18,11 @@
 
 /* Data Table Base Styles */
 .data-table {
-    width: 100%;
+    min-width: 100%;
+    width: auto;
     border-collapse: collapse;
     font-size: 0.9rem;
-    table-layout: fixed; /* Changed from auto to fixed to preserve column widths */
+    table-layout: fixed;
 }
 
 /* Table Headers */

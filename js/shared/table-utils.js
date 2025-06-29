@@ -82,23 +82,21 @@ function addResizeHandles(table, tableId) {
         .forEach((handle) => handle.remove());
 
     headers.forEach((header, index) => {
-        // Skip the last column (usually Actions)
-        if (index < headers.length - 1) {
-            const handle = document.createElement('div');
-            handle.className = 'resize-handle';
-            handle.setAttribute('data-column', index);
+        // Add resize handles to ALL columns including the last one
+        const handle = document.createElement('div');
+        handle.className = 'resize-handle';
+        handle.setAttribute('data-column', index);
 
-            // Make it accessible
-            handle.setAttribute('role', 'separator');
-            handle.setAttribute('aria-orientation', 'vertical');
-            handle.setAttribute('tabindex', '0');
-            handle.setAttribute('title', 'Drag to resize column');
+        // Make it accessible
+        handle.setAttribute('role', 'separator');
+        handle.setAttribute('aria-orientation', 'vertical');
+        handle.setAttribute('tabindex', '0');
+        handle.setAttribute('title', 'Drag to resize column');
 
-            header.appendChild(handle);
+        header.appendChild(handle);
 
-            // Add event listeners
-            setupResizeListeners(handle, header, table, tableId);
-        }
+        // Add event listeners
+        setupResizeListeners(handle, header, table, tableId);
     });
 }
 
@@ -220,7 +218,9 @@ function setupResizeListeners(handle, header, table, tableId) {
 function setupTableResizing(table, tableId) {
     // Force fixed table layout for consistent resizing
     table.style.tableLayout = 'fixed';
-    table.style.width = '100%';
+    // Set minimum width but allow expansion
+    table.style.minWidth = '100%';
+    table.style.width = 'auto';
 
     // Add a class for styling
     table.classList.add('resizable-table');
@@ -291,9 +291,12 @@ function ensureTableConsistency(table) {
         table.style.tableLayout = 'fixed';
     }
 
-    // Ensure table has proper width
-    if (!table.style.width) {
-        table.style.width = '100%';
+    // Ensure table has proper dynamic width settings
+    if (!table.style.minWidth) {
+        table.style.minWidth = '100%';
+    }
+    if (table.style.width !== 'auto') {
+        table.style.width = 'auto';
     }
 }
 
