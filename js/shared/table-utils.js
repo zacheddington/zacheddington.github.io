@@ -48,7 +48,10 @@ function initializeDataTables() {
         // Set up the table for resizing
         setupTableResizing(table, tableId);
 
-        // Load any saved column preferences
+        // Set intelligent default column widths first
+        setDefaultColumnWidths(table, tableId);
+
+        // Load any saved column preferences (will override defaults if they exist)
         loadColumnPreferences(table, tableId);
 
         // Add resize handles
@@ -62,6 +65,9 @@ function initializeDataTables() {
 
         // Set up row selection functionality
         setupRowSelection(table);
+
+        // Set intelligent default column widths
+        setDefaultColumnWidths(table, tableId);
     });
 }
 
@@ -703,6 +709,128 @@ function initializeTables() {
     initializeTableFiltering();
 }
 
+/**
+ * Set intelligent default column widths based on table type and screen size
+ */
+function setDefaultColumnWidths(table, tableId) {
+    const headers = table.querySelectorAll('thead th');
+    if (headers.length === 0) return;
+
+    // Check if we already have saved widths
+    const key = `tableColumnWidths_${tableId}`;
+    const existingWidths = localStorage.getItem(key);
+    if (existingWidths) {
+        // User has already customized this table, don't override
+        return;
+    }
+
+    // Determine screen size
+    const isMobile = window.innerWidth <= 768;
+    const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
+
+    // Get default width configurations based on table type
+    const defaultWidths = getTableDefaultWidths(
+        tableId,
+        headers.length,
+        isMobile,
+        isTablet
+    );
+
+    // Apply default widths
+    headers.forEach((header, index) => {
+        const width = defaultWidths[index] || defaultWidths.default || 150;
+        header.style.width = width + 'px';
+        header.style.minWidth = width + 'px';
+        header.style.maxWidth = width + 'px';
+    });
+
+    // Update table width after setting columns
+    updateTableWidth(table);
+}
+
+/**
+ * Get default column widths for different table types
+ */
+function getTableDefaultWidths(tableId, columnCount, isMobile, isTablet) {
+    // Base widths for different column types
+    const widths = {
+        narrow: isMobile ? 80 : 100, // ID, short text
+        small: isMobile ? 120 : 150, // Names, short data
+        medium: isMobile ? 140 : 180, // Addresses, longer text
+        large: isMobile ? 160 : 220, // Long descriptions
+        date: isMobile ? 110 : 130, // Date columns
+        actions: isMobile ? 80 : 100, // Action buttons
+        default: isMobile ? 120 : 150, // Fallback
+    };
+
+    // Define column configurations for each table type
+    if (tableId.includes('users') || tableId.includes('user')) {
+        // Users table: Username, Name, Email, Role, Created, Actions
+        return [
+            widths.small, // Username
+            widths.medium, // Name
+            widths.large, // Email
+            widths.small, // Role
+            widths.date, // Created
+            widths.actions, // Actions
+        ];
+    }
+
+    if (tableId.includes('patients') || tableId.includes('patient')) {
+        // Patients table: Name, DOB, Phone, Accepts Texts, Address, Last Updated, Created, Actions
+        return [
+            widths.medium, // Name
+            widths.date, // Date of Birth
+            widths.small, // Phone
+            widths.narrow, // Accepts Texts
+            widths.large, // Address
+            widths.date, // Last Updated
+            widths.date, // Created
+            widths.actions, // Actions
+        ];
+    }
+
+    if (tableId.includes('sessions') || tableId.includes('session')) {
+        // Sessions table: User, Status, Login, Last Activity, Logout, IP, Browser, Actions
+        return [
+            widths.small, // User
+            widths.narrow, // Status
+            widths.date, // Login
+            widths.date, // Last Activity
+            widths.date, // Logout
+            widths.small, // IP Address
+            widths.medium, // Browser
+            widths.actions, // Actions
+        ];
+    }
+
+    // Fallback: distribute space evenly with reasonable minimums
+    const defaultWidths = [];
+    for (let i = 0; i < columnCount; i++) {
+        defaultWidths.push(widths.default);
+    }
+    return defaultWidths;
+}
+
+/**
+ * Handle window resize to adjust table layout
+ */
+function handleWindowResize() {
+    const tables = document.querySelectorAll('.data-table');
+
+    // Debounce resize events
+    clearTimeout(window.tableResizeTimeout);
+    window.tableResizeTimeout = setTimeout(() => {
+        tables.forEach((table) => {
+            updateTableWidth(table);
+            ensureTableConsistency(table);
+        });
+    }, 250);
+}
+
+// Add window resize listener
+window.addEventListener('resize', handleWindowResize);
+
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeTables);
@@ -720,4 +848,6 @@ window.TableUtils = {
     setupRowSelection,
     ensureTableConsistency,
     clearLegacyTableStorage,
+    setDefaultColumnWidths,
+    handleWindowResize,
 };
