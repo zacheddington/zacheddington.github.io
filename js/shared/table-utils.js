@@ -569,9 +569,9 @@ function sortTableByColumn(table, columnIndex, direction) {
         }
 
         if (direction === 'asc') {
-            return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+            return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
         } else {
-            return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+            return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
         }
     });
 
