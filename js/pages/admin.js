@@ -1224,7 +1224,6 @@ function updateCreateUserSubmitButton() {
 
 // Global variables for session management
 let allSessions = [];
-let filteredSessions = [];
 
 // Initialize session management
 async function initializeSessionManagement() {
@@ -1234,8 +1233,8 @@ async function initializeSessionManagement() {
         // Load all sessions
         await loadAllSessions();
 
-        // Setup session filters
-        setupSessionFilters();
+        // Setup simple session filter (unified with Users/Patients)
+        setupSessionFilter();
 
         // Setup session actions
         setupSessionActions();
@@ -1269,10 +1268,11 @@ async function loadAllSessions() {
         if (response.ok) {
             const result = await response.json();
             allSessions = result.data || [];
-            filteredSessions = [...allSessions];
 
-            // Display sessions in table
-            displaySessions(filteredSessions); // Update stats
+            // Display sessions in table (unified pattern)
+            displaySessions(allSessions);
+
+            // Update session statistics
             updateSessionStats();
         } else {
             // Log the error response for debugging
@@ -1298,106 +1298,83 @@ async function loadAllSessions() {
             alert('Failed to load sessions. Please try again.');
         }
         allSessions = [];
-        filteredSessions = [];
         displaySessions([]);
     } finally {
         showSessionsLoading(false);
     }
 }
 
-// Setup session filters
-function setupSessionFilters() {
-    const statusFilter = document.getElementById('sessionStatusFilter');
-    const userFilter = document.getElementById('sessionUserFilter');
-    const applyFiltersBtn = document.getElementById('applySessionFilters');
-    const clearFiltersBtn = document.getElementById('clearSessionFilters');
-
-    // Populate user filter dropdown
-    populateUserFilter();
-
-    // Apply filters handler
-    if (applyFiltersBtn) {
-        applyFiltersBtn.addEventListener('click', function () {
-            filterSessions();
-        });
+// Setup simple session filter (unified with Users/Patients pattern)
+function setupSessionFilter() {
+    const sessionFilter = document.getElementById('sessionFilter');
+    if (sessionFilter) {
+        sessionFilter.addEventListener('input', filterSessions);
     }
-
-    // Clear filters handler
-    if (clearFiltersBtn) {
-        clearFiltersBtn.addEventListener('click', function () {
-            if (statusFilter) statusFilter.value = '';
-            if (userFilter) userFilter.value = '';
-            filteredSessions = [...allSessions];
-            displaySessions(filteredSessions);
-            updateSessionStats();
-        });
-    }
-
-    // Filter on Enter key
-    [statusFilter, userFilter].forEach((filter) => {
-        if (filter) {
-            filter.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    filterSessions();
-                }
-            });
-        }
-    });
 }
 
-// Populate user filter dropdown
-function populateUserFilter() {
-    const userFilter = document.getElementById('sessionUserFilter');
-    if (!userFilter) return;
-
-    // Get unique users from sessions
-    const users = [
-        ...new Set(allSessions.map((session) => session.username)),
-    ].sort();
-
-    // Clear existing options except the default
-    userFilter.innerHTML = '<option value="">All Users</option>';
-
-    // Add user options
-    users.forEach((username) => {
-        const option = document.createElement('option');
-        option.value = username;
-        option.textContent = username;
-        userFilter.appendChild(option);
-    });
-}
-
-// Filter sessions based on current filter values
+// Filter sessions based on search input (unified pattern)
 function filterSessions() {
-    const statusFilter = document.getElementById('sessionStatusFilter')?.value;
-    const userFilter = document.getElementById('sessionUserFilter')?.value;
+    const filterValue = document
+        .getElementById('sessionFilter')
+        .value.toLowerCase();
 
-    filteredSessions = allSessions.filter((session) => {
-        // Status filter
-        if (statusFilter) {
-            if (statusFilter === 'active' && !session.is_active) return false;
-            if (statusFilter === 'inactive' && session.is_active) return false;
-            if (statusFilter === 'expired' && session.is_active) return false; // Only show truly expired sessions
-        }
+    if (!filterValue.trim()) {
+        displaySessions(allSessions);
+        return;
+    }
 
-        // User filter
-        if (userFilter && session.username !== userFilter) return false;
-
-        return true;
+    const filteredSessions = allSessions.filter((session) => {
+        return (
+            (session.username || '').toLowerCase().includes(filterValue) ||
+            (session.ip_address || '').toLowerCase().includes(filterValue) ||
+            (session.browser_info || '').toLowerCase().includes(filterValue)
+        );
     });
 
     displaySessions(filteredSessions);
-    updateSessionStats();
 }
 
 // Display sessions in the table
 function displaySessions(sessions) {
+    console.log(
+        '🔧 ADMIN: displaySessions called with',
+        sessions.length,
+        'sessions'
+    );
+
     // Use the specific ID for session management page
     const tbody = document.querySelector('#sessionsTableBody');
+    const noSessionsFound = document.getElementById('noSessionsFound');
+    const sessionsTable = document.querySelector('#sessionsTable');
 
     if (!tbody) {
-        console.error('❌ No tbody element found with #sessionsTableBody');
+        console.error(
+            '❌ ADMIN: No tbody element found with #sessionsTableBody'
+        );
         return;
+    }
+
+    // Log table state before display
+    if (sessionsTable) {
+        console.log('🔧 ADMIN: Sessions table state before displaySessions');
+        console.log(
+            `   - Style.tableLayout: ${
+                sessionsTable.style.tableLayout || 'not set'
+            }`
+        );
+        console.log(
+            `   - Style.width: ${sessionsTable.style.width || 'not set'}`
+        );
+        console.log(
+            `   - Resize handles: ${
+                sessionsTable.querySelectorAll('.resize-handle').length
+            }`
+        );
+        console.log(
+            `   - Has data-table class: ${sessionsTable.classList.contains(
+                'data-table'
+            )}`
+        );
     }
 
     if (sessions.length === 0) {
@@ -1406,8 +1383,12 @@ function displaySessions(sessions) {
                 <td colspan="8" class="no-data">No sessions found</td>
             </tr>
         `;
+        if (noSessionsFound) noSessionsFound.classList.remove('hidden');
+        console.log('🔧 ADMIN: No sessions to display');
         return;
     }
+
+    if (noSessionsFound) noSessionsFound.classList.add('hidden');
 
     const sessionRows = sessions.map((session, index) => {
         const loginTime = new Date(session.login_time).toLocaleString();
@@ -1660,7 +1641,7 @@ async function cleanupExpiredSessions() {
     }
 }
 
-// Update session statistics
+// Update session statistics (simplified for unified table system)
 function updateSessionStats() {
     const totalSessions = allSessions.length;
     const activeSessions = allSessions.filter((s) => s.is_active).length;
@@ -1681,10 +1662,6 @@ function updateSessionStats() {
             <div class="stat-item">
                 <span class="stat-label">Inactive:</span>
                 <span class="stat-value inactive">${inactiveSessions}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Filtered:</span>
-                <span class="stat-value">${filteredSessions.length}</span>
             </div>
         `;
     }

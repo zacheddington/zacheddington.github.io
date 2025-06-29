@@ -2,10 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <div class="filter-actions">
-            <!-- No sort functionality needed - unified table system handles everything -->
-        </div>
-        ta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Session Management - Integris Neuro Admin</title>
 
         <!-- Security: Prevent caching of authenticated pages -->
@@ -69,29 +66,23 @@
                     </div>
                 </div>
 
-                <!-- Sessions Table -->
-                <div class="user-filter">
+                <!-- Unified Table Filter (consistent with Users/Patients) -->
+                <div class="table-filter">
                     <div class="form-group">
-                        <label for="sessionUserFilter">Search Sessions</label>
+                        <label for="sessionFilter">Search Sessions</label>
                         <input
                             type="text"
-                            id="sessionUserFilter"
-                            placeholder="Search by username..."
+                            id="sessionFilter"
+                            placeholder="Search by username, IP address, or browser..."
                             autocomplete="off"
                         />
                         <small class="field-note"
-                            >Filter sessions to quickly find specific user
+                            >Filter sessions to quickly find specific
                             sessions</small
                         >
                     </div>
                     <div class="filter-actions">
-                        <button
-                            type="button"
-                            class="secondary-btn hidden"
-                            id="resetSessionSort"
-                        >
-                            Clear Sort
-                        </button>
+                        <!-- No sort functionality needed - unified table system handles everything -->
                     </div>
                 </div>
                 <div class="table-container">
