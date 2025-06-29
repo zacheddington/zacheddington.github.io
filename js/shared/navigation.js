@@ -345,6 +345,15 @@ function setupMobileDropdowns() {
                     'DEBUG: Dropdown content position:',
                     computedStyle.position
                 );
+
+                // Try to force the styles directly via JavaScript to test
+                content.style.opacity = '1';
+                content.style.visibility = 'visible';
+                content.style.background = 'red';
+                content.style.border = '3px solid green';
+                content.style.zIndex = '9999';
+                content.style.display = 'block';
+                console.log('DEBUG: Forced styles applied directly via JS');
             }
         };
 
