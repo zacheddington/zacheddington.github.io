@@ -509,3 +509,33 @@ body.is-admin .admin-only {
 .nav-dropdown.mobile-open .dropdown-content {
     transition: none !important;
 }
+
+/* Disable hover dropdowns when mobile dropdown is active */
+body.mobile-dropdown-active .nav-dropdown:hover .dropdown-content {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateY(-10px) !important;
+    pointer-events: none !important;
+}
+
+body.mobile-dropdown-active .nav-dropdown:hover .dropdown-arrow {
+    transform: rotate(0deg) !important;
+}
+
+/* Prevent unwanted focus/touch highlighting */
+body.mobile-dropdown-active .nav-dropdown .dropdown-trigger:focus,
+body.mobile-dropdown-active .nav-dropdown .dropdown-trigger:active,
+.mobile-dropdown-overlay a:focus,
+.mobile-dropdown-overlay a:active {
+    outline: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Ensure mobile dropdown overlay is above everything */
+.mobile-dropdown-overlay {
+    position: fixed !important;
+    z-index: 999999 !important;
+    pointer-events: auto !important;
+}

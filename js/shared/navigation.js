@@ -269,104 +269,148 @@ function setupMobileDropdowns() {
                 trigger.textContent.trim()
             );
 
-            // Check if we're on a mobile device or small screen
-            const isMobile =
-                window.innerWidth <= 768 ||
-                ('ontouchstart' in window && window.innerWidth <= 1024);
+            // Improved touch device detection
+            const isTouchDevice =
+                'ontouchstart' in window ||
+                navigator.maxTouchPoints > 0 ||
+                navigator.msMaxTouchPoints > 0;
 
-            if (!isMobile) {
-                // On desktop, allow normal navigation to the main page
-                // Don't prevent default, let the link work normally
-                console.log('Desktop mode: allowing navigation');
+            // Determine if we should show dropdown or navigate
+            const shouldShowDropdown =
+                window.innerWidth <= 1024 ||
+                (isTouchDevice && window.innerWidth <= 1440);
+
+            if (!shouldShowDropdown) {
+                // On desktop with mouse, allow normal navigation to the main page
+                console.log('Desktop mouse mode: allowing navigation');
                 return;
             }
 
-            // Mobile behavior: toggle dropdown
+            // Mobile/touch behavior: toggle dropdown
             e.preventDefault();
             e.stopPropagation();
 
-            // Close other open dropdowns
+            // Close other open dropdowns and remove any existing mobile overlays
             dropdowns.forEach((otherDropdown) => {
                 if (otherDropdown !== dropdown) {
                     otherDropdown.classList.remove('mobile-open');
                 }
             });
 
+            // Remove any existing mobile dropdown overlays
+            const existingMobileDropdowns = document.querySelectorAll(
+                '.mobile-dropdown-overlay'
+            );
+            existingMobileDropdowns.forEach((overlay) => overlay.remove());
+
             // Toggle current dropdown
             const isOpen = dropdown.classList.contains('mobile-open');
             if (isOpen) {
                 dropdown.classList.remove('mobile-open');
-                // Remove mobile dropdown if it exists
-                const existingMobileDropdown = document.querySelector(
-                    '.mobile-dropdown-overlay'
-                );
-                if (existingMobileDropdown) {
-                    existingMobileDropdown.remove();
-                }
                 console.log('Closed dropdown');
             } else {
                 dropdown.classList.add('mobile-open');
 
-                // Create mobile dropdown overlay that works
+                // Disable CSS hover effects by adding a class to body
+                document.body.classList.add('mobile-dropdown-active');
+
+                // Create mobile dropdown overlay that works on all screen sizes
                 const mobileDropdown = document.createElement('div');
                 mobileDropdown.className = 'mobile-dropdown-overlay';
                 mobileDropdown.innerHTML = content.innerHTML;
+
+                // Calculate positioning based on screen size
+                const isVerySmall = window.innerWidth <= 375;
+                const isSmall = window.innerWidth <= 425;
+                const topPosition = isVerySmall ? '50px' : '60px';
+                const horizontalMargin = isVerySmall
+                    ? '5px'
+                    : isSmall
+                    ? '8px'
+                    : '10px';
+
                 mobileDropdown.style.cssText = `
                     position: fixed !important;
-                    top: 60px !important;
-                    right: 10px !important;
-                    left: 10px !important;
-                    background: rgba(0, 150, 136, 0.95) !important;
-                    backdrop-filter: blur(10px) !important;
+                    top: ${topPosition} !important;
+                    right: ${horizontalMargin} !important;
+                    left: ${horizontalMargin} !important;
+                    background: rgba(0, 150, 136, 0.98) !important;
+                    backdrop-filter: blur(15px) !important;
                     border: 1px solid rgba(255, 255, 255, 0.3) !important;
                     border-radius: 8px !important;
-                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
-                    z-index: 9999 !important;
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+                    z-index: 99999 !important;
                     display: block !important;
                     opacity: 1 !important;
                     visibility: visible !important;
                     padding: 0 !important;
-                    max-width: 300px !important;
+                    max-width: ${isVerySmall ? '280px' : '320px'} !important;
                     margin: 0 auto !important;
+                    transform: translateY(0) !important;
                 `;
 
-                // Style the dropdown links
+                // Style the dropdown links with responsive sizing
                 const links = mobileDropdown.querySelectorAll('a');
-                links.forEach((link) => {
+                const linkPadding = isVerySmall ? '14px 16px' : '16px 20px';
+                const fontSize = isVerySmall ? '15px' : '16px';
+
+                links.forEach((link, index) => {
                     link.style.cssText = `
                         display: flex !important;
                         align-items: center !important;
                         gap: 12px !important;
-                        padding: 16px 20px !important;
+                        padding: ${linkPadding} !important;
                         color: rgba(255, 255, 255, 0.95) !important;
                         text-decoration: none !important;
                         font-weight: 500 !important;
-                        font-size: 16px !important;
-                        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+                        font-size: ${fontSize} !important;
+                        border-bottom: ${
+                            index === links.length - 1
+                                ? 'none'
+                                : '1px solid rgba(255, 255, 255, 0.1)'
+                        } !important;
                         transition: background-color 0.2s ease !important;
+                        background-color: transparent !important;
                     `;
 
-                    link.addEventListener('click', () => {
+                    // Remove any unwanted highlights or focus styles
+                    link.addEventListener('click', (e) => {
                         mobileDropdown.remove();
                         dropdown.classList.remove('mobile-open');
+                        document.body.classList.remove(
+                            'mobile-dropdown-active'
+                        );
                     });
 
-                    link.addEventListener('touchstart', function () {
-                        this.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                    });
+                    // Touch feedback without yellow highlighting
+                    link.addEventListener(
+                        'touchstart',
+                        function (e) {
+                            this.style.backgroundColor =
+                                'rgba(255, 255, 255, 0.1) !important';
+                        },
+                        { passive: true }
+                    );
 
-                    link.addEventListener('touchend', function () {
-                        this.style.backgroundColor = 'transparent';
+                    link.addEventListener(
+                        'touchend',
+                        function (e) {
+                            setTimeout(() => {
+                                this.style.backgroundColor =
+                                    'transparent !important';
+                            }, 150);
+                        },
+                        { passive: true }
+                    );
+
+                    // Prevent unwanted focus styles
+                    link.addEventListener('focus', function (e) {
+                        this.blur();
                     });
                 });
 
-                // Remove last border
-                if (links.length > 0) {
-                    links[links.length - 1].style.borderBottom = 'none';
-                }
-
                 document.body.appendChild(mobileDropdown);
-                console.log('Opened dropdown');
+                console.log('Opened dropdown with overlay');
             }
         };
 
@@ -376,13 +420,21 @@ function setupMobileDropdowns() {
         // Add primary event listener
         trigger.addEventListener('click', clickHandler);
 
-        // Only add touchend for actual touch devices to prevent double-firing
+        // Improved touch handling to prevent conflicts
         if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
             trigger.addEventListener(
                 'touchend',
                 function (e) {
-                    // Only handle touchend on mobile screens
-                    if (window.innerWidth <= 768) {
+                    // Only handle touchend if we should show dropdown
+                    const isTouchDevice =
+                        'ontouchstart' in window ||
+                        navigator.maxTouchPoints > 0 ||
+                        navigator.msMaxTouchPoints > 0;
+                    const shouldShowDropdown =
+                        window.innerWidth <= 1024 ||
+                        (isTouchDevice && window.innerWidth <= 1440);
+
+                    if (shouldShowDropdown) {
                         // Prevent the click event from also firing
                         e.preventDefault();
                         clickHandler(e);
@@ -412,13 +464,13 @@ function setupMobileDropdowns() {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
             });
-            // Remove mobile dropdown overlay
-            const existingMobileDropdown = document.querySelector(
+            // Remove all mobile dropdown overlays
+            const existingMobileDropdowns = document.querySelectorAll(
                 '.mobile-dropdown-overlay'
             );
-            if (existingMobileDropdown) {
-                existingMobileDropdown.remove();
-            }
+            existingMobileDropdowns.forEach((overlay) => overlay.remove());
+            // Remove mobile dropdown active class
+            document.body.classList.remove('mobile-dropdown-active');
         }
     });
 
@@ -428,13 +480,13 @@ function setupMobileDropdowns() {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
             });
-            // Remove mobile dropdown overlay
-            const existingMobileDropdown = document.querySelector(
+            // Remove all mobile dropdown overlays
+            const existingMobileDropdowns = document.querySelectorAll(
                 '.mobile-dropdown-overlay'
             );
-            if (existingMobileDropdown) {
-                existingMobileDropdown.remove();
-            }
+            existingMobileDropdowns.forEach((overlay) => overlay.remove());
+            // Remove mobile dropdown active class
+            document.body.classList.remove('mobile-dropdown-active');
         }
     });
 }
@@ -451,6 +503,15 @@ window.addEventListener('resize', function () {
         dropdowns.forEach((dropdown) => {
             dropdown.classList.remove('mobile-open');
         });
+
+        // Remove all mobile dropdown overlays
+        const existingMobileDropdowns = document.querySelectorAll(
+            '.mobile-dropdown-overlay'
+        );
+        existingMobileDropdowns.forEach((overlay) => overlay.remove());
+
+        // Remove mobile dropdown active class
+        document.body.classList.remove('mobile-dropdown-active');
 
         setupMobileDropdowns();
     }, 250);
