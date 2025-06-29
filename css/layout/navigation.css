@@ -455,8 +455,7 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         display: block !important;
         z-index: 99999 !important;
         position: absolute !important;
-        background: rgba(var(--color-primary-rgb), 0.95) !important;
-        border: 2px solid rgba(255, 255, 255, 0.5) !important;
+        /* Background and border inherit from default .dropdown-content */
     }
 
     /* Ensure container doesn't clip dropdown */
