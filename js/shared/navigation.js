@@ -248,15 +248,29 @@ function setupPatientNumberValidation() {
  */
 function setupMobileDropdowns() {
     const dropdowns = document.querySelectorAll('.nav-dropdown');
+    console.log('Setting up mobile dropdowns, found:', dropdowns.length);
 
     dropdowns.forEach((dropdown) => {
         const trigger = dropdown.querySelector('.dropdown-trigger');
         const content = dropdown.querySelector('.dropdown-content');
 
-        if (!trigger || !content) return;
+        if (!trigger || !content) {
+            console.warn('Missing trigger or content for dropdown:', dropdown);
+            return;
+        }
 
-        // Handle click/touch events for mobile
-        trigger.addEventListener('click', function (e) {
+        // Remove existing listeners to prevent duplicates
+        const existingHandler = trigger._mobileDropdownHandler;
+        if (existingHandler) {
+            trigger.removeEventListener('click', existingHandler);
+        }
+
+        // Create new click handler
+        const clickHandler = function (e) {
+            console.log(
+                'Dropdown trigger clicked:',
+                trigger.textContent.trim()
+            );
             e.preventDefault();
             e.stopPropagation();
 
@@ -268,8 +282,22 @@ function setupMobileDropdowns() {
             });
 
             // Toggle current dropdown
-            dropdown.classList.toggle('mobile-open');
-        });
+            const isOpen = dropdown.classList.contains('mobile-open');
+            if (isOpen) {
+                dropdown.classList.remove('mobile-open');
+                console.log('Closed dropdown');
+            } else {
+                dropdown.classList.add('mobile-open');
+                console.log('Opened dropdown');
+            }
+        };
+
+        // Store reference for cleanup
+        trigger._mobileDropdownHandler = clickHandler;
+
+        // Add event listeners for both click and touch
+        trigger.addEventListener('click', clickHandler);
+        trigger.addEventListener('touchend', clickHandler, { passive: false });
 
         // Handle clicks on dropdown content links
         const dropdownLinks = content.querySelectorAll('a');
@@ -277,6 +305,7 @@ function setupMobileDropdowns() {
             link.addEventListener('click', function (e) {
                 // Allow normal navigation, just close the dropdown
                 dropdown.classList.remove('mobile-open');
+                console.log('Dropdown link clicked, closing dropdown');
             });
         });
     });
@@ -299,6 +328,16 @@ function setupMobileDropdowns() {
         }
     });
 }
+
+// Handle window resize to ensure dropdowns work correctly on orientation change
+let resizeTimeout;
+window.addEventListener('resize', function () {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(function () {
+        console.log('Window resized, reinitializing mobile dropdowns');
+        setupMobileDropdowns();
+    }, 250);
+});
 
 // Make navigation utilities available globally
 window.navigation = {

@@ -337,8 +337,63 @@ body.is-admin .admin-only {
         -ms-overflow-style: none; /* IE/Edge */
     }
 
+    /* IMPORTANT: Ensure dropdown triggers maintain proper touch targets on small screens */
+    .nav-dropdown .dropdown-trigger {
+        min-height: 44px !important;
+        padding: 0.5rem 0.4rem !important;
+        display: flex !important;
+        align-items: center;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Better dropdown positioning for small screens */
+    .dropdown-content {
+        left: -50px; /* Center better on small screens */
+        min-width: 220px;
+        max-width: 90vw;
+    }
+
     .app-header::-webkit-scrollbar {
         display: none; /* Chrome/Safari */
+    }
+}
+
+/* Very small mobile devices (425px and below) */
+@media (max-width: 425px) {
+    .top-nav-menu ul {
+        gap: 0.1rem;
+    }
+
+    .top-nav-menu a {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.25rem;
+    }
+
+    /* Critical: Ensure dropdown triggers are always clickable on very small screens */
+    .nav-dropdown .dropdown-trigger {
+        min-height: 44px !important;
+        min-width: 44px !important;
+        padding: 0.4rem 0.3rem !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+        z-index: 100;
+    }
+
+    /* Better dropdown positioning for very small screens */
+    .dropdown-content {
+        left: -70px; /* Center even better on very small screens */
+        min-width: 200px;
+        max-width: 85vw;
+        font-size: 0.8rem;
+    }
+
+    /* Ensure dropdown items are touchable */
+    .dropdown-content a {
+        padding: 0.8rem;
+        min-height: 44px;
     }
 }
 
