@@ -155,6 +155,9 @@ function setupTopNavigation() {
     // Set active page
     setActiveNavItem();
 
+    // Setup mobile dropdown functionality
+    setupMobileDropdowns();
+
     // Setup logout button
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -169,6 +172,9 @@ function setupTopNavigation() {
             }
         });
     }
+
+    // Setup mobile dropdowns
+    setupMobileDropdowns();
 }
 
 // Set active navigation item based on current page
@@ -234,6 +240,63 @@ function setupPatientNumberValidation() {
 
     patientNumberInput.addEventListener('focus', function () {
         tooltip.classList.remove('show');
+    });
+}
+
+/**
+ * Setup mobile-friendly dropdown navigation
+ */
+function setupMobileDropdowns() {
+    const dropdowns = document.querySelectorAll('.nav-dropdown');
+
+    dropdowns.forEach((dropdown) => {
+        const trigger = dropdown.querySelector('.dropdown-trigger');
+        const content = dropdown.querySelector('.dropdown-content');
+
+        if (!trigger || !content) return;
+
+        // Handle click/touch events for mobile
+        trigger.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Close other open dropdowns
+            dropdowns.forEach((otherDropdown) => {
+                if (otherDropdown !== dropdown) {
+                    otherDropdown.classList.remove('mobile-open');
+                }
+            });
+
+            // Toggle current dropdown
+            dropdown.classList.toggle('mobile-open');
+        });
+
+        // Handle clicks on dropdown content links
+        const dropdownLinks = content.querySelectorAll('a');
+        dropdownLinks.forEach((link) => {
+            link.addEventListener('click', function (e) {
+                // Allow normal navigation, just close the dropdown
+                dropdown.classList.remove('mobile-open');
+            });
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.nav-dropdown')) {
+            dropdowns.forEach((dropdown) => {
+                dropdown.classList.remove('mobile-open');
+            });
+        }
+    });
+
+    // Close dropdowns on escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            dropdowns.forEach((dropdown) => {
+                dropdown.classList.remove('mobile-open');
+            });
+        }
     });
 }
 

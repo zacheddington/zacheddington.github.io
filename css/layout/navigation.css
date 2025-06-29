@@ -188,18 +188,21 @@
     stroke: currentColor;
 }
 
-.nav-dropdown:hover .dropdown-content {
+.nav-dropdown:hover .dropdown-content,
+.nav-dropdown.mobile-open .dropdown-content {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
 }
 
-.nav-dropdown:hover .dropdown-arrow {
+.nav-dropdown:hover .dropdown-arrow,
+.nav-dropdown.mobile-open .dropdown-arrow {
     transform: rotate(180deg);
 }
 
 /* Ensure dropdown appears above other content */
-.nav-dropdown:hover {
+.nav-dropdown:hover,
+.nav-dropdown.mobile-open {
     z-index: calc(var(--z-modal) + 1);
 }
 
@@ -348,4 +351,31 @@ body.is-admin .admin-only {
 .logout-btn:focus {
     outline: 2px solid rgba(220, 53, 69, 0.5);
     outline-offset: 2px;
+}
+
+/* Mobile-specific dropdown improvements */
+@media (hover: none) and (pointer: coarse) {
+    /* On touch devices, ensure proper touch targets */
+    .dropdown-trigger {
+        min-height: 44px;
+        display: flex !important;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 0.75rem 1rem;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Better spacing for mobile */
+    .dropdown-content {
+        margin-top: 0.25rem;
+        min-width: 250px;
+    }
+
+    /* Larger touch targets for dropdown items */
+    .dropdown-content a {
+        padding: 1rem;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
 }
