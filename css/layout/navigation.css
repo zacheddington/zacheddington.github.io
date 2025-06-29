@@ -188,20 +188,18 @@
     stroke: currentColor;
 }
 
-.nav-dropdown:hover .dropdown-content:not(.mobile-dropdown-overlay *),
+/* Only show dropdowns when explicitly opened via JavaScript */
 .nav-dropdown.mobile-open .dropdown-content {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
 }
 
-.nav-dropdown:hover .dropdown-arrow:not(.mobile-dropdown-overlay *),
 .nav-dropdown.mobile-open .dropdown-arrow {
     transform: rotate(180deg);
 }
 
-/* Ensure dropdown appears above other content */
-.nav-dropdown:hover,
+/* Ensure dropdown appears above other content only when explicitly opened */
 .nav-dropdown.mobile-open {
     z-index: calc(var(--z-modal) + 1);
 }
@@ -510,34 +508,7 @@ body.is-admin .admin-only {
     transition: none !important;
 }
 
-/* Disable hover dropdowns when mobile dropdown is active */
-body.mobile-dropdown-active .nav-dropdown:hover .dropdown-content,
-body.mobile-dropdown-active .nav-dropdown .dropdown-content {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    transform: translateY(-10px) !important;
-    pointer-events: none !important;
-    display: none !important;
-}
-
-body.mobile-dropdown-active .nav-dropdown:hover .dropdown-arrow,
-body.mobile-dropdown-active .nav-dropdown .dropdown-arrow {
-    transform: rotate(0deg) !important;
-}
-
-/* Disable all hover effects on navigation when mobile dropdown is active */
-body.mobile-dropdown-active .nav-dropdown:hover {
-    pointer-events: none !important;
-}
-
-body.mobile-dropdown-active .nav-dropdown .dropdown-trigger:hover {
-    background: transparent !important;
-    color: rgba(255, 255, 255, 0.8) !important;
-}
-
 /* Prevent unwanted focus/touch highlighting */
-body.mobile-dropdown-active .nav-dropdown .dropdown-trigger:focus,
-body.mobile-dropdown-active .nav-dropdown .dropdown-trigger:active,
 .mobile-dropdown-overlay a:focus,
 .mobile-dropdown-overlay a:active {
     outline: none !important;
@@ -551,24 +522,4 @@ body.mobile-dropdown-active .nav-dropdown .dropdown-trigger:active,
     position: fixed !important;
     z-index: 999999 !important;
     pointer-events: auto !important;
-}
-
-/* Completely disable hover when hover-disabled class is present */
-.nav-dropdown.hover-disabled:hover .dropdown-content,
-.nav-dropdown.hover-disabled .dropdown-content {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    transform: translateY(-10px) !important;
-    pointer-events: none !important;
-    display: none !important;
-}
-
-.nav-dropdown.hover-disabled:hover .dropdown-arrow,
-.nav-dropdown.hover-disabled .dropdown-arrow {
-    transform: rotate(0deg) !important;
-}
-
-.nav-dropdown.hover-disabled:hover .dropdown-trigger {
-    background: transparent !important;
-    color: rgba(255, 255, 255, 0.8) !important;
 }

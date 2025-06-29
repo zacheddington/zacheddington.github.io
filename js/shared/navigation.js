@@ -13,7 +13,15 @@ async function loadTopNavigation() {
         // Check if navigation is already loaded
         const existingNav = headerContainer.querySelector('.top-nav-menu');
         if (existingNav) {
-            setupTopNavigation();
+            // Navigation already exists, just update admin visibility
+            if (window.authUtils && window.authUtils.updateAdminMenuItem) {
+                const userDataString = localStorage.getItem('user') || '{}';
+                const userData = JSON.parse(userDataString);
+                let isAdmin = window.authUtils.isUserAdmin
+                    ? window.authUtils.isUserAdmin(userData)
+                    : false;
+                window.authUtils.updateAdminMenuItem(isAdmin);
+            }
             return;
         }
 
@@ -244,6 +252,13 @@ function setupPatientNumberValidation() {
  * Setup mobile-friendly dropdown navigation
  */
 function setupMobileDropdowns() {
+    // Prevent multiple setups
+    if (window._mobileDropdownsSetup) {
+        console.log('Mobile dropdowns already setup, skipping...');
+        return;
+    }
+    window._mobileDropdownsSetup = true;
+
     const dropdowns = document.querySelectorAll('.nav-dropdown');
     console.log('Setting up mobile dropdowns, found:', dropdowns.length);
 
@@ -262,31 +277,14 @@ function setupMobileDropdowns() {
             trigger.removeEventListener('click', existingHandler);
         }
 
-        // Create new click handler
+        // Create new click handler for all screen sizes (no CSS hover anymore)
         const clickHandler = function (e) {
             console.log(
                 'Dropdown trigger clicked:',
                 trigger.textContent.trim()
             );
 
-            // Improved touch device detection
-            const isTouchDevice =
-                'ontouchstart' in window ||
-                navigator.maxTouchPoints > 0 ||
-                navigator.msMaxTouchPoints > 0;
-
-            // Determine if we should show dropdown or navigate
-            const shouldShowDropdown =
-                window.innerWidth <= 1024 ||
-                (isTouchDevice && window.innerWidth <= 1440);
-
-            if (!shouldShowDropdown) {
-                // On desktop with mouse, allow normal navigation to the main page
-                console.log('Desktop mouse mode: allowing navigation');
-                return;
-            }
-
-            // Mobile/touch behavior: toggle dropdown
+            // Always prevent default and show dropdown overlay
             e.preventDefault();
             e.stopPropagation();
 
@@ -307,14 +305,9 @@ function setupMobileDropdowns() {
             const isOpen = dropdown.classList.contains('mobile-open');
             if (isOpen) {
                 dropdown.classList.remove('mobile-open');
-                dropdown.classList.remove('hover-disabled');
-                document.body.classList.remove('mobile-dropdown-active');
                 console.log('Closed dropdown');
             } else {
                 dropdown.classList.add('mobile-open');
-
-                // Disable CSS hover effects by adding a class to body
-                document.body.classList.add('mobile-dropdown-active');
 
                 // Create mobile dropdown overlay that works on all screen sizes
                 const mobileDropdown = document.createElement('div');
@@ -379,10 +372,6 @@ function setupMobileDropdowns() {
                     link.addEventListener('click', (e) => {
                         mobileDropdown.remove();
                         dropdown.classList.remove('mobile-open');
-                        dropdown.classList.remove('hover-disabled');
-                        document.body.classList.remove(
-                            'mobile-dropdown-active'
-                        );
                     });
 
                     // Touch feedback without yellow highlighting
@@ -423,48 +412,14 @@ function setupMobileDropdowns() {
         // Add primary event listener
         trigger.addEventListener('click', clickHandler);
 
-        // Prevent hover effects when we're in mobile/touch mode
-        const preventHover = function(e) {
-            const isTouchDevice =
-                'ontouchstart' in window ||
-                navigator.maxTouchPoints > 0 ||
-                navigator.msMaxTouchPoints > 0;
-            const shouldShowDropdown =
-                window.innerWidth <= 1024 ||
-                (isTouchDevice && window.innerWidth <= 1440);
-                
-            if (shouldShowDropdown) {
-                e.preventDefault();
-                e.stopPropagation();
-                // Force disable hover state
-                dropdown.classList.add('hover-disabled');
-                document.body.classList.add('mobile-dropdown-active');
-            }
-        };
-
-        // Add mouseenter/mouseleave to prevent unwanted hover in touch mode
-        trigger.addEventListener('mouseenter', preventHover);
-        dropdown.addEventListener('mouseenter', preventHover);
-
-        // Improved touch handling to prevent conflicts
+        // Add touch handling for touch devices to prevent double-firing
         if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
             trigger.addEventListener(
                 'touchend',
                 function (e) {
-                    // Only handle touchend if we should show dropdown
-                    const isTouchDevice =
-                        'ontouchstart' in window ||
-                        navigator.maxTouchPoints > 0 ||
-                        navigator.msMaxTouchPoints > 0;
-                    const shouldShowDropdown =
-                        window.innerWidth <= 1024 ||
-                        (isTouchDevice && window.innerWidth <= 1440);
-
-                    if (shouldShowDropdown) {
-                        // Prevent the click event from also firing
-                        e.preventDefault();
-                        clickHandler(e);
-                    }
+                    // Prevent the click event from also firing
+                    e.preventDefault();
+                    clickHandler(e);
                 },
                 { passive: false }
             );
@@ -476,8 +431,6 @@ function setupMobileDropdowns() {
             link.addEventListener('click', function (e) {
                 // Allow normal navigation, just close the dropdown
                 dropdown.classList.remove('mobile-open');
-                dropdown.classList.remove('hover-disabled');
-                document.body.classList.remove('mobile-dropdown-active');
                 console.log('Dropdown link clicked, closing dropdown');
             });
         });
@@ -491,15 +444,12 @@ function setupMobileDropdowns() {
         ) {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
-                dropdown.classList.remove('hover-disabled');
             });
             // Remove all mobile dropdown overlays
             const existingMobileDropdowns = document.querySelectorAll(
                 '.mobile-dropdown-overlay'
             );
             existingMobileDropdowns.forEach((overlay) => overlay.remove());
-            // Remove mobile dropdown active class
-            document.body.classList.remove('mobile-dropdown-active');
         }
     });
 
@@ -508,15 +458,12 @@ function setupMobileDropdowns() {
         if (e.key === 'Escape') {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
-                dropdown.classList.remove('hover-disabled');
             });
             // Remove all mobile dropdown overlays
             const existingMobileDropdowns = document.querySelectorAll(
                 '.mobile-dropdown-overlay'
             );
             existingMobileDropdowns.forEach((overlay) => overlay.remove());
-            // Remove mobile dropdown active class
-            document.body.classList.remove('mobile-dropdown-active');
         }
     });
 }
@@ -532,7 +479,6 @@ window.addEventListener('resize', function () {
         const dropdowns = document.querySelectorAll('.nav-dropdown');
         dropdowns.forEach((dropdown) => {
             dropdown.classList.remove('mobile-open');
-            dropdown.classList.remove('hover-disabled');
         });
 
         // Remove all mobile dropdown overlays
@@ -540,9 +486,6 @@ window.addEventListener('resize', function () {
             '.mobile-dropdown-overlay'
         );
         existingMobileDropdowns.forEach((overlay) => overlay.remove());
-
-        // Remove mobile dropdown active class
-        document.body.classList.remove('mobile-dropdown-active');
 
         setupMobileDropdowns();
     }, 250);
