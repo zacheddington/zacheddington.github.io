@@ -101,6 +101,7 @@
     /* Component Specific Spacing */
     --padding-input: 10px;
     --padding-button: 0.75rem 1.5rem;
+    --padding-button-sm: 0.5rem 1rem;
     --padding-card: 32px 40px;
     --padding-section: 2rem;
 
@@ -151,6 +152,21 @@
     --shadow-xl: 0 4px 20px rgba(0, 0, 0, 0.2);
     --shadow-button: 0 2px 8px rgba(0, 150, 136, 0.3);
     --shadow-button-hover: 0 4px 12px rgba(0, 150, 136, 0.4);
+
+    /* Common Gradients */
+    --gradient-primary: linear-gradient(
+        135deg,
+        var(--color-secondary) 0%,
+        #00796b 100%
+    );
+    --gradient-primary-hover: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+    --gradient-success: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+    --gradient-success-hover: linear-gradient(135deg, #388e3c 0%, #2e7d32 100%);
+    --gradient-danger: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    --gradient-danger-hover: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    --gradient-info: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+    --gradient-info-hover: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    --gradient-error: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
 
     /* ================================
        TRANSITIONS & ANIMATIONS

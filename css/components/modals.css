@@ -13,7 +13,7 @@
     display: none; /* Hidden by default */
     justify-content: center !important;
     align-items: center !important;
-    z-index: 99999 !important; /* Higher than sidebar */
+    z-index: var(--z-modal); /* Higher than dropdowns */
     backdrop-filter: blur(2px);
     margin: 0 !important;
     padding: 0 !important;
@@ -35,7 +35,7 @@
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    z-index: 99999 !important; /* Higher than sidebar */
+    z-index: var(--z-modal); /* Higher than dropdowns */
     backdrop-filter: blur(2px);
     margin: 0 !important;
     padding: 0 !important;
@@ -77,14 +77,10 @@
 /* Modal Button */
 .modal-btn {
     margin-top: var(--space-md);
-    padding: 0.5rem 1rem;
+    padding: var(--padding-button-sm);
     border: none;
     border-radius: var(--radius-md);
-    background: linear-gradient(
-        135deg,
-        var(--color-secondary) 0%,
-        #00796b 100%
-    );
+    background: var(--gradient-primary);
     color: var(--color-white);
     cursor: pointer;
     transition: var(--transition-all);
@@ -92,7 +88,7 @@
 }
 
 .modal-btn:hover {
-    background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+    background: var(--gradient-primary-hover);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
@@ -359,7 +355,7 @@
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-    z-index: 10000 !important;
+    z-index: var(--z-modal);
     margin: 0 !important;
     padding: 0 !important;
 }
@@ -402,7 +398,7 @@ body.menu-open .modal,
 body.menu-active .modal,
 body.menu-open .modal-overlay,
 body.menu-active .modal-overlay {
-    z-index: 99999 !important;
+    z-index: var(--z-modal);
 }
 
 /* Reset any transforms that might interfere with modal positioning */

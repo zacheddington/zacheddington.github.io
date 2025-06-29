@@ -26,11 +26,7 @@ button,
 
 .submit-btn,
 .btn-primary {
-    background: linear-gradient(
-        135deg,
-        var(--color-secondary) 0%,
-        #00796b 100%
-    );
+    background: var(--gradient-primary);
     color: var(--color-white);
     padding: var(--padding-button);
     font-size: var(--font-size-base);
@@ -41,7 +37,7 @@ button,
 
 .submit-btn:hover,
 .btn-primary:hover {
-    background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+    background: var(--gradient-primary-hover);
     transform: translateY(-2px);
     box-shadow: var(--shadow-button-hover);
 }
@@ -78,7 +74,7 @@ button,
 
 .secondary-btn:hover,
 .btn-secondary:hover {
-    background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+    background: var(--gradient-primary-hover);
     transform: translateY(-2px);
     box-shadow: var(--shadow-button-hover);
 }
@@ -123,7 +119,7 @@ button,
 }
 
 .choice-btn.primary:hover {
-    background: #f0fdfc;
+    background: var(--color-primary-bg);
 }
 
 .choice-btn h3 {
@@ -163,36 +159,42 @@ button,
 }
 
 .btn-save {
-    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+    background: var(--gradient-success);
     color: var(--color-white);
 }
 
 .btn-save:hover {
-    background: linear-gradient(135deg, #388e3c 0%, #2e7d32 100%);
+    background: var(--gradient-success-hover);
     transform: translateY(-1px);
 }
 
 .btn-cancel {
-    background: linear-gradient(
-        135deg,
-        var(--color-secondary) 0%,
-        #00796b 100%
-    );
+    background: var(--gradient-primary);
     color: var(--color-white);
 }
 
 .btn-cancel:hover {
-    background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+    background: var(--gradient-primary-hover);
     transform: translateY(-1px);
 }
 
 .btn-edit {
-    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+    background: var(--gradient-info);
     color: var(--color-white);
 }
 
 .btn-edit:hover {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    background: var(--gradient-info-hover);
+    transform: translateY(-1px);
+}
+
+.btn-delete {
+    background: var(--gradient-danger);
+    color: var(--color-white);
+}
+
+.btn-delete:hover {
+    background: var(--gradient-danger-hover);
     transform: translateY(-1px);
 }
 
@@ -202,14 +204,10 @@ button,
 
 .back-btn {
     margin-top: var(--space-sm);
-    background: linear-gradient(
-        135deg,
-        var(--color-secondary) 0%,
-        #00796b 100%
-    );
+    background: var(--gradient-primary);
     border: none;
     color: var(--color-white);
-    padding: 0.5rem 1rem;
+    padding: var(--padding-button-sm);
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: var(--transition-all);
@@ -218,7 +216,7 @@ button,
 }
 
 .back-btn:hover {
-    background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+    background: var(--gradient-primary-hover);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }
@@ -245,7 +243,7 @@ button,
 }
 
 .option-link:hover {
-    background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+    background: var(--gradient-primary-hover);
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }

@@ -163,7 +163,7 @@
         white-space: normal;
         overflow: visible;
         max-width: none;
-        z-index: 10;
+        z-index: var(--z-sticky);
         position: relative;
         background-color: #f8fdff;
         box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
@@ -178,15 +178,15 @@
 }
 
 .data-table tbody tr:hover {
-    background-color: #f8f9fa;
+    background-color: var(--color-gray-50);
 }
 
 .data-table tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
+    background-color: var(--color-gray-50);
 }
 
 .data-table tbody tr:nth-child(even):hover {
-    background-color: #e9ecef;
+    background-color: var(--color-background-dark);
 }
 
 /* Active (Selected) Row */
@@ -226,7 +226,7 @@
     height: 100%;
     background: transparent; /* Back to transparent since functionality is confirmed working */
     cursor: col-resize;
-    z-index: 100; /* Increased to ensure it's always on top */
+    z-index: var(--z-dropdown); /* Increased to ensure it's always on top */
     transition: background-color 0.2s ease;
 }
 
@@ -353,7 +353,7 @@
         background-image: none;
         /* Ensure proper z-index for mobile dropdowns */
         position: relative;
-        z-index: 999;
+        z-index: var(--z-dropdown);
         /* Better touch target size */
         min-height: 44px;
         padding: 0.5rem;

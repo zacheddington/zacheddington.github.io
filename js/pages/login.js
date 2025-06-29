@@ -371,12 +371,6 @@ function showCredentialsStep() {
     }
 }
 
-// Show 2FA input field when required (legacy function for backward compatibility)
-function show2FAField() {
-    // Use the new step-based system
-    show2FAStep();
-}
-
 // Show login error message
 function showLoginError(message) {
     const loginSection = document.querySelector('.login-container');

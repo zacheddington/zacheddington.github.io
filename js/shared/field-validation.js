@@ -209,8 +209,4 @@ window.fieldValidation = {
     validatePhoneNumber: validatePhoneNumber,
     validateRequiredFields: validateRequiredFields,
     validateCharacterLimits: validateCharacterLimits,
-    // Add empty updateFieldState function to prevent errors
-    updateFieldState: function () {
-        // This function is deprecated - no-op for compatibility
-    },
 };

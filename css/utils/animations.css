@@ -58,24 +58,7 @@
     }
 }
 
-/* Legacy Body fade animations - keep for backward compatibility */
-@keyframes fadeInBody {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes fadeOutBody {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0;
-    }
-}
+/* Legacy Body fade animations - defined in reset.css */
 
 /* Modal slide in animation */
 @keyframes modalSlideIn {

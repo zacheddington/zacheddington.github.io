@@ -563,30 +563,7 @@ textarea:disabled:focus {
     font-family: monospace;
 }
 
-/* Backup Codes */
-.backup-codes {
-    background: #fff3cd;
-    border: var(--border-thin) solid #ffeaa7;
-    padding: 15px;
-    border-radius: var(--radius-md);
-    margin: var(--space-md) 0;
-}
-
-.backup-codes-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-sm);
-    margin: var(--space-sm) 0;
-}
-
-.backup-code {
-    font-family: monospace;
-    background: var(--color-white);
-    padding: 8px;
-    border: var(--border-thin) solid #ddd;
-    border-radius: var(--radius-sm);
-    text-align: center;
-}
+/* Backup Codes - defined in pages/2fa-setup.css */
 
 /* 2FA Verification Input */
 .verification-input {

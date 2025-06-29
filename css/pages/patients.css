@@ -63,12 +63,12 @@
 }
 
 .accepts-texts.yes {
-    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+    background: var(--gradient-success);
     color: var(--color-white);
 }
 
 .accepts-texts.no {
-    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    background: var(--gradient-error);
     color: var(--color-white);
 }
 
@@ -93,7 +93,7 @@
 #backToChoiceFromCreate:hover,
 #backToChoiceFromManage:hover,
 #cancelCreatePatient:hover {
-    background: linear-gradient(135deg, #00796b 0%, #004d40 100%) !important;
+    background: var(--gradient-primary-hover) !important;
     transform: translateY(-2px) !important;
     box-shadow: var(--shadow-button-hover) !important;
 }

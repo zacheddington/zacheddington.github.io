@@ -1,5 +1,5 @@
 // Page Transitions Manager
-// Centralized page transition system for consistent fade in/out effects
+// Ce        document.body.classList.add(this.config.fadeOutClass);lized page transition system for consistent fade in/out effects
 
 class PageTransitions {
     constructor() {
@@ -9,7 +9,6 @@ class PageTransitions {
             easing: 'ease-in-out', // CSS easing function
             fadeOutClass: 'page-transition-out',
             fadeInClass: 'page-fade-in',
-            legacyFadeOutClass: 'fade-out', // Keep for backward compatibility
         };
 
         this.isTransitioning = false;
@@ -186,11 +185,6 @@ const pageTransitions = new PageTransitions();
 
 // Expose to global scope for external use
 window.pageTransitions = pageTransitions;
-
-// Legacy compatibility
-window.setupFadeNavigation = () => {
-    console.warn('setupFadeNavigation() is deprecated');
-};
 
 // Export for module use
 if (typeof module !== 'undefined' && module.exports) {

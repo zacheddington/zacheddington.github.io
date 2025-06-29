@@ -34,7 +34,7 @@
     text-decoration: none;
     font-weight: 500;
     border-radius: var(--border-radius);
-    transition: all 0.3s ease;
+    transition: var(--transition-all);
     white-space: nowrap;
     font-size: 0.95rem;
     background: transparent;
@@ -45,7 +45,7 @@
     width: 18px;
     height: 18px;
     stroke-width: 2.5;
-    transition: all 0.3s ease;
+    transition: var(--transition-all);
 }
 
 /* Hover state: elevated with glassmorphism effect */
@@ -99,7 +99,7 @@
     border-radius: var(--border-radius);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--transition-all);
     font-size: 0.95rem;
     white-space: nowrap;
 }
@@ -108,7 +108,7 @@
     width: 18px;
     height: 18px;
     stroke-width: 2.5;
-    transition: all 0.3s ease;
+    transition: var(--transition-all);
 }
 
 .logout-btn:hover {
@@ -152,12 +152,12 @@
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--border-radius);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    min-width: 200px;
-    z-index: var(--z-modal);
+    min-width: 220px;
+    z-index: var(--z-dropdown);
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all 0.3s ease;
+    transition: var(--transition-all);
     margin-top: 0.5rem;
     overflow: visible;
 }
@@ -204,7 +204,7 @@
 /* Ensure dropdown appears above other content */
 .nav-dropdown:hover,
 .nav-dropdown.mobile-open {
-    z-index: calc(var(--z-modal) + 1);
+    z-index: calc(var(--z-dropdown) + 1);
 }
 
 /* Admin-only elements visibility */
@@ -343,66 +343,6 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         -ms-overflow-style: none; /* IE/Edge */
     }
 
-    /* IMPORTANT: Ensure dropdown triggers maintain proper touch targets on small screens */
-    .nav-dropdown .dropdown-trigger {
-        min-height: 44px !important;
-        padding: 0.5rem 0.4rem !important;
-        display: flex !important;
-        align-items: center;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    /* Better dropdown positioning for small screens */
-    .dropdown-content {
-        left: 0; /* Keep dropdown aligned with trigger, don't push off-screen */
-        min-width: 220px;
-        max-width: 90vw; /* Ensure it fits on screen */
-    }
-
-    /* Ensure dropdown containers never clip content at any screen size */
-    @media (max-width: 600px) {
-        .top-nav-menu,
-        .app-header,
-        .nav-dropdown {
-            overflow: visible !important;
-        }
-
-        /* Fix dropdown positioning to stay on screen */
-        .dropdown-content {
-            /* Use viewport-aware positioning */
-            max-width: calc(100vw - 20px) !important;
-            /* Ensure proper z-index */
-            z-index: 99999 !important;
-        }
-
-        /* For very narrow screens, position dropdowns more carefully */
-        .nav-dropdown:first-of-type .dropdown-content {
-            left: 0 !important;
-            right: auto !important;
-        }
-
-        .nav-dropdown:last-of-type .dropdown-content {
-            right: 0 !important;
-            left: auto !important;
-        }
-    }
-
-    .app-header::-webkit-scrollbar {
-        display: none; /* Chrome/Safari */
-    }
-}
-
-/* Very small mobile devices (425px and below) */
-@media (max-width: 425px) {
-    .top-nav-menu ul {
-        gap: 0.1rem;
-    }
-
-    .top-nav-menu a {
-        font-size: 0.65rem;
-        padding: 0.2rem 0.25rem;
-    }
-
     /* Critical: Ensure dropdown triggers are always clickable on very small screens */
     .nav-dropdown .dropdown-trigger {
         min-height: 44px !important;
@@ -413,7 +353,7 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         justify-content: center;
         -webkit-tap-highlight-color: transparent;
         position: relative;
-        z-index: 100;
+        z-index: var(--z-dropdown);
     }
 
     /* Better dropdown positioning for very small screens */
@@ -425,7 +365,7 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         max-width: 85vw;
         font-size: 0.8rem;
         /* Ensure it's always visible */
-        z-index: 9999 !important;
+        z-index: var(--z-dropdown);
     }
 
     /* For admin dropdown specifically, position from right edge */
@@ -447,33 +387,29 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         min-height: 44px;
     }
 
-    /* Ensure dropdowns are always visible on very small screens */
-    .nav-dropdown.mobile-open .dropdown-content {
-        opacity: 1 !important;
-        visibility: visible !important;
-        transform: translateY(0) !important;
-        display: block !important;
-        z-index: 99999 !important;
-        position: absolute !important;
-        /* Background and border inherit from default .dropdown-content */
-    }
-
-    /* Ensure container doesn't clip dropdown */
-    .top-nav-menu,
-    .app-header {
-        overflow: visible !important;
-    }
-
-    /* Make sure nav items don't hide the dropdown */
-    .nav-dropdown {
-        position: relative;
-        overflow: visible !important;
-    }
+    /* Make sure nav items don't hide the dropdown - handled by general rule above */
 
     /* Ensure dropdown trigger is clickable */
     .nav-dropdown .dropdown-trigger {
         pointer-events: auto !important;
         touch-action: manipulation !important;
+    }
+}
+
+/* Very small mobile devices (425px and below) */
+@media (max-width: 425px) {
+    .top-nav-menu ul {
+        gap: 0.1rem;
+    }
+
+    .top-nav-menu a {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.25rem;
+    }
+
+    .logout-btn {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.25rem;
     }
 }
 
@@ -503,7 +439,7 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
     /* Better spacing for mobile */
     .dropdown-content {
         margin-top: 0.25rem;
-        min-width: 250px;
+        min-width: 220px;
     }
 
     /* Larger touch targets for dropdown items */
@@ -528,13 +464,7 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         transform: rotate(0deg);
     }
 
-    /* But ensure mobile-open always works on touch devices */
-    .nav-dropdown.mobile-open .dropdown-content {
-        opacity: 1 !important;
-        visibility: visible !important;
-        transform: translateY(0) !important;
-        z-index: 9999 !important;
-    }
+    /* But ensure mobile-open always works on touch devices - handled by main rule */
 }
 
 /* CRITICAL: Ensure CSS hover always works at ALL screen sizes for mouse users */

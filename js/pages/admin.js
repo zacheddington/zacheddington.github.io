@@ -1,6 +1,9 @@
 // Admin Page Module
 // Handles all admin page functionality including user management
 
+// Import table utilities
+import { clearLegacyTableStorage } from '../shared/table-utils.js';
+
 // Global variables for admin page
 let allUsers = [];
 let currentRoles = [];
@@ -64,8 +67,7 @@ function initializeCreateUserPage() {
 // Initialize the manage users page
 async function initializeManageUsersPage() {
     // Clear any legacy localStorage keys that might interfere with unified table system
-    localStorage.removeItem('userTableColumnWidths');
-    localStorage.removeItem('sessionColumnPreferences');
+    clearLegacyTableStorage();
 
     // Load roles and users - simplified approach matching patients pattern
     try {
