@@ -347,19 +347,22 @@ function setupMobileDropdowns() {
                 );
 
                 // Try to force the styles directly via JavaScript to test
-                // First disable transitions to prevent them from overriding our styles
-                content.style.transition = 'none';
-                content.style.opacity = '1';
-                content.style.visibility = 'visible';
-                content.style.background = 'red';
-                content.style.border = '3px solid green';
-                content.style.zIndex = '9999';
-                content.style.display = 'block';
-                content.style.position = 'fixed';
-                content.style.top = '50px';
-                content.style.left = '10px';
-                content.style.width = '200px';
-                content.style.height = '150px';
+                // Use the same aggressive approach that worked for the test element
+                content.style.cssText = `
+                    transition: none !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    background: red !important;
+                    border: 5px solid lime !important;
+                    z-index: 999999 !important;
+                    display: block !important;
+                    position: fixed !important;
+                    top: 150px !important;
+                    left: 20px !important;
+                    width: 250px !important;
+                    height: 150px !important;
+                    pointer-events: auto !important;
+                `;
 
                 // Create a test element that should definitely be visible
                 const testDiv = document.createElement('div');
@@ -382,7 +385,7 @@ function setupMobileDropdowns() {
                     pointer-events: auto !important;
                 `;
                 document.body.appendChild(testDiv);
-                
+
                 // Remove it after 3 seconds
                 setTimeout(() => {
                     if (testDiv.parentNode) {
