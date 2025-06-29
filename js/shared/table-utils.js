@@ -59,6 +59,9 @@ function initializeDataTables() {
 
         // Set up table sorting functionality
         setupTableSorting(table, tableId);
+
+        // Set up row selection functionality
+        setupRowSelection(table);
     });
 }
 
@@ -652,6 +655,41 @@ function isDate(value) {
 }
 
 /**
+ * Set up row selection functionality
+ */
+function setupRowSelection(table) {
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+
+    // Add click event listener to the table body (event delegation)
+    tbody.addEventListener('click', function (e) {
+        // Find the row that was clicked
+        let targetRow = e.target.closest('tr');
+
+        // Don't proceed if no row found or if clicking on a button/input/select
+        if (
+            !targetRow ||
+            e.target.tagName === 'BUTTON' ||
+            e.target.tagName === 'INPUT' ||
+            e.target.tagName === 'SELECT' ||
+            e.target.classList.contains('resize-handle')
+        ) {
+            return;
+        }
+
+        // Remove active class from all rows in this table
+        const allRows = tbody.querySelectorAll('tr');
+        allRows.forEach((row) => row.classList.remove('active'));
+
+        // Add active class to the clicked row
+        targetRow.classList.add('active');
+
+        // Prevent text selection
+        e.preventDefault();
+    });
+}
+
+/**
  * Main initialization function - call this on page load
  */
 function initializeTables() {
@@ -673,6 +711,7 @@ window.TableUtils = {
     setupTableFiltering,
     setupDropdownRevertHandlers,
     setupTableSorting,
+    setupRowSelection,
     ensureTableConsistency,
     clearLegacyTableStorage,
 };

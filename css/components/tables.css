@@ -152,6 +152,7 @@
 /* Table Rows */
 .data-table tbody tr {
     transition: background-color 0.2s ease;
+    cursor: pointer;
 }
 
 .data-table tbody tr:hover {
@@ -164,6 +165,21 @@
 
 .data-table tbody tr:nth-child(even):hover {
     background-color: #e9ecef;
+}
+
+/* Active (Selected) Row */
+.data-table tbody tr.active {
+    background-color: #e3f2fd !important;
+    border-left: 3px solid var(--color-secondary);
+}
+
+.data-table tbody tr.active:hover {
+    background-color: #e3f2fd !important;
+}
+
+/* Prevent text selection cursor on table cells */
+.data-table td {
+    user-select: none;
 }
 
 /* Resize Handles */
