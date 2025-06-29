@@ -15,7 +15,7 @@ function initializeAdminPage() {
             initializeCreateUserPage();
             break;
         case 'manage-users':
-            // Handle async initialization without making the function async
+            // Handle async initialization properly
             initializeManageUsersPage();
             break;
         case 'manage-sessions':
@@ -62,7 +62,7 @@ function initializeCreateUserPage() {
 }
 
 // Initialize the manage users page
-function initializeManageUsersPage() {
+async function initializeManageUsersPage() {
     console.log('🔧 ADMIN: Starting manage users page initialization');
 
     // Clear any legacy localStorage keys that might interfere with unified table system
@@ -70,49 +70,15 @@ function initializeManageUsersPage() {
     localStorage.removeItem('sessionColumnPreferences');
     console.log('🔧 ADMIN: Cleared legacy localStorage keys');
 
-    // Check table state before data loading
-    const usersTable = document.querySelector('#usersTable');
-    if (usersTable) {
-        console.log('🔧 ADMIN: Users table found before data load');
-        console.log(`   - Classes: ${usersTable.className}`);
-        console.log(
-            `   - Style.tableLayout: ${
-                usersTable.style.tableLayout || 'not set'
-            }`
-        );
-        console.log(`   - Style.width: ${usersTable.style.width || 'not set'}`);
-        console.log(
-            `   - Resize handles: ${
-                usersTable.querySelectorAll('.resize-handle').length
-            }`
-        );
-    }
-
-    // Load roles first, then users - handle async internally
-    (async () => {
+    // Load roles and users - simplified approach matching patients pattern
+    try {
         await loadRolesForUserManagement();
         await loadUsers();
+    } catch (error) {
+        console.error('Failed to initialize manage users page:', error);
+    }
 
-        // Check table state after data loading
-        if (usersTable) {
-            console.log('🔧 ADMIN: Users table state after data load');
-            console.log(`   - Classes: ${usersTable.className}`);
-            console.log(
-                `   - Style.tableLayout: ${
-                    usersTable.style.tableLayout || 'not set'
-                }`
-            );
-            console.log(
-                `   - Style.width: ${usersTable.style.width || 'not set'}`
-            );
-            console.log(
-                `   - Resize handles: ${
-                    usersTable.querySelectorAll('.resize-handle').length
-                }`
-            );
-        }
-    })();
-
+    // Setup user filter
     setupUserFilter();
 
     // Tables are auto-initialized by table-utils.js
@@ -717,27 +683,6 @@ function displayUsers(users) {
         return;
     }
 
-    // Log table state before display
-    if (usersTable) {
-        console.log('🔧 ADMIN: Table state before displayUsers');
-        console.log(
-            `   - Style.tableLayout: ${
-                usersTable.style.tableLayout || 'not set'
-            }`
-        );
-        console.log(`   - Style.width: ${usersTable.style.width || 'not set'}`);
-        console.log(
-            `   - Resize handles: ${
-                usersTable.querySelectorAll('.resize-handle').length
-            }`
-        );
-        console.log(
-            `   - Has data-table class: ${usersTable.classList.contains(
-                'data-table'
-            )}`
-        );
-    }
-
     if (users.length === 0) {
         usersTableBody.innerHTML = '';
         if (noUsersFound) noUsersFound.classList.remove('hidden');
@@ -850,22 +795,6 @@ function displayUsers(users) {
         `;
         })
         .join('');
-
-    // Log table state after display
-    if (usersTable) {
-        console.log('🔧 ADMIN: Table state after displayUsers');
-        console.log(
-            `   - Style.tableLayout: ${
-                usersTable.style.tableLayout || 'not set'
-            }`
-        );
-        console.log(`   - Style.width: ${usersTable.style.width || 'not set'}`);
-        console.log(
-            `   - Resize handles: ${
-                usersTable.querySelectorAll('.resize-handle').length
-            }`
-        );
-    }
 }
 
 // Filter users
