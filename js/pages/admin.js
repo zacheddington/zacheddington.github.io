@@ -937,6 +937,18 @@ async function editUserRole(userId, newRoleKey) {
                     // Hide loading state
                     setUserActionLoading(userId, false);
                 }
+            },
+            () => {
+                // Cancel callback - use the generic dropdown revert functionality
+                const roleSelect = document.querySelector(
+                    `select[onchange*="${userId}"]`
+                );
+                if (
+                    roleSelect &&
+                    typeof roleSelect.revertToOriginal === 'function'
+                ) {
+                    roleSelect.revertToOriginal();
+                }
             }
         );
     } else {

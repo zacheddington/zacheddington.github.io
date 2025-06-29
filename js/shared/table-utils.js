@@ -53,6 +53,9 @@ function initializeDataTables() {
 
         // Add resize handles
         addResizeHandles(table, tableId);
+
+        // Set up dropdown revert functionality
+        setupDropdownRevertHandlers(table);
     });
 }
 
@@ -422,6 +425,41 @@ function initializeTableFiltering() {
 }
 
 /**
+ * Set up dropdown revert handlers for table dropdowns
+ * This ensures that when a confirmation modal is cancelled,
+ * dropdowns revert to their original values
+ */
+function setupDropdownRevertHandlers(table) {
+    const dropdowns = table.querySelectorAll('select');
+
+    dropdowns.forEach((dropdown) => {
+        // Store the original value when the dropdown is focused
+        dropdown.addEventListener('focus', function () {
+            this.setAttribute('data-original-value', this.value);
+        });
+
+        // Handle change events - store original value for potential revert
+        dropdown.addEventListener('change', function () {
+            const originalValue = this.getAttribute('data-original-value');
+            const newValue = this.value;
+
+            // Only proceed if value actually changed
+            if (originalValue !== newValue) {
+                // Store both values on the element for external access
+                this.setAttribute('data-original-value', originalValue);
+                this.setAttribute('data-new-value', newValue);
+
+                // Add a revert method to the dropdown element
+                this.revertToOriginal = function () {
+                    this.value = originalValue;
+                    this.removeAttribute('data-new-value');
+                };
+            }
+        });
+    });
+}
+
+/**
  * Main initialization function - call this on page load
  */
 function initializeTables() {
@@ -441,6 +479,7 @@ window.TableUtils = {
     initializeDataTables,
     initializeTableFiltering,
     setupTableFiltering,
+    setupDropdownRevertHandlers,
     ensureTableConsistency,
     clearLegacyTableStorage,
 };
