@@ -371,15 +371,48 @@ function setupMobileDropdowns() {
                     content.children.length
                 );
 
-                // Add debug text to make sure it has visible content
-                const originalContent = content.innerHTML;
-                content.innerHTML = `
-                    <div style="color: white !important; font-size: 16px !important; padding: 10px !important; font-weight: bold !important;">
-                        DROPDOWN MENU SHOULD BE HERE!
-                        <br>Original content below:
-                    </div>
-                    ${originalContent}
+                // Try to force the styles directly via JavaScript to test
+                // Use the same aggressive approach that worked for the test element
+                content.style.cssText = `
+                    transition: none !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    background: red !important;
+                    border: 5px solid lime !important;
+                    z-index: 999999 !important;
+                    display: block !important;
+                    position: fixed !important;
+                    top: 150px !important;
+                    left: 20px !important;
+                    width: 250px !important;
+                    height: 150px !important;
+                    pointer-events: auto !important;
                 `;
+
+                // Since the original element isn't showing, let's create a clone
+                const clonedDropdown = content.cloneNode(true);
+                clonedDropdown.innerHTML = `
+                    <div style="color: white !important; font-size: 16px !important; padding: 10px !important; font-weight: bold !important;">
+                        CLONED DROPDOWN - SHOULD BE VISIBLE!
+                    </div>
+                    ${content.innerHTML}
+                `;
+                clonedDropdown.style.cssText = `
+                    transition: none !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    background: blue !important;
+                    border: 5px solid yellow !important;
+                    z-index: 999999 !important;
+                    display: block !important;
+                    position: fixed !important;
+                    top: 200px !important;
+                    left: 20px !important;
+                    width: 250px !important;
+                    height: 150px !important;
+                    pointer-events: auto !important;
+                `;
+                document.body.appendChild(clonedDropdown);
 
                 // Create a test element that should definitely be visible
                 const testDiv = document.createElement('div');
@@ -403,12 +436,14 @@ function setupMobileDropdowns() {
                 `;
                 document.body.appendChild(testDiv);
 
-                // Remove test element and restore content after 3 seconds
+                // Remove test elements after 3 seconds
                 setTimeout(() => {
                     if (testDiv.parentNode) {
                         testDiv.parentNode.removeChild(testDiv);
                     }
-                    content.innerHTML = originalContent;
+                    if (clonedDropdown.parentNode) {
+                        clonedDropdown.parentNode.removeChild(clonedDropdown);
+                    }
                 }, 3000);
 
                 // Get positioning info
