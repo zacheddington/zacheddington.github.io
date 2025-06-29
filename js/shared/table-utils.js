@@ -7,24 +7,27 @@
 function clearLegacyTableStorage() {
     const legacyKeys = [
         'userTableColumnWidths',
-        'sessionTableColumnWidths', 
+        'sessionTableColumnWidths',
         'patientTableColumnWidths',
         'hasSeenTableResizeTip',
         'userColumnWidths',
         'sessionColumnWidths',
-        'patientColumnWidths'
+        'patientColumnWidths',
     ];
-    
+
     let clearedKeys = [];
-    legacyKeys.forEach(key => {
+    legacyKeys.forEach((key) => {
         if (localStorage.getItem(key) !== null) {
             localStorage.removeItem(key);
             clearedKeys.push(key);
         }
     });
-    
+
     if (clearedKeys.length > 0) {
-        console.log(`🧹 TABLE-UTILS: Cleared legacy localStorage keys:`, clearedKeys);
+        console.log(
+            `🧹 TABLE-UTILS: Cleared legacy localStorage keys:`,
+            clearedKeys
+        );
     }
 }
 
@@ -35,7 +38,7 @@ function clearLegacyTableStorage() {
 function initializeDataTables() {
     console.log('🔧 TABLE-UTILS: Initializing unified data tables...');
     console.log(`🔧 TABLE-UTILS: Page URL: ${window.location.pathname}`);
-    
+
     // Clear any legacy localStorage that might interfere
     clearLegacyTableStorage();
 
@@ -228,7 +231,9 @@ function setupResizeListeners(handle, header, table, tableId) {
             console.log(
                 `🖱️ TABLE-UTILS: Mouse UP on ${tableId} - final width: ${header.offsetWidth}px`
             );
-            console.log(`   - Header style.width before cleanup: ${header.style.width}`);
+            console.log(
+                `   - Header style.width before cleanup: ${header.style.width}`
+            );
 
             isResizing = false;
             table.classList.remove('resizing');
@@ -239,14 +244,22 @@ function setupResizeListeners(handle, header, table, tableId) {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
 
-            console.log(`   - Header style.width after cleanup: ${header.style.width}`);
-            console.log(`   - About to call saveColumnPreferences for ${tableId}`);
+            console.log(
+                `   - Header style.width after cleanup: ${header.style.width}`
+            );
+            console.log(
+                `   - About to call saveColumnPreferences for ${tableId}`
+            );
 
             // Save the new column widths
             saveColumnPreferences(table, tableId);
-            
-            console.log(`   - Header style.width after save: ${header.style.width}`);
-            console.log(`   - Header offsetWidth after save: ${header.offsetWidth}px`);
+
+            console.log(
+                `   - Header style.width after save: ${header.style.width}`
+            );
+            console.log(
+                `   - Header offsetWidth after save: ${header.offsetWidth}px`
+            );
         };
 
         // Add the scoped event listeners
@@ -435,8 +448,11 @@ function loadColumnPreferences(table, tableId) {
 
         const widths = JSON.parse(saved);
         const headers = table.querySelectorAll('thead th');
-        
-        console.log(`📂 TABLE-UTILS: Loading saved widths for ${tableId}:`, widths);
+
+        console.log(
+            `📂 TABLE-UTILS: Loading saved widths for ${tableId}:`,
+            widths
+        );
 
         headers.forEach((header, index) => {
             if (widths[index] && widths[index] !== '') {
@@ -445,7 +461,10 @@ function loadColumnPreferences(table, tableId) {
             }
         });
     } catch (error) {
-        console.warn(`❌ TABLE-UTILS: Error loading column preferences for ${tableId}:`, error);
+        console.warn(
+            `❌ TABLE-UTILS: Error loading column preferences for ${tableId}:`,
+            error
+        );
     }
 }
 
@@ -454,20 +473,20 @@ function loadColumnPreferences(table, tableId) {
  */
 function resetAllTableWidths() {
     const tables = document.querySelectorAll('.data-table');
-    
+
     tables.forEach((table) => {
         const tableId = table.id || 'unknown';
-        
+
         // Clear stored preferences
         const storageKey = `table-${tableId}-widths`;
         localStorage.removeItem(storageKey);
-        
+
         // Reset all column widths
         const headers = table.querySelectorAll('thead th');
         headers.forEach((header) => {
             header.style.width = '';
         });
-        
+
         console.log(`🔄 TABLE-UTILS: Reset column widths for ${tableId}`);
     });
 }
@@ -502,8 +521,8 @@ function ensureTableConsistency() {
         }
 
         // Ensure consistent styling
-        if (table.style.tableLayout !== 'auto') {
-            table.style.tableLayout = 'auto';
+        if (table.style.tableLayout !== 'fixed') {
+            table.style.tableLayout = 'fixed';
             console.log(`🔧 TABLE-UTILS: Fixed tableLayout for ${tableId}`);
         }
 
