@@ -274,6 +274,9 @@ function setupMobileDropdowns() {
         if (trigger._touchHandler) {
             trigger.removeEventListener('touchstart', trigger._touchHandler);
         }
+        if (trigger._mouseHandler) {
+            trigger.removeEventListener('mouseenter', trigger._mouseHandler);
+        }
 
         // Touch start handler - detects touch input
         const touchStartHandler = function (e) {
@@ -293,60 +296,66 @@ function setupMobileDropdowns() {
             dropdown.classList.toggle('mobile-open');
         };
 
-        // Click handler - handles mouse clicks when not from touch
+        // Click handler - only prevents navigation on touch devices
         const clickHandler = function (e) {
-            // If we know this is a touch device, prevent navigation and handle with JS
+            // If this is a touch device, prevent navigation
             if (isUsingTouch === true) {
                 e.preventDefault();
                 return;
             }
 
-            // For mouse input, let CSS :hover handle dropdowns and allow navigation
-            // Don't prevent default - let normal navigation work
+            // For mouse devices, allow normal navigation
+            // CSS :hover will handle the dropdown display
         };
 
-        // Mouse enter handler - detects mouse input
-        const mouseEnterHandler = function (e) {
-            // Only set to false if we haven't detected touch yet
-            if (isUsingTouch === null) {
+        // Mouse move handler - detects mouse input more reliably
+        const mouseMoveHandler = function (e) {
+            // If we detect mouse movement, we're definitely using mouse
+            if (isUsingTouch !== false) {
                 isUsingTouch = false;
+                // Remove any mobile-open classes since we're using CSS hover
+                dropdowns.forEach((dropdown) => {
+                    dropdown.classList.remove('mobile-open');
+                });
             }
         };
 
         // Store references for cleanup
         trigger._clickHandler = clickHandler;
         trigger._touchHandler = touchStartHandler;
-        trigger._mouseHandler = mouseEnterHandler;
+        trigger._mouseHandler = mouseMoveHandler;
 
         // Add event listeners
         trigger.addEventListener('click', clickHandler);
         trigger.addEventListener('touchstart', touchStartHandler, {
             passive: false,
         });
-        trigger.addEventListener('mouseenter', mouseEnterHandler);
+        trigger.addEventListener('mousemove', mouseMoveHandler);
 
         // Handle clicks on dropdown content links
         const dropdownLinks = content.querySelectorAll('a');
         dropdownLinks.forEach((link) => {
             link.addEventListener('click', function (e) {
-                // Close dropdown when link is clicked (for touch devices)
-                dropdown.classList.remove('mobile-open');
+                // Close dropdown when link is clicked (for touch devices only)
+                if (isUsingTouch === true) {
+                    dropdown.classList.remove('mobile-open');
+                }
             });
         });
     });
 
-    // Close dropdowns when clicking outside (for touch devices)
+    // Close dropdowns when clicking outside (for touch devices only)
     document.addEventListener('click', function (e) {
-        if (isUsingTouch && !e.target.closest('.nav-dropdown')) {
+        if (isUsingTouch === true && !e.target.closest('.nav-dropdown')) {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
             });
         }
     });
 
-    // Close dropdowns on escape key (for touch devices)
+    // Close dropdowns on escape key (for touch devices only)
     document.addEventListener('keydown', function (e) {
-        if (isUsingTouch && e.key === 'Escape') {
+        if (isUsingTouch === true && e.key === 'Escape') {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
             });
