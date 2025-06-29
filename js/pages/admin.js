@@ -797,7 +797,9 @@ function displayUsers(users) {
         .join('');
 
     // Re-initialize tables after content is populated to ensure resize handles work
-    console.log('🔧 ADMIN: Re-initializing tables after populating user content');
+    console.log(
+        '🔧 ADMIN: Re-initializing tables after populating user content'
+    );
     if (window.initializeDataTables) {
         window.initializeDataTables();
     }
@@ -1363,7 +1365,9 @@ function displaySessions(sessions) {
     tbody.innerHTML = finalHtml;
 
     // Re-initialize tables after content is populated to ensure resize handles work
-    console.log('🔧 ADMIN: Re-initializing tables after populating session content');
+    console.log(
+        '🔧 ADMIN: Re-initializing tables after populating session content'
+    );
     if (window.initializeDataTables) {
         window.initializeDataTables();
     }

@@ -118,14 +118,28 @@ function addResizeHandles(table, tableId) {
 
             // Add event listeners
             setupResizeListeners(handle, header, table, tableId);
-            
+
             // Add hover debugging
             handle.addEventListener('mouseenter', () => {
-                console.log(`🖱️ TABLE-UTILS: Mouse ENTER on ${tableId} resize handle for "${header.textContent.trim()}"`);
+                console.log(
+                    `🖱️ TABLE-UTILS: Mouse ENTER on ${tableId} resize handle for "${header.textContent.trim()}"`
+                );
             });
-            
+
             handle.addEventListener('mouseleave', () => {
-                console.log(`🖱️ TABLE-UTILS: Mouse LEAVE on ${tableId} resize handle for "${header.textContent.trim()}"`);
+                console.log(
+                    `🖱️ TABLE-UTILS: Mouse LEAVE on ${tableId} resize handle for "${header.textContent.trim()}"`
+                );
+            });
+
+            // Add click debugging to test if handles are reachable
+            handle.addEventListener('click', (e) => {
+                console.log(
+                    `🖱️ TABLE-UTILS: CLICK detected on ${tableId} resize handle for "${header.textContent.trim()}"`
+                );
+                console.log(`   - Event details:`, e);
+                e.preventDefault();
+                e.stopPropagation();
             });
         }
     });
@@ -135,19 +149,23 @@ function addResizeHandles(table, tableId) {
  * Set up resize event listeners for a handle
  */
 function setupResizeListeners(handle, header, table, tableId) {
-    console.log(`🔧 TABLE-UTILS: Setting up resize listeners for ${tableId} column ${header.textContent.trim()}`);
-    
+    console.log(
+        `🔧 TABLE-UTILS: Setting up resize listeners for ${tableId} column ${header.textContent.trim()}`
+    );
+
     let isResizing = false;
     let startX = 0;
     let startWidth = 0;
 
     // Mouse down event
     handle.addEventListener('mousedown', (e) => {
-        console.log(`�️ TABLE-UTILS: Mouse DOWN on ${tableId} resize handle for column "${header.textContent.trim()}"`);
+        console.log(
+            `�️ TABLE-UTILS: Mouse DOWN on ${tableId} resize handle for column "${header.textContent.trim()}"`
+        );
         console.log(`   - Event target: ${e.target.className}`);
         console.log(`   - Header width: ${header.offsetWidth}px`);
         console.log(`   - Start X: ${e.pageX}`);
-        
+
         isResizing = true;
         startX = e.pageX;
         startWidth = header.offsetWidth;
@@ -168,7 +186,9 @@ function setupResizeListeners(handle, header, table, tableId) {
         const deltaX = e.pageX - startX;
         const newWidth = Math.max(50, startWidth + deltaX); // Minimum 50px
 
-        console.log(`🖱️ TABLE-UTILS: Mouse MOVE on ${tableId} - deltaX: ${deltaX}, newWidth: ${newWidth}px`);
+        console.log(
+            `🖱️ TABLE-UTILS: Mouse MOVE on ${tableId} - deltaX: ${deltaX}, newWidth: ${newWidth}px`
+        );
 
         // Apply the new width directly to the column
         header.style.width = `${newWidth}px`;
@@ -180,7 +200,9 @@ function setupResizeListeners(handle, header, table, tableId) {
     document.addEventListener('mouseup', () => {
         if (!isResizing) return;
 
-        console.log(`🖱️ TABLE-UTILS: Mouse UP on ${tableId} - final width: ${header.offsetWidth}px`);
+        console.log(
+            `🖱️ TABLE-UTILS: Mouse UP on ${tableId} - final width: ${header.offsetWidth}px`
+        );
 
         isResizing = false;
         table.classList.remove('resizing');
@@ -219,30 +241,34 @@ function setupResizeListeners(handle, header, table, tableId) {
  */
 function debugTableResizeHandles() {
     console.log('🔍 DEBUG: Checking all table resize handles...');
-    
+
     const tables = document.querySelectorAll('.data-table');
-    
+
     tables.forEach((table, index) => {
         const tableId = table.id || `data-table-${index}`;
         const handles = table.querySelectorAll('.resize-handle');
         const headers = table.querySelectorAll('thead th');
-        
+
         console.log(`📋 Table: ${tableId}`);
         console.log(`   - Headers: ${headers.length}`);
         console.log(`   - Resize handles: ${handles.length}`);
         console.log(`   - Table classes: ${table.className}`);
         console.log(`   - Table style.width: ${table.style.width}`);
         console.log(`   - Table style.tableLayout: ${table.style.tableLayout}`);
-        
+
         handles.forEach((handle, handleIndex) => {
             const rect = handle.getBoundingClientRect();
             console.log(`     Handle ${handleIndex}:`);
             console.log(`       - Classes: ${handle.className}`);
             console.log(`       - Position: ${rect.left}, ${rect.top}`);
             console.log(`       - Size: ${rect.width}x${rect.height}`);
-            console.log(`       - Visible: ${rect.width > 0 && rect.height > 0}`);
-            console.log(`       - Data-column: ${handle.getAttribute('data-column')}`);
-            
+            console.log(
+                `       - Visible: ${rect.width > 0 && rect.height > 0}`
+            );
+            console.log(
+                `       - Data-column: ${handle.getAttribute('data-column')}`
+            );
+
             // Test if handle is interactive
             const style = getComputedStyle(handle);
             console.log(`       - Cursor: ${style.cursor}`);
@@ -250,7 +276,7 @@ function debugTableResizeHandles() {
             console.log(`       - Display: ${style.display}`);
             console.log(`       - Visibility: ${style.visibility}`);
         });
-        
+
         console.log(''); // Empty line for readability
     });
 }
@@ -264,41 +290,41 @@ window.debugTableResizeHandles = debugTableResizeHandles;
  */
 function testResizeHandleInteraction() {
     console.log('🧪 TEST: Simulating resize handle interactions...');
-    
+
     const tables = document.querySelectorAll('.data-table');
-    
+
     tables.forEach((table) => {
         const tableId = table.id || 'unknown';
         const handles = table.querySelectorAll('.resize-handle');
-        
+
         console.log(`📋 Testing table: ${tableId}`);
-        
+
         handles.forEach((handle, index) => {
             console.log(`   Testing handle ${index}...`);
-            
+
             // Simulate mouseenter
             const enterEvent = new MouseEvent('mouseenter', {
                 bubbles: true,
                 cancelable: true,
-                view: window
+                view: window,
             });
             handle.dispatchEvent(enterEvent);
-            
+
             // Simulate mouseleave
             const leaveEvent = new MouseEvent('mouseleave', {
                 bubbles: true,
                 cancelable: true,
-                view: window
+                view: window,
             });
             handle.dispatchEvent(leaveEvent);
-            
+
             // Try to trigger a mousedown event
             const downEvent = new MouseEvent('mousedown', {
                 bubbles: true,
                 cancelable: true,
                 view: window,
                 pageX: 100,
-                pageY: 100
+                pageY: 100,
             });
             handle.dispatchEvent(downEvent);
         });
