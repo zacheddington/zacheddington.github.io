@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Final Dropdown Test</title>
+        <link
+            href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="css/main.css" />
+        <style>
+            body {
+                padding: 20px;
+            }
+            .test-controls {
+                margin: 20px 0;
+                padding: 1rem;
+                background: #f0f0f0;
+                border-radius: 4px;
+            }
+            .debug-info {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 1rem;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                max-width: 300px;
+                z-index: 10000;
+            }
+        </style>
+    </head>
+    <body class="is-admin">
+        <div class="debug-info">
+            <div>Screen: <span id="width"></span>px</div>
+            <div>Admin class: <span id="adminStatus">YES</span></div>
+            <div>Hover tests: <span id="hoverTests"></span></div>
+        </div>
+
+        <h1>Final Dropdown Test - All Conditions</h1>
+
+        <div class="test-controls">
+            <button onclick="toggleAdmin()">Toggle Admin Status</button>
+            <button onclick="testDropdowns()">Test All Dropdowns</button>
+            <button onclick="forceShowDropdowns()">Force Show Dropdowns</button>
+        </div>
+
+        <!-- Header Bar -->
+        <header class="app-header">
+            <!-- Manual navigation for testing -->
+            <div class="top-nav-menu">
+                <ul>
+                    <li>
+                        <a href="/welcome/" data-page="welcome">
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                                ></path>
+                                <polyline
+                                    points="9,22 9,12 15,12 15,22"
+                                ></polyline>
+                            </svg>
+                            Welcome
+                        </a>
+                    </li>
+
+                    <li class="nav-dropdown">
+                        <a
+                            href="/patients/"
+                            data-page="patients"
+                            class="dropdown-trigger"
+                        >
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+                                ></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path
+                                    d="m22 21-3-3m1-4a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"
+                                ></path>
+                            </svg>
+                            Patients
+                            <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                class="dropdown-arrow"
+                            >
+                                <polyline points="6,9 12,15 18,9"></polyline>
+                            </svg>
+                        </a>
+                        <div class="dropdown-content">
+                            <a href="/patients/">
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path
+                                        d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"
+                                    ></path>
+                                </svg>
+                                View Patients
+                            </a>
+                            <a href="/patients/create-patient/">
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                                </svg>
+                                Create Patient
+                            </a>
+                            <a href="/patients/manage-patients/">
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                    ></path>
+                                </svg>
+                                Manage Patients
+                            </a>
+                        </div>
+                    </li>
+
+                    <li class="nav-dropdown admin-only">
+                        <a
+                            href="/admin/"
+                            data-page="admin"
+                            class="dropdown-trigger"
+                        >
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                                ></path>
+                            </svg>
+                            Administration
+                            <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                class="dropdown-arrow"
+                            >
+                                <polyline points="6,9 12,15 18,9"></polyline>
+                            </svg>
+                        </a>
+                        <div class="dropdown-content">
+                            <a href="/admin/create-user/">
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path
+                                        d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                                    ></path>
+                                    <circle cx="8.5" cy="7" r="4"></circle>
+                                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                                    <line
+                                        x1="23"
+                                        y1="11"
+                                        x2="17"
+                                        y2="11"
+                                    ></line>
+                                </svg>
+                                Create User
+                            </a>
+                            <a href="/admin/manage-users/">
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path
+                                        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                                    ></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                Manage Users
+                            </a>
+                            <a href="/admin/manage-sessions/">
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path
+                                        d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"
+                                    ></path>
+                                </svg>
+                                Manage Sessions
+                            </a>
+                        </div>
+                    </li>
+
+                    <li>
+                        <a href="/profile/" data-page="profile">
+                            <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+                                ></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            Profile
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="user-profile">
+                <button class="logout-btn" onclick="logout()">
+                    <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path
+                            d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+                        ></path>
+                        <polyline points="16,17 21,12 16,7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <script>
+            function updateDebugInfo() {
+                document.getElementById('width').textContent =
+                    window.innerWidth;
+                document.getElementById('adminStatus').textContent =
+                    document.body.classList.contains('is-admin') ? 'YES' : 'NO';
+            }
+
+            function toggleAdmin() {
+                document.body.classList.toggle('is-admin');
+                updateDebugInfo();
+            }
+
+            function testDropdowns() {
+                const results = [];
+                const dropdowns = document.querySelectorAll('.nav-dropdown');
+
+                dropdowns.forEach((dropdown, i) => {
+                    const trigger = dropdown.querySelector('.dropdown-trigger');
+                    const content = dropdown.querySelector('.dropdown-content');
+                    const isAdmin = dropdown.classList.contains('admin-only');
+
+                    if (trigger && content) {
+                        // Test visibility
+                        const triggerVisible = trigger.offsetHeight > 0;
+                        const contentVisible = content.offsetHeight > 0;
+
+                        results.push(
+                            `Dropdown ${i + 1} (${
+                                isAdmin ? 'admin' : 'normal'
+                            }): Trigger=${triggerVisible}, Content=${contentVisible}`
+                        );
+                    }
+                });
+
+                document.getElementById('hoverTests').innerHTML =
+                    results.join('<br>');
+            }
+
+            function forceShowDropdowns() {
+                const style = document.createElement('style');
+                style.id = 'force-dropdown-style';
+                style.textContent = `
+                .nav-dropdown .dropdown-content {
+                    display: block !important;
+                    background: rgba(255,0,0,0.9) !important;
+                    border: 2px solid yellow !important;
+                }
+            `;
+
+                // Remove existing forced style
+                const existing = document.getElementById(
+                    'force-dropdown-style'
+                );
+                if (existing) {
+                    existing.remove();
+                } else {
+                    document.head.appendChild(style);
+                }
+            }
+
+            // Initialize
+            updateDebugInfo();
+            window.addEventListener('resize', updateDebugInfo);
+
+            // Test after a short delay
+            setTimeout(testDropdowns, 500);
+        </script>
+    </body>
+</html>

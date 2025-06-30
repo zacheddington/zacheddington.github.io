@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CSS Debug at 600px</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                padding: 20px;
+                background: #f0f0f0;
+            }
+
+            .debug-info {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: black;
+                color: white;
+                padding: 1rem;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                z-index: 10000;
+                max-width: 300px;
+            }
+
+            .test-area {
+                margin: 20px 0;
+                padding: 20px;
+                background: white;
+                border-radius: 8px;
+            }
+
+            /* Super simple dropdown test */
+            .simple-dropdown {
+                position: relative;
+                display: inline-block;
+                margin: 10px;
+            }
+
+            .simple-trigger {
+                padding: 10px 20px;
+                background: #007bff;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            .simple-content {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background: #fff;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                min-width: 150px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+                display: none;
+            }
+
+            .simple-content a {
+                display: block;
+                padding: 10px;
+                color: #333;
+                text-decoration: none;
+                border-bottom: 1px solid #eee;
+            }
+
+            .simple-content a:hover {
+                background: #f8f9fa;
+            }
+
+            .simple-content a:last-child {
+                border-bottom: none;
+            }
+
+            /* Hover rule */
+            .simple-dropdown:hover .simple-content {
+                display: block !important;
+            }
+
+            /* Test at different breakpoints */
+            @media (max-width: 768px) {
+                .simple-trigger {
+                    background: #28a745; /* Green at 768px */
+                }
+            }
+
+            @media (max-width: 600px) {
+                .simple-trigger {
+                    background: #dc3545; /* Red at 600px */
+                }
+
+                /* This should still work */
+                .simple-dropdown:hover .simple-content {
+                    display: block !important;
+                    background: yellow !important;
+                }
+            }
+
+            @media (max-width: 425px) {
+                .simple-trigger {
+                    background: #6f42c1; /* Purple at 425px */
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="debug-info">
+            <div>Screen Width: <span id="width"></span>px</div>
+            <div>Trigger Color: <span id="color"></span></div>
+            <div>
+                Hover Test: <span id="hoverTest">Hover over dropdown</span>
+            </div>
+        </div>
+
+        <h1>Pure CSS Dropdown Test at Different Breakpoints</h1>
+
+        <div class="test-area">
+            <h2>Simple CSS Dropdown (No interference)</h2>
+            <p>This should work at ALL screen sizes, including ≤600px</p>
+
+            <div class="simple-dropdown">
+                <button class="simple-trigger">Hover Me ▼</button>
+                <div class="simple-content">
+                    <a href="#">Option 1</a>
+                    <a href="#">Option 2</a>
+                    <a href="#">Option 3</a>
+                </div>
+            </div>
+
+            <div class="simple-dropdown">
+                <button class="simple-trigger">Another Dropdown ▼</button>
+                <div class="simple-content">
+                    <a href="#">Choice A</a>
+                    <a href="#">Choice B</a>
+                    <a href="#">Choice C</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-area">
+            <h2>Color Key:</h2>
+            <ul>
+                <li>Blue: > 768px</li>
+                <li>Green: ≤ 768px</li>
+                <li>Red: ≤ 600px</li>
+                <li>Purple: ≤ 425px</li>
+            </ul>
+            <p>
+                If dropdowns work here but not in main app, CSS conflict exists!
+            </p>
+        </div>
+
+        <script>
+            function updateDebugInfo() {
+                const width = window.innerWidth;
+                document.getElementById('width').textContent = width;
+
+                // Get computed style of trigger
+                const trigger = document.querySelector('.simple-trigger');
+                if (trigger) {
+                    const style = window.getComputedStyle(trigger);
+                    document.getElementById('color').textContent =
+                        style.backgroundColor;
+                }
+            }
+
+            function testHover() {
+                const dropdown = document.querySelector('.simple-dropdown');
+                const content = dropdown.querySelector('.simple-content');
+
+                if (content) {
+                    // Check if hover is working
+                    const isVisible = content.offsetHeight > 0;
+                    document.getElementById('hoverTest').textContent = isVisible
+                        ? 'VISIBLE'
+                        : 'HIDDEN';
+                    document.getElementById('hoverTest').style.color = isVisible
+                        ? 'green'
+                        : 'red';
+                }
+            }
+
+            // Add hover listeners to test
+            document
+                .querySelectorAll('.simple-dropdown')
+                .forEach((dropdown) => {
+                    dropdown.addEventListener('mouseenter', () => {
+                        document.getElementById('hoverTest').textContent =
+                            'HOVERING';
+                        document.getElementById('hoverTest').style.color =
+                            'blue';
+                        setTimeout(testHover, 50);
+                    });
+
+                    dropdown.addEventListener('mouseleave', () => {
+                        setTimeout(testHover, 50);
+                    });
+                });
+
+            updateDebugInfo();
+            window.addEventListener('resize', updateDebugInfo);
+
+            setInterval(testHover, 500);
+        </script>
+    </body>
+</html>
