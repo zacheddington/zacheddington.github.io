@@ -150,6 +150,64 @@ function createProperNavigation() {
     headerContainer.insertAdjacentHTML('beforeend', fallbackNav);
     setupTopNavigation(); // Update admin menu visibility for fallback navigation too
 
+    // DEBUG: Comprehensive navigation structure check
+    setTimeout(() => {
+        console.log('🔍 DEBUG: Checking navigation structure...');
+        
+        // Check if app-header exists and has content
+        const header = document.querySelector('.app-header');
+        console.log('🔍 DEBUG: app-header found:', !!header);
+        if (header) {
+            console.log('🔍 DEBUG: app-header innerHTML length:', header.innerHTML.length);
+            console.log('🔍 DEBUG: app-header content preview:', header.innerHTML.substring(0, 200));
+        }
+        
+        // Check for top-nav-menu
+        const topNav = document.querySelector('.top-nav-menu');
+        console.log('🔍 DEBUG: top-nav-menu found:', !!topNav);
+        
+        // Check for old side-menu (should NOT exist)
+        const sideMenu = document.querySelector('.side-menu');
+        console.log('🔍 DEBUG: side-menu found (should be false):', !!sideMenu);
+        
+        // Check for nav dropdowns
+        const dropdowns = document.querySelectorAll('.nav-dropdown');
+        console.log('🔍 DEBUG: nav-dropdown count:', dropdowns.length);
+        
+        // Check specific dropdown elements
+        dropdowns.forEach((dropdown, index) => {
+            const trigger = dropdown.querySelector('.dropdown-trigger');
+            const content = dropdown.querySelector('.dropdown-content');
+            console.log(`🔍 DEBUG: Dropdown ${index}:`, {
+                hasTrigger: !!trigger,
+                hasContent: !!content,
+                triggerText: trigger ? trigger.textContent.trim().substring(0, 20) : 'none',
+                contentHTML: content ? content.innerHTML.substring(0, 100) : 'none'
+            });
+        });
+        
+        // Force navigation to be visible with very specific debugging
+        if (header && header.innerHTML.length > 0) {
+            console.log('✅ DEBUG: Navigation appears to be loaded, forcing visibility...');
+            // Make entire header super visible
+            header.style.cssText = `
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 80px !important;
+                background: lime !important;
+                border: 5px solid red !important;
+                z-index: 99999 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            `;
+        } else {
+            console.log('❌ DEBUG: Navigation not loaded or header empty!');
+        }
+    }, 2000); // Wait 2 seconds to ensure everything is loaded
+
     // DEBUG: Check media queries and screen size
     console.log('🔍 DEBUG: Screen width:', window.innerWidth);
     console.log('🔍 DEBUG: Screen height:', window.innerHeight);
@@ -163,6 +221,10 @@ function createProperNavigation() {
         {
             name: 'max-width: 600px',
             query: window.matchMedia('(max-width: 600px)'),
+        },
+        {
+            name: 'max-width: 601px',
+            query: window.matchMedia('(max-width: 601px)'),
         },
         { name: 'hover: hover', query: window.matchMedia('(hover: hover)') },
         { name: 'pointer: fine', query: window.matchMedia('(pointer: fine)') },
@@ -425,3 +487,57 @@ window.loadMenu = loadTopNavigation; // Backward compatibility
 window.loadTopNavigation = loadTopNavigation;
 window.setupFadeNavigation = setupFadeNavigation;
 window.setupPatientNumberValidation = setupPatientNumberValidation;
+
+// CRITICAL DEBUG: Test CSS hover rules directly
+setTimeout(() => {
+    const dropdowns = document.querySelectorAll('.nav-dropdown');
+    console.log('🔍 DEBUG: Testing CSS hover rules...');
+
+    dropdowns.forEach((dropdown, index) => {
+        const trigger = dropdown.querySelector('.dropdown-trigger');
+        const content = dropdown.querySelector('.dropdown-content');
+
+        if (trigger && content) {
+            console.log(`🔍 DEBUG: Dropdown ${index} elements:`, {
+                trigger: trigger.tagName,
+                content: content.tagName,
+                triggerClasses: trigger.className,
+                contentClasses: content.className
+            });
+
+            // Check computed styles
+            const contentStyles = window.getComputedStyle(content);
+            console.log(`🔍 DEBUG: Dropdown ${index} content styles:`, {
+                display: contentStyles.display,
+                opacity: contentStyles.opacity,
+                visibility: contentStyles.visibility,
+                position: contentStyles.position,
+                top: contentStyles.top,
+                left: contentStyles.left,
+                right: contentStyles.right,
+                zIndex: contentStyles.zIndex,
+                transform: contentStyles.transform
+            });
+
+            // Force show for testing
+            console.log(`🔍 DEBUG: Force showing dropdown ${index}...`);
+            content.style.cssText = `
+                opacity: 1 !important;
+                visibility: visible !important;
+                display: block !important;
+                position: absolute !important;
+                top: 100% !important;
+                right: 0 !important;
+                left: auto !important;
+                z-index: 10000 !important;
+                background: yellow !important;
+                border: 3px solid red !important;
+                color: black !important;
+                min-width: 200px !important;
+                max-width: calc(100vw - 20px) !important;
+                margin-right: 10px !important;
+                transform: translateY(0) translateX(0) !important;
+            `;
+        }
+    });
+}, 1000);
