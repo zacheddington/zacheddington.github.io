@@ -149,6 +149,35 @@ function createProperNavigation() {
     `;
     headerContainer.insertAdjacentHTML('beforeend', fallbackNav);
     setupTopNavigation(); // Update admin menu visibility for fallback navigation too
+
+    // ULTIMATE DEBUG: Check dropdown visibility at all screen sizes
+    setInterval(() => {
+        const dropdowns = document.querySelectorAll(
+            '.nav-dropdown .dropdown-content'
+        );
+        const width = window.innerWidth;
+
+        console.log(`🔍 ULTIMATE DEBUG at ${width}px:`, {
+            dropdownCount: dropdowns.length,
+            dropdownsVisible: Array.from(dropdowns).map((dropdown, i) => {
+                const styles = window.getComputedStyle(dropdown);
+                return {
+                    index: i,
+                    display: styles.display,
+                    opacity: styles.opacity,
+                    visibility: styles.visibility,
+                    position: styles.position,
+                    backgroundColor: styles.backgroundColor,
+                    border: styles.border,
+                    zIndex: styles.zIndex,
+                    transform: styles.transform,
+                    top: styles.top,
+                    right: styles.right,
+                    left: styles.left,
+                };
+            }),
+        });
+    }, 2000);
 }
 
 // Setup top navigation functionality
