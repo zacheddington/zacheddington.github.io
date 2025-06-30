@@ -50,7 +50,7 @@
     }
 }
 
-@media screen and (max-width: 320px) {
+@media screen and (max-width: 330px) {
     .app-header {
         padding: 0 8px;
         min-height: 50px;

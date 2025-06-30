@@ -412,8 +412,8 @@ body.is-admin .nav-dropdown.admin-only:hover .dropdown-content {
     }
 }
 
-/* Very small mobile devices (425px and below) */
-@media (max-width: 425px) {
+/* Very small mobile devices (330px and below) - was 425px */
+@media (max-width: 330px) {
     .top-nav-menu ul {
         gap: 0.1rem;
     }
@@ -436,10 +436,8 @@ body.is-admin .nav-dropdown.admin-only:hover .dropdown-content {
         min-height: 44px !important;
         min-width: 44px !important;
     }
-}
 
-/* Extra small screens (320px and below) - ADA compliance */
-@media (max-width: 320px) {
+    /* Extra small screen optimizations - icon-only navigation */
     .top-nav-menu {
         margin: 0 0.25rem;
     }
