@@ -143,9 +143,22 @@
     transition: transform 0.2s ease;
 }
 
-.dropdown-content {
+/* Hover bridge - invisible area that prevents dropdown from disappearing during mouse movement */
+.nav-dropdown::after {
+    content: '';
     position: absolute;
     top: 100%;
+    left: 0;
+    right: 0;
+    height: 2px; /* Small buffer zone for smooth mouse movement */
+    background: transparent;
+    z-index: calc(var(--z-dropdown) - 1);
+    pointer-events: auto;
+}
+
+.dropdown-content {
+    position: absolute;
+    top: calc(100% + 2px); /* Position just below the hover bridge */
     left: 0;
     background: rgba(var(--color-primary-rgb), 0.95);
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -154,7 +167,7 @@
     min-width: 220px;
     width: max-content;
     z-index: var(--z-dropdown);
-    margin-top: 0.5rem;
+    margin-top: 0; /* Remove gap - dropdown connects directly to trigger */
 
     /* SIMPLE HIDE/SHOW - like isolated test */
     display: none;
@@ -451,4 +464,17 @@ body.is-admin .nav-dropdown.admin-only:hover .dropdown-content {
 
 .nav-dropdown.mobile-open .dropdown-arrow {
     transform: rotate(180deg) !important;
+}
+
+/* Hover bridge - invisible area that connects trigger to dropdown for smooth mouse movement */
+.nav-dropdown::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 4px; /* Small buffer zone */
+    background: transparent;
+    z-index: calc(var(--z-dropdown) - 1);
+    pointer-events: auto;
 }
