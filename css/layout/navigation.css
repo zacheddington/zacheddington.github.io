@@ -358,8 +358,12 @@ body.is-admin .nav-dropdown.admin-only:hover .dropdown-content {
     }
 }
 
-/* CRITICAL: Override all conflicting styles at 600px and below */
-@media screen and (max-width: 600px) {
+/* CRITICAL: Override all conflicting styles at 400px and below to prevent wrapping */
+@media screen and (max-width: 400px) {
+    .top-nav-menu ul {
+        gap: 0.25rem;
+    }
+
     /* Make navigation items smaller, but ensure dropdowns still work */
     .top-nav-menu a:not(.dropdown-trigger) {
         font-size: 0.7rem;
@@ -385,10 +389,6 @@ body.is-admin .nav-dropdown.admin-only:hover .dropdown-content {
     .logout-btn {
         font-size: 0.7rem;
         padding: 0.25rem 0.3rem;
-    }
-
-    .top-nav-menu ul {
-        gap: 0.25rem;
     }
 
     /* Ensure navigation doesn't wrap but ALLOW dropdowns to overflow */
