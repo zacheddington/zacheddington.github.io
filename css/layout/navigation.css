@@ -128,14 +128,13 @@
     transform: translateY(0);
 }
 
-/* Dropdown Navigation Styles */
+/* Dropdown Navigation Styles - WORKING VERSION */
 .nav-dropdown {
     position: relative;
-    overflow: visible;
 }
 
 .dropdown-trigger {
-    position: relative;
+    cursor: pointer;
 }
 
 .dropdown-arrow {
@@ -147,19 +146,16 @@
     position: absolute;
     top: 100%;
     left: 0;
-    background: rgba(var(--color-primary-rgb), 0.6);
-    backdrop-filter: blur(15px);
+    background: rgba(var(--color-primary-rgb), 0.95);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--border-radius);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     min-width: 220px;
-    z-index: var(--z-dropdown);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: var(--transition-all);
+    z-index: 1000;
     margin-top: 0.5rem;
-    overflow: visible;
+
+    /* SIMPLE HIDE/SHOW - like isolated test */
+    display: none;
 }
 
 .dropdown-content a {
@@ -171,15 +167,17 @@
     text-decoration: none;
     font-weight: 500;
     font-size: 0.9rem;
-    border-radius: 0;
-    background: transparent;
-    border: none;
     white-space: nowrap;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-content a:last-child {
+    border-bottom: none;
 }
 
 .dropdown-content a:hover {
     background: rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 1);
+    color: white;
 }
 
 .dropdown-content a svg {
@@ -188,15 +186,20 @@
     stroke: currentColor;
 }
 
-/* Show dropdowns on hover (desktop) or when explicitly opened (mobile) */
-.nav-dropdown:hover .dropdown-content,
-.nav-dropdown.mobile-open .dropdown-content {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+/* SHOW DROPDOWN - SIMPLE HOVER (like isolated test) */
+.nav-dropdown:hover .dropdown-content {
+    display: block;
 }
 
-.nav-dropdown:hover .dropdown-arrow,
+.nav-dropdown:hover .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* MOBILE/TOUCH SUPPORT */
+.nav-dropdown.mobile-open .dropdown-content {
+    display: block;
+}
+
 .nav-dropdown.mobile-open .dropdown-arrow {
     transform: rotate(180deg);
 }
@@ -320,9 +323,9 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
     }
 }
 
-/* Responsive dropdown positioning for small screens */
+/* Responsive Design - Small screen navigation adjustments */
 @media screen and (max-width: 600px) {
-    /* Prevent wrapping by making text smaller */
+    /* Make navigation items smaller */
     .top-nav-menu a {
         font-size: 0.7rem;
         padding: 0.25rem 0.3rem;
@@ -344,7 +347,7 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         -ms-overflow-style: none; /* IE/Edge */
     }
 
-    /* Critical: Ensure dropdown triggers are always clickable on very small screens */
+    /* Ensure dropdown triggers are touchable */
     .nav-dropdown .dropdown-trigger {
         min-height: 44px !important;
         min-width: 44px !important;
@@ -353,52 +356,6 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         align-items: center;
         justify-content: center;
         -webkit-tap-highlight-color: transparent;
-        position: relative;
-        z-index: var(--z-dropdown);
-    }
-
-    /* Smart dropdown positioning to prevent off-screen issues */
-    .dropdown-content {
-        /* Default positioning */
-        min-width: 180px;
-        max-width: calc(100vw - 40px);
-        font-size: 0.8rem;
-        z-index: var(--z-dropdown);
-        /* Remove any transform that might cause positioning issues */
-        transform: translateY(-10px);
-        /* Ensure proper positioning context */
-        position: absolute;
-        top: 100%;
-    }
-
-    /* For the first dropdown (Patients), position from left to prevent off-screen clipping */
-    .nav-dropdown:first-of-type .dropdown-content {
-        left: 0;
-        right: auto;
-        transform-origin: left top;
-    }
-
-    /* For subsequent dropdowns (Admin), position from right */
-    .nav-dropdown:not(:first-of-type) .dropdown-content {
-        left: auto;
-        right: 0;
-        transform-origin: right top;
-    }
-
-    /* When dropdown is visible, reset transform */
-    .nav-dropdown:hover .dropdown-content,
-    .nav-dropdown.mobile-open .dropdown-content {
-        transform: translateY(0);
-    }
-
-    /* Ensure dropdown items are touchable */
-    .dropdown-content a {
-        padding: 0.8rem;
-        min-height: 44px;
-    }
-
-    /* Ensure dropdown trigger is clickable */
-    .nav-dropdown .dropdown-trigger {
         pointer-events: auto !important;
         touch-action: manipulation !important;
     }
@@ -485,5 +442,30 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
 
     .nav-dropdown:hover .dropdown-arrow {
         transform: rotate(180deg) !important;
+    }
+}
+
+/* RESPONSIVE DROPDOWN POSITIONING - WORKING VERSION */
+@media (max-width: 600px) {
+    .dropdown-content {
+        min-width: 180px;
+        max-width: calc(100vw - 40px);
+        font-size: 0.8rem;
+    }
+
+    /* Position admin dropdown from right to prevent off-screen issues */
+    .nav-dropdown:not(:first-of-type) .dropdown-content {
+        left: auto;
+        right: 0;
+    }
+
+    .dropdown-content a {
+        padding: 0.8rem;
+        min-height: 44px;
+    }
+
+    /* ENSURE HOVER STILL WORKS AT SMALL SCREENS */
+    .nav-dropdown:hover .dropdown-content {
+        display: block;
     }
 }
