@@ -191,6 +191,26 @@ function createProperNavigation() {
                     rect.bottom <= window.innerHeight &&
                     rect.right <= window.innerWidth,
             });
+
+            // Check parent elements for potential clipping
+            let parent = dropdown.parentElement;
+            let parentChain = [];
+            while (parent && parent !== document.body) {
+                const parentStyles = window.getComputedStyle(parent);
+                parentChain.push({
+                    tagName: parent.tagName,
+                    className: parent.className,
+                    overflow: parentStyles.overflow,
+                    overflowX: parentStyles.overflowX,
+                    overflowY: parentStyles.overflowY,
+                    position: parentStyles.position,
+                    zIndex: parentStyles.zIndex,
+                    display: parentStyles.display,
+                    visibility: parentStyles.visibility,
+                });
+                parent = parent.parentElement;
+            }
+            console.log(`  Dropdown ${i} parent chain:`, parentChain);
         });
     }, 2000);
 }

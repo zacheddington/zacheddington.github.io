@@ -617,3 +617,38 @@ html
     font-weight: bold !important;
     font-size: 12px !important;
 }
+
+/* EXTREME TEST: Force dropdowns to specific screen location */
+@media screen and (max-width: 600px) {
+    html body .app-header .top-nav-menu .nav-dropdown .dropdown-content {
+        position: fixed !important;
+        top: 200px !important;
+        left: 50px !important;
+        right: auto !important;
+        z-index: 999999 !important;
+        background: lime !important;
+        border: 5px solid purple !important;
+        color: black !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: block !important;
+        width: 300px !important;
+        height: 150px !important;
+        transform: none !important;
+    }
+
+    html
+        body
+        .app-header
+        .top-nav-menu
+        .nav-dropdown
+        .dropdown-content::before {
+        content: 'EXTREME TEST: Fixed position at 600px and below!' !important;
+        background: purple !important;
+        color: white !important;
+        padding: 10px !important;
+        display: block !important;
+        font-size: 14px !important;
+        font-weight: bold !important;
+    }
+}
