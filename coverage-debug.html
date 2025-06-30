@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Element Coverage Debug</title>
+        <link rel="stylesheet" href="css/main.css" />
+        <style>
+            .debug-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 20px;
+                z-index: 99999999;
+                font-family: monospace;
+                font-size: 12px;
+                max-height: 40vh;
+                overflow-y: auto;
+            }
+
+            .debug-overlay button {
+                margin: 5px;
+                padding: 10px;
+                background: #007acc;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            .debug-section {
+                margin: 10px 0;
+                padding: 10px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 4px;
+            }
+
+            .highlight-box {
+                position: absolute;
+                border: 3px solid lime;
+                background: rgba(255, 255, 0, 0.3);
+                pointer-events: none;
+                z-index: 99999998;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="debug-overlay">
+            <h3>🔍 Element Coverage Debug Tool</h3>
+            <button onclick="loadNavigationManually()">Load Navigation</button>
+            <button onclick="findCoveringElements()">
+                Find What's Covering Dropdown
+            </button>
+            <button onclick="analyzeStacking()">
+                Analyze Stacking Context
+            </button>
+            <button onclick="clearHighlights()">Clear Highlights</button>
+            <button onclick="close()">Close Debug</button>
+            <div id="debug-results"></div>
+        </div>
+
+        <!-- Load the actual app structure -->
+        <div id="top-navigation-placeholder"></div>
+
+        <main class="content-page">
+            <div class="container">
+                <h1>Admin Panel</h1>
+                <p>Testing dropdown coverage detection...</p>
+            </div>
+        </main>
+
+        <script src="js/shared/head-manager.js"></script>
+        <script src="js/shared/navigation.js"></script>
+
+        <script>
+            function addHighlight(rect, color = 'lime', label = '') {
+                const highlight = document.createElement('div');
+                highlight.className = 'highlight-box';
+                highlight.style.left = rect.left + 'px';
+                highlight.style.top = rect.top + 'px';
+                highlight.style.width = rect.width + 'px';
+                highlight.style.height = rect.height + 'px';
+                highlight.style.borderColor = color;
+                if (label) {
+                    highlight.innerHTML = `<div style="background: ${color}; color: black; padding: 2px; font-size: 10px;">${label}</div>`;
+                }
+                document.body.appendChild(highlight);
+            }
+
+            function clearHighlights() {
+                document
+                    .querySelectorAll('.highlight-box')
+                    .forEach((el) => el.remove());
+            }
+
+            function loadNavigationManually() {
+                const results = document.getElementById('debug-results');
+                results.innerHTML =
+                    '<div class="debug-section">🔄 Loading navigation...</div>';
+
+                // Set up user data
+                localStorage.setItem('user', JSON.stringify({ role: 'admin' }));
+
+                // Load navigation
+                if (window.navigation && window.navigation.loadTopNavigation) {
+                    window.navigation
+                        .loadTopNavigation()
+                        .then(() => {
+                            results.innerHTML =
+                                '<div class="debug-section">✅ Navigation loaded! Now try finding dropdown.</div>';
+                        })
+                        .catch((err) => {
+                            results.innerHTML = `<div class="debug-section">❌ Error loading navigation: ${err.message}</div>`;
+                        });
+                } else if (window.loadTopNavigation) {
+                    window
+                        .loadTopNavigation()
+                        .then(() => {
+                            results.innerHTML =
+                                '<div class="debug-section">✅ Navigation loaded! Now try finding dropdown.</div>';
+                        })
+                        .catch((err) => {
+                            results.innerHTML = `<div class="debug-section">❌ Error loading navigation: ${err.message}</div>`;
+                        });
+                } else {
+                    results.innerHTML =
+                        '<div class="debug-section">❌ Navigation functions not found!</div>';
+                }
+            }
+
+            function findCoveringElements() {
+                clearHighlights();
+                const results = document.getElementById('debug-results');
+
+                // Try multiple selectors to find dropdown
+                let dropdown = document.querySelector(
+                    '.nav-dropdown .dropdown-content'
+                );
+                if (!dropdown) {
+                    dropdown = document.querySelector('.dropdown-content');
+                }
+                if (!dropdown) {
+                    dropdown = document.querySelector('[class*="dropdown"]');
+                }
+
+                // Debug: Show all navigation elements
+                const navElements = document.querySelectorAll(
+                    '.nav-dropdown, .dropdown-content, .top-nav-menu, .header'
+                );
+                let debugInfo =
+                    '<div class="debug-section"><strong>🔍 Navigation Debug:</strong><br>';
+                debugInfo += `Found ${navElements.length} nav elements:<br>`;
+                navElements.forEach((el, i) => {
+                    debugInfo += `${i + 1}. ${el.tagName}.${el.className}<br>`;
+                });
+                debugInfo += '<br></div>';
+
+                if (!dropdown) {
+                    results.innerHTML =
+                        debugInfo +
+                        '<div class="debug-section">❌ Still no dropdown found!<br>Navigation may not be loaded yet.</div>';
+                    return;
+                }
+
+                // Make dropdown visible
+                dropdown.style.display = 'block';
+                dropdown.style.visibility = 'visible';
+                dropdown.style.opacity = '1';
+                dropdown.style.zIndex = '999999';
+                dropdown.style.background = 'yellow';
+                dropdown.style.border = '3px solid red';
+
+                const rect = dropdown.getBoundingClientRect();
+                addHighlight(rect, 'red', 'DROPDOWN');
+
+                // Get all elements at various points within the dropdown
+                const points = [
+                    { x: rect.left + 10, y: rect.top + 10, name: 'Top-Left' },
+                    {
+                        x: rect.left + rect.width / 2,
+                        y: rect.top + rect.height / 2,
+                        name: 'Center',
+                    },
+                    {
+                        x: rect.right - 10,
+                        y: rect.bottom - 10,
+                        name: 'Bottom-Right',
+                    },
+                    {
+                        x: rect.left + rect.width / 4,
+                        y: rect.top + rect.height / 4,
+                        name: 'Quarter',
+                    },
+                    {
+                        x: rect.right - rect.width / 4,
+                        y: rect.bottom - rect.height / 4,
+                        name: 'Three-Quarter',
+                    },
+                ];
+
+                let html =
+                    '<div class="debug-section"><strong>🎯 Coverage Analysis:</strong><br>';
+                html += `Viewport: ${window.innerWidth}x${window.innerHeight}<br>`;
+                html += `Dropdown Rect: ${rect.left.toFixed(
+                    1
+                )}, ${rect.top.toFixed(1)}, ${rect.width.toFixed(
+                    1
+                )}x${rect.height.toFixed(1)}<br><br>`;
+
+                points.forEach((point, i) => {
+                    const elementsAtPoint = document.elementsFromPoint(
+                        point.x,
+                        point.y
+                    );
+                    const topElement = elementsAtPoint[0];
+
+                    if (
+                        topElement &&
+                        topElement !== dropdown &&
+                        !dropdown.contains(topElement)
+                    ) {
+                        const topRect = topElement.getBoundingClientRect();
+                        const topStyle = window.getComputedStyle(topElement);
+
+                        addHighlight(topRect, 'orange', `COVER-${i + 1}`);
+
+                        html += `<strong>${point.name} (${point.x.toFixed(
+                            1
+                        )}, ${point.y.toFixed(1)}):</strong><br>`;
+                        html += `🔴 COVERED BY: ${topElement.tagName}.${topElement.className}<br>`;
+                        html += `Z-Index: ${topStyle.zIndex}<br>`;
+                        html += `Position: ${topStyle.position}<br>`;
+                        html += `Display: ${topStyle.display}<br>`;
+                        html += `Background: ${topStyle.backgroundColor}<br><br>`;
+                    } else {
+                        html += `<strong>${point.name}:</strong> ✅ Dropdown visible<br>`;
+                    }
+                });
+
+                html += '</div>';
+                results.innerHTML = html;
+            }
+
+            function analyzeStacking() {
+                const results = document.getElementById('debug-results');
+                let html =
+                    '<div class="debug-section"><strong>📚 Stacking Context Analysis:</strong><br>';
+
+                // Find all elements with z-index
+                const allElements = Array.from(document.querySelectorAll('*'));
+                const stackingElements = allElements
+                    .map((el) => {
+                        const style = window.getComputedStyle(el);
+                        const zIndex = style.zIndex;
+                        if (zIndex !== 'auto' && zIndex !== '0') {
+                            return {
+                                element: el,
+                                zIndex: parseInt(zIndex) || 0,
+                                position: style.position,
+                                tagClass: `${el.tagName}.${el.className}`,
+                                rect: el.getBoundingClientRect(),
+                            };
+                        }
+                        return null;
+                    })
+                    .filter((item) => item !== null)
+                    .sort((a, b) => b.zIndex - a.zIndex);
+
+                html += `Found ${stackingElements.length} elements with z-index:<br><br>`;
+
+                stackingElements.slice(0, 15).forEach((item, i) => {
+                    if (item.rect.width > 0 && item.rect.height > 0) {
+                        addHighlight(
+                            item.rect,
+                            i < 5 ? 'cyan' : 'purple',
+                            `Z${item.zIndex}`
+                        );
+                    }
+                    html += `${item.zIndex}: ${item.tagClass} (${item.position})<br>`;
+                });
+
+                html += '</div>';
+                results.innerHTML = html;
+            }
+
+            function close() {
+                document.querySelector('.debug-overlay').style.display = 'none';
+            }
+
+            // Initialize
+            window.addEventListener('load', async () => {
+                const results = document.getElementById('debug-results');
+                results.innerHTML =
+                    '<div class="debug-section">🔄 Initializing...</div>';
+
+                localStorage.setItem('user', JSON.stringify({ role: 'admin' }));
+
+                try {
+                    if (
+                        window.navigation &&
+                        window.navigation.loadTopNavigation
+                    ) {
+                        await window.navigation.loadTopNavigation();
+                        results.innerHTML =
+                            '<div class="debug-section">✅ Navigation loaded automatically!</div>';
+                    } else if (window.loadTopNavigation) {
+                        await window.loadTopNavigation();
+                        results.innerHTML =
+                            '<div class="debug-section">✅ Navigation loaded automatically!</div>';
+                    } else {
+                        results.innerHTML =
+                            '<div class="debug-section">⚠️ Navigation functions not found. Click "Load Navigation" button.</div>';
+                    }
+
+                    // Auto-run analysis after load
+                    setTimeout(findCoveringElements, 1000);
+                } catch (err) {
+                    results.innerHTML = `<div class="debug-section">❌ Error during initialization: ${err.message}<br>Click "Load Navigation" to try manually.</div>`;
+                }
+            });
+        </script>
+    </body>
+</html>
