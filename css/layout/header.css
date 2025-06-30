@@ -26,10 +26,6 @@
     overflow: visible; /* Allow dropdowns to overflow */
 }
 
-.page-title {
-    display: none; /* Hide page titles */
-}
-
 /* ================================
    RESPONSIVE HEADER STYLES
    ================================ */
