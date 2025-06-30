@@ -199,7 +199,7 @@
     --z-base: 0; /* Normal document flow */
     --z-header: 10; /* Fixed header/navigation bar */
     --z-sticky: 20; /* Sticky elements */
-    --z-dropdown: 999999; /* Dropdown menus - TEMPORARILY VERY HIGH FOR TESTING */
+    --z-dropdown: 100; /* Dropdown menus */
     --z-overlay: 200; /* Overlays */
     --z-modal: 300; /* Modals */
     --z-tooltip: 400; /* Tooltips */
