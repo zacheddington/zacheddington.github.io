@@ -392,12 +392,6 @@ body.is-admin .nav-dropdown.admin-only:hover .dropdown-content {
         z-index: var(--z-dropdown) !important;
     }
 
-    /* Position admin dropdown from right to prevent off-screen issues */
-    .nav-dropdown:not(:first-of-type) .dropdown-content {
-        left: auto !important;
-        right: 0 !important;
-    }
-
     .dropdown-content a {
         padding: 0.8rem !important;
         min-height: 44px !important;
