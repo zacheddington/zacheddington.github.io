@@ -358,10 +358,11 @@ body.is-admin .nav-dropdown.admin-only:hover .dropdown-content {
     }
 }
 
-/* CRITICAL: Override all conflicting styles at 400px and below to prevent wrapping */
-@media screen and (max-width: 400px) {
+/* CRITICAL: Override all conflicting styles at 450px and below to prevent wrapping */
+@media screen and (max-width: 450px) {
     .top-nav-menu ul {
-        gap: 0.25rem;
+        gap: 0.2rem;
+        flex-wrap: nowrap; /* Prevent wrapping at small screens */
     }
 
     /* Make navigation items smaller, but ensure dropdowns still work */
@@ -416,6 +417,7 @@ body.is-admin .nav-dropdown.admin-only:hover .dropdown-content {
 @media (max-width: 330px) {
     .top-nav-menu ul {
         gap: 0.1rem;
+        flex-wrap: nowrap; /* Ensure no wrapping on very small screens */
     }
 
     /* Only affect non-dropdown elements */
