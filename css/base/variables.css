@@ -193,14 +193,17 @@
     --transition-transform: transform var(--transition-normal) var(--ease-out);
 
     /* ================================
-       Z-INDEX SCALE
+       Z-INDEX SCALE (PROPER HIERARCHY)
        ================================ */
-    --z-dropdown: 600;
-    --z-sticky: 200;
-    --z-fixed: 500;
-    --z-overlay: 998;
-    --z-modal: 1000;
-    --z-tooltip: 1200;
+    --z-background: -1; /* Page backgrounds */
+    --z-base: 0; /* Normal document flow */
+    --z-header: 10; /* Fixed header/navigation bar */
+    --z-sticky: 20; /* Sticky elements */
+    --z-dropdown: 999999; /* Dropdown menus - TEMPORARILY VERY HIGH FOR TESTING */
+    --z-overlay: 200; /* Overlays */
+    --z-modal: 300; /* Modals */
+    --z-tooltip: 400; /* Tooltips */
+    --z-debug: 9999; /* Debug elements */
 }
 
 /* ================================

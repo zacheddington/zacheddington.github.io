@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CSS Inspector at 600px</title>
+        <link rel="stylesheet" href="css/main.css" />
+        <style>
+            body {
+                padding: 20px;
+                font-family: Arial, sans-serif;
+            }
+            .test-area {
+                margin: 20px 0;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 8px;
+            }
+            .debug-panel {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: black;
+                color: white;
+                padding: 1rem;
+                border-radius: 4px;
+                max-width: 400px;
+                font-size: 0.75rem;
+                z-index: 10000;
+            }
+            .css-rules {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+            .rule {
+                margin: 5px 0;
+                padding: 5px;
+                background: #333;
+                border-radius: 3px;
+            }
+            .forced-visible .dropdown-content {
+                display: block !important;
+                background: red !important;
+            }
+        </style>
+    </head>
+    <body class="is-admin">
+        <div class="debug-panel">
+            <div>Screen: <span id="width"></span>px</div>
+            <div>Breakpoint: <span id="breakpoint"></span></div>
+            <button onclick="inspectCSS()">Inspect CSS</button>
+            <button onclick="forceVisible()">Force Visible</button>
+            <div class="css-rules" id="cssRules"></div>
+        </div>
+
+        <div class="test-area">
+            <h2>CSS Inspector Test</h2>
+            <p>
+                Resize to ≤600px and click "Inspect CSS" to see what rules are
+                applied
+            </p>
+
+            <!-- Same navigation structure as main app -->
+            <header class="app-header">
+                <div class="top-nav-menu">
+                    <ul>
+                        <li class="nav-dropdown">
+                            <a href="/patients/" class="dropdown-trigger">
+                                Patients ▼
+                            </a>
+                            <div class="dropdown-content" id="testDropdown">
+                                <a href="#">View Patients</a>
+                                <a href="#">Create Patient</a>
+                            </div>
+                        </li>
+
+                        <li class="nav-dropdown admin-only">
+                            <a href="/admin/" class="dropdown-trigger">
+                                Admin ▼
+                            </a>
+                            <div class="dropdown-content" id="adminDropdown">
+                                <a href="#">Create User</a>
+                                <a href="#">Manage Users</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </header>
+        </div>
+
+        <script>
+            function updateInfo() {
+                const width = window.innerWidth;
+                document.getElementById('width').textContent = width;
+
+                let bp = '> 768px';
+                if (width <= 425) bp = '≤ 425px';
+                else if (width <= 600) bp = '≤ 600px';
+                else if (width <= 768) bp = '≤ 768px';
+
+                document.getElementById('breakpoint').textContent = bp;
+            }
+
+            function inspectCSS() {
+                const dropdown = document.getElementById('testDropdown');
+                const adminDropdown = document.getElementById('adminDropdown');
+                const rulesContainer = document.getElementById('cssRules');
+
+                let html = '<h4>Normal Dropdown:</h4>';
+                if (dropdown) {
+                    const computed = window.getComputedStyle(dropdown);
+                    html += `<div class="rule">display: ${computed.display}</div>`;
+                    html += `<div class="rule">opacity: ${computed.opacity}</div>`;
+                    html += `<div class="rule">visibility: ${computed.visibility}</div>`;
+                    html += `<div class="rule">position: ${computed.position}</div>`;
+                    html += `<div class="rule">z-index: ${computed.zIndex}</div>`;
+                    html += `<div class="rule">top: ${computed.top}</div>`;
+                    html += `<div class="rule">left: ${computed.left}</div>`;
+                }
+
+                html += '<h4>Admin Dropdown:</h4>';
+                if (adminDropdown) {
+                    const computed = window.getComputedStyle(adminDropdown);
+                    html += `<div class="rule">display: ${computed.display}</div>`;
+                    html += `<div class="rule">opacity: ${computed.opacity}</div>`;
+                    html += `<div class="rule">visibility: ${computed.visibility}</div>`;
+                    html += `<div class="rule">position: ${computed.position}</div>`;
+                }
+
+                // Test hover simulation
+                const parentDropdown = dropdown.closest('.nav-dropdown');
+                if (parentDropdown) {
+                    parentDropdown.classList.add('simulated-hover');
+                    const style = document.createElement('style');
+                    style.textContent =
+                        '.nav-dropdown.simulated-hover .dropdown-content { display: block !important; background: yellow !important; }';
+                    document.head.appendChild(style);
+
+                    setTimeout(() => {
+                        const hoverComputed = window.getComputedStyle(dropdown);
+                        html += '<h4>Simulated Hover:</h4>';
+                        html += `<div class="rule">display: ${hoverComputed.display}</div>`;
+                        html += `<div class="rule">background: ${hoverComputed.backgroundColor}</div>`;
+
+                        rulesContainer.innerHTML = html;
+
+                        parentDropdown.classList.remove('simulated-hover');
+                        document.head.removeChild(style);
+                    }, 100);
+                } else {
+                    rulesContainer.innerHTML = html;
+                }
+            }
+
+            function forceVisible() {
+                const dropdowns = document.querySelectorAll('.nav-dropdown');
+                dropdowns.forEach((dd) =>
+                    dd.classList.toggle('forced-visible')
+                );
+            }
+
+            // Auto-inspect when screen size changes
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    updateInfo();
+                    inspectCSS();
+                }, 500);
+            });
+
+            updateInfo();
+            setTimeout(inspectCSS, 1000);
+        </script>
+    </body>
+</html>

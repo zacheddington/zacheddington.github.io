@@ -18,7 +18,7 @@
     align-items: center;
     justify-content: center; /* Center the navigation */
     padding: 0 var(--space-lg);
-    z-index: var(--z-fixed);
+    z-index: var(--z-header);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     min-height: var(--header-height);

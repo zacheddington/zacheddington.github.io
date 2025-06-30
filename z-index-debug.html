@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Z-Index Debug Test</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 20px;
+                font-family: Arial, sans-serif;
+                background: #f0f0f0;
+            }
+
+            /* Debug info panel */
+            .debug-panel {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                background: black;
+                color: white;
+                padding: 1rem;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                z-index: 10000;
+                max-width: 300px;
+            }
+
+            /* Simulate header */
+            .fake-header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 70px;
+                background: linear-gradient(135deg, #009688, #00796b);
+                z-index: 10; /* Same as our new header z-index */
+                display: flex;
+                align-items: center;
+                padding: 0 20px;
+            }
+
+            /* Content area that might be covering dropdown */
+            .content-area {
+                margin-top: 80px;
+                background: white;
+                min-height: 500px;
+                padding: 20px;
+                position: relative;
+                z-index: 5; /* Lower than dropdown */
+            }
+
+            /* Test dropdown */
+            .test-dropdown {
+                position: relative;
+                display: inline-block;
+                margin: 20px;
+            }
+
+            .test-trigger {
+                background: #007bff;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            .test-content {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background: rgba(0, 150, 136, 0.95);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 4px;
+                min-width: 200px;
+                z-index: 100; /* Same as our dropdown z-index */
+                margin-top: 0.5rem;
+                display: none;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            }
+
+            .test-content a {
+                display: block;
+                padding: 10px 15px;
+                color: white;
+                text-decoration: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .test-content a:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            .test-content a:last-child {
+                border-bottom: none;
+            }
+
+            /* Hover behavior */
+            .test-dropdown:hover .test-content {
+                display: block;
+            }
+
+            /* High z-index element that might interfere */
+            .high-z-element {
+                position: fixed;
+                top: 100px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: red;
+                color: white;
+                padding: 10px;
+                z-index: 1000; /* Higher than dropdown */
+                border-radius: 4px;
+            }
+
+            /* Test at small screen */
+            @media (max-width: 600px) {
+                .test-content {
+                    background: yellow !important;
+                    color: black !important;
+                    z-index: 100 !important;
+                }
+
+                .test-content a {
+                    color: black !important;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="debug-panel">
+            <div>Screen: <span id="width"></span>px</div>
+            <div>Header z-index: 10</div>
+            <div>Dropdown z-index: 100</div>
+            <div>High element z-index: 1000</div>
+            <button onclick="toggleHighZ()">Toggle High Z Element</button>
+        </div>
+
+        <div class="fake-header">
+            <div class="test-dropdown">
+                <button class="test-trigger">Test Dropdown ▼</button>
+                <div class="test-content">
+                    <a href="#">Option 1</a>
+                    <a href="#">Option 2</a>
+                    <a href="#">Option 3</a>
+                </div>
+            </div>
+            <span style="color: white; margin-left: 20px"
+                >Header (z-index: 10)</span
+            >
+        </div>
+
+        <div class="high-z-element" id="highZElement">
+            High Z-Index Element (z-index: 1000) - Should cover dropdown
+        </div>
+
+        <div class="content-area">
+            <h1>Content Area (z-index: 5)</h1>
+            <p>This content should be behind the dropdown.</p>
+
+            <div class="test-dropdown">
+                <button class="test-trigger">Another Dropdown ▼</button>
+                <div class="test-content">
+                    <a href="#">Choice A</a>
+                    <a href="#">Choice B</a>
+                    <a href="#">Choice C</a>
+                </div>
+            </div>
+
+            <p>
+                Resize to ≤600px to see if dropdown appears with yellow
+                background.
+            </p>
+        </div>
+
+        <script>
+            function updateWidth() {
+                document.getElementById('width').textContent =
+                    window.innerWidth;
+            }
+
+            function toggleHighZ() {
+                const element = document.getElementById('highZElement');
+                element.style.display =
+                    element.style.display === 'none' ? 'block' : 'none';
+            }
+
+            updateWidth();
+            window.addEventListener('resize', updateWidth);
+        </script>
+    </body>
+</html>
