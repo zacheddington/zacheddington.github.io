@@ -261,3 +261,11 @@
         --padding-card: 12px 10px;
     }
 }
+
+@media screen and (max-width: 320px) {
+    :root {
+        --header-height: 50px;
+        --container-padding: 0.25rem;
+        --padding-card: 8px;
+    }
+}

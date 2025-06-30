@@ -49,3 +49,11 @@
         font-size: var(--font-size-base);
     }
 }
+
+@media screen and (max-width: 320px) {
+    .app-header {
+        padding: 0 8px;
+        min-height: 50px;
+        height: 50px;
+    }
+}
