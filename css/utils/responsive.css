@@ -124,45 +124,6 @@
     .hide-mobile {
         display: none;
     }
-
-    /* Fix dropdown positioning on small screens - DON'T break the positioning */
-    .dropdown-content {
-        right: 0 !important;
-        left: auto !important;
-        min-width: 200px !important;
-        max-width: calc(100vw - 20px) !important;
-        margin-left: 0 !important;
-        margin-right: 10px !important;
-        /* Keep transform for animations but adjust for right alignment */
-        transform: translateY(-10px) translateX(0) !important;
-    }
-
-    /* When dropdown is shown, adjust transform */
-    .nav-dropdown:hover .dropdown-content,
-    .nav-dropdown.mobile-open .dropdown-content {
-        transform: translateY(0) translateX(0) !important;
-    }
-
-    /* Ensure dropdown container maintains relative positioning */
-    .nav-dropdown {
-        position: relative !important;
-    }
-
-    .nav-dropdown .dropdown-content {
-        position: absolute !important;
-        z-index: 9999 !important;
-    }
-
-    /* CRITICAL: Force hover to work on small screens for mouse users */
-    .nav-dropdown:hover .dropdown-content {
-        opacity: 1 !important;
-        visibility: visible !important;
-        display: block !important;
-    }
-
-    .nav-dropdown:hover .dropdown-arrow {
-        transform: rotate(180deg) !important;
-    }
 }
 
 /* ================================

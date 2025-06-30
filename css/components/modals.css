@@ -383,24 +383,6 @@ body.modal-open {
     /* Remove position: fixed to prevent layout issues */
 }
 
-/* Ensure sidebar stays pinned when open - additional reinforcement */
-.side-menu.open,
-.side-menu.active {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    height: 100vh !important;
-    overflow-y: auto !important;
-}
-
-/* Ensure modals appear above sidebar when it's open */
-body.menu-open .modal,
-body.menu-active .modal,
-body.menu-open .modal-overlay,
-body.menu-active .modal-overlay {
-    z-index: var(--z-modal);
-}
-
 /* Reset any transforms that might interfere with modal positioning */
 .modal *,
 .modal-overlay * {

@@ -149,52 +149,6 @@ function createProperNavigation() {
     `;
     headerContainer.insertAdjacentHTML('beforeend', fallbackNav);
     setupTopNavigation(); // Update admin menu visibility for fallback navigation too
-
-    // DEBUG: Check media queries and screen size
-    console.log('🔍 DEBUG: Screen width:', window.innerWidth);
-    console.log('🔍 DEBUG: Screen height:', window.innerHeight);
-    console.log(
-        '🔍 DEBUG: Viewport width:',
-        document.documentElement.clientWidth
-    );
-
-    // Check media query matches
-    const mediaQueries = [
-        {
-            name: 'max-width: 600px',
-            query: window.matchMedia('(max-width: 600px)'),
-        },
-        {
-            name: 'max-width: 601px',
-            query: window.matchMedia('(max-width: 601px)'),
-        },
-        { name: 'hover: hover', query: window.matchMedia('(hover: hover)') },
-        { name: 'pointer: fine', query: window.matchMedia('(pointer: fine)') },
-        {
-            name: 'pointer: coarse',
-            query: window.matchMedia('(pointer: coarse)'),
-        },
-        { name: 'hover: none', query: window.matchMedia('(hover: none)') },
-    ];
-
-    mediaQueries.forEach((mq) => {
-        console.log(`🔍 DEBUG: ${mq.name}:`, mq.query.matches);
-    });
-
-    // Set data attribute for CSS debugging
-    document.body.setAttribute('data-width', window.innerWidth);
-
-    // Add resize listener for continuous debugging
-    window.addEventListener('resize', () => {
-        const width = window.innerWidth;
-        document.body.setAttribute('data-width', width);
-        console.log('🔍 DEBUG: Window resized to:', width);
-
-        // Re-check media queries
-        mediaQueries.forEach((mq) => {
-            console.log(`🔍 DEBUG: ${mq.name}:`, mq.query.matches);
-        });
-    });
 }
 
 // Setup top navigation functionality

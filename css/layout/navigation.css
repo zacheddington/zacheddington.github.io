@@ -524,7 +524,6 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         top: 100% !important;
         right: 0 !important;
         left: auto !important;
-        transform: translateY(0) translateX(0) !important;
         z-index: 10000 !important;
         background: rgba(var(--color-primary-rgb), 0.95) !important;
         border: 2px solid rgba(255, 255, 255, 0.5) !important;

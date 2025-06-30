@@ -385,7 +385,6 @@ button,
 
 /* Enhanced touch targets for mobile */
 @media (hover: none) and (pointer: coarse) {
-    .hamburger-btn,
     .btn-icon,
     button,
     .option-link,
