@@ -242,113 +242,51 @@ function setupPatientNumberValidation() {
 }
 
 /**
- * Setup navigation dropdowns with unified mouse vs touch detection
- * Mouse input: Uses CSS :hover dropdowns at all screen sizes
- * Touch input: Uses JavaScript toggle dropdowns at all screen sizes
+ * Setup navigation dropdowns - SIMPLIFIED VERSION
+ * CSS hover works on all devices and screen sizes
+ * JavaScript only adds touch support without interfering with hover
  */
 function setupMobileDropdowns() {
     const dropdowns = document.querySelectorAll('.nav-dropdown');
 
-    // Track input method - starts as unknown
-    let isUsingTouch = null;
-
     dropdowns.forEach((dropdown, index) => {
         const trigger = dropdown.querySelector('.dropdown-trigger');
-        const content = dropdown.querySelector('.dropdown-content');
 
-        if (!trigger || !content) {
-            return;
-        }
+        if (!trigger) return;
 
         // Remove existing listeners to prevent duplicates
         if (trigger._clickHandler) {
             trigger.removeEventListener('click', trigger._clickHandler);
         }
-        if (trigger._touchHandler) {
-            trigger.removeEventListener('touchstart', trigger._touchHandler);
-        }
-        if (trigger._mouseHandler) {
-            trigger.removeEventListener('mouseenter', trigger._mouseHandler);
-        }
 
-        // Touch start handler - detects touch input
-        const touchStartHandler = function (e) {
-            isUsingTouch = true;
-
-            // For touch, prevent default click behavior and handle with JS
-            e.preventDefault();
-
-            // Close other dropdowns
-            dropdowns.forEach((otherDropdown) => {
-                if (otherDropdown !== dropdown) {
-                    otherDropdown.classList.remove('mobile-open');
-                }
-            });
-
-            // Toggle current dropdown
-            dropdown.classList.toggle('mobile-open');
-        };
-
-        // Click handler - only prevents navigation on touch devices
+        // Simple click handler for touch devices - doesn't interfere with CSS hover
         const clickHandler = function (e) {
-            // If this is a touch device, prevent navigation
-            if (isUsingTouch === true) {
-                e.preventDefault();
-                return;
-            }
+            // Only prevent navigation if this is a dropdown trigger with a dropdown
+            const hasDropdown = dropdown.querySelector('.dropdown-content');
+            if (hasDropdown) {
+                // Don't prevent default - let CSS hover work
+                // Just toggle mobile-open class for touch devices that don't support hover
+                dropdown.classList.toggle('mobile-open');
 
-            // For mouse devices, allow normal navigation
-            // CSS :hover will handle the dropdown display
-        };
-
-        // Mouse move handler - detects mouse input more reliably
-        const mouseMoveHandler = function (e) {
-            // If we detect mouse movement, we're definitely using mouse
-            if (isUsingTouch !== false) {
-                isUsingTouch = false;
-                // Remove any mobile-open classes since we're using CSS hover
-                dropdowns.forEach((dropdown) => {
-                    dropdown.classList.remove('mobile-open');
+                // Close other dropdowns
+                dropdowns.forEach((otherDropdown) => {
+                    if (otherDropdown !== dropdown) {
+                        otherDropdown.classList.remove('mobile-open');
+                    }
                 });
             }
         };
 
-        // Store references for cleanup
+        // Store reference for cleanup
         trigger._clickHandler = clickHandler;
-        trigger._touchHandler = touchStartHandler;
-        trigger._mouseHandler = mouseMoveHandler;
 
-        // Add event listeners
+        // Add click listener - but don't interfere with hover
         trigger.addEventListener('click', clickHandler);
-        trigger.addEventListener('touchstart', touchStartHandler, {
-            passive: false,
-        });
-        trigger.addEventListener('mousemove', mouseMoveHandler);
-
-        // Handle clicks on dropdown content links
-        const dropdownLinks = content.querySelectorAll('a');
-        dropdownLinks.forEach((link) => {
-            link.addEventListener('click', function (e) {
-                // Close dropdown when link is clicked (for touch devices only)
-                if (isUsingTouch === true) {
-                    dropdown.classList.remove('mobile-open');
-                }
-            });
-        });
     });
 
-    // Close dropdowns when clicking outside (for touch devices only)
+    // Close dropdowns when clicking outside (mobile-open class only)
     document.addEventListener('click', function (e) {
-        if (isUsingTouch === true && !e.target.closest('.nav-dropdown')) {
-            dropdowns.forEach((dropdown) => {
-                dropdown.classList.remove('mobile-open');
-            });
-        }
-    });
-
-    // Close dropdowns on escape key (for touch devices only)
-    document.addEventListener('keydown', function (e) {
-        if (isUsingTouch === true && e.key === 'Escape') {
+        if (!e.target.closest('.nav-dropdown')) {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
             });
