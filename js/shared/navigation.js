@@ -249,6 +249,10 @@ function setupPatientNumberValidation() {
 function setupMobileDropdowns() {
     const dropdowns = document.querySelectorAll('.nav-dropdown');
 
+    // Detect if device supports hover (desktop) vs touch-only (mobile)
+    const isTouchDevice =
+        'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
     dropdowns.forEach((dropdown, index) => {
         const trigger = dropdown.querySelector('.dropdown-trigger');
 
@@ -259,14 +263,23 @@ function setupMobileDropdowns() {
             trigger.removeEventListener('click', trigger._clickHandler);
         }
 
-        // Simple click handler for touch devices - doesn't interfere with CSS hover
+        // Enhanced click handler for touch devices
         const clickHandler = function (e) {
-            // Only prevent navigation if this is a dropdown trigger with a dropdown
+            // Only handle dropdown triggers with dropdown content
             const hasDropdown = dropdown.querySelector('.dropdown-content');
-            if (hasDropdown) {
-                // Don't prevent default - let CSS hover work
-                // Just toggle mobile-open class for touch devices that don't support hover
-                dropdown.classList.toggle('mobile-open');
+            if (!hasDropdown) return;
+
+            // Only apply special touch behavior on touch devices
+            if (!isTouchDevice) return;
+
+            const isCurrentlyOpen = dropdown.classList.contains('mobile-open');
+
+            // If dropdown is closed, open it and prevent navigation
+            if (!isCurrentlyOpen) {
+                e.preventDefault(); // Prevent navigation on first touch
+                e.stopPropagation();
+
+                dropdown.classList.add('mobile-open');
 
                 // Close other dropdowns
                 dropdowns.forEach((otherDropdown) => {
@@ -274,6 +287,11 @@ function setupMobileDropdowns() {
                         otherDropdown.classList.remove('mobile-open');
                     }
                 });
+            } else {
+                // If dropdown is already open, allow navigation
+                // This happens on second touch of the same trigger
+                dropdown.classList.remove('mobile-open');
+                // Don't prevent default - allow navigation
             }
         };
 
@@ -284,8 +302,18 @@ function setupMobileDropdowns() {
         trigger.addEventListener('click', clickHandler);
     });
 
-    // Close dropdowns when clicking outside (mobile-open class only)
+    // Close dropdowns when clicking outside, but allow dropdown item clicks
     document.addEventListener('click', function (e) {
+        // Don't close if clicking on a dropdown item
+        if (e.target.closest('.dropdown-content a')) {
+            // Allow dropdown item navigation, close dropdown after click
+            dropdowns.forEach((dropdown) => {
+                dropdown.classList.remove('mobile-open');
+            });
+            return;
+        }
+
+        // Close if clicking outside any dropdown
         if (!e.target.closest('.nav-dropdown')) {
             dropdowns.forEach((dropdown) => {
                 dropdown.classList.remove('mobile-open');
