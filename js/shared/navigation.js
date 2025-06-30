@@ -157,25 +157,40 @@ function createProperNavigation() {
         );
         const width = window.innerWidth;
 
-        console.log(`🔍 ULTIMATE DEBUG at ${width}px:`, {
-            dropdownCount: dropdowns.length,
-            dropdownsVisible: Array.from(dropdowns).map((dropdown, i) => {
-                const styles = window.getComputedStyle(dropdown);
-                return {
-                    index: i,
-                    display: styles.display,
-                    opacity: styles.opacity,
-                    visibility: styles.visibility,
-                    position: styles.position,
-                    backgroundColor: styles.backgroundColor,
-                    border: styles.border,
-                    zIndex: styles.zIndex,
-                    transform: styles.transform,
-                    top: styles.top,
-                    right: styles.right,
-                    left: styles.left,
-                };
-            }),
+        console.log(
+            `🔍 ULTIMATE DEBUG at ${width}px - Found ${dropdowns.length} dropdowns:`
+        );
+
+        dropdowns.forEach((dropdown, i) => {
+            const styles = window.getComputedStyle(dropdown);
+            console.log(`  Dropdown ${i}:`, {
+                display: styles.display,
+                opacity: styles.opacity,
+                visibility: styles.visibility,
+                backgroundColor: styles.backgroundColor,
+                border: styles.border,
+                position: styles.position,
+                zIndex: styles.zIndex,
+                top: styles.top,
+                right: styles.right,
+                transform: styles.transform,
+            });
+
+            // Check if element is actually visible in viewport
+            const rect = dropdown.getBoundingClientRect();
+            console.log(`  Dropdown ${i} position:`, {
+                top: rect.top,
+                right: rect.right,
+                bottom: rect.bottom,
+                left: rect.left,
+                width: rect.width,
+                height: rect.height,
+                inViewport:
+                    rect.top >= 0 &&
+                    rect.left >= 0 &&
+                    rect.bottom <= window.innerHeight &&
+                    rect.right <= window.innerWidth,
+            });
         });
     }, 2000);
 }
