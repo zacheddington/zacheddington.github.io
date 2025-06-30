@@ -325,8 +325,8 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
 
 /* Responsive Design - Small screen navigation adjustments */
 @media screen and (max-width: 600px) {
-    /* Make navigation items smaller */
-    .top-nav-menu a {
+    /* Make navigation items smaller, but ensure dropdowns still work */
+    .top-nav-menu a:not(.dropdown-trigger) {
         font-size: 0.7rem;
         padding: 0.25rem 0.3rem;
     }
@@ -358,6 +358,29 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
         -webkit-tap-highlight-color: transparent;
         pointer-events: auto !important;
         touch-action: manipulation !important;
+    }
+
+    /* Dropdown positioning for small screens */
+    .dropdown-content {
+        min-width: 180px;
+        max-width: calc(100vw - 40px);
+        font-size: 0.8rem;
+    }
+
+    /* Position admin dropdown from right to prevent off-screen issues */
+    .nav-dropdown:not(:first-of-type) .dropdown-content {
+        left: auto;
+        right: 0;
+    }
+
+    .dropdown-content a {
+        padding: 0.8rem;
+        min-height: 44px;
+    }
+
+    /* ENSURE HOVER STILL WORKS AT SMALL SCREENS */
+    .nav-dropdown:hover .dropdown-content {
+        display: block !important;
     }
 }
 
@@ -416,56 +439,11 @@ body.is-admin .nav-dropdown.mobile-open.admin-only {
     }
 }
 
-/* Touch device behavior - only disable hover on primary touch devices */
-@media (hover: none) and (pointer: coarse) {
-    /* On primary touch devices (phones/tablets), disable hover and rely on mobile-open class */
-    .nav-dropdown:hover .dropdown-content {
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-    }
-
-    .nav-dropdown:hover .dropdown-arrow {
-        transform: rotate(0deg);
-    }
+/* UNIVERSAL HOVER BEHAVIOR - Works on all devices */
+.nav-dropdown:hover .dropdown-content {
+    display: block !important;
 }
 
-/* CRITICAL: Ensure CSS hover always works at ALL screen sizes for mouse users */
-/* This overrides any media query that might disable hover */
-@media (hover: hover) and (pointer: fine) {
-    .nav-dropdown:hover .dropdown-content {
-        opacity: 1 !important;
-        visibility: visible !important;
-        transform: translateY(0) !important;
-        display: block !important;
-    }
-
-    .nav-dropdown:hover .dropdown-arrow {
-        transform: rotate(180deg) !important;
-    }
-}
-
-/* RESPONSIVE DROPDOWN POSITIONING - WORKING VERSION */
-@media (max-width: 600px) {
-    .dropdown-content {
-        min-width: 180px;
-        max-width: calc(100vw - 40px);
-        font-size: 0.8rem;
-    }
-
-    /* Position admin dropdown from right to prevent off-screen issues */
-    .nav-dropdown:not(:first-of-type) .dropdown-content {
-        left: auto;
-        right: 0;
-    }
-
-    .dropdown-content a {
-        padding: 0.8rem;
-        min-height: 44px;
-    }
-
-    /* ENSURE HOVER STILL WORKS AT SMALL SCREENS */
-    .nav-dropdown:hover .dropdown-content {
-        display: block;
-    }
+.nav-dropdown:hover .dropdown-arrow {
+    transform: rotate(180deg) !important;
 }
