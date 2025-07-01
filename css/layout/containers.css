@@ -55,8 +55,7 @@ body {
     .admin-container,
     .welcome-container,
     .profile-container,
-    .setup-container,
-    .eeg-container {
+    .setup-container {
         margin: 2rem auto 0; /* Standard 2rem top margin on all devices */
     }
 }
@@ -85,13 +84,12 @@ body.login-page {
     box-sizing: border-box;
 }
 
-/* Admin container styles - consistent across admin, patients, and welcome pages */
-/* Common container styles for all page types */
-.admin-container,
-.welcome-container,
-.profile-container,
-.setup-container,
-.eeg-container {
+/* ================================
+   UNIFIED CONTAINER SYSTEM
+   ================================ */
+
+/* Single unified container for all content pages */
+.content-container {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -100,9 +98,17 @@ body.login-page {
     padding: 0 1rem;
 }
 
-/* Welcome page container already inherits the same margin */
-.welcome-page .admin-container {
+/* Legacy container names for backward compatibility */
+.admin-container,
+.welcome-container,
+.profile-container,
+.setup-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1200px;
     margin: 2rem auto 0;
+    padding: 0 1rem;
 }
 
 /* ================================
@@ -160,8 +166,7 @@ body.login-page {
     .welcome-container,
     .admin-container,
     .profile-container,
-    .setup-container,
-    .eeg-container {
+    .setup-container {
         margin-top: 2rem !important; /* Consistent 2rem spacing */
         transform: translateY(0); /* No transform */
     }
@@ -175,8 +180,7 @@ body.login-page {
     .welcome-container,
     .admin-container,
     .profile-container,
-    .setup-container,
-    .eeg-container {
+    .setup-container {
         margin-top: 2rem !important; /* Consistent 2rem spacing */
         transform: translateY(0px);
     }
@@ -190,8 +194,7 @@ body.login-page {
     .admin-container,
     .profile-container,
     .welcome-container,
-    .setup-container,
-    .eeg-container {
+    .setup-container {
         margin-top: 2rem !important; /* Consistent 2rem spacing */
         transform: translateY(0);
     }
@@ -261,156 +264,30 @@ body.login-page {
 }
 
 /* ================================
-   RESPONSIVE BREAKPOINTS
+   SIMPLIFIED RESPONSIVE CONTAINERS
    ================================ */
 
-/* ULTRAWIDE MONITORS (1400px and up) */
-@media screen and (min-width: 1400px) {
-    .welcome-container {
-        margin-top: 2rem; /* Consistent 2rem spacing */
-    }
-
-    .admin-container,
-    .profile-container {
-        max-width: 1200px;
-        padding: 3rem;
-        margin-top: 2rem; /* Consistent 2rem spacing */
-    }
+/* All containers get the same responsive behavior */
+.content-container,
+.admin-container,
+.welcome-container,
+.profile-container,
+.setup-container {
+    margin: 2rem auto 0; /* Consistent spacing at all screen sizes */
 }
 
-/* LARGE DESKTOP (1200px - 1399px) */
-@media screen and (min-width: 1200px) and (max-width: 1399px) {
-    .welcome-container {
-        margin-top: 2rem; /* Consistent 2rem spacing */
-    }
-
-    .admin-container,
-    .profile-container {
-        max-width: 1000px;
-        padding: 2.5rem;
-        margin-top: 2rem; /* Consistent 2rem spacing */
-    }
-}
-
-/* STANDARD DESKTOP (992px - 1199px) */
-@media screen and (min-width: 992px) and (max-width: 1199px) {
-    .welcome-container {
-        margin-top: 2rem; /* Consistent 2rem spacing */
-    }
-
-    .admin-container,
-    .profile-container {
-        max-width: 900px;
-        margin-top: 2rem; /* Consistent 2rem spacing */
-    }
-}
-
-/* TABLET LANDSCAPE (768px - 991px) */
-@media screen and (min-width: 768px) and (max-width: 991px) {
-    .welcome-container {
-        margin-top: 2rem; /* Consistent 2rem spacing */
-        padding: 1.5rem;
-    }
-
-    .admin-container,
-    .profile-container {
-        max-width: 700px;
-        padding: 1.5rem;
-        margin-top: 2rem; /* Consistent 2rem spacing */
-    }
-}
-
-/* TABLET PORTRAIT (576px - 767px) */
-@media screen and (min-width: 576px) and (max-width: 767px) {
-    .welcome-container {
-        margin-top: 2rem; /* Consistent 2rem spacing */
-        padding: 1rem;
-    }
-
-    .admin-container,
-    .profile-container {
-        max-width: 550px;
-        padding: 1rem;
-        margin-top: 2rem; /* Consistent 2rem spacing */
-    }
-}
-
-/* MOBILE LANDSCAPE (480px - 575px) */
-@media screen and (min-width: 480px) and (max-width: 575px) {
-    .welcome-container {
-        margin-top: 2rem; /* Consistent 2rem spacing */
-        padding: 0.5rem;
-    }
-    .admin-container,
-    .profile-container {
-        max-width: 450px;
-        padding: 0.75rem;
-        margin-top: 2rem; /* Consistent 2rem spacing */
-    }
-}
-
-/* MOBILE PORTRAIT (320px - 479px) */
-@media screen and (max-width: 479px) {
-    .welcome-container {
-        margin-top: 2rem; /* Consistent 2rem spacing */
-        padding: 0.5rem;
-    }
-
-    .admin-container,
-    .profile-container {
-        max-width: 400px;
-        width: 100%;
-        padding: 20px 24px;
-        margin-top: 2rem; /* Consistent 2rem spacing */
-    }
-}
-
-/* VERY SMALL MOBILE (320px and below) */
-@media screen and (max-width: 320px) {
-    .welcome-container {
-        margin-top: 2rem; /* Consistent 2rem spacing */
-        padding: 0.25rem;
-    }
-
-    .admin-container,
-    .profile-container {
-        max-width: 380px;
-        padding: 0.5rem;
-        margin-top: 2rem; /* Consistent 2rem spacing */
-    }
-}
-
-/* Landscape orientation adjustments for mobile */
-@media screen and (max-height: 500px) and (orientation: landscape) {
-    .welcome-container,
-    .admin-container,
-    .profile-container,
-    .setup-container,
-    .eeg-container {
-        margin-top: 2rem; /* Consistent 2rem spacing */
-    }
-}
-
-/* Fix for very narrow screens */
-@media screen and (max-width: 320px) {
-    .grid-2,
-    .grid-3,
-    .grid-4 {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Additional mobile padding fixes for better UX */
+/* Mobile adjustments */
 @media screen and (max-width: 768px) {
     body {
         padding-top: var(--header-height);
     }
+    
+    .content-container,
     .admin-container,
-    .profile-container,
     .welcome-container,
-    .setup-container,
-    .eeg-container {
-        margin: 2rem auto 0.5rem; /* Consistent 2rem top margin */
+    .profile-container,
+    .setup-container {
+        margin: 2rem auto 0.5rem;
         padding: 0.75rem;
     }
 }

@@ -72,7 +72,9 @@
    ================================ */
 
 .admin-choice {
-    /* Removed card styling - no background, border, shadow, or padding */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
     margin-bottom: var(--space-xl);
 }
 

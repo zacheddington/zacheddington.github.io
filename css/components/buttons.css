@@ -432,24 +432,5 @@ button,
 }
 
 /* ================================
-   ADMIN CHOICE CONTAINERS
-   ================================ */
-
-.admin-choice {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin-bottom: var(--space-xl);
-}
-
-.choice-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xl);
-    margin-top: 1.5rem;
-    justify-content: center;
-}
-
-/* ================================
    CHOICE BUTTONS
    ================================ */

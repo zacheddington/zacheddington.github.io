@@ -165,19 +165,8 @@ textarea:focus {
 }
 
 /* ================================
-   EEG FORM STYLES
+   RESPONSIVE FORM BEHAVIOR
    ================================ */
-
-.eeg-form {
-    background: var(--color-white);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    padding: 32px 40px;
-    max-width: 700px;
-    width: 100%;
-    margin: 0 auto; /* No top margin - container handles spacing */
-    box-sizing: border-box;
-}
 
 .patient-number-group {
     min-width: 140px;
@@ -599,11 +588,6 @@ textarea:disabled:focus {
 
 /* TABLET LANDSCAPE (768px - 991px) */
 @media screen and (min-width: 768px) and (max-width: 991px) {
-    .eeg-form {
-        padding: 24px 20px;
-        max-width: 600px;
-    }
-
     .form-row {
         flex-direction: column;
         gap: 12px;
@@ -634,11 +618,6 @@ textarea:disabled:focus {
 
 /* TABLET PORTRAIT (576px - 767px) */
 @media screen and (min-width: 576px) and (max-width: 767px) {
-    .eeg-form {
-        padding: 20px 16px;
-        max-width: 500px;
-    }
-
     .admin-form .form-row {
         flex-direction: column;
     }
@@ -658,19 +637,11 @@ textarea:disabled:focus {
 
 /* MOBILE LANDSCAPE (480px - 575px) */
 @media screen and (min-width: 480px) and (max-width: 575px) {
-    .eeg-form {
-        padding: 16px 12px;
-        max-width: 420px;
-    }
+    /* Mobile landscape form adjustments */
 }
 
 /* MOBILE PORTRAIT (320px - 479px) */
 @media screen and (max-width: 479px) {
-    .eeg-form {
-        padding: 12px 8px;
-        max-width: 350px;
-    }
-
     .form-row {
         flex-direction: column;
     }
