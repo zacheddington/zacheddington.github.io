@@ -61,12 +61,8 @@ body {
     }
 }
 
-/* Welcome page specific body layout - same as content pages */
-body.welcome-page {
-    justify-content: flex-start;
-}
-
-/* Content pages that should flow from top, not center vertically */
+/* All content pages should start from top, not center vertically */
+body.welcome-page,
 body.content-page {
     justify-content: flex-start;
 }
