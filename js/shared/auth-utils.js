@@ -342,8 +342,6 @@ function setupSecureHistoryManagement() {
             '/profile/',
             '/admin/',
             '/patients/',
-            '/view_eeg/',
-            '/enter_eeg/',
             '/2fa-setup/',
             '/force-password-change/',
         ];
@@ -367,8 +365,6 @@ function secureHistoryReplacement() {
         '/admin/',
         '/patients/',
         '/profile/',
-        '/enter_eeg/',
-        '/view_eeg/',
     ];
 
     if (authenticatedPages.some((page) => currentPath.includes(page))) {

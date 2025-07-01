@@ -24,16 +24,6 @@ body.login-body {
         );
 }
 
-/* Enhanced login container for better visual hierarchy */
-.welcome-container {
-    min-height: 100vh;
-    display: flex;
-    align-items: flex-start; /* Changed from center to flex-start */
-    justify-content: center;
-    padding: var(--space-lg);
-    padding-top: 8vh; /* Reduced from 15vh to 8vh for better positioning on large screens */
-}
-
 /* Additional styling for login-container (used in force-password-change) */
 .login-container {
     min-height: 100vh;
@@ -248,57 +238,15 @@ body.login-body {
    ================================ */
 
 /* LARGE DESKTOP SCREENS (1400px and up) */
-@media screen and (min-width: 1400px) {
-    .welcome-container {
-        padding-top: 5vh; /* Even less top padding on large desktop screens */
-    }
-}
 
 /* STANDARD DESKTOP SCREENS (992px - 1399px) */
-@media screen and (min-width: 992px) and (max-width: 1399px) {
-    .welcome-container {
-        padding-top: 6vh; /* Slightly less top padding on standard desktop */
-    }
-}
 
 /* TABLET LANDSCAPE AND SMALLER */
-@media screen and (max-width: 991px) {
-    .welcome-container {
-        padding-top: 12vh; /* Slightly less top padding on tablets */
-    }
-}
 
 /* TABLET PORTRAIT */
-@media screen and (max-width: 767px) {
-    .welcome-container {
-        padding-top: 8vh; /* Even less top padding on smaller tablets */
-        padding: var(--space-md);
-        padding-top: 8vh;
-    }
-}
 
 /* MOBILE LANDSCAPE */
-@media screen and (max-width: 575px) {
-    .welcome-container {
-        padding-top: 6vh; /* Minimal top padding on mobile */
-        padding: var(--space-sm);
-        padding-top: 6vh;
-    }
-}
 
 /* MOBILE PORTRAIT */
-@media screen and (max-width: 479px) {
-    .welcome-container {
-        padding-top: 4vh; /* Very minimal top padding on small mobile */
-        padding: var(--space-xs);
-        padding-top: 4vh;
-    }
-}
 
 /* LANDSCAPE ORIENTATION ADJUSTMENTS */
-@media screen and (max-height: 500px) and (orientation: landscape) {
-    .welcome-container {
-        padding-top: 2vh; /* Very little padding on short landscape screens */
-        align-items: flex-start;
-    }
-}

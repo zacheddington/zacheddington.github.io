@@ -493,16 +493,6 @@ textarea:disabled:focus {
    2FA SPECIFIC STYLES
    ================================ */
 
-/* 2FA Setup Container */
-.setup-container {
-    max-width: 600px;
-    margin: 2rem auto; /* Consistent 2rem top margin */
-    padding: var(--space-xl);
-    background: var(--color-white);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-}
-
 /* 2FA Step Styles */
 .step {
     margin: var(--space-xl) 0;

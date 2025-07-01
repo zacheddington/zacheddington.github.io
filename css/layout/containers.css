@@ -52,10 +52,7 @@ body {
         justify-content: flex-start !important;
         align-items: center !important;
     } /* Keep consistent spacing for all containers on mobile */
-    .admin-container,
-    .welcome-container,
-    .profile-container,
-    .setup-container {
+    .content-container {
         margin: 2rem auto 0; /* Standard 2rem top margin on all devices */
     }
 }
@@ -95,19 +92,6 @@ body.login-page {
     width: 100%;
     max-width: 1200px;
     margin: 2rem auto 0; /* Consistent top margin of 2rem (32px) */
-    padding: 0 1rem;
-}
-
-/* Legacy container names for backward compatibility */
-.admin-container,
-.welcome-container,
-.profile-container,
-.setup-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 1200px;
-    margin: 2rem auto 0;
     padding: 0 1rem;
 }
 
@@ -163,10 +147,7 @@ body.login-page {
         align-items: center !important; /* Keep horizontal centering */
         padding-top: calc(var(--header-height) - 15px) !important;
     } /* All containers get consistent top positioning */
-    .welcome-container,
-    .admin-container,
-    .profile-container,
-    .setup-container {
+    .content-container {
         margin-top: 2rem !important; /* Consistent 2rem spacing */
         transform: translateY(0); /* No transform */
     }
@@ -177,10 +158,7 @@ body.login-page {
     body:not(.login-page) {
         padding-top: calc(var(--header-height) - 30px) !important;
     } /* All containers get consistent top positioning */
-    .welcome-container,
-    .admin-container,
-    .profile-container,
-    .setup-container {
+    .content-container {
         margin-top: 2rem !important; /* Consistent 2rem spacing */
         transform: translateY(0px);
     }
@@ -191,20 +169,11 @@ body.login-page {
     body:not(.login-page) {
         padding-top: calc(var(--header-height) - 45px) !important;
     } /* All containers get identical positioning for consistency */
-    .admin-container,
-    .profile-container,
-    .welcome-container,
-    .setup-container {
+    .content-container {
         margin-top: 2rem !important; /* Consistent 2rem spacing */
         transform: translateY(0);
     }
 }
-
-/* Main admin container - removed duplicate definition */
-/* Definition moved to common container styles section */
-
-/* Profile container - removed duplicate definition */
-/* Definition moved to common container styles section */
 
 /* ================================
    GRID SYSTEM
@@ -267,12 +236,8 @@ body.login-page {
    SIMPLIFIED RESPONSIVE CONTAINERS
    ================================ */
 
-/* All containers get the same responsive behavior */
-.content-container,
-.admin-container,
-.welcome-container,
-.profile-container,
-.setup-container {
+/* Content container gets consistent responsive behavior */
+.content-container {
     margin: 2rem auto 0; /* Consistent spacing at all screen sizes */
 }
 
@@ -281,12 +246,8 @@ body.login-page {
     body {
         padding-top: var(--header-height);
     }
-    
-    .content-container,
-    .admin-container,
-    .welcome-container,
-    .profile-container,
-    .setup-container {
+
+    .content-container {
         margin: 2rem auto 0.5rem;
         padding: 0.75rem;
     }

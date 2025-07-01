@@ -181,7 +181,7 @@ const modalManager = {
             modalElement.remove();
             this.isShowingModal = false;
 
-            // Reset all input modal states for EEG form
+            // Reset all input modal states
             const inputs = [
                 'patientNumber',
                 'firstName',
