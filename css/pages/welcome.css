@@ -22,61 +22,9 @@
     margin-top: 1rem; /* Match spacing with admin pages */
 }
 
-/* Consistent admin choice box styles */
-.admin-choice {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin-bottom: var(--space-xl);
-}
-
-.choice-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xl);
-    margin-top: 1.5rem;
-}
-
-/* Adjust choice buttons layout for the welcome page (3-column) */
-@media screen and (min-width: 992px) {
-    #welcomeChoice .choice-buttons {
-        flex-wrap: nowrap;
-        width: 100%;
-        justify-content: center;
-    }
-
-    .welcome-page .choice-btn {
-        min-width: 260px;
-        width: calc(33.33% - 1.5rem);
-    }
-}
-
-/* Medium screens (2 buttons per row) */
-@media screen and (min-width: 768px) and (max-width: 991px) {
-    #welcomeChoice .choice-buttons {
-        max-width: 650px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .welcome-page .choice-btn {
-        width: calc(50% - 1rem);
-        min-width: 220px;
-    }
-}
-
 /* Mobile screens (vertical stack) */
 @media screen and (max-width: 480px) {
     .welcome-page .admin-container {
         margin-top: 2rem !important; /* Consistent 2rem top margin on all screen sizes */
-    }
-}
-
-/* iPhone Pro Max specific fixes */
-@media screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3),
-    screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3),
-    screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) {
-    .welcome-page .admin-container {
-        margin-top: 2rem !important; /* Maintain consistent 2rem spacing */
     }
 }

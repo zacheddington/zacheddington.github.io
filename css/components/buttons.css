@@ -80,8 +80,15 @@ button,
 }
 
 /* ================================
-   CHOICE BUTTONS
+   CHOICE CONTAINERS & BUTTONS
    ================================ */
+
+.admin-choice {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: var(--space-xl);
+}
 
 .choice-buttons {
     display: flex;
@@ -260,47 +267,64 @@ button,
 
     .choice-btn {
         min-width: 320px;
-        width: 320px;
+        width: calc(33.33% - 2rem);
+        max-width: 380px;
         padding: 2.5rem;
     }
 }
 
-/* LARGE DESKTOP (1200px - 1399px) */
-@media screen and (min-width: 1200px) and (max-width: 1399px) {
+/* LARGE DESKTOP (1200px and up) */
+@media screen and (min-width: 1200px) {
     .choice-buttons {
         gap: 2.5rem;
     }
 
     .choice-btn {
         min-width: 300px;
-        width: 300px;
+        width: calc(33.33% - 1.75rem);
+        max-width: 340px;
     }
 }
 
-/* STANDARD DESKTOP (992px - 1199px) */
+/* STANDARD DESKTOP (992px - 1199px) - UNIFIED 3-COLUMN LAYOUT */
 @media screen and (min-width: 992px) and (max-width: 1199px) {
     .choice-buttons {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
         gap: 2rem;
     }
 
     .choice-btn {
         min-width: 280px;
-        width: 280px;
+        width: calc(33.33% - 1.5rem);
+        max-width: 320px;
     }
 }
 
-/* TABLET LANDSCAPE (768px - 991px) */
+/* TABLET LANDSCAPE (768px - 991px) - UNIFIED RESPONSIVE BEHAVIOR */
 @media screen and (min-width: 768px) and (max-width: 991px) {
     .choice-buttons {
-        flex-direction: column;
-        align-items: center;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-start;
         gap: 1.5rem;
+        max-width: 650px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .choice-btn {
-        min-width: 300px;
-        width: 100%;
-        max-width: 400px;
+        width: calc(50% - 0.75rem);
+        min-width: 280px;
+        max-width: 320px;
+    }
+
+    /* For pages with 3 cards, the third card will wrap to its own row and center */
+    .choice-buttons .choice-btn:nth-child(3):last-child {
+        margin-left: auto;
+        margin-right: auto;
     }
 }
 
@@ -406,3 +430,26 @@ button,
         width: 100%;
     }
 }
+
+/* ================================
+   ADMIN CHOICE CONTAINERS
+   ================================ */
+
+.admin-choice {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: var(--space-xl);
+}
+
+.choice-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xl);
+    margin-top: 1.5rem;
+    justify-content: center;
+}
+
+/* ================================
+   CHOICE BUTTONS
+   ================================ */
