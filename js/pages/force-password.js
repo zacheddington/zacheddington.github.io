@@ -330,34 +330,22 @@ async function changeForcePassword() {
         if (userCheckResponse.ok) {
             const userProfile = await userCheckResponse.json();
             if (!userProfile.data || !userProfile.data.passwordChangeRequired) {
-                // Password was already changed on another tab/device
+                // Password was already changed on another tab/device or by another user
+                // For security, we need to log out the current session
                 window.modalManager.showModal(
-                    'info',
-                    'Your password has already been changed on another tab or device. You will now be redirected to your dashboard.',
+                    'warning',
+                    'Your password has been changed on another device or session. For security, you will be logged out and need to sign in again with your new password.',
                     false,
                     { redirect: true }
                 );
 
-                // Update local storage to reflect the change
-                const userStr = localStorage.getItem('user');
-                if (userStr) {
-                    try {
-                        const user = JSON.parse(userStr);
-                        user.passwordChangeRequired = false;
-                        localStorage.setItem('user', JSON.stringify(user));
-                    } catch (error) {
-                        console.error('Error updating local user data');
-                    }
-                }
-
-                // Redirect after delay
+                // Log out after delay for security
                 setTimeout(() => {
-                    if (window.authUtils.isAdmin()) {
-                        window.location.href = '/admin/';
-                    } else {
-                        window.location.href = '/welcome/';
-                    }
-                }, 2000);
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    sessionStorage.clear();
+                    window.location.href = '/';
+                }, 3000);
                 return;
             }
         }
@@ -432,19 +420,47 @@ async function changeForcePassword() {
                     // Server error - likely means password was already changed
                     if (
                         result.error &&
-                        result.error.includes('currentPassword')
+                        (result.error.includes('currentPassword') ||
+                            result.error.includes('password') ||
+                            result.error.includes('already'))
                     ) {
-                        errorMessage =
-                            'Your password has already been changed on another tab or device. Please refresh this page or navigate to your dashboard.';
+                        // Password was likely changed elsewhere - log out for security
+                        window.modalManager.showModal(
+                            'warning',
+                            'Your password appears to have been changed elsewhere. For security, you will be logged out and need to sign in again.',
+                            false,
+                            { redirect: true }
+                        );
+
+                        setTimeout(() => {
+                            localStorage.removeItem('token');
+                            localStorage.removeItem('user');
+                            sessionStorage.clear();
+                            window.location.href = '/';
+                        }, 3000);
+                        return;
                     } else {
                         errorMessage =
                             result.error ||
                             result.message ||
-                            'Server error occurred. Your password may have already been changed on another tab or device.';
+                            'Server error occurred. Please try again.';
                     }
                 } else if (response.status === 409) {
-                    errorMessage =
-                        'Password change conflict. Your password may have already been changed on another tab or device.';
+                    // Conflict - password was changed elsewhere
+                    window.modalManager.showModal(
+                        'warning',
+                        'Password change conflict. Your password was changed on another device. You will be logged out for security.',
+                        false,
+                        { redirect: true }
+                    );
+
+                    setTimeout(() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        sessionStorage.clear();
+                        window.location.href = '/';
+                    }, 3000);
+                    return;
                 } else {
                     errorMessage =
                         result.error ||
@@ -454,11 +470,37 @@ async function changeForcePassword() {
             } catch (parseError) {
                 // If we can't parse the response, provide status-based messages
                 if (response.status === 500) {
-                    errorMessage =
-                        'Your password may have already been changed on another tab or device. Please refresh this page.';
+                    // Likely password change conflict - log out for security
+                    window.modalManager.showModal(
+                        'warning',
+                        'Your password may have been changed elsewhere. For security, you will be logged out.',
+                        false,
+                        { redirect: true }
+                    );
+
+                    setTimeout(() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        sessionStorage.clear();
+                        window.location.href = '/';
+                    }, 3000);
+                    return;
                 } else if (response.status === 409) {
-                    errorMessage =
-                        'Password change conflict. Your password may have already been changed elsewhere.';
+                    // Conflict - log out for security
+                    window.modalManager.showModal(
+                        'warning',
+                        'Password change conflict. You will be logged out for security.',
+                        false,
+                        { redirect: true }
+                    );
+
+                    setTimeout(() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        sessionStorage.clear();
+                        window.location.href = '/';
+                    }, 3000);
+                    return;
                 } else {
                     errorMessage = `Server error (${response.status}). Please try again.`;
                 }
