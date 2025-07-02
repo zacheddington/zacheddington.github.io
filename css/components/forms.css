@@ -9,6 +9,7 @@
     margin-bottom: var(--space-md);
     flex: 1 1 0; /* Unified: grow equally, shrink, no base width */
     min-width: 140px; /* Unified minimum width before wrapping */
+    align-self: flex-start; /* Prevents form groups from stretching when others change height */
 }
 
 .form-group label {
@@ -30,7 +31,7 @@
     gap: var(--space-md);
     flex-wrap: wrap;
     justify-content: flex-start; /* Left-align wrapped items */
-    align-items: flex-end; /* Bottom-align for better visual consistency */
+    align-items: flex-start; /* Top-align to prevent shifting when validation messages appear */
     margin-bottom: var(--space-md);
     width: 100%;
 }
@@ -44,7 +45,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start; /* Left-align wrapped items */
-    align-items: flex-end; /* Bottom-align for better visual consistency */
+    align-items: flex-start; /* Top-align to prevent shifting when validation messages appear */
     gap: var(--space-md);
     width: 100%;
 }
@@ -619,3 +620,41 @@ input.password-mismatch {
 /* ================================
    ADMIN FORM STYLES
    ================================ */
+
+/* ================================
+   DYNAMIC CONTENT LAYOUT STABILITY
+   ================================ */
+
+/* Ensure form groups maintain consistent alignment when validation messages appear */
+.form-group {
+    /* ...existing code... */
+    align-self: flex-start; /* Prevents form groups from stretching when others change height */
+}
+
+/* Consistent styling for all dynamic validation messages */
+.form-group .error-message,
+.form-group .success-message,
+.form-group .checking-message {
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.4;
+    display: block;
+    /* Prevent layout shift by maintaining consistent vertical space */
+    min-height: 1.2em;
+}
+
+.form-group .checking-message {
+    color: #1976d2;
+    background-color: #e3f2fd;
+    border: var(--border-thin) solid #bbdefb;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+}
+
+/* Ensure input labels stay aligned to the top of their containers */
+.form-row .form-group label {
+    align-self: flex-start;
+    position: relative;
+    top: 0;
+}
