@@ -510,6 +510,21 @@ async function createPatient() {
             throw new Error(`Connection failed: ${connectivity.error}`);
         }
 
+        // Validate date of birth first (before collecting form data)
+        const dobInput = document.getElementById('patientDateOfBirth');
+        const dobValidation = window.dateUtils.validateDateInput(
+            dobInput.value
+        );
+        if (!dobValidation.valid) {
+            // Set custom validity message for browser tooltip
+            dobInput.setCustomValidity(dobValidation.error);
+            dobInput.reportValidity(); // Show the tooltip
+            return;
+        } else {
+            // Clear any previous custom validity
+            dobInput.setCustomValidity('');
+        }
+
         // Get form data
         const formData = {
             firstName: document.getElementById('patientFirstName').value.trim(),
@@ -517,9 +532,7 @@ async function createPatient() {
                 .getElementById('patientMiddleName')
                 .value.trim(),
             lastName: document.getElementById('patientLastName').value.trim(),
-            dateOfBirth: window.dateUtils.convertToISODate(
-                document.getElementById('patientDateOfBirth').value
-            ),
+            dateOfBirth: window.dateUtils.convertToISODate(dobInput.value),
             address1: document.getElementById('patientAddress1').value.trim(),
             address2: document.getElementById('patientAddress2').value.trim(),
             city: document.getElementById('patientCity').value.trim(),
@@ -564,17 +577,7 @@ async function createPatient() {
             throw new Error('City must be 50 characters or less.');
         }
 
-        // Validate date of birth using new date validation system
-        const dobInput = document.getElementById('patientDateOfBirth');
-        const validation = window.dateUtils.validateDateInput(dobInput.value);
-        if (!validation.valid) {
-            throw new Error(validation.error);
-        }
-
-        // Ensure we have a valid converted date
-        if (!formData.dateOfBirth) {
-            throw new Error('Please enter a valid date of birth.');
-        }
+        // Date validation already done above, so dateOfBirth should be valid
 
         // Enhanced address validation using shared validation
         if (
