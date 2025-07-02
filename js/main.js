@@ -271,6 +271,29 @@ function setupGlobalErrorHandling() {
             event.preventDefault();
             return false;
         }
+
+        // Also catch autofill errors based on error message patterns
+        if (event.error && event.error.message) {
+            const errorMessage = event.error.message.toLowerCase();
+            const autofillPatterns = [
+                'identityfullname',
+                'autofilloverlay',
+                'bootstrap-autofill',
+                'storequalifieduserfilledfield',
+                'getformfielddata',
+                'handleformfieldsubmitevent',
+            ];
+
+            if (
+                autofillPatterns.some((pattern) =>
+                    errorMessage.includes(pattern)
+                )
+            ) {
+                // Suppress autofill-related errors
+                event.preventDefault();
+                return false;
+            }
+        }
     });
 
     // Also handle unhandled promise rejections from autofill
@@ -283,6 +306,28 @@ function setupGlobalErrorHandling() {
             // Suppress autofill-related promise rejections
             event.preventDefault();
             return false;
+        }
+
+        // Also check for autofill-related error messages in promise rejections
+        if (event.reason && event.reason.message) {
+            const errorMessage = event.reason.message.toLowerCase();
+            const autofillPatterns = [
+                'identityfullname',
+                'autofilloverlay',
+                'bootstrap-autofill',
+                'cannot set properties of null',
+                'cannot read properties of null',
+            ];
+
+            if (
+                autofillPatterns.some((pattern) =>
+                    errorMessage.includes(pattern)
+                )
+            ) {
+                // Suppress autofill-related promise rejections
+                event.preventDefault();
+                return false;
+            }
         }
     });
 }
