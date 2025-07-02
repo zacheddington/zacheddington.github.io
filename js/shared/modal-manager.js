@@ -348,8 +348,8 @@ const modalManager = {
                 modalElement.style.position = 'fixed';
                 modalElement.style.top = '0';
                 modalElement.style.left = '0';
-                modalElement.style.width = '100%';
-                modalElement.style.height = '100%';
+                modalElement.style.width = '100vw';
+                modalElement.style.height = '100vh';
                 modalElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
                 modalElement.style.justifyContent = 'center';
                 modalElement.style.alignItems = 'center';
@@ -357,7 +357,7 @@ const modalManager = {
                 modalElement.style.margin = '0';
                 modalElement.style.padding = '0';
 
-                // Ensure it's above everything else
+                // Ensure it's above everything else with !important
                 modalElement.style.setProperty(
                     'position',
                     'fixed',
@@ -365,12 +365,8 @@ const modalManager = {
                 );
                 modalElement.style.setProperty('z-index', '10000', 'important');
                 modalElement.style.setProperty('display', 'flex', 'important');
-                modalElement.style.width = '100%';
-                modalElement.style.height = '100%';
-                modalElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-                modalElement.style.justifyContent = 'center';
-                modalElement.style.alignItems = 'center';
-                modalElement.style.zIndex = '10000';
+                modalElement.style.setProperty('width', '100vw', 'important');
+                modalElement.style.setProperty('height', '100vh', 'important');
 
                 const modalContent =
                     modalElement.querySelector('.modal-content');
