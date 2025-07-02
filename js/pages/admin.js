@@ -271,19 +271,11 @@ function setupCreateUserForm() {
     if (newPassword && confirmPassword) {
         confirmPassword.addEventListener('input', function () {
             validatePasswordMatch();
-            // Update field states
-            if (window.fieldStateManager) {
-                window.fieldStateManager.updateFieldState(confirmPassword);
-            }
         });
 
         newPassword.addEventListener('input', function () {
             validatePasswordMatch();
             updatePasswordStrength(newPassword.value, newPassword.id);
-            // Update field states
-            if (window.fieldStateManager) {
-                window.fieldStateManager.updateFieldState(newPassword);
-            }
         });
     } // Username availability checking (debounced)
     if (newUsername) {
@@ -296,10 +288,6 @@ function setupCreateUserForm() {
             usernameTimeout = setTimeout(() => {
                 checkUsernameAvailability(newUsername.value.trim());
             }, 500);
-            // Update field states
-            if (window.fieldStateManager) {
-                window.fieldStateManager.updateFieldState(newUsername);
-            }
         });
     }
 

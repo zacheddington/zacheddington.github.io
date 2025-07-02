@@ -718,16 +718,6 @@ function clearCreatePatientErrors() {
             successMsg.remove();
         }
     });
-
-    // Update field states using the field state manager
-    if (window.fieldStateManager) {
-        const allFields = createPatientSection.querySelectorAll(
-            'input[type="text"], input[type="tel"], select'
-        );
-        allFields.forEach((field) => {
-            window.fieldStateManager.updateFieldState(field);
-        });
-    }
 }
 
 // Load all patients from the server

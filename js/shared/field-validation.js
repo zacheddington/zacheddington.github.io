@@ -131,14 +131,6 @@ function clearFormErrors(section) {
     passwordInputs.forEach((input) => {
         input.classList.remove('password-match', 'password-mismatch');
     });
-
-    // Update field states using the field state manager
-    if (window.fieldStateManager) {
-        const allFields = section.querySelectorAll('input, select, textarea');
-        allFields.forEach((field) => {
-            window.fieldStateManager.updateFieldState(field);
-        });
-    }
 }
 
 // Validate email format

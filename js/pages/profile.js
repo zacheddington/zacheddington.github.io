@@ -187,7 +187,7 @@ function setupProfileFieldValidation() {
 
     if (currentPasswordField) {
         currentPasswordField.addEventListener('input', function () {
-            window.fieldValidation.updateFieldState(currentPasswordField);
+            // Current password input handling
         });
     }
 
@@ -197,14 +197,6 @@ function setupProfileFieldValidation() {
             window.passwordUtils.addPasswordStrengthIndicator(newPasswordField);
 
             newPasswordField.addEventListener('input', function () {
-                // Update field state
-                if (
-                    window.fieldValidation &&
-                    window.fieldValidation.updateFieldState
-                ) {
-                    window.fieldValidation.updateFieldState(newPasswordField);
-                }
-
                 // Check password match if confirm password has value
                 if (confirmPasswordField && confirmPasswordField.value) {
                     validatePasswordMatch();
@@ -218,12 +210,6 @@ function setupProfileFieldValidation() {
     if (confirmPasswordField) {
         confirmPasswordField.addEventListener('input', function () {
             validatePasswordMatch();
-            if (
-                window.fieldValidation &&
-                window.fieldValidation.updateFieldState
-            ) {
-                window.fieldValidation.updateFieldState(confirmPasswordField);
-            }
         });
     }
 }
@@ -417,14 +403,6 @@ function clearPasswordChangeErrors() {
         if (successMsg) {
             successMsg.remove();
         }
-    });
-
-    // Update field states
-    const allFields = passwordChangeSection.querySelectorAll(
-        'input[type="password"]'
-    );
-    allFields.forEach((field) => {
-        window.fieldValidation.updateFieldState(field);
     });
 }
 

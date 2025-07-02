@@ -161,9 +161,6 @@ function setupForcePasswordFieldValidation() {
         window.passwordUtils.addPasswordStrengthIndicator(newPasswordField);
 
         newPasswordField.addEventListener('input', function () {
-            // Update field state
-            window.fieldValidation.updateFieldState(newPasswordField);
-
             // Check password match if confirm password has value
             if (confirmPasswordField && confirmPasswordField.value) {
                 validateForcePasswordMatch();
@@ -174,7 +171,6 @@ function setupForcePasswordFieldValidation() {
     if (confirmPasswordField) {
         confirmPasswordField.addEventListener('input', function () {
             validateForcePasswordMatch();
-            window.fieldValidation.updateFieldState(confirmPasswordField);
         });
 
         confirmPasswordField.addEventListener('keypress', function (e) {
