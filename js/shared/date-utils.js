@@ -31,8 +31,10 @@ function validateDateInput(dateString) {
         .split('/')
         .map((num) => parseInt(num, 10));
 
-    // Create date object
-    const date = new Date(year, month - 1, day);
+    // Create date object using setFullYear to handle years before 1900 properly
+    const date = new Date();
+    date.setFullYear(year, month - 1, day);
+    date.setHours(0, 0, 0, 0); // Set to start of day
 
     // Check if date is valid (handles things like 02/30/2023)
     if (
@@ -43,18 +45,21 @@ function validateDateInput(dateString) {
         return { valid: false, error: 'Please enter a valid date' };
     }
 
+    // Check if date is not too far in the past (reasonable birth date) FIRST
+    const minDate = new Date();
+    minDate.setFullYear(1900, 0, 1);
+    minDate.setHours(0, 0, 0, 0);
+
+    if (date < minDate) {
+        return { valid: false, error: 'Please enter a date after 12/31/1899' };
+    }
+
     // Check if date is not in the future
     const today = new Date();
     today.setHours(23, 59, 59, 999); // Set to end of today
 
     if (date > today) {
         return { valid: false, error: 'Date of birth cannot be in the future' };
-    }
-
-    // Check if date is not too far in the past (reasonable birth date)
-    const minDate = new Date(1900, 0, 1);
-    if (date < minDate) {
-        return { valid: false, error: 'Please enter a date after 1900' };
     }
 
     return { valid: true, date: date };
