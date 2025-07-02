@@ -1363,8 +1363,10 @@ function displaySessions(sessions) {
                 <td>${logoutTime}</td>
                 <td>${escapeHtml(session.ip_address || 'Unknown')}</td>
                 <td>${escapeHtml(session.browser_info || 'Unknown')}</td>
-                <td class="session-actions">
-                    ${revokeButton}
+                <td>
+                    <div class="session-actions">
+                        ${revokeButton}
+                    </div>
                 </td>
             </tr>        `;
 

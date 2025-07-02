@@ -277,7 +277,7 @@
     justify-content: center;
 }
 
-/* Center the actions cell content */
+/* Center the actions cell content - multiple approaches for browser compatibility */
 .data-table td:has(.table-actions),
 .data-table td:has(.session-actions) {
     text-align: center;
@@ -288,6 +288,21 @@
 .data-table td .table-actions,
 .data-table td .session-actions {
     margin: 0 auto;
+}
+
+/* Additional fallback - target cells containing action buttons directly */
+.data-table td.table-actions,
+.data-table td.session-actions {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Ensure any cell with action buttons gets centered */
+.data-table td:last-child:has(button),
+.data-table td.actions,
+.data-table td[class*="actions"] {
+    text-align: center;
+    vertical-align: middle;
 }
 
 /* Responsive Design */

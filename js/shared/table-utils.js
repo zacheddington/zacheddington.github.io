@@ -800,13 +800,13 @@ function setDefaultColumnWidths(table, tableId) {
 function getTableDefaultWidths(tableId, columnCount, isMobile, isTablet) {
     // Base widths for different column types
     const widths = {
-        narrow: isMobile ? 80 : 100, // ID, short text
-        small: isMobile ? 120 : 150, // Names, short data
-        medium: isMobile ? 140 : 180, // Addresses, longer text
-        large: isMobile ? 160 : 220, // Long descriptions
-        date: isMobile ? 110 : 130, // Date columns
-        actions: isMobile ? 80 : 100, // Action buttons
-        default: isMobile ? 120 : 150, // Fallback
+        narrow: isMobile ? 100 : 120, // ID, short text - increased from 80/100
+        small: isMobile ? 140 : 170, // Names, short data - increased from 120/150
+        medium: isMobile ? 160 : 200, // Addresses, longer text - increased from 140/180
+        large: isMobile ? 180 : 250, // Long descriptions - increased from 160/220
+        date: isMobile ? 130 : 150, // Date columns - increased from 110/130
+        actions: isMobile ? 100 : 120, // Action buttons - increased from 80/100
+        default: isMobile ? 140 : 170, // Fallback - increased from 120/150
     };
 
     // Define column configurations for each table type
