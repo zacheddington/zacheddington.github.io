@@ -1351,7 +1351,9 @@ function displaySessions(sessions) {
             : '<span class="status-badge inactive">Inactive</span>';
 
         const revokeButton = session.is_active
-            ? `<button class="btn btn-danger btn-sm" onclick="window.adminPage.revokeSession('${session.session_id}')">Revoke</button>`
+            ? `<button class="btn btn-danger btn-sm" onclick="window.adminPage.revokeSession(${JSON.stringify(
+                  session.session_id
+              )})">Revoke</button>`
             : '<span class="text-muted">-</span>';
 
         const rowHtml = `
@@ -1451,8 +1453,17 @@ async function revokeSession(sessionId) {
 
         setSessionActionLoading(sessionId, true);
 
+        // URL encode the session ID to handle special characters (like JWT tokens)
+        const encodedSessionId = encodeURIComponent(sessionId);
+        console.log(
+            'Revoking session:',
+            sessionId,
+            'Encoded:',
+            encodedSessionId
+        );
+
         const response = await fetch(
-            `${API_URL}/api/sessions/${sessionId}/revoke`,
+            `${API_URL}/api/sessions/${encodedSessionId}/revoke`,
             {
                 method: 'POST',
                 headers: {
@@ -1464,6 +1475,7 @@ async function revokeSession(sessionId) {
                 }),
             }
         );
+
         if (response.ok) {
             if (window.modalManager) {
                 window.modalManager.showModal(
@@ -1476,17 +1488,46 @@ async function revokeSession(sessionId) {
             // Reload sessions to reflect changes
             await loadAllSessions();
         } else {
-            throw new Error(`Failed to revoke session: ${response.status}`);
+            // Enhanced error handling for different status codes
+            let errorMessage = `Failed to revoke session (${response.status})`;
+
+            try {
+                const errorData = await response.json();
+                errorMessage =
+                    errorData.error || errorData.message || errorMessage;
+            } catch (parseError) {
+                // If we can't parse the response, provide status-based messages
+                switch (response.status) {
+                    case 400:
+                        errorMessage = 'Invalid session ID or request format.';
+                        break;
+                    case 404:
+                        errorMessage = 'Session not found or already expired.';
+                        break;
+                    case 403:
+                        errorMessage =
+                            'You do not have permission to revoke sessions.';
+                        break;
+                    case 500:
+                        errorMessage =
+                            'Server error occurred while revoking session. The session ID format may not be supported by the server.';
+                        break;
+                    default:
+                        errorMessage = `Server error (${response.status}). Please try again.`;
+                }
+            }
+
+            throw new Error(errorMessage);
         }
     } catch (error) {
         console.error('Error revoking session:', error);
+        const errorMessage =
+            error.message || 'Failed to revoke session. Please try again.';
+
         if (window.modalManager) {
-            window.modalManager.showModal(
-                'error',
-                'Failed to revoke session. Please try again.'
-            );
+            window.modalManager.showModal('error', errorMessage);
         } else {
-            alert('Failed to revoke session. Please try again.');
+            alert(errorMessage);
         }
     } finally {
         setSessionActionLoading(sessionId, false);
