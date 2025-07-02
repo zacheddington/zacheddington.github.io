@@ -365,7 +365,74 @@ async function changeForcePassword() {
                 }
             }, 2000);
         } else {
-            throw new Error(result.error || 'Failed to change password');
+            // Handle error responses based on status code
+            if (response.status === 400) {
+                throw new Error(
+                    result.error ||
+                        result.message ||
+                        'Invalid request. Please check your input.'
+                );
+            } else if (response.status === 409) {
+                // Conflict - password was already changed elsewhere
+                window.modalManager.showModal(
+                    'warning',
+                    'Your password has already been changed on another device or session. For security, you will be logged out and need to sign in again.',
+                    false,
+                    { redirect: true }
+                );
+
+                setTimeout(() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    sessionStorage.clear();
+                    window.location.href = '/';
+                }, 3000);
+                return;
+            } else if (response.status === 500) {
+                // Server error - check if it's related to password already being changed
+                console.log('500 error response:', result); // Debug logging
+
+                // Check multiple possible fields for the error message
+                const errorText =
+                    result.error || result.message || result.details || '';
+
+                if (
+                    errorText.includes('currentPassword') ||
+                    errorText.includes('password') ||
+                    errorText.includes('already') ||
+                    errorText.includes('changed') ||
+                    errorText.includes('not defined') ||
+                    errorText.includes('undefined')
+                ) {
+                    // Password was likely changed elsewhere - log out for security
+                    window.modalManager.showModal(
+                        'warning',
+                        'Your password appears to have been changed elsewhere. For security, you will be logged out and need to sign in again.',
+                        false,
+                        { redirect: true }
+                    );
+
+                    setTimeout(() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        sessionStorage.clear();
+                        window.location.href = '/';
+                    }, 3000);
+                    return;
+                } else {
+                    throw new Error(
+                        result.error ||
+                            result.message ||
+                            'Server error occurred. Please try again.'
+                    );
+                }
+            } else {
+                throw new Error(
+                    result.error ||
+                        result.message ||
+                        `Server error (${response.status}). Please try again.`
+                );
+            }
         }
     } catch (error) {
         console.error('Force password change failed');
@@ -375,106 +442,6 @@ async function changeForcePassword() {
 
         if (error.message) {
             errorMessage = error.message;
-        } else if (response) {
-            // Handle different response status codes
-            try {
-                const result = await response.json();
-
-                if (response.status === 400) {
-                    errorMessage =
-                        result.error ||
-                        result.message ||
-                        'Invalid request. Please check your input.';
-                } else if (response.status === 409) {
-                    // Conflict - password was already changed elsewhere
-                    window.modalManager.showModal(
-                        'warning',
-                        'Your password has already been changed on another device or session. For security, you will be logged out and need to sign in again.',
-                        false,
-                        { redirect: true }
-                    );
-
-                    setTimeout(() => {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('user');
-                        sessionStorage.clear();
-                        window.location.href = '/';
-                    }, 3000);
-                    return;
-                } else if (response.status === 500) {
-                    // Server error - check if it's related to password already being changed
-                    if (
-                        result.error &&
-                        (result.error.includes('currentPassword') ||
-                            result.error.includes('password') ||
-                            result.error.includes('already') ||
-                            result.error.includes('changed'))
-                    ) {
-                        // Password was likely changed elsewhere - log out for security
-                        window.modalManager.showModal(
-                            'warning',
-                            'Your password appears to have been changed elsewhere. For security, you will be logged out and need to sign in again.',
-                            false,
-                            { redirect: true }
-                        );
-
-                        setTimeout(() => {
-                            localStorage.removeItem('token');
-                            localStorage.removeItem('user');
-                            sessionStorage.clear();
-                            window.location.href = '/';
-                        }, 3000);
-                        return;
-                    } else {
-                        errorMessage =
-                            result.error ||
-                            result.message ||
-                            'Server error occurred. Please try again.';
-                    }
-                } else {
-                    errorMessage =
-                        result.error ||
-                        result.message ||
-                        `Server error (${response.status}). Please try again.`;
-                }
-            } catch (parseError) {
-                // If we can't parse the response, provide status-based messages
-                if (response.status === 409) {
-                    // Conflict - password already changed elsewhere
-                    window.modalManager.showModal(
-                        'warning',
-                        'Your password has already been changed elsewhere. You will be logged out for security.',
-                        false,
-                        { redirect: true }
-                    );
-
-                    setTimeout(() => {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('user');
-                        sessionStorage.clear();
-                        window.location.href = '/';
-                    }, 3000);
-                    return;
-                } else if (response.status === 500) {
-                    // Likely password change conflict - log out for security
-                    window.modalManager.showModal(
-                        'warning',
-                        'Your password may have been changed elsewhere. For security, you will be logged out.',
-                        false,
-                        { redirect: true }
-                    );
-
-                    setTimeout(() => {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('user');
-                        sessionStorage.clear();
-                        window.location.href = '/';
-                    }, 3000);
-                    return;
-                } else {
-                    errorMessage = `Server error (${response.status}). Please try again.`;
-                }
-            }
         }
 
         // Always show modal for better user experience
