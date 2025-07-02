@@ -1,8 +1,5 @@
 // Main JavaScript Controller
-// C// Initialize application
-async function initializeApp() {
-    // Determine current page
-    currentPage = getCurrentPage(); // Check authentication for protected pagesalized initialization and page routing for the modular application
+// Centralized initialization and page routing for the modular application
 
 // Application configuration
 const APP_CONFIG = {
@@ -40,7 +37,7 @@ let currentPage = null;
 function initializeApp() {
     // Determine current page
     currentPage = getCurrentPage();
-    
+
     // Check authentication for protected pages
     if (shouldCheckAuth(currentPage)) {
         if (!window.authUtils.isAuthenticated()) {
@@ -52,9 +49,14 @@ function initializeApp() {
         // but are trying to access other pages (security measure)
         if (window.authUtils.enforcePasswordChangeRequirement) {
             // Run enforcement asynchronously without blocking initialization
-            window.authUtils.enforcePasswordChangeRequirement().catch(error => {
-                console.error('Error in password change enforcement:', error);
-            });
+            window.authUtils
+                .enforcePasswordChangeRequirement()
+                .catch((error) => {
+                    console.error(
+                        'Error in password change enforcement:',
+                        error
+                    );
+                });
         }
 
         // Check if user needs to change password (for normal flow)
@@ -92,7 +94,9 @@ function initializeApp() {
         ) {
             window.navigation.loadMenu();
         }
-    } // Initialize page-specific functionality
+    }
+
+    // Initialize page-specific functionality
     initializePage(currentPage);
 }
 
@@ -163,9 +167,13 @@ function initializePage(page) {
         case 'force-password.html':
             if (window.forcePasswordPage) {
                 // Handle async initialization
-                window.forcePasswordPage.initializeForcePasswordChangePage()
+                window.forcePasswordPage
+                    .initializeForcePasswordChangePage()
                     .catch((error) => {
-                        console.error('Error initializing force password page:', error);
+                        console.error(
+                            'Error initializing force password page:',
+                            error
+                        );
                     });
             }
             break;
