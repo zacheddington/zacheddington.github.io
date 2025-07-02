@@ -317,39 +317,8 @@ async function changeForcePassword() {
         const token = localStorage.getItem('token');
         const API_URL = window.apiClient.getAPIUrl();
 
-        // First, check if the user still needs to change their password
-        // This prevents the error when password was already changed on another tab/device
-        const userCheckResponse = await fetch(`${API_URL}/api/user/profile`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (userCheckResponse.ok) {
-            const userProfile = await userCheckResponse.json();
-            if (!userProfile.data || !userProfile.data.passwordChangeRequired) {
-                // Password was already changed on another tab/device or by another user
-                // For security, we need to log out the current session
-                window.modalManager.showModal(
-                    'warning',
-                    'Your password has been changed on another device or session. For security, you will be logged out and need to sign in again with your new password.',
-                    false,
-                    { redirect: true }
-                );
-
-                // Log out after delay for security
-                setTimeout(() => {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    sessionStorage.clear();
-                    window.location.href = '/';
-                }, 3000);
-                return;
-            }
-        }
-
+        // Proceed directly to password change - let the server handle validation
+        // If there's a conflict, the server will return an appropriate error
         response = await fetch(`${API_URL}/api/user/force-change-password`, {
             method: 'PUT',
             headers: {
@@ -416,13 +385,30 @@ async function changeForcePassword() {
                         result.error ||
                         result.message ||
                         'Invalid request. Please check your input.';
+                } else if (response.status === 409) {
+                    // Conflict - password was already changed elsewhere
+                    window.modalManager.showModal(
+                        'warning',
+                        'Your password has already been changed on another device or session. For security, you will be logged out and need to sign in again.',
+                        false,
+                        { redirect: true }
+                    );
+
+                    setTimeout(() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        sessionStorage.clear();
+                        window.location.href = '/';
+                    }, 3000);
+                    return;
                 } else if (response.status === 500) {
-                    // Server error - likely means password was already changed
+                    // Server error - check if it's related to password already being changed
                     if (
                         result.error &&
                         (result.error.includes('currentPassword') ||
                             result.error.includes('password') ||
-                            result.error.includes('already'))
+                            result.error.includes('already') ||
+                            result.error.includes('changed'))
                     ) {
                         // Password was likely changed elsewhere - log out for security
                         window.modalManager.showModal(
@@ -445,22 +431,6 @@ async function changeForcePassword() {
                             result.message ||
                             'Server error occurred. Please try again.';
                     }
-                } else if (response.status === 409) {
-                    // Conflict - password was changed elsewhere
-                    window.modalManager.showModal(
-                        'warning',
-                        'Password change conflict. Your password was changed on another device. You will be logged out for security.',
-                        false,
-                        { redirect: true }
-                    );
-
-                    setTimeout(() => {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('user');
-                        sessionStorage.clear();
-                        window.location.href = '/';
-                    }, 3000);
-                    return;
                 } else {
                     errorMessage =
                         result.error ||
@@ -469,11 +439,11 @@ async function changeForcePassword() {
                 }
             } catch (parseError) {
                 // If we can't parse the response, provide status-based messages
-                if (response.status === 500) {
-                    // Likely password change conflict - log out for security
+                if (response.status === 409) {
+                    // Conflict - password already changed elsewhere
                     window.modalManager.showModal(
                         'warning',
-                        'Your password may have been changed elsewhere. For security, you will be logged out.',
+                        'Your password has already been changed elsewhere. You will be logged out for security.',
                         false,
                         { redirect: true }
                     );
@@ -485,11 +455,11 @@ async function changeForcePassword() {
                         window.location.href = '/';
                     }, 3000);
                     return;
-                } else if (response.status === 409) {
-                    // Conflict - log out for security
+                } else if (response.status === 500) {
+                    // Likely password change conflict - log out for security
                     window.modalManager.showModal(
                         'warning',
-                        'Password change conflict. You will be logged out for security.',
+                        'Your password may have been changed elsewhere. For security, you will be logged out.',
                         false,
                         { redirect: true }
                     );
