@@ -31,7 +31,7 @@
     gap: var(--space-md);
     flex-wrap: wrap;
     justify-content: flex-start; /* Left-align wrapped items */
-    align-items: flex-start; /* Top-align to prevent shifting when validation messages appear */
+    align-items: flex-end; /* Align to input field baselines */
     margin-bottom: var(--space-md);
     width: 100%;
 }
@@ -45,7 +45,7 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start; /* Left-align wrapped items */
-    align-items: flex-start; /* Top-align to prevent shifting when validation messages appear */
+    align-items: flex-end; /* Align to input field baselines */
     gap: var(--space-md);
     width: 100%;
 }
@@ -625,23 +625,29 @@ input.password-mismatch {
    DYNAMIC CONTENT LAYOUT STABILITY
    ================================ */
 
-/* Ensure form groups maintain consistent alignment when validation messages appear */
+/* Ensure validation messages don't affect form layout */
 .form-group {
     /* ...existing code... */
-    align-self: flex-start; /* Prevents form groups from stretching when others change height */
+    position: relative; /* Establish positioning context */
 }
 
-/* Consistent styling for all dynamic validation messages */
+/* Validation messages positioned absolutely to prevent layout shifts */
 .form-group .error-message,
 .form-group .success-message,
 .form-group .checking-message {
     font-size: 0.85rem;
-    margin-top: 0.25rem;
     font-weight: var(--font-weight-medium);
     line-height: 1.4;
     display: block;
-    /* Prevent layout shift by maintaining consistent vertical space */
-    min-height: 1.2em;
+    /* Absolute positioning to prevent affecting layout of adjacent fields */
+    position: absolute;
+    top: 100%; /* Position below the input field */
+    left: 0;
+    right: 0;
+    z-index: 10; /* Ensure messages appear above other content */
+    margin-top: 0.25rem;
+    /* Prevent the message from affecting the form group height */
+    pointer-events: none; /* Allow clicks to pass through to underlying content */
 }
 
 .form-group .checking-message {
@@ -650,11 +656,38 @@ input.password-mismatch {
     border: var(--border-thin) solid #bbdefb;
     padding: 0.25rem 0.5rem;
     border-radius: var(--radius-sm);
+    pointer-events: auto; /* Re-enable pointer events for styled messages */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add subtle shadow for visibility */
 }
 
-/* Ensure input labels stay aligned to the top of their containers */
-.form-row .form-group label {
-    align-self: flex-start;
-    position: relative;
-    top: 0;
+.form-group .success-message {
+    color: #28a745;
+    background-color: #e8f5e8;
+    border: var(--border-thin) solid #c8e6c9;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    pointer-events: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-group .error-message {
+    color: #dc3545;
+    background-color: #ffebee;
+    border: var(--border-thin) solid #ffcdd2;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    pointer-events: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Add bottom margin to form groups that might have validation messages */
+.form-row {
+    margin-bottom: calc(
+        var(--space-md) + 2.5rem
+    ); /* Extra space for validation messages */
+}
+
+/* Reduce bottom margin for the last form row */
+.form-row:last-child {
+    margin-bottom: var(--space-md);
 }

@@ -331,7 +331,7 @@ async function checkUsernameAvailability(username) {
         // Clear existing validation states and show checking state
         usernameGroup.classList.remove('error', 'success');
         const existingMessage = usernameGroup.querySelector(
-            '.error-message, .success-message'
+            '.error-message, .success-message, .checking-message'
         );
         if (existingMessage) {
             existingMessage.remove();
@@ -625,9 +625,23 @@ async function loadUsers() {
     }
 }
 
-// Alias function for backward compatibility
+// Alias function for backward compatibility - now with filter persistence
 function displayFilteredUsers() {
-    loadUsers();
+    // Just refresh the display with current filter applied
+    reapplyCurrentUserFilter();
+}
+
+// Function to re-apply current filter after data changes
+function reapplyCurrentUserFilter() {
+    const userFilter = document.getElementById('userFilter');
+    if (userFilter && userFilter.value.trim()) {
+        // If there's a filter value, re-run the filter
+        filterUsers();
+    } else {
+        // If no filter, show all users
+        const usersToShow = getUsersForDisplay();
+        displayUsers(usersToShow);
+    }
 }
 
 // Load roles for user management
