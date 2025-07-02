@@ -1189,40 +1189,56 @@ function setupDeletePatientModal() {
 
 // Handle edit patient form submission
 async function handleEditPatientSubmit(event) {
+    console.log('🔍 handleEditPatientSubmit called');
     event.preventDefault();
+    console.log('🔍 preventDefault called');
 
     // Check if user has permission to edit patients
     if (!canDeletePatients()) {
+        console.log('🔍 Permission check failed');
         window.modalManager.showModal(
             'error',
             'You do not have permission to edit patients.'
         );
         return;
     }
+    console.log('🔍 Permission check passed');
 
     const form = event.target;
     const patientId = form.getAttribute('data-patient-id');
 
     if (!patientId) {
+        console.log('🔍 Patient ID not found');
         window.modalManager.showModal(
             'error',
             'Patient ID not found. Please try again.'
         );
         return;
     }
+    console.log('🔍 Patient ID found:', patientId);
 
     // Validate date of birth first (before collecting form data)
     const dobInput = form.querySelector('input[name="dateOfBirth"]');
+    console.log('🔍 Date input found:', dobInput);
+    console.log('🔍 Date input value:', dobInput.value);
+
     const dobValidation = window.dateUtils.validateDateInput(dobInput.value);
+    console.log('🔍 Date validation result:', dobValidation);
+
     if (!dobValidation.valid) {
+        console.log('🔍 Date validation FAILED - stopping execution');
         // Set custom validity message for browser tooltip
         dobInput.setCustomValidity(dobValidation.error);
         dobInput.reportValidity(); // Show the tooltip
+        console.log('🔍 Tooltip should be showing, returning early');
         return;
     } else {
+        console.log('🔍 Date validation PASSED - continuing');
         // Clear any previous custom validity
         dobInput.setCustomValidity('');
     }
+
+    console.log('🔍 About to collect form data');
 
     // Get form data
     const formData = new FormData(form);

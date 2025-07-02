@@ -112,19 +112,41 @@ class PageTransitions {
         // Intercept form submissions for transition effects
         document.addEventListener('submit', (e) => {
             const form = e.target;
-            if (form.hasAttribute('data-no-transition')) return;
+            console.log(
+                '🔍 PageTransitions: Form submit detected',
+                form.id || 'unnamed form'
+            );
+
+            if (form.hasAttribute('data-no-transition')) {
+                console.log(
+                    '🔍 PageTransitions: Form has data-no-transition, skipping'
+                );
+                return;
+            }
+
+            console.log('🔍 PageTransitions: Processing form submission');
 
             // Add a small delay to allow form processing feedback
             const submitBtn = form.querySelector(
                 'button[type="submit"], input[type="submit"]'
             );
             if (submitBtn && !submitBtn.disabled) {
+                console.log(
+                    '🔍 PageTransitions: Submit button found and enabled, adding fade-out delay'
+                );
                 // Don't interfere with form submission, just add visual feedback
                 setTimeout(() => {
                     if (!this.isTransitioning) {
+                        console.log(
+                            '🔍 PageTransitions: Adding fade-out class'
+                        );
                         document.body.classList.add(this.config.fadeOutClass);
                     }
                 }, 100);
+            } else {
+                console.log(
+                    '🔍 PageTransitions: Submit button not found or disabled'
+                );
             }
         });
     }
