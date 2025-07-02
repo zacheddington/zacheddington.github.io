@@ -753,8 +753,8 @@ async function loadPatients() {
             const result = await response.json();
             allPatients = result.data; // Extract data from response object
 
-            // Display patients (unified table system handles all table behavior)
-            displayPatients(allPatients);
+            // Use automatic filter persistence (table-utils handles this)
+            reapplyCurrentFilter();
         } else {
             // Use global auth error handler for consistent experience
             if (response.status === 401 || response.status === 403) {
@@ -885,6 +885,11 @@ function displayPatients(patients) {
     if (window.initializeDataTables) {
         window.initializeDataTables();
     }
+
+    // Trigger automatic filter reapplication
+    if (window.autoReapplyTableFilter) {
+        window.autoReapplyTableFilter('patientsTable');
+    }
 }
 
 // Filter patients based on search input
@@ -919,11 +924,23 @@ function filterPatients() {
     displayPatients(filteredPatients);
 }
 
-// Set up patient filter functionality
+// Set up patient filter functionality (now automatic via table-utils.js)
 function setupPatientFilter() {
     const patientFilter = document.getElementById('patientFilter');
     if (patientFilter) {
         patientFilter.addEventListener('input', filterPatients);
+    }
+}
+
+// Function to re-apply current filter after data reload
+function reapplyCurrentFilter() {
+    const patientFilter = document.getElementById('patientFilter');
+    if (patientFilter && patientFilter.value.trim()) {
+        // If there's a filter value, re-run the filter
+        filterPatients();
+    } else {
+        // If no filter, show all patients
+        displayPatients(allPatients);
     }
 }
 
@@ -1156,14 +1173,8 @@ function setupEditPatientModal() {
         cancelBtn.addEventListener('click', closeEditPatientModal);
     }
 
-    // Close modal when clicking outside of it
-    if (modal) {
-        modal.addEventListener('click', function (e) {
-            if (e.target === modal) {
-                closeEditPatientModal();
-            }
-        });
-    }
+    // Close modal when clicking outside (now automatic via modal-manager.js)
+    // No explicit code needed - modal-manager handles this automatically
 
     // Handle form submission
     if (form) {
@@ -1187,14 +1198,8 @@ function setupDeletePatientModal() {
         cancelBtn.addEventListener('click', closeDeletePatientModal);
     }
 
-    // Close modal when clicking outside of it
-    if (modal) {
-        modal.addEventListener('click', function (e) {
-            if (e.target === modal) {
-                closeDeletePatientModal();
-            }
-        });
-    }
+    // Close modal when clicking outside (now automatic via modal-manager.js)
+    // No explicit code needed - modal-manager handles this automatically
 }
 
 // Handle edit patient form submission

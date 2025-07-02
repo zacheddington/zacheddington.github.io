@@ -256,6 +256,35 @@ function setupGlobalErrorHandling() {
             );
         }
     });
+
+    // Global error handler to suppress autofill-related errors
+    window.addEventListener('error', function (event) {
+        // Check if error is from autofill overlay content service
+        if (
+            event.error &&
+            event.filename &&
+            event.filename.includes(
+                'bootstrap-autofill-overlay-notifications.js'
+            )
+        ) {
+            // Suppress autofill-related errors to reduce console noise
+            event.preventDefault();
+            return false;
+        }
+    });
+
+    // Also handle unhandled promise rejections from autofill
+    window.addEventListener('unhandledrejection', function (event) {
+        if (
+            event.reason &&
+            event.reason.stack &&
+            event.reason.stack.includes('AutofillOverlayContentService')
+        ) {
+            // Suppress autofill-related promise rejections
+            event.preventDefault();
+            return false;
+        }
+    });
 }
 
 // Page visibility change handler

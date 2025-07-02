@@ -620,11 +620,8 @@ async function disable2FA() {
         }
     });
 
-    modalOverlay.addEventListener('click', function (e) {
-        if (e.target === modalOverlay) {
-            closeModal();
-        }
-    });
+    // Close modal when clicking outside (now automatic via modal-manager.js)
+    // No explicit code needed - modal-manager handles this automatically
 
     function closeModal() {
         document.body.removeChild(modalOverlay);

@@ -75,6 +75,9 @@ function initializeDataTables() {
         // Fix mobile select behavior
         fixMobileSelectBehavior(table);
 
+        // Set up automatic filter persistence if filter input exists
+        setupAutoFilterPersistence(table, tableId);
+
         // Set intelligent default column widths
         setDefaultColumnWidths(table, tableId);
     });
@@ -884,11 +887,16 @@ if (document.readyState === 'loading') {
 // Make key functions available globally for easy access
 window.initializeDataTables = initializeDataTables;
 window.updateTableOriginalOrder = updateTableOriginalOrder;
+window.autoReapplyTableFilter = autoReapplyTableFilter;
 
 // Export for manual initialization if needed
 window.TableUtils = {
     initializeDataTables,
     updateTableOriginalOrder,
+    setupTableFilterPersistence,
+    reapplyTableFilter,
+    storeTableFilter,
+    getTableFilter,
     initializeTableFiltering,
     setupTableFiltering,
     setupDropdownRevertHandlers,
@@ -936,4 +944,138 @@ function fixMobileSelectBehavior(table) {
         select.style.zIndex = '1000';
         select.style.position = 'relative';
     });
+}
+
+/**
+ * Global filter state management
+ */
+const tableFilters = new Map();
+
+/**
+ * Store current filter value for a table
+ */
+function storeTableFilter(tableId, filterValue) {
+    tableFilters.set(tableId, filterValue);
+}
+
+/**
+ * Get stored filter value for a table
+ */
+function getTableFilter(tableId) {
+    return tableFilters.get(tableId) || '';
+}
+
+/**
+ * Apply filter persistence to a table
+ * This should be called when setting up a table filter input
+ */
+function setupTableFilterPersistence(
+    tableId,
+    filterInputId,
+    filterFunction,
+    allDataArray
+) {
+    const filterInput = document.getElementById(filterInputId);
+    if (!filterInput) return;
+
+    // Store reference to filter function and data for reapplication
+    const table = document.getElementById(tableId);
+    if (table) {
+        table.dataset.filterFunction = filterFunction.name;
+        table.dataset.allDataArray = 'allDataArray'; // Reference name
+    }
+
+    // Set up filter input listener
+    filterInput.addEventListener('input', function () {
+        const filterValue = filterInput.value.toLowerCase();
+        storeTableFilter(tableId, filterValue);
+
+        if (typeof filterFunction === 'function') {
+            filterFunction();
+        }
+    });
+
+    // Restore filter value if it was previously set
+    const storedFilter = getTableFilter(tableId);
+    if (storedFilter) {
+        filterInput.value = storedFilter;
+        if (typeof filterFunction === 'function') {
+            filterFunction();
+        }
+    }
+}
+
+/**
+ * Reapply current filter for a table after data reload
+ * This is the global version that works for any table
+ */
+function reapplyTableFilter(tableId, displayFunction, allData) {
+    const filterValue = getTableFilter(tableId);
+    const filterInput = document.getElementById(
+        tableId.replace('Table', 'Filter')
+    );
+
+    if (filterValue && filterInput) {
+        filterInput.value = filterValue;
+
+        // If a display function is provided, call it with appropriate data
+        if (typeof displayFunction === 'function') {
+            if (filterValue.trim()) {
+                // Apply filter logic - this is generic filtering
+                const filteredData = allData.filter((item) => {
+                    // Convert item to searchable string
+                    const searchString = JSON.stringify(item).toLowerCase();
+                    return searchString.includes(filterValue);
+                });
+                displayFunction(filteredData);
+            } else {
+                displayFunction(allData);
+            }
+        }
+    } else if (typeof displayFunction === 'function') {
+        displayFunction(allData);
+    }
+}
+
+/**
+ * Automatically set up filter persistence for a table
+ * Looks for a filter input with pattern: tableId.replace('Table', 'Filter')
+ */
+function setupAutoFilterPersistence(table, tableId) {
+    // Try to find corresponding filter input
+    const filterId = tableId.replace('Table', 'Filter');
+    const filterInput = document.getElementById(filterId);
+
+    if (!filterInput) {
+        // No filter input found - that's fine, not all tables have filters
+        return;
+    }
+
+    // Store filter state on input
+    filterInput.addEventListener('input', function () {
+        const filterValue = filterInput.value.toLowerCase();
+        storeTableFilter(tableId, filterValue);
+    });
+
+    // Restore filter value if it was previously set
+    const storedFilter = getTableFilter(tableId);
+    if (storedFilter) {
+        filterInput.value = storedFilter;
+        // Trigger input event to apply the filter
+        filterInput.dispatchEvent(new Event('input'));
+    }
+}
+
+/**
+ * Automatically reapply filter for any table after data reload
+ * Call this in any table's data loading function
+ */
+function autoReapplyTableFilter(tableId) {
+    const filterId = tableId.replace('Table', 'Filter');
+    const filterInput = document.getElementById(filterId);
+
+    if (filterInput && filterInput.value.trim()) {
+        // Trigger the filter by dispatching an input event
+        filterInput.dispatchEvent(new Event('input'));
+    }
 }

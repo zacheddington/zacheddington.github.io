@@ -131,7 +131,18 @@ const modalManager = {
                         button.style.backgroundColor = '#17a2b8';
                         button.style.color = 'white';
                     }
-                } // Focus the modal for accessibility
+                } // Auto-apply proper background click handling to all modals
+                setTimeout(() => {
+                    addModalBackgroundClickHandler(modal, () => {
+                        if (typeof closeHandler === 'function') {
+                            closeHandler();
+                        } else {
+                            this.closeModal();
+                        }
+                    });
+                }, 0);
+
+                // Focus the modal for accessibility
                 modalElement.focus(); // Add keyboard event listener after modal is set up (only if not a redirect modal)
                 if (!isRedirectModal) {
                     modalElement.addEventListener('keydown', (e) => {
@@ -287,12 +298,8 @@ const modalManager = {
                 }
             });
 
-            // Close on background click
-            logoutModal.addEventListener('click', (e) => {
-                if (e.target === logoutModal) {
-                    cancelHandler();
-                }
-            });
+            // Close on background click (using proper utility function)
+            addModalBackgroundClickHandler(logoutModal, cancelHandler);
         });
     },
     showConfirmModal: function (title, message, onConfirm, onCancel) {
@@ -530,18 +537,37 @@ const modalManager = {
                 }
             });
 
-            // Close on background click
-            logoutModal.addEventListener('click', (e) => {
-                if (e.target === logoutModal) {
-                    cancelHandler();
-                }
-            });
+            // Close on background click (using proper utility function)
+            addModalBackgroundClickHandler(logoutModal, cancelHandler);
         });
     },
 };
+
+/**
+ * Add proper modal background click handling that only closes when both
+ * mousedown and click happen on the modal background (prevents drag-to-close)
+ */
+function addModalBackgroundClickHandler(modal, closeHandler) {
+    let mouseDownTarget = null;
+
+    modal.addEventListener('mousedown', function (e) {
+        mouseDownTarget = e.target;
+    });
+
+    modal.addEventListener('click', function (e) {
+        // Only close if both mousedown and click happened on the modal background
+        if (e.target === modal && mouseDownTarget === modal) {
+            closeHandler();
+        }
+        mouseDownTarget = null; // Reset after handling
+    });
+}
 
 // Make modal functions globally available
 window.showModal = modalManager.showModal.bind(modalManager);
 window.closeModal = modalManager.closeModal.bind(modalManager);
 window.modalManager = modalManager;
+
+// Make modal utility function globally available
+window.addModalBackgroundClickHandler = addModalBackgroundClickHandler;
 window.showLogoutModal = modalManager.showLogoutModal.bind(modalManager);

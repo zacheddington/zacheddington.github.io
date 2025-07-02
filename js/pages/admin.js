@@ -600,7 +600,7 @@ async function loadUsers() {
             const result = await response.json();
             allUsers = result.data; // Extract data from response object
 
-            // Display users (unified table system handles all table behavior)
+            // Display users (filter persistence is automatic via table-utils)
             const usersToShow = getUsersForDisplay();
             displayUsers(usersToShow);
         } else {
@@ -831,7 +831,7 @@ function filterUsers() {
     displayUsers(filteredUsers);
 }
 
-// Setup user filter
+// Setup user filter (now automatic via table-utils.js)
 function setupUserFilter() {
     const userFilter = document.getElementById('userFilter');
     if (userFilter) {
