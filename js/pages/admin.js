@@ -790,9 +790,19 @@ function displayUsers(users) {
         })
         .join('');
 
+    // Update the original order after loading new data
+    if (window.updateTableOriginalOrder) {
+        window.updateTableOriginalOrder('usersTable');
+    }
+
     // Re-initialize tables after content is populated to ensure resize handles work
     if (window.initializeDataTables) {
         window.initializeDataTables();
+    }
+
+    // Trigger automatic filter reapplication
+    if (window.autoReapplyTableFilter) {
+        window.autoReapplyTableFilter('usersTable');
     }
 }
 
@@ -1335,9 +1345,19 @@ function displaySessions(sessions) {
 
     tbody.innerHTML = finalHtml;
 
+    // Update the original order after loading new data
+    if (window.updateTableOriginalOrder) {
+        window.updateTableOriginalOrder('sessionsTable');
+    }
+
     // Re-initialize tables after content is populated to ensure resize handles work
     if (window.initializeDataTables) {
         window.initializeDataTables();
+    }
+
+    // Trigger automatic filter reapplication
+    if (window.autoReapplyTableFilter) {
+        window.autoReapplyTableFilter('sessionsTable');
     }
 
     // Set table layout to fixed for column resizing to work
