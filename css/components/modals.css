@@ -402,6 +402,46 @@ body.modal-open {
     padding: var(--space-lg) 0; /* Add padding to prevent cutoff */
 }
 
+/* General close button styling */
+.modal .close {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--color-gray-500);
+    cursor: pointer;
+    transition: var(--transition-all);
+    line-height: 1;
+    padding: var(--space-xs);
+    background: none;
+    border: none;
+}
+
+.modal .close:hover {
+    color: var(--color-primary);
+    transform: scale(1.1);
+}
+
+/* Modal close button styling */
+.modal-header .close {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--color-gray-500);
+    cursor: pointer;
+    transition: var(--transition-all);
+    line-height: 1;
+    padding: var(--space-xs);
+    margin: calc(-1 * var(--space-xs));
+    background: none;
+    border: none;
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+}
+
+.modal-header .close:hover {
+    color: var(--color-primary);
+    transform: scale(1.1);
+}
+
 /* Wide modal header */
 .wide-modal .modal-header {
     display: flex;
