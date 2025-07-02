@@ -148,7 +148,15 @@ function initializePage(page) {
             break;
         case 'force-password.html':
             if (window.forcePasswordPage) {
-                window.forcePasswordPage.initializeForcePasswordChangePage();
+                // Handle async initialization
+                window.forcePasswordPage
+                    .initializeForcePasswordChangePage()
+                    .catch((error) => {
+                        console.error(
+                            'Error initializing force password page:',
+                            error
+                        );
+                    });
             }
             break;
 

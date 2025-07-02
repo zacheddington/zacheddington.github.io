@@ -38,12 +38,12 @@ function clearSensitiveURLParameters() {
 }
 
 // Initialize force password change page functionality
-function initializeForcePasswordChangePage() {
+async function initializeForcePasswordChangePage() {
     // Clear sensitive URL parameters for security
     clearSensitiveURLParameters();
 
     // Check if user is authenticated and actually needs to change password
-    validateForcePasswordAccess();
+    await validateForcePasswordAccess();
     setupForcePasswordForm();
     displayUserInfo();
 
@@ -64,7 +64,7 @@ function initializeForcePasswordChangePage() {
 }
 
 // Validate that user has access to this page
-function validateForcePasswordAccess() {
+async function validateForcePasswordAccess() {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
     if (!token || !userStr) {
@@ -75,6 +75,36 @@ function validateForcePasswordAccess() {
 
     try {
         const user = JSON.parse(userStr);
+
+        // Check server-side status to ensure password change is still required
+        // This prevents access when password was changed on another tab/device
+        const API_URL = window.apiClient.getAPIUrl();
+        const userCheckResponse = await fetch(`${API_URL}/api/user/profile`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (userCheckResponse.ok) {
+            const userProfile = await userCheckResponse.json();
+            if (userProfile.data && !userProfile.data.passwordChangeRequired) {
+                // Password was already changed, update local storage and redirect
+                user.passwordChangeRequired = false;
+                localStorage.setItem('user', JSON.stringify(user));
+
+                // Redirect based on role
+                if (window.authUtils.isAdmin()) {
+                    window.location.href = '/admin/';
+                } else {
+                    window.location.href = '/welcome/';
+                }
+                return;
+            }
+        }
+
+        // Fall back to local storage check if server check fails
         if (!user.passwordChangeRequired) {
             // User doesn't need to change password, redirect based on role
             if (window.authUtils.isAdmin()) {
@@ -85,7 +115,8 @@ function validateForcePasswordAccess() {
             return;
         }
     } catch (error) {
-        console.error('Error parsing user data');
+        console.error('Error validating force password access');
+        // On error, fall back to login redirect for security
         window.location.href = '/';
         return;
     }
@@ -259,6 +290,52 @@ async function changeForcePassword() {
         }
         const token = localStorage.getItem('token');
         const API_URL = window.apiClient.getAPIUrl();
+
+        // First, check if the user still needs to change their password
+        // This prevents the error when password was already changed on another tab/device
+        const userCheckResponse = await fetch(`${API_URL}/api/user/profile`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (userCheckResponse.ok) {
+            const userProfile = await userCheckResponse.json();
+            if (!userProfile.data || !userProfile.data.passwordChangeRequired) {
+                // Password was already changed on another tab/device
+                window.modalManager.showModal(
+                    'info',
+                    'Your password has already been changed on another tab or device. You will now be redirected to your dashboard.',
+                    false,
+                    { redirect: true }
+                );
+
+                // Update local storage to reflect the change
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    try {
+                        const user = JSON.parse(userStr);
+                        user.passwordChangeRequired = false;
+                        localStorage.setItem('user', JSON.stringify(user));
+                    } catch (error) {
+                        console.error('Error updating local user data');
+                    }
+                }
+
+                // Redirect after delay
+                setTimeout(() => {
+                    if (window.authUtils.isAdmin()) {
+                        window.location.href = '/admin/';
+                    } else {
+                        window.location.href = '/welcome/';
+                    }
+                }, 2000);
+                return;
+            }
+        }
+
         response = await fetch(`${API_URL}/api/user/force-change-password`, {
             method: 'PUT',
             headers: {
@@ -315,13 +392,50 @@ async function changeForcePassword() {
 
         if (error.message) {
             errorMessage = error.message;
-        } else if (response && response.status === 400) {
-            // Try to get the error message from the response
+        } else if (response) {
+            // Handle different response status codes
             try {
                 const result = await response.json();
-                errorMessage = result.error || result.message || errorMessage;
+
+                if (response.status === 400) {
+                    errorMessage =
+                        result.error ||
+                        result.message ||
+                        'Invalid request. Please check your input.';
+                } else if (response.status === 500) {
+                    // Server error - likely means password was already changed
+                    if (
+                        result.error &&
+                        result.error.includes('currentPassword')
+                    ) {
+                        errorMessage =
+                            'Your password has already been changed on another tab or device. Please refresh this page or navigate to your dashboard.';
+                    } else {
+                        errorMessage =
+                            result.error ||
+                            result.message ||
+                            'Server error occurred. Your password may have already been changed on another tab or device.';
+                    }
+                } else if (response.status === 409) {
+                    errorMessage =
+                        'Password change conflict. Your password may have already been changed on another tab or device.';
+                } else {
+                    errorMessage =
+                        result.error ||
+                        result.message ||
+                        `Server error (${response.status}). Please try again.`;
+                }
             } catch (parseError) {
-                // If we can't parse the response, use default message
+                // If we can't parse the response, provide status-based messages
+                if (response.status === 500) {
+                    errorMessage =
+                        'Your password may have already been changed on another tab or device. Please refresh this page.';
+                } else if (response.status === 409) {
+                    errorMessage =
+                        'Password change conflict. Your password may have already been changed elsewhere.';
+                } else {
+                    errorMessage = `Server error (${response.status}). Please try again.`;
+                }
             }
         }
 
