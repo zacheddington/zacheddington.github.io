@@ -107,6 +107,9 @@ function setupDateInput(fieldId) {
 
         // Clear any previous validation styling
         clearDateValidation(e.target);
+
+        // Clear any custom validity state to reset browser validation
+        e.target.setCustomValidity('');
     });
 
     // Validate on blur
@@ -127,6 +130,9 @@ function setupDateInput(fieldId) {
         setTimeout(() => {
             formatDateInput(e.target);
             clearDateValidation(e.target);
+
+            // Clear any custom validity state to reset browser validation
+            e.target.setCustomValidity('');
         }, 0);
     });
 
