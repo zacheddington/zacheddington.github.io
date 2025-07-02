@@ -131,14 +131,12 @@ const modalManager = {
                         button.style.backgroundColor = '#17a2b8';
                         button.style.color = 'white';
                     }
-                } // Auto-apply proper background click handling to all modals
+                }
+
+                // Auto-apply proper background click handling to all modals
                 setTimeout(() => {
                     addModalBackgroundClickHandler(modal, () => {
-                        if (typeof closeHandler === 'function') {
-                            closeHandler();
-                        } else {
-                            this.closeModal();
-                        }
+                        this.closeModal();
                     });
                 }, 0);
 
@@ -445,6 +443,9 @@ const modalManager = {
                 }
             });
 
+            // Add background click handler
+            addModalBackgroundClickHandler(modalElement, cancelHandler);
+
             // Focus the modal for keyboard navigation
             modalElement.focus();
         }, 10);
@@ -561,6 +562,73 @@ function addModalBackgroundClickHandler(modal, closeHandler) {
         }
         mouseDownTarget = null; // Reset after handling
     });
+}
+
+/**
+ * Automatically initialize background click handlers for all existing modals on the page
+ * This ensures that static HTML modals also get the proper background click behavior
+ */
+function initializeExistingModals() {
+    // Find all elements with class 'modal' that don't already have handlers
+    const modals = document.querySelectorAll('.modal');
+
+    modals.forEach((modal) => {
+        // Skip if already has background click handler
+        if (modal.hasAttribute('data-background-click-initialized')) {
+            return;
+        }
+
+        // Look for a close function based on modal ID
+        const modalId = modal.id;
+        let closeHandler = null;
+
+        if (modalId) {
+            // Try to find a corresponding close function
+            const closeFunction =
+                window[
+                    `close${modalId.charAt(0).toUpperCase() + modalId.slice(1)}`
+                ];
+            if (typeof closeFunction === 'function') {
+                closeHandler = closeFunction;
+            }
+
+            // Common patterns for close function names
+            if (!closeHandler) {
+                const patterns = [
+                    `close${modalId}`,
+                    `hide${modalId}`,
+                    `dismiss${modalId}`,
+                ];
+
+                for (const pattern of patterns) {
+                    if (
+                        window[pattern] &&
+                        typeof window[pattern] === 'function'
+                    ) {
+                        closeHandler = window[pattern];
+                        break;
+                    }
+                }
+            }
+        }
+
+        // If we found a close handler, add background click behavior
+        if (closeHandler) {
+            addModalBackgroundClickHandler(modal, closeHandler);
+            modal.setAttribute('data-background-click-initialized', 'true');
+        }
+    });
+}
+
+// Make the initialization function globally available
+window.initializeExistingModals = initializeExistingModals;
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeExistingModals);
+} else {
+    // DOM is already ready
+    initializeExistingModals();
 }
 
 // Make modal functions globally available

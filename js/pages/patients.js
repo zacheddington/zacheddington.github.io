@@ -1173,9 +1173,6 @@ function setupEditPatientModal() {
         cancelBtn.addEventListener('click', closeEditPatientModal);
     }
 
-    // Close modal when clicking outside (now automatic via modal-manager.js)
-    // No explicit code needed - modal-manager handles this automatically
-
     // Handle form submission
     if (form) {
         form.addEventListener('submit', handleEditPatientSubmit);
