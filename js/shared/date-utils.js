@@ -151,11 +151,9 @@ function setupDateInput(fieldId) {
 
 // Clear date validation styling
 function clearDateValidation(input) {
+    // Remove any existing error/success messages only (no visual styling)
     const formGroup = input.closest('.form-group');
     if (formGroup) {
-        formGroup.classList.remove('error', 'success');
-
-        // Remove any existing error/success messages
         const existingMessage = formGroup.querySelector(
             '.error-message, .success-message'
         );
@@ -167,25 +165,18 @@ function clearDateValidation(input) {
 
 // Show date validation error
 function showDateValidationError(input, message) {
-    const formGroup = input.closest('.form-group');
-    if (formGroup) {
-        clearDateValidation(input);
-
-        formGroup.classList.add('error');
-
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.textContent = message;
-        formGroup.appendChild(errorDiv);
-    }
+    // For consistency with other fields, don't show visual error feedback
+    // Just clear any existing messages and let form submission handle validation
+    clearDateValidation(input);
 }
 
 // Show date validation success
 function showDateValidationSuccess(input) {
+    // Only clear validation messages without adding visual styling
     const formGroup = input.closest('.form-group');
     if (formGroup) {
         clearDateValidation(input);
-        formGroup.classList.add('success');
+        // No success styling for consistency with other fields
     }
 }
 
