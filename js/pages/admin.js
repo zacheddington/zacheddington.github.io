@@ -1364,7 +1364,7 @@ function displaySessions(sessions) {
                 <td>${escapeHtml(session.ip_address || 'Unknown')}</td>
                 <td>${escapeHtml(session.browser_info || 'Unknown')}</td>
                 <td>
-                    <div class="session-actions">
+                    <div class="table-actions">
                         ${revokeButton}
                     </div>
                 </td>
@@ -1654,9 +1654,7 @@ function setSessionActionLoading(sessionId, isLoading) {
     );
     if (!sessionRow) return;
 
-    const actionButtons = sessionRow.querySelectorAll(
-        '.session-actions button'
-    );
+    const actionButtons = sessionRow.querySelectorAll('.table-actions button');
 
     if (isLoading) {
         actionButtons.forEach((btn) => {

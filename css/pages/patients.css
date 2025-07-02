@@ -44,14 +44,7 @@
     max-width: 100%;
 }
 
-.patient-actions {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-    min-width: 120px;
-    padding: 0.25rem;
-}
+/* Patient action buttons are now handled by unified table-actions in tables.css */
 
 .accepts-texts {
     padding: 0.25rem 0.5rem;

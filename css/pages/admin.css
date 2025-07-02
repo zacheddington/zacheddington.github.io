@@ -33,12 +33,7 @@
     background-color: currentColor;
 }
 
-/* Session action buttons */
-.session-actions {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
+/* Session action buttons are now handled by unified table-actions in tables.css */
 
 .btn-session-revoke {
     background: #dc3545;

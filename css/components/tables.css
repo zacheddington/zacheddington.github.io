@@ -253,8 +253,7 @@
 }
 
 /* Table Actions */
-.table-actions,
-.session-actions {
+.table-actions {
     display: flex;
     flex-direction: row;
     gap: 0.5rem;
@@ -268,8 +267,7 @@
 }
 
 /* Ensure action buttons are properly centered and side by side */
-.table-actions button,
-.session-actions button {
+.table-actions button {
     margin: 0;
     flex-shrink: 0;
     display: inline-flex;
@@ -278,21 +276,18 @@
 }
 
 /* Center the actions cell content - multiple approaches for browser compatibility */
-.data-table td:has(.table-actions),
-.data-table td:has(.session-actions) {
+.data-table td:has(.table-actions) {
     text-align: center;
     vertical-align: middle;
 }
 
 /* Fallback for browsers that don't support :has() */
-.data-table td .table-actions,
-.data-table td .session-actions {
+.data-table td .table-actions {
     margin: 0 auto;
 }
 
 /* Additional fallback - target cells containing action buttons directly */
-.data-table td.table-actions,
-.data-table td.session-actions {
+.data-table td.table-actions {
     text-align: center;
     vertical-align: middle;
 }
@@ -300,7 +295,7 @@
 /* Ensure any cell with action buttons gets centered */
 .data-table td:last-child:has(button),
 .data-table td.actions,
-.data-table td[class*="actions"] {
+.data-table td[class*='actions'] {
     text-align: center;
     vertical-align: middle;
 }
@@ -321,13 +316,11 @@
     }
 
     /* Keep action buttons side by side even on smaller screens */
-    .table-actions,
-    .session-actions {
+    .table-actions {
         gap: 0.25rem;
     }
 
-    .table-actions button,
-    .session-actions button {
+    .table-actions button {
         width: 28px;
         height: 28px;
         padding: 6px;
