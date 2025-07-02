@@ -17,13 +17,10 @@ function formatDateInput(input) {
 
 // Validate date format and values
 function validateDateInput(dateString) {
-    console.log('🔍 DateUtils: Validating date:', dateString);
-
     // Check format MM/DD/YYYY
     const dateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
 
     if (!dateRegex.test(dateString)) {
-        console.log('🔍 DateUtils: Date format invalid');
         return {
             valid: false,
             error: 'Please enter date in MM/DD/YYYY format',
@@ -33,8 +30,6 @@ function validateDateInput(dateString) {
     const [month, day, year] = dateString
         .split('/')
         .map((num) => parseInt(num, 10));
-
-    console.log('🔍 DateUtils: Parsed date parts:', { month, day, year });
 
     // Create date object using setFullYear to handle years before 1900 properly
     const date = new Date();
@@ -47,11 +42,8 @@ function validateDateInput(dateString) {
         date.getDate() !== day ||
         date.getFullYear() !== year
     ) {
-        console.log('🔍 DateUtils: Date is invalid (e.g., 02/30/2023)');
         return { valid: false, error: 'Please enter a valid date' };
     }
-
-    console.log('🔍 DateUtils: Date is valid calendar date');
 
     // Check if date is not too far in the past (reasonable birth date) FIRST
     const minDate = new Date();
