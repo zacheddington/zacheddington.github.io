@@ -611,6 +611,14 @@ input.password-mismatch {
     max-width: 160px; /* Maximum width */
 }
 
+/* When small fields wrap to new line, allow them to grow to prevent right-alignment */
+@media (max-width: 768px) {
+    .form-group.small {
+        flex: 1 1 120px; /* Allow growth on smaller screens to prevent right-alignment */
+        max-width: none; /* Remove max-width constraint on smaller screens */
+    }
+}
+
 /* Medium fields for names, cities */
 .form-group.medium {
     flex: 1 1 140px; /* Grow and shrink, 140px preferred */
