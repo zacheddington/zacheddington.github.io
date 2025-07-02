@@ -104,29 +104,13 @@ textarea:focus {
    UNIFIED FORM STYLES
    ================================ */
 
-.admin-form {
+.form {
     display: flex;
     flex-direction: column;
     gap: var(--space-xl);
 }
 
-.admin-form label {
-    margin-bottom: 0.5rem;
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-primary);
-}
-
-/* ================================
-   PROFILE FORM STYLES
-   ================================ */
-
-.profile-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-}
-
-.profile-form label {
+.form label {
     margin-bottom: 0.5rem;
     font-weight: var(--font-weight-semibold);
     color: var(--color-primary);
@@ -519,24 +503,8 @@ input.password-mismatch {
     color: #721c24;
 }
 
-/* ================================
-   PROFILE FORM STYLES
-   ================================ */
-
-.profile-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-}
-
-.profile-form label {
-    margin-bottom: 0.5rem;
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-primary);
-}
-
 /* Profile form disabled styling */
-.profile-form input:disabled {
+.form input:disabled {
     background: #f5f5f5 !important;
     cursor: not-allowed !important;
     color: #6c757d !important;
