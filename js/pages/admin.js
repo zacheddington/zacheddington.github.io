@@ -1583,7 +1583,7 @@ function updateSessionStats() {
 // Show/hide sessions loading state
 function showSessionsLoading(isLoading) {
     const loadingIndicator = document.getElementById('sessionsLoading');
-    const sessionsTable = document.querySelector('.sessions-table');
+    const sessionsTable = document.querySelector('#sessionsTable');
 
     if (loadingIndicator) {
         if (isLoading) {

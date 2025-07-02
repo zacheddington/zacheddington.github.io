@@ -143,6 +143,11 @@ async function initializeManagePatientsPage() {
     // Setup delete patient modal
     setupDeletePatientModal();
 
+    // Initialize table sorting and resizing
+    if (window.initializeDataTables) {
+        window.initializeDataTables();
+    }
+
     // Tables are auto-initialized by table-utils.js
 }
 
