@@ -172,6 +172,7 @@
                 </form>
             </div>
         </div>
+        <!-- Load shared modules first -->
         <script src="../../js/shared/autofill-protection.js"></script>
         <script src="../../js/shared/api-client.js"></script>
         <script src="../../js/shared/modal-manager.js"></script>
@@ -180,7 +181,11 @@
         <script src="../../js/shared/auth-utils.js"></script>
         <script src="../../js/shared/page-transitions.js"></script>
         <script src="../../js/shared/navigation.js"></script>
+
+        <!-- Load page-specific module -->
         <script src="../../js/pages/admin.js"></script>
+
+        <!-- Load main controller -->
         <script src="../../js/main.js"></script>
     </body>
 </html>
