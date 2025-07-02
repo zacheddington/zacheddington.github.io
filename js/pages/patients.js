@@ -501,9 +501,6 @@ async function createPatient() {
     let response = null;
 
     try {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Creating Patient...';
-
         // Pre-flight connectivity check
         const connectivity = await window.apiClient.checkConnectivity();
         if (!connectivity.connected) {
@@ -524,6 +521,10 @@ async function createPatient() {
             // Clear any previous custom validity
             dobInput.setCustomValidity('');
         }
+
+        // Set loading state ONLY after validation passes
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating Patient...';
 
         // Get form data
         const formData = {
@@ -1243,7 +1244,7 @@ async function handleEditPatientSubmit(event) {
     const API_URL = window.apiClient.getAPIUrl();
     const token = localStorage.getItem('token');
 
-    // Show loading state
+    // Show loading state ONLY after validation passes
     const submitBtn = form.querySelector('button[type="submit"]');
     const btnText = submitBtn.querySelector('.btn-text');
     const btnLoading = submitBtn.querySelector('.btn-loading');
