@@ -650,17 +650,12 @@ async function createPatient() {
             throw new Error(result.error || 'Failed to create patient');
         }
     } catch (error) {
-        console.error('Patient creation failed');
+        console.error('Patient creation failed', error);
 
-        // Use enhanced error categorization
-        const errorInfo = window.apiClient.categorizeError(error, response);
-
-        // Show appropriate feedback based on error type
-        if (errorInfo.modal) {
-            window.modalManager.showModal('error', errorInfo.message);
-        } else {
-            showCreatePatientError(errorInfo.message);
-        }
+        // Show error message via modal
+        const errorMessage =
+            error.message || 'Failed to create patient. Please try again.';
+        window.modalManager.showModal('error', errorMessage);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
