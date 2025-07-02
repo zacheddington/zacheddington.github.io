@@ -1210,15 +1210,26 @@ async function handleEditPatientSubmit(event) {
         return;
     }
 
+    // Validate date of birth first (before collecting form data)
+    const dobInput = form.querySelector('input[name="dateOfBirth"]');
+    const dobValidation = window.dateUtils.validateDateInput(dobInput.value);
+    if (!dobValidation.valid) {
+        // Set custom validity message for browser tooltip
+        dobInput.setCustomValidity(dobValidation.error);
+        dobInput.reportValidity(); // Show the tooltip
+        return;
+    } else {
+        // Clear any previous custom validity
+        dobInput.setCustomValidity('');
+    }
+
     // Get form data
     const formData = new FormData(form);
     const patientData = {
         firstName: formData.get('firstName'),
         middleName: formData.get('middleName') || '',
         lastName: formData.get('lastName'),
-        dateOfBirth: window.dateUtils.convertToISODate(
-            formData.get('dateOfBirth')
-        ),
+        dateOfBirth: window.dateUtils.convertToISODate(dobInput.value),
         phone: formData.get('phone'),
         acceptsTexts: formData.get('acceptsTexts'),
         address1: formData.get('address1'),

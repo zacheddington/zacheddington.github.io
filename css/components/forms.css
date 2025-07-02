@@ -511,7 +511,7 @@ input.password-mismatch {
     border-color: #dee2e6 !important;
 }
 
-.profile-form input[readonly] {
+.form input[readonly] {
     background: #f8f9fa;
     cursor: not-allowed;
 }
