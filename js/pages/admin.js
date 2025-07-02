@@ -818,6 +818,9 @@ function displayUsers(users) {
     if (window.autoReapplyTableFilter) {
         window.autoReapplyTableFilter('usersTable');
     }
+
+    // Setup revert functionality for role select dropdowns
+    setupRoleSelectRevertFunctionality();
 }
 
 // Filter users
@@ -929,6 +932,18 @@ async function editUserRole(userId, newRoleKey) {
                     if (response.ok) {
                         // Update successful - refresh user data
                         await loadUsers();
+
+                        // Update the original value for the role select dropdown
+                        const roleSelect = document.querySelector(
+                            `select[onchange*="${userId}"]`
+                        );
+                        if (
+                            roleSelect &&
+                            typeof roleSelect.updateOriginalValue === 'function'
+                        ) {
+                            roleSelect.updateOriginalValue();
+                        }
+
                         window.modalManager.showModal(
                             'success',
                             'User role updated successfully!'
@@ -1662,6 +1677,33 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Setup revert functionality for role select dropdowns
+function setupRoleSelectRevertFunctionality() {
+    // Find all role select dropdowns
+    const roleSelects = document.querySelectorAll('.role-select');
+
+    roleSelects.forEach((roleSelect) => {
+        // Store the original value when the dropdown is first set up
+        if (!roleSelect.hasAttribute('data-original-value')) {
+            roleSelect.setAttribute('data-original-value', roleSelect.value);
+        }
+
+        // Add revert function to the dropdown element
+        roleSelect.revertToOriginal = function () {
+            const originalValue = this.getAttribute('data-original-value');
+            if (originalValue !== null) {
+                this.value = originalValue;
+            }
+        };
+
+        // Update the stored original value when the change is confirmed (after successful API call)
+        // This will be called from the success callback in editUserRole
+        roleSelect.updateOriginalValue = function () {
+            this.setAttribute('data-original-value', this.value);
+        };
+    });
 }
 
 // Make functions available globally
