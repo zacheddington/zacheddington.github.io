@@ -108,17 +108,7 @@
     margin-top: var(--space-lg);
 }
 
-.modal-content .form-group {
-    margin-bottom: var(--space-lg);
-}
-
-.modal-content .form-group label {
-    display: block;
-    margin-bottom: var(--space-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-primary);
-}
-
+/* Only apply specific modal styling to legacy modal inputs, not unified form groups */
 .modal-content .modal-input {
     width: 100%;
     padding: var(--space-md);
