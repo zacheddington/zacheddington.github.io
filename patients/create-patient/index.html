@@ -5,10 +5,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Create Patient - Integris Neuro</title>
         <base href="/" />
-        <meta
-            http-equiv="Cache-Control"
-            content="no-cache, no-store, must-revalidate"
-        />
+        <meta http-equiv="Cache-C
+        <script src="../../js/shared/api-client.js"></script>
+        <script src="../../js/shared/modal-manager.js"></script>
+        <script src="../../js/shared/password-utils.js"></script>
+        <script src="../../js/shared/field-validation.js"></script>
+        <script src="../../js/shared/date-utils.js"></script>
+        <script src="../../js/shared/structured-address.js"></script>
+        l" content="no-cache, no-store, must-revalidate" />
         <meta http-equiv="Pragma" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
         <link rel="stylesheet" href="../../css/main.css" />
@@ -80,15 +84,19 @@
                                     >Date of Birth</label
                                 >
                                 <input
-                                    type="date"
+                                    type="text"
                                     id="patientDateOfBirth"
                                     name="dateOfBirth"
                                     required
+                                    placeholder="MM/DD/YYYY"
+                                    maxlength="10"
                                     autocomplete="bday"
-                                    max=""
-                                    min="1900-01-01"
+                                    pattern="^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$"
+                                    title="Enter date in MM/DD/YYYY format"
                                 />
-                                <small class="field-note">Required</small>
+                                <small class="field-note"
+                                    >MM/DD/YYYY format</small
+                                >
                             </div>
                             <div class="form-group medium">
                                 <label for="patientPhone">Phone Number</label>

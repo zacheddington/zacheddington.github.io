@@ -4,19 +4,22 @@
 // Global state for patient management
 let allPatients = [];
 
-// Utility function to format date without timezone issues
+// Utility function to format date for display in tables (using unified format)
 function formatDateForDisplay(dateString) {
     if (!dateString) return 'Not provided';
 
     try {
-        // Split the date string to avoid timezone issues
-        const dateParts = dateString.split('T')[0].split('-'); // Get YYYY-MM-DD part
+        // Use the unified date utils for consistent formatting
+        if (window.dateUtils && window.dateUtils.convertFromISODate) {
+            return window.dateUtils.convertFromISODate(dateString);
+        }
+
+        // Fallback for legacy support
+        const dateParts = dateString.split('T')[0].split('-');
         if (dateParts.length === 3) {
             const year = parseInt(dateParts[0]);
-            const month = parseInt(dateParts[1]) - 1; // Month is 0-indexed
+            const month = parseInt(dateParts[1]) - 1;
             const day = parseInt(dateParts[2]);
-
-            // Create date with local timezone
             const date = new Date(year, month, day);
             return date.toLocaleDateString();
         }
@@ -312,12 +315,10 @@ function setupCreatePatientFieldValidation() {
         }
     });
 
-    // Set up date of birth field
-    const dobInput = document.getElementById('patientDateOfBirth');
-    if (dobInput) {
-        // Set max date to today
-        const today = new Date().toISOString().split('T')[0];
-        dobInput.setAttribute('max', today);
+    // Set up date of birth field with new formatting
+    if (window.dateUtils) {
+        window.dateUtils.setupDateInput('patientDateOfBirth');
+        window.dateUtils.setupDateInput('editPatientDateOfBirth');
     }
 
     // Set up phone number formatting
@@ -516,7 +517,9 @@ async function createPatient() {
                 .getElementById('patientMiddleName')
                 .value.trim(),
             lastName: document.getElementById('patientLastName').value.trim(),
-            dateOfBirth: document.getElementById('patientDateOfBirth').value,
+            dateOfBirth: window.dateUtils.convertToISODate(
+                document.getElementById('patientDateOfBirth').value
+            ),
             address1: document.getElementById('patientAddress1').value.trim(),
             address2: document.getElementById('patientAddress2').value.trim(),
             city: document.getElementById('patientCity').value.trim(),
@@ -561,21 +564,15 @@ async function createPatient() {
             throw new Error('City must be 50 characters or less.');
         }
 
-        // Validate date of birth
-        const today = new Date();
-        const birthDate = new Date(formData.dateOfBirth);
-
-        if (isNaN(birthDate.getTime())) {
-            throw new Error('Please enter a valid date of birth.');
+        // Validate date of birth using new date validation system
+        const dobInput = document.getElementById('patientDateOfBirth');
+        const validation = window.dateUtils.validateDateInput(dobInput.value);
+        if (!validation.valid) {
+            throw new Error(validation.error);
         }
 
-        if (birthDate >= today) {
-            throw new Error('Date of birth must be in the past.');
-        }
-
-        // Check if age is reasonable (not more than 150 years old)
-        const age = today.getFullYear() - birthDate.getFullYear();
-        if (age > 150) {
+        // Ensure we have a valid converted date
+        if (!formData.dateOfBirth) {
             throw new Error('Please enter a valid date of birth.');
         }
 
@@ -961,35 +958,12 @@ async function editPatient(patientId) {
         document.getElementById('editPatientLastName').value =
             patient.last_name || '';
 
-        // Format date properly for input field
+        // Convert date of birth from ISO format to display format (MM/DD/YYYY)
         let dateValue = '';
         if (patient.date_of_birth) {
-            try {
-                // Handle different date formats that might come from backend
-                let dateStr = patient.date_of_birth;
-
-                // If it contains 'T', split on that first
-                if (dateStr.includes('T')) {
-                    dateStr = dateStr.split('T')[0];
-                }
-
-                // Ensure the date format is valid YYYY-MM-DD
-                const dateParts = dateStr.split('-');
-                if (dateParts.length === 3) {
-                    // Ensure year is only 4 digits
-                    const year = dateParts[0].substring(0, 4);
-                    const month = dateParts[1].padStart(2, '0');
-                    const day = dateParts[2].padStart(2, '0');
-                    dateValue = `${year}-${month}-${day}`;
-                }
-            } catch (error) {
-                console.warn(
-                    'Invalid date format for patient:',
-                    patient.date_of_birth,
-                    error
-                );
-                dateValue = '';
-            }
+            dateValue = window.dateUtils.convertFromISODate(
+                patient.date_of_birth
+            );
         }
         document.getElementById('editPatientDateOfBirth').value = dateValue;
         document.getElementById('editPatientPhone').value = patient.phone || '';
@@ -1244,7 +1218,9 @@ async function handleEditPatientSubmit(event) {
         firstName: formData.get('firstName'),
         middleName: formData.get('middleName') || '',
         lastName: formData.get('lastName'),
-        dateOfBirth: formData.get('dateOfBirth'),
+        dateOfBirth: window.dateUtils.convertToISODate(
+            formData.get('dateOfBirth')
+        ),
         phone: formData.get('phone'),
         acceptsTexts: formData.get('acceptsTexts'),
         address1: formData.get('address1'),

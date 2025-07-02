@@ -16,6 +16,7 @@ const APP_CONFIG = {
         'modal-manager',
         'password-utils',
         'field-validation',
+        'date-utils',
         'auth-utils',
         'navigation',
         'table-utils',
@@ -189,6 +190,25 @@ function initializePage(page) {
         default:
             // Navigation is loaded centrally above for authenticated pages
             break;
+    }
+
+    // Initialize date inputs globally after page-specific initialization
+    initializeGlobalDateInputs();
+}
+
+// Global date input initialization - automatically finds and sets up all date inputs
+function initializeGlobalDateInputs() {
+    if (window.dateUtils && window.dateUtils.setupDateInput) {
+        // Find all date inputs with common patterns and set them up
+        const dateInputs = document.querySelectorAll(
+            'input[data-date], input[placeholder*="MM/DD/YYYY"], input[placeholder*="mm/dd/yyyy"], input[name*="date"], input[id*="date"], input[name*="birth"], input[id*="birth"]'
+        );
+
+        dateInputs.forEach((input) => {
+            if (input.type === 'text' && input.id) {
+                window.dateUtils.setupDateInput(input.id);
+            }
+        });
     }
 }
 
