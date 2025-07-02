@@ -76,37 +76,63 @@ async function validateForcePasswordAccess() {
     try {
         const user = JSON.parse(userStr);
 
-        // Check server-side status to ensure password change is still required
-        // This prevents access when password was changed on another tab/device
-        const API_URL = window.apiClient.getAPIUrl();
-        const userCheckResponse = await fetch(`${API_URL}/api/user/profile`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (userCheckResponse.ok) {
-            const userProfile = await userCheckResponse.json();
-            if (userProfile.data && !userProfile.data.passwordChangeRequired) {
-                // Password was already changed, update local storage and redirect
-                user.passwordChangeRequired = false;
-                localStorage.setItem('user', JSON.stringify(user));
-
-                // Redirect based on role
-                if (window.authUtils.isAdmin()) {
-                    window.location.href = '/admin/';
-                } else {
-                    window.location.href = '/welcome/';
-                }
-                return;
-            }
+        // First check local storage - if password change is required, stay on this page
+        if (user.passwordChangeRequired === true) {
+            // User needs to change password, stay on this page
+            return;
         }
 
-        // Fall back to local storage check if server check fails
+        // If local storage says no password change needed, double-check with server
+        // This handles cases where localStorage might be stale
+        const API_URL = window.apiClient.getAPIUrl();
+        try {
+            const userCheckResponse = await fetch(
+                `${API_URL}/api/user/profile`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (userCheckResponse.ok) {
+                const userProfile = await userCheckResponse.json();
+                if (
+                    userProfile.data &&
+                    userProfile.data.passwordChangeRequired
+                ) {
+                    // Server says password change is still required, update local storage
+                    user.passwordChangeRequired = true;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    return; // Stay on this page
+                } else if (
+                    userProfile.data &&
+                    !userProfile.data.passwordChangeRequired
+                ) {
+                    // Server confirms no password change needed, redirect
+                    user.passwordChangeRequired = false;
+                    localStorage.setItem('user', JSON.stringify(user));
+
+                    // Redirect based on role
+                    if (window.authUtils.isAdmin()) {
+                        window.location.href = '/admin/';
+                    } else {
+                        window.location.href = '/welcome/';
+                    }
+                    return;
+                }
+            }
+        } catch (serverError) {
+            console.warn(
+                'Could not verify password change status with server, using local storage'
+            );
+            // If server check fails, fall back to local storage value
+        }
+
+        // If we reach here and local storage says no password change needed, redirect
         if (!user.passwordChangeRequired) {
-            // User doesn't need to change password, redirect based on role
             if (window.authUtils.isAdmin()) {
                 window.location.href = '/admin/';
             } else {

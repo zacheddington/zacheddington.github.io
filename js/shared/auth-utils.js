@@ -214,6 +214,138 @@ function checkPasswordChangeRequired() {
     }
 }
 
+// Global password change enforcement - logs out users who need to change password
+// but are accessing other pages (security measure)
+async function enforcePasswordChangeRequirement() {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+
+    // Skip if not authenticated
+    if (!token || !userStr) {
+        return;
+    }
+
+    // Skip if already on force-password page
+    if (window.location.pathname.startsWith('/force-password-change/')) {
+        return;
+    }
+
+    // Skip if on login page
+    if (
+        window.location.pathname === '/' ||
+        window.location.pathname.includes('login')
+    ) {
+        return;
+    }
+
+    try {
+        const user = JSON.parse(userStr);
+
+        // If user needs to change password but is not on the force-password page,
+        // this is a security violation - log them out
+        if (user.passwordChangeRequired) {
+            console.warn(
+                'Security violation: User with password change requirement accessed protected page. Logging out.'
+            );
+
+            // Show warning message
+            if (window.modalManager) {
+                window.modalManager.showModal(
+                    'error',
+                    'You must change your password before accessing this page. You have been logged out for security reasons.',
+                    false,
+                    { redirect: true }
+                );
+            }
+
+            // Force logout after short delay
+            setTimeout(() => {
+                // Clear all authentication data
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                sessionStorage.clear();
+
+                // Redirect to login
+                window.location.href = '/';
+            }, 2000);
+
+            return true; // Indicates logout was triggered
+        }
+
+        // Optionally verify with server periodically (but not on every page load to avoid performance issues)
+        const lastServerCheck = localStorage.getItem('lastPasswordStatusCheck');
+        const now = Date.now();
+        const checkInterval = 5 * 60 * 1000; // 5 minutes
+
+        if (
+            !lastServerCheck ||
+            now - parseInt(lastServerCheck) > checkInterval
+        ) {
+            try {
+                const API_URL = window.apiClient?.getAPIUrl();
+                if (API_URL) {
+                    const userCheckResponse = await fetch(
+                        `${API_URL}/api/user/profile`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    );
+
+                    if (userCheckResponse.ok) {
+                        const userProfile = await userCheckResponse.json();
+                        if (
+                            userProfile.data &&
+                            userProfile.data.passwordChangeRequired &&
+                            !user.passwordChangeRequired
+                        ) {
+                            // Server says password change is required but local storage doesn't reflect this
+                            // Update local storage and redirect
+                            user.passwordChangeRequired = true;
+                            localStorage.setItem('user', JSON.stringify(user));
+
+                            console.warn(
+                                'Server indicates password change required. Redirecting to force-password page.'
+                            );
+                            window.location.href = '/force-password-change/';
+                            return true;
+                        } else if (
+                            userProfile.data &&
+                            !userProfile.data.passwordChangeRequired &&
+                            user.passwordChangeRequired
+                        ) {
+                            // Server says password change is not required but local storage says it is
+                            // Update local storage
+                            user.passwordChangeRequired = false;
+                            localStorage.setItem('user', JSON.stringify(user));
+                        }
+
+                        // Update last check timestamp
+                        localStorage.setItem(
+                            'lastPasswordStatusCheck',
+                            now.toString()
+                        );
+                    }
+                }
+            } catch (serverError) {
+                console.warn(
+                    'Could not verify password status with server:',
+                    serverError
+                );
+                // Don't fail the whole check if server is unreachable
+            }
+        }
+
+        return false; // No logout triggered
+    } catch (error) {
+        console.error('Error in password change enforcement:', error);
+        return false;
+    }
+}
+
 // Utility functions for admin detection and menu management
 function isUserAdmin(userData) {
     if (!userData) {
@@ -472,6 +604,7 @@ async function logout(reason = 'User logout') {
 window.authUtils = {
     isAuthenticated,
     checkPasswordChangeRequired,
+    enforcePasswordChangeRequirement,
     isAdmin: isUserAdmin,
     isUserAdmin: isUserAdmin, // Add this for navigation.js compatibility
     updateAdminUI,
@@ -500,3 +633,6 @@ window.checkTokenValidity = checkTokenValidity;
 window.handleAuthError = handleAuthError;
 window.handleSessionExpiration = handleSessionExpiration;
 window.initializeGlobalTokenMonitoring = initializeGlobalTokenMonitoring;
+
+// Immediately invoke password change enforcement on script load
+enforcePasswordChangeRequirement();
