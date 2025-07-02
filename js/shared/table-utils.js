@@ -492,13 +492,15 @@ function setupTableSorting(table, tableId) {
         return;
     }
 
-    // Store original row order
-    const originalRows = Array.from(tbody.querySelectorAll('tr')).map((row) =>
-        row.cloneNode(true)
-    );
-    table.dataset.originalRows = JSON.stringify(
-        originalRows.map((row) => row.outerHTML)
-    );
+    // Store original row order - just store the order, not the HTML content
+    const originalRows = Array.from(tbody.querySelectorAll('tr'));
+
+    // Store row identifiers to track original order
+    originalRows.forEach((row, index) => {
+        row.dataset.originalIndex = index;
+    });
+
+    table.dataset.hasOriginalOrder = 'true';
 
     headers.forEach((header, index) => {
         // Skip the last column (Actions) - don't make it sortable
@@ -637,19 +639,45 @@ function getCellSortValue(cell) {
  */
 function resetTableToOriginalOrder(table) {
     const tbody = table.querySelector('tbody');
-    const originalRowsData = table.dataset.originalRows;
 
-    if (originalRowsData) {
-        try {
-            const originalRowsHtml = JSON.parse(originalRowsData);
-            tbody.innerHTML = originalRowsHtml.join('');
-
-            // Re-initialize dropdowns after resetting
-            setupDropdownRevertHandlers(table);
-        } catch (e) {
-            console.error('Error restoring original table order:', e);
-        }
+    if (!table.dataset.hasOriginalOrder) {
+        return;
     }
+
+    // Get all current rows and sort them by their original index
+    const currentRows = Array.from(tbody.querySelectorAll('tr'));
+
+    // Sort rows back to original order based on originalIndex
+    currentRows.sort((a, b) => {
+        const aIndex = parseInt(a.dataset.originalIndex) || 0;
+        const bIndex = parseInt(b.dataset.originalIndex) || 0;
+        return aIndex - bIndex;
+    });
+
+    // Re-append rows in original order
+    currentRows.forEach((row) => {
+        tbody.appendChild(row);
+    });
+}
+
+/**
+ * Update the original row order for a table (call this after loading new data)
+ */
+function updateTableOriginalOrder(tableId) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    // Store row identifiers to track original order
+    rows.forEach((row, index) => {
+        row.dataset.originalIndex = index;
+    });
+
+    table.dataset.hasOriginalOrder = 'true';
 }
 
 /**
@@ -853,9 +881,14 @@ if (document.readyState === 'loading') {
     initializeTables();
 }
 
+// Make key functions available globally for easy access
+window.initializeDataTables = initializeDataTables;
+window.updateTableOriginalOrder = updateTableOriginalOrder;
+
 // Export for manual initialization if needed
 window.TableUtils = {
     initializeDataTables,
+    updateTableOriginalOrder,
     initializeTableFiltering,
     setupTableFiltering,
     setupDropdownRevertHandlers,
