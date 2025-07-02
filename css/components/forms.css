@@ -7,6 +7,8 @@
     display: flex;
     flex-direction: column;
     margin-bottom: var(--space-md);
+    flex: 1 1 0; /* Unified: grow equally, shrink, no base width */
+    min-width: 140px; /* Unified minimum width before wrapping */
 }
 
 .form-group label {
@@ -28,7 +30,7 @@
     gap: var(--space-md);
     flex-wrap: wrap;
     justify-content: flex-start; /* Left-align wrapped items */
-    align-items: flex-start; /* Top-align for consistency when wrapped */
+    align-items: flex-end; /* Bottom-align for better visual consistency */
     margin-bottom: var(--space-md);
     width: 100%;
 }
@@ -42,14 +44,14 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start; /* Left-align wrapped items */
-    align-items: flex-start; /* Top-align for consistency */
+    align-items: flex-end; /* Bottom-align for better visual consistency */
     gap: var(--space-md);
     width: 100%;
 }
 
 .form-group-responsive {
-    flex: 1 1 200px; /* Grow, shrink, 200px base */
-    min-width: 150px; /* Minimum before wrapping */
+    flex: 1 1 150px; /* Grow, shrink, 150px base */
+    min-width: 120px; /* Minimum before wrapping */
     box-sizing: border-box;
 }
 
@@ -101,33 +103,13 @@ textarea:focus {
 }
 
 /* ================================
-   ADMIN FORM STYLES
+   UNIFIED FORM STYLES
    ================================ */
 
 .admin-form {
     display: flex;
     flex-direction: column;
     gap: var(--space-xl);
-}
-
-.admin-form .form-row {
-    display: flex;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-    justify-content: flex-start; /* Left-align wrapped items */
-    align-items: flex-start; /* Top-align for consistency */
-    margin-bottom: var(--space-md);
-}
-
-.admin-form .form-row:last-child {
-    margin-bottom: 0;
-}
-
-.admin-form .form-group {
-    flex: 1 1 200px; /* Grow, shrink, 200px base for progressive wrapping */
-    min-width: 180px; /* Minimum before wrapping */
-    display: flex;
-    flex-direction: column;
 }
 
 .admin-form label {
@@ -144,26 +126,6 @@ textarea:focus {
     display: flex;
     flex-direction: column;
     gap: var(--space-lg);
-}
-
-.profile-form .form-row {
-    display: flex;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-    justify-content: flex-start; /* Left-align wrapped items */
-    align-items: flex-start; /* Top-align for consistency */
-    margin-bottom: var(--space-md);
-}
-
-.profile-form .form-row:last-child {
-    margin-bottom: 0;
-}
-
-.profile-form .form-group {
-    flex: 1 1 180px; /* Grow, shrink, 180px base for progressive wrapping */
-    min-width: 150px; /* Minimum before wrapping */
-    display: flex;
-    flex-direction: column;
 }
 
 .profile-form label {
@@ -584,163 +546,59 @@ textarea:disabled:focus {
     box-sizing: border-box;
 }
 
-/* TABLET LANDSCAPE (768px - 991px) */
-@media screen and (min-width: 768px) and (max-width: 991px) {
-    .form-row {
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .name-group,
-    .patient-number-group {
-        min-width: auto;
-        flex: none;
-    }
-
-    .admin-form .form-row {
-        flex-direction: column;
-    }
-
-    .admin-form .form-group {
-        min-width: auto;
-    }
-
-    .profile-form .form-row {
-        flex-direction: column;
-    }
-
-    .profile-form .form-group {
-        min-width: auto;
-    }
-}
-
-/* TABLET PORTRAIT (576px - 767px) */
-@media screen and (min-width: 576px) and (max-width: 767px) {
-    .admin-form .form-row {
-        flex-direction: column;
-    }
-
-    .admin-form .form-group {
-        min-width: auto;
-    }
-
-    .profile-form .form-row {
-        flex-direction: column;
-    }
-
-    .profile-form .form-group {
-        min-width: auto;
-    }
-}
-
-/* MOBILE LANDSCAPE (480px - 575px) */
-@media screen and (min-width: 480px) and (max-width: 575px) {
-    /* Mobile landscape form adjustments */
-}
-
-/* MOBILE PORTRAIT (320px - 479px) */
-@media screen and (max-width: 479px) {
-    .form-row {
-        flex-direction: column;
-    }
-
-    .form-group {
-        min-width: auto;
-        width: 100%;
-    }
-}
-
-/* Fix for very narrow screens */
-@media screen and (max-width: 320px) {
-    .form-row {
-        flex-direction: column;
-    }
-
-    .form-group {
-        min-width: auto;
-        width: 100%;
-    }
-}
-
 /* ================================
-   RESPONSIVE FORM BEHAVIOR
+   UNIFIED RESPONSIVE FORM BEHAVIOR
    ================================ */
 
-/* Enhanced mobile adjustments for progressive field wrapping */
-@media (max-width: 768px) {
-    /* Keep form rows as flex-row but allow smart wrapping */
-    .form-row.personal-info,
-    .form-row.contact-info,
-    .form-row.address-location,
-    .form-row.names-row {
-        flex-direction: row; /* Keep horizontal layout */
-        flex-wrap: wrap; /* Allow wrapping */
-        justify-content: flex-start; /* Left-align wrapped items */
-        align-items: flex-start; /* Top-align for better appearance when wrapped */
-    }
+/* ================================
+   UNIFIED RESPONSIVE FORM BEHAVIOR
+   ================================ */
 
-    /* Ensure all form groups have appropriate responsive behavior */
+/* Standard responsive behavior for all forms */
+@media (max-width: 768px) {
+    /* All form groups get unified responsive behavior */
+    .form-group,
     .form-group.small,
     .form-group.medium,
     .form-group.large,
     .form-group.extra-small,
     .form-group.auto,
     .form-group.equal-width {
-        min-width: 200px; /* Minimum width before wrapping */
-        flex: 1 1 200px; /* Grow, shrink, with 200px base */
-    }
-
-    /* For very small screens, reduce minimum width */
-    @media (max-width: 480px) {
-        .form-group.small,
-        .form-group.medium,
-        .form-group.large,
-        .form-group.extra-small,
-        .form-group.auto,
-        .form-group.equal-width {
-            min-width: 150px; /* Smaller minimum width */
-            flex: 1 1 150px; /* Smaller base width */
-        }
-    }
-
-    /* For extremely small screens, allow single column */
-    @media (max-width: 360px) {
-        .form-row.personal-info,
-        .form-row.contact-info,
-        .form-row.address-location,
-        .form-row.names-row {
-            flex-direction: column; /* Single column on very small screens */
-        }
-
-        .form-group.small,
-        .form-group.medium,
-        .form-group.large,
-        .form-group.extra-small,
-        .form-group.auto,
-        .form-group.equal-width {
-            width: 100%;
-            min-width: 0;
-            flex: 1;
-        }
+        min-width: 120px; /* Unified minimum width */
+        flex-basis: 120px; /* Unified base width */
     }
 }
 
-/* Tablet adjustments - Enhanced for progressive wrapping */
-@media (max-width: 1024px) and (min-width: 769px) {
-    .form-row.personal-info {
-        flex-wrap: wrap;
-        justify-content: flex-start; /* Left-align wrapped items */
+/* Smaller tablets and large phones */
+@media (max-width: 600px) {
+    .form-group,
+    .form-group.small,
+    .form-group.medium,
+    .form-group.large,
+    .form-group.extra-small,
+    .form-group.auto,
+    .form-group.equal-width {
+        min-width: 100px; /* Smaller minimum width */
+        flex-basis: 100px; /* Smaller base width */
+    }
+}
+
+/* Mobile portrait - single column */
+@media (max-width: 480px) {
+    .form-row {
+        flex-direction: column; /* Single column on mobile */
     }
 
-    .form-row.personal-info .form-group.medium {
-        flex: 1 1 calc(50% - var(--space-md) / 2);
-        min-width: 180px;
-    }
-
-    .form-row.personal-info .form-group.small {
-        flex: 1 1 100%;
-        min-width: 120px;
-        margin-top: var(--space-sm);
+    .form-group,
+    .form-group.small,
+    .form-group.medium,
+    .form-group.large,
+    .form-group.extra-small,
+    .form-group.auto,
+    .form-group.equal-width {
+        width: 100%;
+        min-width: 0;
+        flex: 1;
     }
 }
 
@@ -1005,53 +863,11 @@ textarea:disabled:focus {
     color: #4caf50;
 }
 
-/* Address Row Specific Styling - with progressive wrapping */
-.form-row.address-row {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    justify-content: flex-start; /* Left-align when wrapped */
-    align-items: flex-start; /* Top-align for consistency */
-}
-
-.form-row.address-row .form-group {
-    flex: 1 1 200px; /* Grow, shrink, 200px base */
-    min-width: 200px; /* Minimum before wrapping */
-    margin-bottom: 0;
-}
-
+/* Address Row - Uses unified system with semantic sizing */
 .form-row.address-row .form-group:first-child {
-    flex: 2 1 250px; /* City takes more space, 250px base */
-    min-width: 250px;
-}
-
-/* Responsive Address Row */
-@media (max-width: 768px) {
-    .form-row.address-row .form-group {
-        min-width: 150px; /* Smaller minimum on tablets */
-        flex: 1 1 150px;
-    }
-
-    .form-row.address-row .form-group:first-child {
-        min-width: 180px; /* Smaller city minimum on tablets */
-        flex: 2 1 180px;
-    }
-}
-
-@media (max-width: 480px) {
-    .form-row.address-row {
-        flex-direction: column; /* Single column on small mobile */
-        gap: 10px;
-    }
-
-    .form-row.address-row .form-group {
-        flex: 1;
-        margin-bottom: var(--space-sm);
-    }
-
-    .form-row.address-row .form-group:first-child {
-        flex: 1; /* Equal width on mobile */
-    }
+    /* City gets large size class for more space */
+    flex: 2 1 180px; /* Matches .form-group.large */
+    min-width: 150px;
 }
 
 /* Enhanced Form Section for Address */
@@ -1065,87 +881,45 @@ textarea:disabled:focus {
 }
 
 /* ================================
-   FIELD SIZE VARIANTS - Enhanced for Progressive Wrapping
+   FIELD SIZE VARIANTS - Unified System
    ================================ */
 
 /* Small fields for short content like dates, ZIP codes, phone numbers */
 .form-group.small {
-    flex: 0 1 160px; /* Don't grow, can shrink, 160px base */
-    min-width: 120px; /* Minimum before wrapping */
+    flex: 0 1 120px; /* Don't grow, can shrink, 120px preferred */
+    min-width: 100px; /* Minimum before wrapping */
     max-width: 160px; /* Maximum width */
 }
 
 /* Medium fields for names, cities */
 .form-group.medium {
-    flex: 0 1 200px; /* Don't grow, can shrink, 200px base */
-    min-width: 150px; /* Minimum before wrapping */
-    max-width: 220px; /* Maximum width */
+    flex: 1 1 140px; /* Grow and shrink, 140px preferred */
+    min-width: 120px; /* Minimum before wrapping */
 }
 
 /* Large fields for addresses and other long content */
 .form-group.large {
-    flex: 1 1 250px; /* Grow and shrink, 250px base */
-    min-width: 200px; /* Minimum before wrapping */
+    flex: 2 1 180px; /* Grow more, shrink, 180px preferred */
+    min-width: 150px; /* Minimum before wrapping */
 }
 
 /* Extra small for very short fields like state dropdowns */
 .form-group.extra-small {
-    flex: 0 1 120px; /* Don't grow, can shrink, 120px base */
-    min-width: 80px; /* Minimum before wrapping */
-    max-width: 120px; /* Maximum width */
+    flex: 0 1 80px; /* Don't grow, can shrink, 80px preferred */
+    min-width: 60px; /* Minimum before wrapping */
+    max-width: 100px; /* Maximum width */
 }
 
 /* Auto-width fields that grow to fit available space */
 .form-group.auto {
-    flex: 1 1 200px; /* Grow and shrink, 200px base */
-    min-width: 150px; /* Minimum before wrapping */
+    flex: 1 1 0; /* Standard grow/shrink, no preference */
+    min-width: 120px; /* Minimum before wrapping */
 }
 
-/* Equal width fields that split the row evenly */
+/* Equal width fields that split the row evenly - most common case */
 .form-group.equal-width {
-    flex: 1 1 180px; /* Grow and shrink equally, 180px base */
-    min-width: 150px; /* Minimum before wrapping */
-}
-
-/* Names row - three equal width fields with progressive wrapping */
-.form-row.names-row {
-    display: flex;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-    justify-content: flex-start; /* Left-align when wrapped */
-    align-items: flex-start; /* Top-align for consistency */
-}
-
-.form-row.names-row .form-group {
-    flex: 1 1 180px; /* Grow, shrink, with 180px minimum base */
-    min-width: 180px; /* Minimum width before wrapping */
-}
-
-/* Personal info row - optimized for names and date with progressive wrapping */
-.form-row.personal-info {
-    display: flex;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-    justify-content: flex-start; /* Left-align when wrapped */
-    align-items: flex-start; /* Top-align for consistency */
-}
-
-/* Contact info row - optimized for phone and text preference with progressive wrapping */
-.form-row.contact-info {
-    display: flex;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-    justify-content: flex-start; /* Left-align when wrapped */
-    align-items: flex-start; /* Top-align for consistency */
-}
-
-/* Address row - optimized spacing for city/state/zip with progressive wrapping */
-.form-row.address-location {
-    display: flex;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-    justify-content: flex-start; /* Left-align when wrapped */
-    align-items: flex-start; /* Top-align for consistency */
+    flex: 1 1 0; /* Standard grow/shrink equally, no preference */
+    min-width: 120px; /* Minimum before wrapping */
 }
 
 /* ================================
