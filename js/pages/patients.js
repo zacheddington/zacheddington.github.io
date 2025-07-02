@@ -1224,8 +1224,6 @@ async function handleEditPatientSubmit(event) {
         dobInput.setCustomValidity('');
     }
 
-    console.log('🔍 About to collect form data');
-
     // Get form data
     const formData = new FormData(form);
     const patientData = {
