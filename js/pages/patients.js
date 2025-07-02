@@ -876,7 +876,7 @@ function displayPatients(patients) {
 
     patientsTableBody.innerHTML = htmlRows;
 
-    // Re-initialize tables after content is populated to ensure resize handles work
+    // Re-initialize tables after content is populated - the table-utils now prevents duplicate initialization
     if (window.initializeDataTables) {
         window.initializeDataTables();
     }

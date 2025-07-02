@@ -43,6 +43,14 @@ function initializeDataTables() {
     tables.forEach((table, index) => {
         const tableId = table.id || `data-table-${index}`;
 
+        // Check if already initialized to prevent duplicate event listeners
+        if (table.dataset.tableInitialized === 'true') {
+            return;
+        }
+
+        // Mark as initialized
+        table.dataset.tableInitialized = 'true';
+
         // Set up the table for resizing
         setupTableResizing(table, tableId);
 
@@ -480,7 +488,9 @@ function setupTableSorting(table, tableId) {
 
     // Store original data for reset functionality
     const tbody = table.querySelector('tbody');
-    if (!tbody) return;
+    if (!tbody) {
+        return;
+    }
 
     // Store original row order
     const originalRows = Array.from(tbody.querySelectorAll('tr')).map((row) =>
@@ -492,7 +502,9 @@ function setupTableSorting(table, tableId) {
 
     headers.forEach((header, index) => {
         // Skip the last column (Actions) - don't make it sortable
-        if (index === headers.length - 1) return;
+        if (index === headers.length - 1) {
+            return;
+        }
 
         // Make header sortable
         header.classList.add('sortable');
@@ -502,7 +514,9 @@ function setupTableSorting(table, tableId) {
         // Add click handler
         header.addEventListener('click', (e) => {
             // Don't trigger sort if clicking on resize handle
-            if (e.target.classList.contains('resize-handle')) return;
+            if (e.target.classList.contains('resize-handle')) {
+                return;
+            }
 
             handleColumnSort(table, header, index);
         });
