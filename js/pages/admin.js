@@ -1350,10 +1350,18 @@ function displaySessions(sessions) {
             ? '<span class="status-badge active">Active</span>'
             : '<span class="status-badge inactive">Inactive</span>';
 
+        // Check if this is the current user's session
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const currentToken = localStorage.getItem('token');
+        const isCurrentUserSession =
+            session.username === currentUser.username && session.is_active;
+
         const revokeButton = session.is_active
-            ? `<button class="btn btn-danger btn-sm" onclick="window.adminPage.revokeSession('${escapeJavaScript(
-                  session.session_id
-              )}')">Revoke</button>`
+            ? isCurrentUserSession
+                ? '<span class="text-muted" title="Cannot revoke your own active session">Current Session</span>'
+                : `<button class="btn btn-danger btn-sm" onclick="window.adminPage.revokeSession('${escapeJavaScript(
+                      session.session_id
+                  )}')">Revoke</button>`
             : '<span class="text-muted">-</span>';
 
         const rowHtml = `
@@ -1439,14 +1447,19 @@ function setupSessionActions() {
 
 // Revoke a specific session
 async function revokeSession(sessionId) {
-    if (
-        !confirm(
-            'Are you sure you want to revoke this session? The user will be logged out immediately.'
-        )
-    ) {
-        return;
-    }
+    // Use custom modal instead of browser confirm
+    window.modalManager.showConfirmModal(
+        '🔄 Revoke Session',
+        'Are you sure you want to revoke this session? The user will be logged out immediately.',
+        async () => {
+            // Confirmed - proceed with revocation
+            await performSessionRevocation(sessionId);
+        }
+    );
+}
 
+// Perform the actual session revocation
+async function performSessionRevocation(sessionId) {
     try {
         const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
@@ -1510,7 +1523,7 @@ async function revokeSession(sessionId) {
                         break;
                     case 500:
                         errorMessage =
-                            'Server error occurred while revoking session. The session ID format may not be supported by the server.';
+                            'Server error occurred while revoking session. This may happen if you are trying to revoke your own active session. Please try revoking a different session or ask another administrator to revoke your session.';
                         break;
                     default:
                         errorMessage = `Server error (${response.status}). Please try again.`;
@@ -1536,14 +1549,19 @@ async function revokeSession(sessionId) {
 
 // Revoke all sessions for a specific user
 async function revokeAllUserSessions(username) {
-    if (
-        !confirm(
-            `Are you sure you want to revoke ALL sessions for user "${username}"? This will log them out of all devices immediately.`
-        )
-    ) {
-        return;
-    }
+    // Use custom modal instead of browser confirm
+    window.modalManager.showConfirmModal(
+        '🔄 Revoke All Sessions',
+        `Are you sure you want to revoke ALL sessions for user "${username}"? This will log them out of all devices immediately.`,
+        async () => {
+            // Confirmed - proceed with bulk revocation
+            await performBulkSessionRevocation(username);
+        }
+    );
+}
 
+// Perform the actual bulk session revocation
+async function performBulkSessionRevocation(username) {
     try {
         const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
@@ -1606,14 +1624,19 @@ async function forceLogoutUser(username) {
 
 // Cleanup expired sessions
 async function cleanupExpiredSessions() {
-    if (
-        !confirm(
-            'Are you sure you want to cleanup all expired sessions? This will permanently remove inactive session records.'
-        )
-    ) {
-        return;
-    }
+    // Use custom modal instead of browser confirm
+    window.modalManager.showConfirmModal(
+        '🧹 Cleanup Expired Sessions',
+        'Are you sure you want to cleanup all expired sessions? This will permanently remove inactive session records.',
+        async () => {
+            // Confirmed - proceed with cleanup
+            await performSessionCleanup();
+        }
+    );
+}
 
+// Perform the actual session cleanup
+async function performSessionCleanup() {
     try {
         const API_URL = window.apiClient.getAPIUrl();
         const token = localStorage.getItem('token');
