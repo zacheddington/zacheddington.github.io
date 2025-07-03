@@ -39,7 +39,7 @@ function checkTokenValidity() {
 }
 
 // Handle authentication errors globally
-function handleAuthError(response, context = '') {
+async function handleAuthError(response, context = '') {
     if (response.status === 401) {
         console.error('Authentication failed');
         handleSessionExpiration(
@@ -48,6 +48,70 @@ function handleAuthError(response, context = '') {
         return true;
     } else if (response.status === 403) {
         console.error('Access denied');
+
+        // Check if this is a session revocation/expiration vs. permission issue
+        try {
+            const errorData = await response.clone().json();
+            if (
+                errorData.error &&
+                (errorData.error.includes('Session expired or invalid') ||
+                    errorData.error.includes('session has been revoked') ||
+                    errorData.error.includes('Please log in again'))
+            ) {
+                // This is a revoked/expired session, treat as session expiration
+                console.log(
+                    'Detected revoked/expired session, logging out user'
+                );
+                handleSessionExpiration(
+                    'Your session has been revoked. Please log in again.'
+                );
+                return true;
+            }
+        } catch (e) {
+            // If we can't parse the response, fall back to checking response text
+            try {
+                const errorText = await response.clone().text();
+                if (
+                    errorText &&
+                    (errorText.includes('Session expired or invalid') ||
+                        errorText.includes('session has been revoked') ||
+                        errorText.includes('Please log in again'))
+                ) {
+                    console.log(
+                        'Detected revoked/expired session via text, logging out user'
+                    );
+                    handleSessionExpiration(
+                        'Your session has been revoked. Please log in again.'
+                    );
+                    return true;
+                }
+            } catch (e2) {
+                // Continue with normal 403 handling
+            }
+        }
+
+        // If we get a 403 error and can't determine the cause from the response,
+        // make an immediate session check to be sure
+        try {
+            const sessionCheck = await checkCurrentSession();
+            if (!sessionCheck.valid) {
+                console.log(
+                    'Session check confirms session is invalid, logging out user'
+                );
+                handleSessionExpiration(
+                    'Your session has been revoked or expired. Please log in again.'
+                );
+                return true;
+            }
+        } catch (sessionCheckError) {
+            console.warn(
+                'Failed to verify session validity on 403 error:',
+                sessionCheckError
+            );
+            // If session check fails, don't assume session is invalid - could be network issue
+        }
+
+        // Normal permission denied error
         handleAccessDenied(
             'You do not have permission to access this resource.'
         );
@@ -109,13 +173,40 @@ function initializeGlobalTokenMonitoring() {
         clearInterval(tokenExpirationCheckInterval);
     }
 
-    tokenExpirationCheckInterval = setInterval(() => {
+    tokenExpirationCheckInterval = setInterval(async () => {
         if (!checkTokenValidity()) {
             const currentPath = window.location.pathname;
             // Only show expiration if not on login page
             if (!currentPath.includes('/index.html') && currentPath !== '/') {
                 handleSessionExpiration();
             }
+            return;
+        }
+
+        // Additionally check with server for session validity (every 5 minutes)
+        // This catches cases where session was revoked on server but token is still valid locally
+        try {
+            const sessionCheck = await checkCurrentSession();
+            if (!sessionCheck.valid) {
+                console.log(
+                    'Server reports session is invalid, logging out user'
+                );
+                const currentPath = window.location.pathname;
+                if (
+                    !currentPath.includes('/index.html') &&
+                    currentPath !== '/'
+                ) {
+                    handleSessionExpiration(
+                        'Your session has been revoked or expired. Please log in again.'
+                    );
+                }
+            }
+        } catch (error) {
+            console.warn(
+                'Failed to check session validity with server:',
+                error
+            );
+            // Don't logout on network errors, only on explicit session invalidity
         }
     }, 5 * 60 * 1000); // Check every 5 minutes
 
@@ -149,7 +240,7 @@ function createAuthenticatedFetch() {
             if (response.status === 401 || response.status === 403) {
                 // Only handle if this looks like an API call
                 if (url.includes('/api/')) {
-                    handleAuthError(response, `API call to ${url}`);
+                    await handleAuthError(response, `API call to ${url}`);
                 }
             }
 
@@ -343,6 +434,44 @@ async function enforcePasswordChangeRequirement() {
     } catch (error) {
         console.error('Error in password change enforcement:', error);
         return false;
+    }
+}
+
+// Check current session validity with server
+async function checkCurrentSession() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        return { valid: false, reason: 'No token found' };
+    }
+
+    try {
+        const API_URL = window.apiClient?.getAPIUrl();
+        if (!API_URL) {
+            return { valid: false, reason: 'API client not available' };
+        }
+
+        const response = await fetch(`${API_URL}/api/sessions/check`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            // Session is invalid/revoked
+            return { valid: false, reason: 'Session expired or revoked' };
+        }
+
+        if (response.ok) {
+            const data = await response.json();
+            return { valid: true, session: data.session };
+        } else {
+            return { valid: false, reason: `Server error: ${response.status}` };
+        }
+    } catch (error) {
+        console.warn('Failed to check session validity:', error);
+        return { valid: false, reason: 'Network error' };
     }
 }
 
@@ -613,6 +742,7 @@ window.authUtils = {
     setupSecureHistoryManagement,
     logout,
     checkTokenValidity,
+    checkCurrentSession,
     handleAuthError,
     handleSessionExpiration,
     handleAccessDenied,
@@ -630,6 +760,7 @@ window.updateAdminMenuItem = updateAdminMenuItem;
 window.addSessionStatusIndicator = addSessionStatusIndicator;
 window.setupSecureHistoryManagement = setupSecureHistoryManagement;
 window.checkTokenValidity = checkTokenValidity;
+window.checkCurrentSession = checkCurrentSession;
 window.handleAuthError = handleAuthError;
 window.handleSessionExpiration = handleSessionExpiration;
 window.initializeGlobalTokenMonitoring = initializeGlobalTokenMonitoring;

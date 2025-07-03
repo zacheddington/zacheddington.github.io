@@ -1528,16 +1528,59 @@ async function performSessionRevocation(sessionId) {
 
         if (response.ok) {
             console.log('Success! Session revoked successfully');
-            if (window.modalManager) {
-                window.modalManager.showModal(
-                    'success',
-                    'Session revoked successfully'
-                );
-            } else {
-                alert('Session revoked successfully');
-            }
-            // Reload sessions to reflect changes
-            await loadAllSessions();
+
+            // Check if we just revoked our own session
+            setTimeout(async () => {
+                try {
+                    if (
+                        window.authUtils &&
+                        window.authUtils.checkCurrentSession
+                    ) {
+                        const sessionCheck =
+                            await window.authUtils.checkCurrentSession();
+                        if (!sessionCheck.valid) {
+                            console.log(
+                                'Current session was revoked, logging out user'
+                            );
+                            if (window.modalManager) {
+                                window.modalManager.showModal(
+                                    'warning',
+                                    'Your session has been revoked. You will be logged out.',
+                                    false,
+                                    { redirect: true }
+                                );
+                                setTimeout(() => {
+                                    window.authUtils.handleSessionExpiration(
+                                        'Your session has been revoked. Please log in again.'
+                                    );
+                                }, 1500);
+                            } else {
+                                window.authUtils.handleSessionExpiration(
+                                    'Your session has been revoked. Please log in again.'
+                                );
+                            }
+                            return; // Don't show success message or reload if we're logging out
+                        }
+                    }
+                } catch (checkError) {
+                    console.warn(
+                        'Failed to check current session validity:',
+                        checkError
+                    );
+                }
+
+                // Only show success message and reload if we're still logged in
+                if (window.modalManager) {
+                    window.modalManager.showModal(
+                        'success',
+                        'Session revoked successfully'
+                    );
+                } else {
+                    alert('Session revoked successfully');
+                }
+                // Reload sessions to reflect changes
+                await loadAllSessions();
+            }, 500); // Small delay to allow server to process the revocation
         } else {
             // Enhanced error handling for different status codes
             let errorMessage = `Failed to revoke session (${response.status})`;
@@ -2021,6 +2064,54 @@ async function checkCurrentSession() {
     }
 }
 
+// Test function to verify session revocation detection functionality
+async function testSessionRevocationDetection() {
+    console.log('🧪 Testing session revocation detection...');
+
+    try {
+        // First, check current session status
+        console.log('1️⃣ Checking current session validity...');
+        const sessionCheck = await window.authUtils.checkCurrentSession();
+        console.log('Current session check result:', sessionCheck);
+
+        if (!sessionCheck.valid) {
+            console.log(
+                '❌ Current session is already invalid:',
+                sessionCheck.reason
+            );
+            return sessionCheck;
+        }
+
+        console.log('✅ Current session is valid');
+
+        // Test the auth error handling with a mock 403 response
+        console.log('2️⃣ Testing 403 error handling...');
+        const mockResponse = {
+            status: 403,
+            clone: () => ({
+                json: () =>
+                    Promise.resolve({ error: 'Session expired or invalid' }),
+                text: () => Promise.resolve('Session expired or invalid'),
+            }),
+        };
+
+        const handledAs403 = await window.authUtils.handleAuthError(
+            mockResponse,
+            'Test call'
+        );
+        console.log('403 error handled:', handledAs403);
+
+        return {
+            sessionValid: sessionCheck.valid,
+            errorHandlingTest: handledAs403,
+            status: 'Test completed successfully',
+        };
+    } catch (error) {
+        console.error('❌ Error during session revocation test:', error);
+        return { error: error.message };
+    }
+}
+
 // Setup revert functionality for role select dropdowns
 function setupRoleSelectRevertFunctionality() {
     // Find all role select dropdowns
@@ -2059,6 +2150,7 @@ window.adminPage = {
     testSessionEndpoints, // Add debugging function
     checkDeployment, // Add deployment verification function
     checkCurrentSession, // Add session validity checker
+    testSessionRevocationDetection, // Add session revocation detection test function
 };
 
 // Export for module systems
