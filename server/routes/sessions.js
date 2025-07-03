@@ -106,6 +106,68 @@ router.post(
     }
 );
 
+// Alternative revoke session endpoint that accepts sessionId in request body
+// This is more reliable for complex JWT tokens that might have URL encoding issues
+router.post(
+    '/sessions/revoke',
+    authenticateToken,
+    requireAdmin,
+    async (req, res) => {
+        try {
+            const { sessionId, reason = 'admin_revocation' } = req.body;
+
+            if (!sessionId) {
+                return errorResponse(
+                    res,
+                    'Session ID is required in request body',
+                    400
+                );
+            }
+
+            console.log('Session revoke request (body method):', {
+                sessionId: sessionId,
+                sessionIdLength: sessionId.length,
+                reason: reason,
+                adminUser: req.user.username,
+            });
+
+            const result = await SessionManager.revokeSessionById(
+                sessionId,
+                reason
+            );
+
+            if (result) {
+                console.log(
+                    'Session revoked successfully (body method):',
+                    sessionId
+                );
+                return successResponse(
+                    res,
+                    { sessionId },
+                    'Session revoked successfully'
+                );
+            } else {
+                console.log(
+                    'Session not found or already revoked (body method):',
+                    sessionId
+                );
+                return errorResponse(
+                    res,
+                    'Session not found or already revoked',
+                    404
+                );
+            }
+        } catch (err) {
+            console.error('Revoke session error (body method):', {
+                error: err.message,
+                stack: err.stack,
+                sessionId: req.body.sessionId,
+            });
+            return errorResponse(res, 'Failed to revoke session', 500);
+        }
+    }
+);
+
 // Revoke all sessions for a user by username (admin only)
 router.post(
     '/sessions/revoke-user/:username',

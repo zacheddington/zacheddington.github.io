@@ -1466,47 +1466,21 @@ async function performSessionRevocation(sessionId) {
 
         setSessionActionLoading(sessionId, true);
 
-        // URL encode the session ID to handle special characters (like JWT tokens)
-        const encodedSessionId = encodeURIComponent(sessionId);
-        console.log(
-            'Revoking session:',
-            sessionId,
-            'Encoded:',
-            encodedSessionId
-        );
+        // Instead of putting JWT in URL path, send it in the request body
+        // This avoids any URL encoding/parsing issues with complex JWT tokens
+        console.log('Revoking session:', sessionId);
 
-        // First, let's try with the original session ID (in case it's not getting URL decoded properly on server)
-        let response = await fetch(
-            `${API_URL}/api/sessions/${sessionId}/revoke`,
-            {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    reason: 'Admin revocation',
-                }),
-            }
-        );
-
-        // If that fails with 404, try with the encoded version
-        if (!response.ok && response.status === 404) {
-            console.log('Retrying with encoded session ID...');
-            response = await fetch(
-                `${API_URL}/api/sessions/${encodedSessionId}/revoke`,
-                {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        reason: 'Admin revocation',
-                    }),
-                }
-            );
-        }
+        const response = await fetch(`${API_URL}/api/sessions/revoke`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                sessionId: sessionId,
+                reason: 'Admin revocation',
+            }),
+        });
 
         if (response.ok) {
             if (window.modalManager) {
