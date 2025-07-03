@@ -288,12 +288,13 @@ router.get(
             const debugInfo = {
                 message: 'Session revocation debugging endpoint',
                 timestamp: new Date().toISOString(),
-                serverVersion: 'enhanced-jwt-decoding-v1.0',
+                serverVersion: 'enhanced-jwt-decoding-v1.2-production-ready',
                 features: [
                     'robust-jwt-decoding',
                     'encoded-dots-handling',
                     'comprehensive-logging',
                     'enhanced-error-reporting',
+                    'correct-database-schema-usage',
                 ],
                 testJWT: {
                     sample: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoidmFsdWUifQ.signature',

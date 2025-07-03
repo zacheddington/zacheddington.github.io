@@ -514,12 +514,15 @@ class SessionManager {
                     finalSessionId: decodedSessionId.substring(0, 50) + '...',
                 }
             );
+
+            // Use the correct column name from the database schema
             const result = await client.query(
                 `
                 UPDATE tbl_user_session 
                 SET is_active = false, 
                     logout_time = CURRENT_TIMESTAMP,
-                    logout_reason = $2
+                    revoked = true,
+                    revoked_reason = $2
                 WHERE session_token = $1 AND is_active = true
                 RETURNING session_key, session_token
             `,
@@ -578,12 +581,11 @@ class SessionManager {
                 `
                 UPDATE tbl_user_session 
                 SET is_active = false, 
-                    logout_time = CURRENT_TIMESTAMP,
-                    logout_reason = $2
+                    logout_time = CURRENT_TIMESTAMP
                 WHERE user_key = $1 AND is_active = true
                 RETURNING session_key
             `,
-                [userKey, reason]
+                [userKey]
             );
 
             return result.rowCount;
