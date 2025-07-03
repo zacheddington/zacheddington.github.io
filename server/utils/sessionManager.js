@@ -65,7 +65,8 @@ class SessionManager {
     static async validateSession(sessionToken) {
         const client = await pool.connect();
         try {
-            const result = await client.query(
+            // First check if session exists at all
+            const sessionCheckResult = await client.query(
                 `
                 SELECT 
                     s.session_key,
@@ -73,28 +74,44 @@ class SessionManager {
                     s.expires_at,
                     s.is_active,
                     s.revoked,
+                    s.revoked_reason,
                     u.username,
                     u.email,
                     u.password_change_required,
                     u.twofa_enabled
                 FROM tbl_user_session s
                 JOIN tbl_user u ON s.user_key = u.user_key
-                WHERE s.session_token = $1 
-                AND s.is_active = true 
-                AND NOT s.revoked
-                AND s.expires_at > CURRENT_TIMESTAMP
+                WHERE s.session_token = $1
             `,
                 [sessionToken]
             );
 
-            if (result.rows.length === 0) {
-                return null;
+            if (sessionCheckResult.rows.length === 0) {
+                return { valid: false, reason: 'session_not_found' };
             }
 
-            // Update last activity
-            await this.updateActivity(sessionToken);
+            const session = sessionCheckResult.rows[0];
 
-            return result.rows[0];
+            // Check various invalidation conditions
+            if (session.revoked) {
+                return {
+                    valid: false,
+                    reason: 'session_revoked',
+                    revoked_reason: session.revoked_reason,
+                };
+            }
+
+            if (!session.is_active) {
+                return { valid: false, reason: 'session_inactive' };
+            }
+
+            if (new Date(session.expires_at) <= new Date()) {
+                return { valid: false, reason: 'session_expired' };
+            }
+
+            // Session is valid, update last activity and return session data
+            await this.updateActivity(sessionToken);
+            return { valid: true, session: session };
         } finally {
             client.release();
         }

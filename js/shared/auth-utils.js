@@ -56,15 +56,31 @@ async function handleAuthError(response, context = '') {
                 errorData.error &&
                 (errorData.error.includes('Session expired or invalid') ||
                     errorData.error.includes('session has been revoked') ||
-                    errorData.error.includes('Please log in again'))
+                    errorData.error.includes('Please log in again') ||
+                    errorData.error.includes(
+                        'logged in from another location'
+                    ) ||
+                    errorData.error.includes('Only one session is allowed'))
             ) {
                 // This is a revoked/expired session, treat as session expiration
                 console.log(
                     'Detected revoked/expired session, logging out user'
                 );
-                handleSessionExpiration(
-                    'Your session has been revoked. Please log in again.'
-                );
+
+                // Use specific message for single session enforcement
+                let logoutMessage =
+                    'Your session has been revoked. Please log in again.';
+                if (
+                    errorData.error.includes(
+                        'logged in from another location'
+                    ) ||
+                    errorData.error.includes('Only one session is allowed')
+                ) {
+                    logoutMessage =
+                        'You have been logged out because you logged in from another location. Only one session is allowed per user.';
+                }
+
+                handleSessionExpiration(logoutMessage);
                 return true;
             }
         } catch (e) {
@@ -75,14 +91,26 @@ async function handleAuthError(response, context = '') {
                     errorText &&
                     (errorText.includes('Session expired or invalid') ||
                         errorText.includes('session has been revoked') ||
-                        errorText.includes('Please log in again'))
+                        errorText.includes('Please log in again') ||
+                        errorText.includes('logged in from another location') ||
+                        errorText.includes('Only one session is allowed'))
                 ) {
                     console.log(
                         'Detected revoked/expired session via text, logging out user'
                     );
-                    handleSessionExpiration(
-                        'Your session has been revoked. Please log in again.'
-                    );
+
+                    // Use specific message for single session enforcement
+                    let logoutMessage =
+                        'Your session has been revoked. Please log in again.';
+                    if (
+                        errorText.includes('logged in from another location') ||
+                        errorText.includes('Only one session is allowed')
+                    ) {
+                        logoutMessage =
+                            'You have been logged out because you logged in from another location. Only one session is allowed per user.';
+                    }
+
+                    handleSessionExpiration(logoutMessage);
                     return true;
                 }
             } catch (e2) {
@@ -196,9 +224,15 @@ function initializeGlobalTokenMonitoring() {
                     !currentPath.includes('/index.html') &&
                     currentPath !== '/'
                 ) {
-                    handleSessionExpiration(
-                        'Your session has been revoked or expired. Please log in again.'
-                    );
+                    // Use specific message for single session enforcement
+                    let logoutMessage =
+                        'Your session has been revoked or expired. Please log in again.';
+                    if (sessionCheck.single_session_enforcement) {
+                        logoutMessage =
+                            'You have been logged out because you logged in from another location. Only one session is allowed per user.';
+                    }
+
+                    handleSessionExpiration(logoutMessage);
                 }
             }
         } catch (error) {
@@ -459,8 +493,34 @@ async function checkCurrentSession() {
         });
 
         if (response.status === 401 || response.status === 403) {
-            // Session is invalid/revoked
-            return { valid: false, reason: 'Session expired or revoked' };
+            // Session is invalid/revoked - try to get specific reason
+            try {
+                const errorData = await response.json();
+                if (
+                    errorData.reason === 'session_revoked' &&
+                    errorData.revoked_reason ===
+                        'new_login_single_session_enforcement'
+                ) {
+                    return {
+                        valid: false,
+                        reason: 'Session revoked due to new login from another location',
+                        single_session_enforcement: true,
+                    };
+                } else if (errorData.reason === 'session_revoked') {
+                    return {
+                        valid: false,
+                        reason: 'Session revoked',
+                        revoked_reason: errorData.revoked_reason,
+                    };
+                } else {
+                    return {
+                        valid: false,
+                        reason: 'Session expired or revoked',
+                    };
+                }
+            } catch (e) {
+                return { valid: false, reason: 'Session expired or revoked' };
+            }
         }
 
         if (response.ok) {

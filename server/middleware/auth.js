@@ -21,13 +21,44 @@ const authenticateToken = async (req, res, next) => {
         const decoded = jwt.verify(token, config.JWT_SECRET);
 
         // Then validate the session
-        const sessionData = await SessionManager.validateSession(token);
+        const sessionValidation = await SessionManager.validateSession(token);
 
-        if (!sessionData) {
+        if (!sessionValidation.valid) {
+            let errorMessage =
+                'Session expired or invalid. Please log in again.';
+
+            // Provide specific messages based on the reason
+            if (sessionValidation.reason === 'session_revoked') {
+                if (
+                    sessionValidation.revoked_reason ===
+                    'new_login_single_session_enforcement'
+                ) {
+                    errorMessage =
+                        'You have been logged out because you logged in from another location. Only one session is allowed per user.';
+                } else if (
+                    sessionValidation.revoked_reason === 'admin_revocation'
+                ) {
+                    errorMessage =
+                        'Your session has been revoked by an administrator.';
+                } else {
+                    errorMessage =
+                        'Your session has been revoked. Please log in again.';
+                }
+            } else if (sessionValidation.reason === 'session_expired') {
+                errorMessage = 'Your session has expired. Please log in again.';
+            } else if (sessionValidation.reason === 'session_inactive') {
+                errorMessage =
+                    'Your session is no longer active. Please log in again.';
+            }
+
             return res.status(403).json({
-                error: 'Session expired or invalid. Please log in again.',
+                error: errorMessage,
+                reason: sessionValidation.reason,
+                revoked_reason: sessionValidation.revoked_reason,
             });
         }
+
+        const sessionData = sessionValidation.session;
 
         // Attach user and session info to request
         req.user = {
