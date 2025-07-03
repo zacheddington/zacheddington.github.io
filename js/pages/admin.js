@@ -1351,9 +1351,9 @@ function displaySessions(sessions) {
             : '<span class="status-badge inactive">Inactive</span>';
 
         const revokeButton = session.is_active
-            ? `<button class="btn btn-danger btn-sm" onclick="window.adminPage.revokeSession(${JSON.stringify(
+            ? `<button class="btn btn-danger btn-sm" onclick="window.adminPage.revokeSession('${escapeJavaScript(
                   session.session_id
-              )})">Revoke</button>`
+              )}')">Revoke</button>`
             : '<span class="text-muted">-</span>';
 
         const rowHtml = `
@@ -1718,6 +1718,17 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Utility function to escape JavaScript strings
+function escapeJavaScript(text) {
+    if (!text) return '';
+    return text
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r');
 }
 
 // Setup revert functionality for role select dropdowns
