@@ -2,7 +2,7 @@
 console.log('🔧 Auth Utils Version: Single Session Enforcement v1.1');
 
 // Global version check function
-window.authUtilsVersion = function() {
+window.authUtilsVersion = function () {
     return {
         version: 'Single Session Enforcement v1.1',
         features: [
@@ -10,14 +10,15 @@ window.authUtilsVersion = function() {
             'enhanced-session-monitoring',
             'detailed-error-messages',
             'manual-session-check',
-            'test-functions'
+            'test-functions',
         ],
         functions: {
-            testSingleSessionEnforcement: typeof window.testSingleSessionEnforcement,
+            testSingleSessionEnforcement:
+                typeof window.testSingleSessionEnforcement,
             manualSessionCheck: typeof window.manualSessionCheck,
             checkCurrentSession: typeof window.checkCurrentSession,
-            authUtils: typeof window.authUtils
-        }
+            authUtils: typeof window.authUtils,
+        },
     };
 };
 
@@ -561,19 +562,19 @@ async function checkCurrentSession() {
 // Simple manual session check function for debugging
 async function manualSessionCheck() {
     console.log('🔍 Manual session check...');
-    
+
     try {
         const token = localStorage.getItem('token');
         console.log('Token exists:', !!token);
-        
+
         if (!token) {
             console.log('❌ No token found');
             return { valid: false, reason: 'No token' };
         }
-        
+
         const sessionCheck = await checkCurrentSession();
         console.log('Session check result:', sessionCheck);
-        
+
         if (!sessionCheck.valid) {
             console.log('❌ Session is invalid:', sessionCheck.reason);
             if (sessionCheck.single_session_enforcement) {
@@ -582,7 +583,7 @@ async function manualSessionCheck() {
         } else {
             console.log('✅ Session is valid');
         }
-        
+
         return sessionCheck;
     } catch (error) {
         console.error('Error during manual session check:', error);
@@ -620,7 +621,9 @@ async function testSingleSessionEnforcement() {
         console.log('2. Open a new browser/incognito window');
         console.log('3. Login with the same credentials');
         console.log('4. Return to this tab and wait up to 5 minutes');
-        console.log('5. You should be automatically logged out with a specific message');
+        console.log(
+            '5. You should be automatically logged out with a specific message'
+        );
 
         // Start monitoring for session changes
         console.log('🔍 Starting session monitoring...');
@@ -628,7 +631,9 @@ async function testSingleSessionEnforcement() {
 
         const monitorInterval = setInterval(async () => {
             checkCount++;
-            console.log(`⏰ Check #${checkCount} - Verifying session status...`);
+            console.log(
+                `⏰ Check #${checkCount} - Verifying session status...`
+            );
 
             try {
                 const currentStatus = await checkCurrentSession();
@@ -639,9 +644,14 @@ async function testSingleSessionEnforcement() {
 
                     if (currentStatus.single_session_enforcement) {
                         console.log('✅ Single session enforcement detected!');
-                        console.log('✅ Test PASSED - Session was revoked due to new login elsewhere');
+                        console.log(
+                            '✅ Test PASSED - Session was revoked due to new login elsewhere'
+                        );
                     } else {
-                        console.log('ℹ️ Session invalidated for other reason:', currentStatus.reason);
+                        console.log(
+                            'ℹ️ Session invalidated for other reason:',
+                            currentStatus.reason
+                        );
                     }
 
                     clearInterval(monitorInterval);
@@ -653,10 +663,11 @@ async function testSingleSessionEnforcement() {
                 // Stop monitoring after 10 minutes
                 if (checkCount >= 20) {
                     console.log('⏰ Test timeout - stopping monitoring');
-                    console.log('💡 Try logging in from another location to trigger single session enforcement');
+                    console.log(
+                        '💡 Try logging in from another location to trigger single session enforcement'
+                    );
                     clearInterval(monitorInterval);
                 }
-
             } catch (error) {
                 console.error('Error checking session:', error);
             }
@@ -664,13 +675,159 @@ async function testSingleSessionEnforcement() {
 
         return {
             status: 'Test started',
-            instructions: 'Login from another location to test single session enforcement',
-            monitoring: 'Session monitoring active for 10 minutes'
+            instructions:
+                'Login from another location to test single session enforcement',
+            monitoring: 'Session monitoring active for 10 minutes',
         };
-
     } catch (error) {
         console.error('❌ Error during test:', error);
         return { error: error.message };
+    }
+}
+
+// Utility functions for admin detection and menu management
+function isUserAdmin(userData) {
+    if (!userData) {
+        return false;
+    }
+
+    // Primary check: Use server-determined admin status
+    if (userData.isAdmin === true) {
+        return true;
+    }
+
+    // Secondary check: Check roles array for Administrator
+    if (userData.roles && Array.isArray(userData.roles)) {
+        const hasAdminRole = userData.roles.some(
+            (role) => role && role.toLowerCase().includes('administrator')
+        );
+        if (hasAdminRole) {
+            return true;
+        }
+    }
+
+    // Tertiary check: Check role keys for admin role key (typically 1)
+    if (userData.roleKeys && Array.isArray(userData.roleKeys)) {
+        const hasAdminRoleKey = userData.roleKeys.some(
+            (roleKey) => roleKey === 1 || roleKey === '1'
+        );
+        if (hasAdminRoleKey) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Update admin UI elements based on user role
+function updateAdminUI(userData) {
+    const isAdmin = isUserAdmin(userData);
+
+    // Update admin menu items
+    updateAdminMenuItem(isAdmin);
+
+    // Update any other admin-specific UI elements
+    const adminElements = document.querySelectorAll('.admin-only');
+    adminElements.forEach((element) => {
+        if (isAdmin) {
+            element.style.display = '';
+        } else {
+            element.style.display = 'none';
+        }
+    });
+}
+
+// Update admin menu item visibility
+function updateAdminMenuItem(isAdmin) {
+    const adminMenuItem = document.querySelector('.admin-only');
+    const adminMenuItems = document.querySelectorAll(
+        '.admin-only, [data-admin-only]'
+    );
+
+    adminMenuItems.forEach((item) => {
+        if (isAdmin) {
+            item.style.display = '';
+            item.classList.remove('hidden');
+        } else {
+            item.style.display = 'none';
+            item.classList.add('hidden');
+        }
+    });
+}
+
+// Add session status indicator (placeholder)
+function addSessionStatusIndicator() {
+    // This function can be enhanced to show session status
+    console.log('Session status indicator functionality available');
+}
+
+// Setup secure history management (placeholder)
+function setupSecureHistoryManagement() {
+    // This function can be enhanced for secure navigation
+    console.log('Secure history management functionality available');
+}
+
+// Prevent auth page back navigation (placeholder)
+function preventAuthPageBackNavigation() {
+    // This function can be enhanced to prevent back navigation to auth pages
+    console.log('Auth page back navigation prevention functionality available');
+}
+
+// Secure history replacement (placeholder)
+function secureHistoryReplacement() {
+    // This function can be enhanced for secure history management
+    console.log('Secure history replacement functionality available');
+}
+
+// Logout function
+async function logout(reason = 'user_logout') {
+    try {
+        // Notify server about logout if possible
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const API_URL = window.apiClient?.getAPIUrl();
+                if (API_URL) {
+                    await fetch(`${API_URL}/api/auth/logout`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({ reason }),
+                    });
+                }
+            } catch (error) {
+                console.warn('Server logout notification failed');
+                // Continue with client-side logout even if server call fails
+            }
+        }
+
+        // Clear all authentication data
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.clear();
+
+        // Clear any cached data
+        if ('caches' in window) {
+            try {
+                const cacheNames = await caches.keys();
+                await Promise.all(
+                    cacheNames.map((name) => caches.delete(name))
+                );
+            } catch (error) {
+                console.warn('Failed to clear caches');
+            }
+        }
+
+        // Redirect to login page
+        window.location.href = '/';
+    } catch (error) {
+        console.error('Logout process failed');
+        // Force logout even on error
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = '/';
     }
 }
 
