@@ -113,10 +113,34 @@ router.post(
     authenticateToken,
     requireAdmin,
     async (req, res) => {
+        console.log('🔍 REVOKE ENDPOINT DEBUG - Request received:', {
+            method: req.method,
+            url: req.url,
+            headers: {
+                'content-type': req.headers['content-type'],
+                authorization: req.headers['authorization']
+                    ? 'Bearer [REDACTED]'
+                    : 'none',
+            },
+            body: {
+                sessionId: req.body.sessionId
+                    ? `[${req.body.sessionId.length} chars]`
+                    : 'undefined',
+                reason: req.body.reason,
+            },
+            user: {
+                userId: req.user.userId,
+                username: req.user.username,
+            },
+        });
+
         try {
             const { sessionId, reason = 'admin_revocation' } = req.body;
 
             if (!sessionId) {
+                console.error(
+                    '❌ REVOKE ENDPOINT ERROR: sessionId missing from request body'
+                );
                 return errorResponse(
                     res,
                     'Session ID is required in request body',
@@ -124,22 +148,24 @@ router.post(
                 );
             }
 
-            console.log('Session revoke request (body method):', {
-                sessionId: sessionId,
-                sessionIdLength: sessionId.length,
-                reason: reason,
-                adminUser: req.user.username,
-            });
+            console.log(
+                '🔍 REVOKE ENDPOINT DEBUG - Calling SessionManager.revokeSessionById...'
+            );
 
             const result = await SessionManager.revokeSessionById(
                 sessionId,
                 reason
             );
 
+            console.log('🔍 REVOKE ENDPOINT DEBUG - SessionManager returned:', {
+                result: result,
+                resultType: typeof result,
+            });
+
             if (result) {
                 console.log(
-                    'Session revoked successfully (body method):',
-                    sessionId
+                    '✅ REVOKE ENDPOINT SUCCESS - Session revoked:',
+                    sessionId.substring(0, 20) + '...'
                 );
                 return successResponse(
                     res,
@@ -148,8 +174,8 @@ router.post(
                 );
             } else {
                 console.log(
-                    'Session not found or already revoked (body method):',
-                    sessionId
+                    '⚠️ REVOKE ENDPOINT WARNING - Session not found or already revoked:',
+                    sessionId.substring(0, 20) + '...'
                 );
                 return errorResponse(
                     res,
@@ -158,11 +184,23 @@ router.post(
                 );
             }
         } catch (err) {
-            console.error('Revoke session error (body method):', {
-                error: err.message,
-                stack: err.stack,
-                sessionId: req.body.sessionId,
-            });
+            console.error(
+                '❌ REVOKE ENDPOINT ERROR - Complete error details:',
+                {
+                    message: err.message,
+                    stack: err.stack,
+                    code: err.code,
+                    detail: err.detail,
+                    name: err.name,
+                    sessionId: req.body.sessionId
+                        ? req.body.sessionId.substring(0, 20) + '...'
+                        : 'undefined',
+                }
+            );
+            console.error(
+                '❌ REVOKE ENDPOINT ERROR - Stringified:',
+                JSON.stringify(err, Object.getOwnPropertyNames(err), 2)
+            );
             return errorResponse(res, 'Failed to revoke session', 500);
         }
     }

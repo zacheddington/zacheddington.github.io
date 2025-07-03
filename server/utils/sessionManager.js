@@ -389,15 +389,131 @@ class SessionManager {
     static async revokeSessionById(sessionId, reason = 'admin_revocation') {
         const client = await pool.connect();
         try {
-            // Decode the session ID if it was URL encoded
-            const decodedSessionId = decodeURIComponent(sessionId);
-
-            console.log('Revoking session:', {
+            console.log('🔍 REVOKE SESSION DEBUG - Starting revocation:', {
                 originalSessionId: sessionId,
-                decodedSessionId: decodedSessionId,
+                sessionIdType: typeof sessionId,
+                sessionIdLength: sessionId ? sessionId.length : 'null',
                 reason: reason,
+                timestamp: new Date().toISOString(),
             });
 
+            // Validate input
+            if (!sessionId) {
+                console.error(
+                    '❌ REVOKE SESSION ERROR: sessionId is null or undefined'
+                );
+                throw new Error('Session ID is required');
+            }
+
+            // Multiple approaches to decode the session ID
+            let decodedSessionId = sessionId;
+            let decodingAttempts = [];
+
+            // Attempt 1: Standard URL decoding
+            try {
+                const attempt1 = decodeURIComponent(sessionId);
+                decodingAttempts.push({
+                    method: 'standard',
+                    result: attempt1,
+                    success: true,
+                });
+                decodedSessionId = attempt1;
+            } catch (decodeError) {
+                decodingAttempts.push({
+                    method: 'standard',
+                    error: decodeError.message,
+                    success: false,
+                });
+            }
+
+            // Attempt 2: Handle double-encoded dots specifically (common JWT issue)
+            try {
+                const attempt2 = sessionId.replace(/%2E/gi, '.');
+                decodingAttempts.push({
+                    method: 'dot-fix',
+                    result: attempt2,
+                    success: true,
+                });
+                if (attempt2 !== sessionId) {
+                    console.log(
+                        '� REVOKE SESSION DEBUG - Fixed encoded dots in JWT'
+                    );
+                    decodedSessionId = attempt2;
+                }
+            } catch (dotFixError) {
+                decodingAttempts.push({
+                    method: 'dot-fix',
+                    error: dotFixError.message,
+                    success: false,
+                });
+            }
+
+            // Attempt 3: Full URL decode after dot fix
+            try {
+                const attempt3 = decodeURIComponent(decodedSessionId);
+                decodingAttempts.push({
+                    method: 'full-decode',
+                    result: attempt3,
+                    success: true,
+                });
+                decodedSessionId = attempt3;
+            } catch (fullDecodeError) {
+                decodingAttempts.push({
+                    method: 'full-decode',
+                    error: fullDecodeError.message,
+                    success: false,
+                });
+            }
+
+            console.log(
+                '🔍 REVOKE SESSION DEBUG - Decoding attempts:',
+                decodingAttempts
+            );
+            console.log('🔍 REVOKE SESSION DEBUG - Final decoded session ID:', {
+                original: sessionId,
+                decoded: decodedSessionId,
+                lengthChange: sessionId.length !== decodedSessionId.length,
+                changedContent: sessionId !== decodedSessionId,
+            });
+
+            // Check if JWT token is valid before attempting database update
+            let jwtValid = false;
+            try {
+                const jwtPayload = jwt.decode(decodedSessionId, {
+                    complete: true,
+                });
+                if (jwtPayload && jwtPayload.header && jwtPayload.payload) {
+                    jwtValid = true;
+                    console.log(
+                        '🔍 REVOKE SESSION DEBUG - JWT validation successful:',
+                        {
+                            header: jwtPayload.header,
+                            payload: {
+                                userKey: jwtPayload.payload.userKey,
+                                timestamp: jwtPayload.payload.timestamp,
+                                exp: jwtPayload.payload.exp,
+                            },
+                        }
+                    );
+                } else {
+                    console.warn(
+                        '⚠️ REVOKE SESSION WARNING - JWT decode returned null/invalid structure'
+                    );
+                }
+            } catch (jwtError) {
+                console.warn(
+                    '⚠️ REVOKE SESSION WARNING - JWT validation failed (proceeding anyway):',
+                    jwtError.message
+                );
+            }
+
+            console.log(
+                '🔍 REVOKE SESSION DEBUG - Executing database query...',
+                {
+                    jwtValid: jwtValid,
+                    finalSessionId: decodedSessionId.substring(0, 50) + '...',
+                }
+            );
             const result = await client.query(
                 `
                 UPDATE tbl_user_session 
@@ -410,16 +526,30 @@ class SessionManager {
                 [decodedSessionId, reason]
             );
 
-            console.log('Revoke result:', {
+            console.log('✅ REVOKE SESSION DEBUG - Database query completed:', {
                 rowCount: result.rowCount,
                 rows: result.rows,
+                success: result.rowCount > 0,
             });
 
             return result.rowCount > 0;
         } catch (error) {
-            console.error('Error in revokeSessionById:', error);
+            console.error('❌ REVOKE SESSION ERROR - Complete error details:', {
+                message: error.message,
+                stack: error.stack,
+                code: error.code,
+                detail: error.detail,
+                name: error.name,
+                sessionId: sessionId,
+                reason: reason,
+            });
+            console.error(
+                '❌ REVOKE SESSION ERROR - Stringified:',
+                JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
+            );
             throw error;
         } finally {
+            console.log('🔍 REVOKE SESSION DEBUG - Releasing database client');
             client.release();
         }
     }
