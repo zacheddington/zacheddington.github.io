@@ -1466,11 +1466,21 @@ async function performSessionRevocation(sessionId) {
 
         setSessionActionLoading(sessionId, true);
 
-        // Instead of putting JWT in URL path, send it in the request body
-        // This avoids any URL encoding/parsing issues with complex JWT tokens
-        console.log('Revoking session:', sessionId);
+        // Comprehensive debugging
+        console.log('=== SESSION REVOCATION DEBUG START ===');
+        console.log('Session ID to revoke:', sessionId);
+        console.log('Session ID type:', typeof sessionId);
+        console.log('Session ID length:', sessionId.length);
+        console.log('API URL:', API_URL);
+        console.log('Token present:', !!token);
+        console.log('Token length:', token ? token.length : 'N/A');
 
-        const response = await fetch(`${API_URL}/api/sessions/revoke`, {
+        // First, let's try the body method (new endpoint)
+        console.log(
+            'Attempting new endpoint: POST /api/sessions/revoke with body'
+        );
+
+        let response = await fetch(`${API_URL}/api/sessions/revoke`, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -1482,7 +1492,42 @@ async function performSessionRevocation(sessionId) {
             }),
         });
 
+        console.log('Response status:', response.status);
+        console.log(
+            'Response headers:',
+            Object.fromEntries(response.headers.entries())
+        );
+
+        // If the new endpoint doesn't exist (404), try the old URL path method
+        if (response.status === 404) {
+            console.log(
+                'New endpoint not found, trying old endpoint: POST /api/sessions/:sessionId/revoke'
+            );
+
+            // URL encode the session ID for the path
+            const encodedSessionId = encodeURIComponent(sessionId);
+            console.log('Original session ID:', sessionId);
+            console.log('Encoded session ID:', encodedSessionId);
+
+            response = await fetch(
+                `${API_URL}/api/sessions/${encodedSessionId}/revoke`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        reason: 'Admin revocation',
+                    }),
+                }
+            );
+
+            console.log('Old endpoint response status:', response.status);
+        }
+
         if (response.ok) {
+            console.log('Success! Session revoked successfully');
             if (window.modalManager) {
                 window.modalManager.showModal(
                     'success',
@@ -1498,6 +1543,9 @@ async function performSessionRevocation(sessionId) {
             let errorMessage = `Failed to revoke session (${response.status})`;
             let serverError = null;
 
+            console.log('Error response status:', response.status);
+            console.log('Error response status text:', response.statusText);
+
             try {
                 const errorData = await response.json();
                 serverError = errorData;
@@ -1507,6 +1555,8 @@ async function performSessionRevocation(sessionId) {
                 // Log the full server response for debugging
                 console.error('Server error response:', errorData);
             } catch (parseError) {
+                console.log('Could not parse JSON response, trying text...');
+
                 // If we can't parse the response, try to get text
                 try {
                     const errorText = await response.text();
@@ -1536,17 +1586,19 @@ async function performSessionRevocation(sessionId) {
                         break;
                     case 500:
                         errorMessage =
-                            'Server internal error occurred while revoking session. Check the server logs for more details.';
+                            'Server internal error occurred while revoking session. This could be a database issue or missing server implementation.';
                         break;
                     default:
                         errorMessage = `Server error (${response.status}). Please try again.`;
                 }
             }
 
+            console.log('Final error message:', errorMessage);
+            console.log('=== SESSION REVOCATION DEBUG END ===');
             throw new Error(errorMessage);
         }
     } catch (error) {
-        console.error('Error revoking session:', error);
+        console.error('JavaScript error during session revocation:', error);
         const errorMessage =
             error.message || 'Failed to revoke session. Please try again.';
 
@@ -1767,6 +1819,102 @@ function escapeJavaScript(text) {
         .replace(/\r/g, '\\r');
 }
 
+// Debug function to test available session endpoints on production server
+// Call this from browser console: window.adminPage.testSessionEndpoints()
+async function testSessionEndpoints() {
+    const API_URL = window.apiClient.getAPIUrl();
+    const token = localStorage.getItem('token');
+
+    console.log('=== TESTING PRODUCTION SERVER ENDPOINTS ===');
+    console.log('API URL:', API_URL);
+    console.log('Token present:', !!token);
+
+    const endpoints = [
+        {
+            method: 'GET',
+            url: '/api/sessions',
+            description: 'Get all sessions',
+        },
+        {
+            method: 'POST',
+            url: '/api/sessions/revoke',
+            description: 'Revoke session (new endpoint - body)',
+        },
+        {
+            method: 'POST',
+            url: '/api/sessions/test-session-id/revoke',
+            description: 'Revoke session (old endpoint - URL path)',
+        },
+        {
+            method: 'POST',
+            url: '/api/sessions/cleanup',
+            description: 'Cleanup expired sessions',
+        },
+    ];
+
+    for (const endpoint of endpoints) {
+        try {
+            console.log(
+                `\nTesting: ${endpoint.method} ${endpoint.url} - ${endpoint.description}`
+            );
+
+            const requestOptions = {
+                method: endpoint.method,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            };
+
+            if (endpoint.method === 'POST' && endpoint.url.includes('revoke')) {
+                requestOptions.body = JSON.stringify({
+                    sessionId: 'test-session-id',
+                    reason: 'Testing endpoint availability',
+                });
+            }
+
+            const response = await fetch(
+                `${API_URL}${endpoint.url}`,
+                requestOptions
+            );
+
+            console.log(`  Status: ${response.status} ${response.statusText}`);
+
+            if (response.status === 404) {
+                console.log('  ❌ Endpoint not found');
+            } else if (response.status === 400) {
+                console.log(
+                    '  ✅ Endpoint exists (bad request expected for test data)'
+                );
+            } else if (response.status === 500) {
+                console.log('  ⚠️ Endpoint exists but has server error');
+            } else if (response.status < 300) {
+                console.log('  ✅ Endpoint working');
+            } else {
+                console.log('  ⚠️ Unexpected status');
+            }
+
+            // Try to get response details
+            try {
+                const responseData = await response.json();
+                console.log('  Response:', responseData);
+            } catch (e) {
+                const responseText = await response.text();
+                if (responseText) {
+                    console.log(
+                        '  Response text:',
+                        responseText.substring(0, 200)
+                    );
+                }
+            }
+        } catch (error) {
+            console.log(`  ❌ Error: ${error.message}`);
+        }
+    }
+
+    console.log('\n=== ENDPOINT TESTING COMPLETE ===');
+}
+
 // Setup revert functionality for role select dropdowns
 function setupRoleSelectRevertFunctionality() {
     // Find all role select dropdowns
@@ -1802,6 +1950,7 @@ window.adminPage = {
     revokeSession,
     loadAllSessions,
     displaySessions,
+    testSessionEndpoints, // Add debugging function
 };
 
 // Export for module systems
