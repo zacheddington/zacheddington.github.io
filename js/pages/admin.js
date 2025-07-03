@@ -1554,6 +1554,27 @@ async function performSessionRevocation(sessionId) {
 
                 // Log the full server response for debugging
                 console.error('Server error response:', errorData);
+
+                // Extract and display detailed error information if available
+                if (errorData.details) {
+                    console.error('🔍 DETAILED SERVER ERROR INFO:', {
+                        message: errorData.details.message,
+                        name: errorData.details.name,
+                        timestamp: errorData.details.timestamp,
+                        stack: errorData.details.stack,
+                        code: errorData.details.code,
+                        detail: errorData.details.detail,
+                    });
+
+                    // If this is a database error, log the specific database details
+                    if (errorData.details.code || errorData.details.detail) {
+                        console.error('🗄️ DATABASE ERROR DETAILS:', {
+                            code: errorData.details.code,
+                            detail: errorData.details.detail,
+                            hint: 'This may be a database connection or SQL query issue',
+                        });
+                    }
+                }
             } catch (parseError) {
                 console.log('Could not parse JSON response, trying text...');
 
