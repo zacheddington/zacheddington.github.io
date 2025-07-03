@@ -1,3 +1,26 @@
+// Version check for debugging
+console.log('🔧 Auth Utils Version: Single Session Enforcement v1.1');
+
+// Global version check function
+window.authUtilsVersion = function() {
+    return {
+        version: 'Single Session Enforcement v1.1',
+        features: [
+            'single-session-enforcement',
+            'enhanced-session-monitoring',
+            'detailed-error-messages',
+            'manual-session-check',
+            'test-functions'
+        ],
+        functions: {
+            testSingleSessionEnforcement: typeof window.testSingleSessionEnforcement,
+            manualSessionCheck: typeof window.manualSessionCheck,
+            checkCurrentSession: typeof window.checkCurrentSession,
+            authUtils: typeof window.authUtils
+        }
+    };
+};
+
 // Authentication Utilities
 // Handles user authentication, admin checks, and session management
 
@@ -242,7 +265,7 @@ function initializeGlobalTokenMonitoring() {
             );
             // Don't logout on network errors, only on explicit session invalidity
         }
-    }, 5 * 60 * 1000); // Check every 5 minutes
+    }, 30 * 1000); // Check every 30 seconds (reduced for testing)
 
     return true;
 }
@@ -535,257 +558,119 @@ async function checkCurrentSession() {
     }
 }
 
-// Utility functions for admin detection and menu management
-function isUserAdmin(userData) {
-    if (!userData) {
-        return false;
-    }
-
-    // Primary check: Use server-determined admin status
-    if (userData.isAdmin === true) {
-        return true;
-    }
-
-    // Secondary check: Check roles array for Administrator
-    if (userData.roles && Array.isArray(userData.roles)) {
-        const hasAdminRole = userData.roles.some(
-            (role) => role && role.toLowerCase().includes('administrator')
-        );
-        if (hasAdminRole) {
-            return true;
-        }
-    }
-
-    // Fallback: If username is 'admin'
-    if (userData.username === 'admin') {
-        return true;
-    }
-
-    return false;
-}
-
-function updateAdminUI(isAdmin) {
-    if (isAdmin) {
-        document.body.classList.add('is-admin');
-    } else {
-        document.body.classList.remove('is-admin');
-    }
-}
-
-function updateAdminMenuItem(isAdmin) {
-    // Update body class to control admin-only elements via CSS
-    if (isAdmin) {
-        document.body.classList.add('is-admin');
-    } else {
-        document.body.classList.remove('is-admin');
-    }
-}
-
-// Add session status indicator
-function addSessionStatusIndicator() {
-    const indicator = document.createElement('div');
-    indicator.className = 'session-indicator';
-    indicator.id = 'sessionStatus';
-    document.body.appendChild(indicator);
-
-    // Update session status every 30 seconds
-    const updateStatus = () => {
-        const token = localStorage.getItem('token');
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
-
-        if (token && userData && Object.keys(userData).length > 0) {
-            indicator.textContent = '🟢 Connected';
-            indicator.style.cssText = `
-                position: fixed;
-                bottom: 10px;
-                right: 10px;
-                background: rgba(40, 167, 69, 0.9);
-                color: white;
-                padding: 0.5rem 1rem;
-                border-radius: 20px;
-                font-size: 0.8rem;
-                z-index: 1000;
-                backdrop-filter: blur(5px);
-            `;
-        } else {
-            indicator.textContent = '🔴 Disconnected';
-            indicator.style.cssText = `
-                position: fixed;
-                bottom: 10px;
-                right: 10px;
-                background: rgba(220, 53, 69, 0.9);
-                color: white;
-                padding: 0.5rem 1rem;
-                border-radius: 20px;
-                font-size: 0.8rem;
-                z-index: 1000;
-                backdrop-filter: blur(5px);
-            `;
-        }
-    };
-
-    updateStatus();
-    setInterval(updateStatus, 30000);
-}
-
-// Function to set up secure history management
-function setupSecureHistoryManagement() {
-    // Prevent back button access to authenticated pages after logout
-    window.addEventListener('beforeunload', function () {
-        // Only clear auth data if:
-        // 1. We're on the login page AND
-        // 2. No successful login navigation is in progress
-        if (
-            (window.location.pathname === '/' ||
-                window.location.pathname === '/index.html') &&
-            !sessionStorage.getItem('successfulLoginNavigation')
-        ) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('activeSession');
-            sessionStorage.clear();
-        }
-    });
-
-    // Prevent right-click context menu that might expose navigation options
-    document.addEventListener('contextmenu', function (event) {
-        event.preventDefault();
-    });
-
-    // Enhanced security for browser back/forward navigation
-    window.addEventListener('popstate', function (event) {
-        const token = localStorage.getItem('token');
-        const currentPath = window.location.pathname;
-
-        // If user navigated back to an authenticated page without a token, redirect to login
-        const authenticatedPages = [
-            '/welcome/',
-            '/profile/',
-            '/admin/',
-            '/patients/',
-            '/2fa-setup/',
-            '/force-password-change/',
-        ];
-        const isAuthenticatedPage = authenticatedPages.some((page) =>
-            currentPath.includes(page)
-        );
-
-        if (isAuthenticatedPage && !token) {
-            window.location.replace('/');
-        }
-    });
-}
-
-// Replace browser history to prevent navigation back to login
-function secureHistoryReplacement() {
-    const currentPath = window.location.pathname;
-
-    // Only do this for authenticated pages
-    const authenticatedPages = [
-        '/welcome/',
-        '/admin/',
-        '/patients/',
-        '/profile/',
-    ];
-
-    if (authenticatedPages.some((page) => currentPath.includes(page))) {
-        // Replace the current history entry to break the back button chain
-        if (window.history.replaceState) {
-            window.history.replaceState(
-                { page: 'authenticated', preventBack: true },
-                '',
-                window.location.href
-            );
-        }
-
-        // Add additional history entry to make back button less functional
-        if (window.history.pushState) {
-            window.history.pushState(
-                { page: 'authenticated', preventBack: true },
-                '',
-                window.location.href
-            );
-        }
-    }
-}
-
-// Prevent navigation back to auth pages once authenticated
-function preventAuthPageBackNavigation() {
-    // Only run this on authenticated pages
-    const currentPath = window.location.pathname;
-    const authPages = [
-        '/',
-        '/index.html',
-        '/2fa-setup/',
-        '/force-password-change/',
-    ];
-
-    if (authPages.some((page) => currentPath.includes(page))) {
-        return; // Don't prevent navigation on auth pages themselves
-    }
-
-    // Replace current history entry to prevent back navigation to auth pages
-    if (window.history.replaceState) {
-        window.history.replaceState(null, '', window.location.href);
-    }
-
-    // Listen for back button and redirect to current page
-    window.addEventListener('popstate', function (event) {
-        const token = localStorage.getItem('token');
-        if (token && checkTokenValidity()) {
-            // User is authenticated, stay on current page
-            window.history.pushState(null, '', window.location.href);
-        }
-    });
-}
-
-// Perform secure logout
-async function logout(reason = 'User logout') {
+// Simple manual session check function for debugging
+async function manualSessionCheck() {
+    console.log('🔍 Manual session check...');
+    
     try {
-        // Attempt to notify server of logout
         const token = localStorage.getItem('token');
-        if (token) {
-            try {
-                const API_URL = window.apiClient.getAPIUrl();
-                await fetch(`${API_URL}/api/logout`, {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ reason }),
-                });
-            } catch (error) {
-                console.warn('Server logout notification failed');
-                // Continue with client-side logout even if server call fails
-            }
+        console.log('Token exists:', !!token);
+        
+        if (!token) {
+            console.log('❌ No token found');
+            return { valid: false, reason: 'No token' };
         }
-
-        // Clear all authentication data
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        sessionStorage.clear();
-
-        // Clear any cached data
-        if ('caches' in window) {
-            try {
-                const cacheNames = await caches.keys();
-                await Promise.all(
-                    cacheNames.map((name) => caches.delete(name))
-                );
-            } catch (error) {
-                console.warn('Failed to clear caches');
+        
+        const sessionCheck = await checkCurrentSession();
+        console.log('Session check result:', sessionCheck);
+        
+        if (!sessionCheck.valid) {
+            console.log('❌ Session is invalid:', sessionCheck.reason);
+            if (sessionCheck.single_session_enforcement) {
+                console.log('🚨 Single session enforcement detected!');
             }
+        } else {
+            console.log('✅ Session is valid');
         }
-
-        // Redirect to login page
-        window.location.href = '/';
+        
+        return sessionCheck;
     } catch (error) {
-        console.error('Logout process failed');
-        // Force logout even on error
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = '/';
+        console.error('Error during manual session check:', error);
+        return { error: error.message };
+    }
+}
+
+// Test function for single session enforcement
+async function testSingleSessionEnforcement() {
+    console.log('🧪 Starting Single Session Enforcement Test...');
+
+    try {
+        // Check if user is logged in
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('❌ No token found. Please login first.');
+            return;
+        }
+
+        // Check current session status
+        console.log('1️⃣ Checking current session status...');
+        const sessionCheck = await checkCurrentSession();
+        console.log('Current session status:', sessionCheck);
+
+        if (!sessionCheck.valid) {
+            console.log('❌ Current session is invalid:', sessionCheck.reason);
+            return;
+        }
+
+        console.log('✅ Current session is valid');
+
+        // Instructions for manual testing
+        console.log('📋 Manual Test Instructions:');
+        console.log('1. Keep this tab open');
+        console.log('2. Open a new browser/incognito window');
+        console.log('3. Login with the same credentials');
+        console.log('4. Return to this tab and wait up to 5 minutes');
+        console.log('5. You should be automatically logged out with a specific message');
+
+        // Start monitoring for session changes
+        console.log('🔍 Starting session monitoring...');
+        let checkCount = 0;
+
+        const monitorInterval = setInterval(async () => {
+            checkCount++;
+            console.log(`⏰ Check #${checkCount} - Verifying session status...`);
+
+            try {
+                const currentStatus = await checkCurrentSession();
+
+                if (!currentStatus.valid) {
+                    console.log('🚨 SESSION INVALIDATED!');
+                    console.log('Reason:', currentStatus.reason);
+
+                    if (currentStatus.single_session_enforcement) {
+                        console.log('✅ Single session enforcement detected!');
+                        console.log('✅ Test PASSED - Session was revoked due to new login elsewhere');
+                    } else {
+                        console.log('ℹ️ Session invalidated for other reason:', currentStatus.reason);
+                    }
+
+                    clearInterval(monitorInterval);
+                    return;
+                }
+
+                console.log('✅ Session still valid');
+
+                // Stop monitoring after 10 minutes
+                if (checkCount >= 20) {
+                    console.log('⏰ Test timeout - stopping monitoring');
+                    console.log('💡 Try logging in from another location to trigger single session enforcement');
+                    clearInterval(monitorInterval);
+                }
+
+            } catch (error) {
+                console.error('Error checking session:', error);
+            }
+        }, 30000); // Check every 30 seconds
+
+        return {
+            status: 'Test started',
+            instructions: 'Login from another location to test single session enforcement',
+            monitoring: 'Session monitoring active for 10 minutes'
+        };
+
+    } catch (error) {
+        console.error('❌ Error during test:', error);
+        return { error: error.message };
     }
 }
 
@@ -803,6 +688,7 @@ window.authUtils = {
     logout,
     checkTokenValidity,
     checkCurrentSession,
+    manualSessionCheck,
     handleAuthError,
     handleSessionExpiration,
     handleAccessDenied,
@@ -811,6 +697,7 @@ window.authUtils = {
     createAuthenticatedFetch,
     preventAuthPageBackNavigation,
     secureHistoryReplacement,
+    testSingleSessionEnforcement, // Expose test function
 };
 
 // Backward compatibility - individual function exports
@@ -821,6 +708,8 @@ window.addSessionStatusIndicator = addSessionStatusIndicator;
 window.setupSecureHistoryManagement = setupSecureHistoryManagement;
 window.checkTokenValidity = checkTokenValidity;
 window.checkCurrentSession = checkCurrentSession;
+window.manualSessionCheck = manualSessionCheck;
+window.testSingleSessionEnforcement = testSingleSessionEnforcement;
 window.handleAuthError = handleAuthError;
 window.handleSessionExpiration = handleSessionExpiration;
 window.initializeGlobalTokenMonitoring = initializeGlobalTokenMonitoring;
