@@ -1832,6 +1832,12 @@ async function testSessionEndpoints() {
     const endpoints = [
         {
             method: 'GET',
+            url: '/api/sessions/debug',
+            description:
+                'Debug endpoint - verify enhanced session revocation deployment',
+        },
+        {
+            method: 'GET',
             url: '/api/sessions',
             description: 'Get all sessions',
         },
@@ -1915,6 +1921,45 @@ async function testSessionEndpoints() {
     console.log('\n=== ENDPOINT TESTING COMPLETE ===');
 }
 
+// Simple function to verify if enhanced session revocation is deployed
+// Call this from browser console: window.adminPage.checkDeployment()
+async function checkDeployment() {
+    console.log('🔍 Checking if enhanced session revocation is deployed...');
+
+    const API_URL = window.apiClient.getAPIUrl();
+    const token = localStorage.getItem('token');
+
+    try {
+        const response = await fetch(`${API_URL}/api/sessions/debug`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Enhanced session revocation is deployed!');
+            console.log('Server version:', data.data.serverVersion);
+            console.log('Features:', data.data.features);
+            console.log('Available endpoints:', data.data.endpoints);
+            return true;
+        } else {
+            console.log('❌ Enhanced session revocation is NOT deployed');
+            console.log('Status:', response.status, response.statusText);
+            const errorData = await response.json().catch(() => null);
+            if (errorData) {
+                console.log('Error:', errorData);
+            }
+            return false;
+        }
+    } catch (error) {
+        console.log('❌ Error checking deployment:', error.message);
+        return false;
+    }
+}
+
 // Setup revert functionality for role select dropdowns
 function setupRoleSelectRevertFunctionality() {
     // Find all role select dropdowns
@@ -1951,6 +1996,7 @@ window.adminPage = {
     loadAllSessions,
     displaySessions,
     testSessionEndpoints, // Add debugging function
+    checkDeployment, // Add deployment verification function
 };
 
 // Export for module systems

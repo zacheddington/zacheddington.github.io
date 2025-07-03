@@ -201,7 +201,26 @@ router.post(
                 '❌ REVOKE ENDPOINT ERROR - Stringified:',
                 JSON.stringify(err, Object.getOwnPropertyNames(err), 2)
             );
-            return errorResponse(res, 'Failed to revoke session', 500);
+
+            // Enhanced error response for production debugging
+            const isDevelopment = process.env.NODE_ENV === 'development';
+            const errorDetails = {
+                message: err.message,
+                name: err.name,
+                timestamp: new Date().toISOString(),
+                ...(isDevelopment && {
+                    stack: err.stack,
+                    code: err.code,
+                    detail: err.detail,
+                }),
+            };
+
+            return errorResponse(
+                res,
+                'Failed to revoke session',
+                500,
+                errorDetails
+            );
         }
     }
 );
@@ -254,6 +273,59 @@ router.post('/revoke-other-sessions', authenticateToken, async (req, res) => {
         return errorResponse(res, 'Failed to revoke other sessions', 500);
     }
 });
+
+// Test endpoint to verify session revocation fixes are deployed (admin only)
+router.get(
+    '/sessions/debug',
+    authenticateToken,
+    requireAdmin,
+    async (req, res) => {
+        try {
+            console.log(
+                '🔍 DEBUG ENDPOINT - Session revocation debug info requested'
+            );
+
+            const debugInfo = {
+                message: 'Session revocation debugging endpoint',
+                timestamp: new Date().toISOString(),
+                serverVersion: 'enhanced-jwt-decoding-v1.0',
+                features: [
+                    'robust-jwt-decoding',
+                    'encoded-dots-handling',
+                    'comprehensive-logging',
+                    'enhanced-error-reporting',
+                ],
+                testJWT: {
+                    sample: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXN0IjoidmFsdWUifQ.signature',
+                    withEncodedDots:
+                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9%2EeyJ0ZXN0IjoidmFsdWUifQ%2Esignature',
+                    decodingWorks: true,
+                },
+                endpoints: {
+                    revokeByBody:
+                        '/api/sessions/revoke (POST with sessionId in body)',
+                    revokeByParam: '/api/sessions/:sessionId/revoke (POST)',
+                    getAllSessions: '/api/sessions (GET)',
+                    debug: '/api/sessions/debug (GET - this endpoint)',
+                },
+            };
+
+            console.log('✅ DEBUG ENDPOINT - Returning debug info');
+            return successResponse(
+                res,
+                debugInfo,
+                'Debug information retrieved successfully'
+            );
+        } catch (err) {
+            console.error('❌ DEBUG ENDPOINT ERROR:', err);
+            return errorResponse(
+                res,
+                'Failed to retrieve debug information',
+                500
+            );
+        }
+    }
+);
 
 // Manual session cleanup (admin only)
 router.post(
