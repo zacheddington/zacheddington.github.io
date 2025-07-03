@@ -308,6 +308,8 @@ router.get(
                     revokeByParam: '/api/sessions/:sessionId/revoke (POST)',
                     getAllSessions: '/api/sessions (GET)',
                     debug: '/api/sessions/debug (GET - this endpoint)',
+                    checkSession:
+                        '/api/sessions/check (GET - verify current session)',
                 },
             };
 
@@ -327,6 +329,37 @@ router.get(
         }
     }
 );
+
+// Simple endpoint to check if current session is valid (useful for testing revocation)
+router.get('/sessions/check', authenticateToken, async (req, res) => {
+    try {
+        console.log('🔍 SESSION CHECK - Current session validation requested');
+
+        const sessionInfo = {
+            message: 'Session is valid and active',
+            timestamp: new Date().toISOString(),
+            user: {
+                userId: req.user.userId,
+                username: req.user.username,
+                sessionKey: req.user.sessionKey,
+            },
+            session: {
+                token: req.session.token.substring(0, 20) + '...',
+                expiresAt: req.session.expiresAt,
+            },
+        };
+
+        console.log('✅ SESSION CHECK - Session is valid');
+        return successResponse(
+            res,
+            sessionInfo,
+            'Session validation successful'
+        );
+    } catch (err) {
+        console.error('❌ SESSION CHECK ERROR:', err);
+        return errorResponse(res, 'Failed to validate session', 500);
+    }
+});
 
 // Manual session cleanup (admin only)
 router.post(

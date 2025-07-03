@@ -1981,6 +1981,46 @@ async function checkDeployment() {
     }
 }
 
+// Simple function to check if current session is still valid (useful for testing revocation)
+// Call this from browser console: window.adminPage.checkCurrentSession()
+async function checkCurrentSession() {
+    console.log('🔍 Checking if current session is still valid...');
+
+    const API_URL = window.apiClient.getAPIUrl();
+    const token = localStorage.getItem('token');
+
+    try {
+        const response = await fetch(`${API_URL}/api/sessions/check`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Current session is VALID and ACTIVE');
+            console.log('Session info:', data.data);
+            return { valid: true, data: data.data };
+        } else if (response.status === 403) {
+            console.log('❌ Current session is INVALID or REVOKED');
+            console.log('Status:', response.status, response.statusText);
+            const errorData = await response.json().catch(() => null);
+            if (errorData) {
+                console.log('Error details:', errorData);
+            }
+            return { valid: false, revoked: true };
+        } else {
+            console.log('⚠️ Unexpected response status:', response.status);
+            return { valid: false, error: response.status };
+        }
+    } catch (error) {
+        console.log('❌ Error checking session:', error.message);
+        return { valid: false, error: error.message };
+    }
+}
+
 // Setup revert functionality for role select dropdowns
 function setupRoleSelectRevertFunctionality() {
     // Find all role select dropdowns
@@ -2018,6 +2058,7 @@ window.adminPage = {
     displaySessions,
     testSessionEndpoints, // Add debugging function
     checkDeployment, // Add deployment verification function
+    checkCurrentSession, // Add session validity checker
 };
 
 // Export for module systems
