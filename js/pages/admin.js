@@ -1475,8 +1475,9 @@ async function performSessionRevocation(sessionId) {
             encodedSessionId
         );
 
-        const response = await fetch(
-            `${API_URL}/api/sessions/${encodedSessionId}/revoke`,
+        // First, let's try with the original session ID (in case it's not getting URL decoded properly on server)
+        let response = await fetch(
+            `${API_URL}/api/sessions/${sessionId}/revoke`,
             {
                 method: 'POST',
                 headers: {
@@ -1488,6 +1489,24 @@ async function performSessionRevocation(sessionId) {
                 }),
             }
         );
+
+        // If that fails with 404, try with the encoded version
+        if (!response.ok && response.status === 404) {
+            console.log('Retrying with encoded session ID...');
+            response = await fetch(
+                `${API_URL}/api/sessions/${encodedSessionId}/revoke`,
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        reason: 'Admin revocation',
+                    }),
+                }
+            );
+        }
 
         if (response.ok) {
             if (window.modalManager) {
@@ -1503,19 +1522,39 @@ async function performSessionRevocation(sessionId) {
         } else {
             // Enhanced error handling for different status codes
             let errorMessage = `Failed to revoke session (${response.status})`;
+            let serverError = null;
 
             try {
                 const errorData = await response.json();
+                serverError = errorData;
                 errorMessage =
                     errorData.error || errorData.message || errorMessage;
+
+                // Log the full server response for debugging
+                console.error('Server error response:', errorData);
             } catch (parseError) {
-                // If we can't parse the response, provide status-based messages
+                // If we can't parse the response, try to get text
+                try {
+                    const errorText = await response.text();
+                    console.error('Server error text:', errorText);
+                    if (errorText) {
+                        errorMessage = `Server error (${response.status}): ${errorText}`;
+                    }
+                } catch (textError) {
+                    console.error(
+                        'Could not parse server response:',
+                        textError
+                    );
+                }
+
+                // Provide status-based messages
                 switch (response.status) {
                     case 400:
                         errorMessage = 'Invalid session ID or request format.';
                         break;
                     case 404:
-                        errorMessage = 'Session not found or already expired.';
+                        errorMessage =
+                            'Session revocation endpoint not found. The server may not support this feature yet.';
                         break;
                     case 403:
                         errorMessage =
@@ -1523,7 +1562,7 @@ async function performSessionRevocation(sessionId) {
                         break;
                     case 500:
                         errorMessage =
-                            'Server error occurred while revoking session. This may happen if you are trying to revoke your own active session. Please try revoking a different session or ask another administrator to revoke your session.';
+                            'Server internal error occurred while revoking session. Check the server logs for more details.';
                         break;
                     default:
                         errorMessage = `Server error (${response.status}). Please try again.`;

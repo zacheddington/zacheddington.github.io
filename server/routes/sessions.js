@@ -68,18 +68,27 @@ router.post(
             const sessionId = req.params.sessionId;
             const { reason = 'admin_revocation' } = req.body;
 
+            console.log('Session revoke request:', {
+                sessionId: sessionId,
+                sessionIdLength: sessionId.length,
+                reason: reason,
+                adminUser: req.user.username,
+            });
+
             const result = await SessionManager.revokeSessionById(
                 sessionId,
                 reason
             );
 
             if (result) {
+                console.log('Session revoked successfully:', sessionId);
                 return successResponse(
                     res,
                     { sessionId },
                     'Session revoked successfully'
                 );
             } else {
+                console.log('Session not found or already revoked:', sessionId);
                 return errorResponse(
                     res,
                     'Session not found or already revoked',
@@ -87,7 +96,11 @@ router.post(
                 );
             }
         } catch (err) {
-            console.error('Revoke session error:', err);
+            console.error('Revoke session error:', {
+                error: err.message,
+                stack: err.stack,
+                sessionId: req.params.sessionId,
+            });
             return errorResponse(res, 'Failed to revoke session', 500);
         }
     }

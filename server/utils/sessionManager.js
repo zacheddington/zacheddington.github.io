@@ -389,6 +389,15 @@ class SessionManager {
     static async revokeSessionById(sessionId, reason = 'admin_revocation') {
         const client = await pool.connect();
         try {
+            // Decode the session ID if it was URL encoded
+            const decodedSessionId = decodeURIComponent(sessionId);
+
+            console.log('Revoking session:', {
+                originalSessionId: sessionId,
+                decodedSessionId: decodedSessionId,
+                reason: reason,
+            });
+
             const result = await client.query(
                 `
                 UPDATE tbl_user_session 
@@ -396,12 +405,20 @@ class SessionManager {
                     logout_time = CURRENT_TIMESTAMP,
                     logout_reason = $2
                 WHERE session_token = $1 AND is_active = true
-                RETURNING session_key
+                RETURNING session_key, session_token
             `,
-                [sessionId, reason]
+                [decodedSessionId, reason]
             );
 
+            console.log('Revoke result:', {
+                rowCount: result.rowCount,
+                rows: result.rows,
+            });
+
             return result.rowCount > 0;
+        } catch (error) {
+            console.error('Error in revokeSessionById:', error);
+            throw error;
         } finally {
             client.release();
         }
