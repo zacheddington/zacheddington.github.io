@@ -9,6 +9,7 @@ const APP_CONFIG = {
         'force-password.html': ['force-password'],
         'admin.html': ['admin'],
         'patients.html': ['patients'],
+        'studies.html': ['studies'],
         'profile.html': ['profile'],
     }, // Shared modules required by all pages
     sharedModules: [
@@ -87,12 +88,12 @@ function initializeApp() {
         }
 
         // Load navigation menu for authenticated pages that should have navigation
-        if (
-            shouldHaveNavigation(currentPage) &&
-            window.navigation &&
-            window.navigation.loadMenu
-        ) {
-            window.navigation.loadMenu();
+        if (shouldHaveNavigation(currentPage)) {
+            if (window.loadTopNavigation) {
+                window.loadTopNavigation();
+            } else if (window.navigation && window.navigation.loadMenu) {
+                window.navigation.loadMenu();
+            }
         }
     }
 
@@ -111,6 +112,8 @@ function getCurrentPage() {
         return 'admin.html';
     } else if (path.startsWith('/patients/')) {
         return 'patients.html';
+    } else if (path.startsWith('/studies/')) {
+        return 'studies.html';
     } else if (path.startsWith('/profile/')) {
         return 'profile.html';
     } else if (path.startsWith('/force-password-change/')) {
@@ -199,6 +202,25 @@ function initializePage(page) {
                     }
                 } catch (error) {
                     console.error('Error calling patientsPage initialization');
+                }
+            }
+            // Navigation is loaded centrally above, no need to call it again
+            break;
+
+        case 'studies.html':
+            if (window.studiesPage) {
+                try {
+                    // Handle both sync and async initialization
+                    const result = window.studiesPage.initializeStudiesPage();
+                    if (result && typeof result.then === 'function') {
+                        result.catch((error) => {
+                            console.error(
+                                'Error in studies page initialization'
+                            );
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error calling studiesPage initialization');
                 }
             }
             // Navigation is loaded centrally above, no need to call it again
