@@ -291,11 +291,6 @@ function setupMobileDropdowns() {
 
     // Define the click handler function FIRST
     function handleDropdownClick(e) {
-        // Immediately prevent any other handlers from interfering
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-
         // Find the dropdown container
         const dropdown = e.target.closest('.nav-dropdown');
         if (!dropdown) {
@@ -306,6 +301,11 @@ function setupMobileDropdowns() {
 
         // For touch devices, use special two-tap behavior
         if (isTouchDevice) {
+            // Immediately prevent any other handlers from interfering on touch devices
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+
             const state = dropdownStates.get(dropdown);
             if (!state) {
                 return;
@@ -344,10 +344,9 @@ function setupMobileDropdowns() {
                 state.isNavigating = false;
             }
         } else {
-            // For desktop, don't prevent default to allow normal navigation
-            if (e.type === 'click') {
-                e.preventDefault = function () {}; // Override preventDefault for desktop
-            }
+            // For desktop, allow normal navigation - don't prevent default
+            // CSS hover will handle the dropdown display
+            return;
         }
     }
 
