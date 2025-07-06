@@ -250,11 +250,7 @@ function setupMobileDropdowns() {
     if (window._mobileDropdownsSetup) return;
     window._mobileDropdownsSetup = true;
 
-    // Add visual debugging for iPhone
-    createDebugPanel();
-
     const dropdowns = document.querySelectorAll('.nav-dropdown');
-    debugLog(`Found ${dropdowns.length} dropdowns`);
 
     // More robust touch detection for various mobile devices
     const isTouchDevice = (() => {
@@ -276,20 +272,15 @@ function setupMobileDropdowns() {
         return false;
     })();
 
-    debugLog(`Touch device: ${isTouchDevice}`);
-    debugLog(`User agent: ${navigator.userAgent.substring(0, 50)}...`);
-
     // Clear any existing global listeners first to prevent duplicates
     if (window._dropdownClickHandler) {
         document.removeEventListener('click', window._dropdownClickHandler);
-        debugLog('Removed existing click handler');
     }
     if (window._dropdownTouchHandler) {
         document.removeEventListener(
             'touchstart',
             window._dropdownTouchHandler
         );
-        debugLog('Removed existing touch handler');
     }
 
     // Store dropdown states to prevent race conditions - use global storage
@@ -307,7 +298,6 @@ function setupMobileDropdowns() {
 
         // Initialize state tracking
         dropdownStates.set(dropdown, { isOpen: false, isNavigating: false });
-        debugLog(`Setup dropdown ${index}: ${trigger.textContent.trim()}`);
 
         // Remove ALL possible event listeners that might interfere
         trigger.removeEventListener('click', handleDropdownClick);
@@ -320,18 +310,14 @@ function setupMobileDropdowns() {
             trigger.addEventListener('touchstart', handleDropdownClick, {
                 passive: false,
             });
-            debugLog(`Added touchstart listener to dropdown ${index}`);
         }
 
         // Always add click as backup
         trigger.addEventListener('click', handleDropdownClick);
-        debugLog(`Added click listener to dropdown ${index}`);
     });
 
     // Define the click handler function
     function handleDropdownClick(e) {
-        debugLog(`Event fired: ${e.type}`);
-
         // Immediately prevent any other handlers from interfering
         e.preventDefault();
         e.stopPropagation();
@@ -340,41 +326,29 @@ function setupMobileDropdowns() {
         // Find the dropdown container
         const dropdown = e.target.closest('.nav-dropdown');
         if (!dropdown) {
-            debugLog('No dropdown found for click');
             return;
         }
 
         const trigger = dropdown.querySelector('.dropdown-trigger');
-        debugLog(`Clicked: ${trigger.textContent.trim()}`);
 
         // For touch devices, use special two-tap behavior
         if (isTouchDevice) {
-            debugLog('Touch device - handling special behavior');
-
             const state = dropdownStates.get(dropdown);
             if (!state) {
-                debugLog('ERROR: No state found for dropdown');
                 return;
             }
 
-            debugLog(
-                `Current state - isOpen: ${state.isOpen}, isNavigating: ${state.isNavigating}`
-            );
-
             if (state.isNavigating) {
-                debugLog('Navigation in progress - ignoring click');
                 return;
             }
 
             if (state.isOpen) {
-                debugLog('Second tap - navigating');
                 // Second tap - navigate
                 state.isNavigating = true;
                 dropdown.classList.remove('mobile-open');
                 state.isOpen = false;
 
                 const href = trigger.getAttribute('href');
-                debugLog(`Navigating to: ${href}`);
                 if (href && href !== '#') {
                     // Small delay to ensure click event completes
                     setTimeout(() => {
@@ -382,7 +356,6 @@ function setupMobileDropdowns() {
                     }, 100);
                 }
             } else {
-                debugLog('First tap - opening dropdown');
                 // First tap - close others and open this one
                 dropdowns.forEach((otherDropdown) => {
                     const otherState = dropdownStates.get(otherDropdown);
@@ -396,12 +369,8 @@ function setupMobileDropdowns() {
                 dropdown.classList.add('mobile-open');
                 state.isOpen = true;
                 state.isNavigating = false;
-                debugLog('Dropdown opened');
             }
-
-            updateDebugState();
         } else {
-            debugLog('Desktop device - letting CSS handle');
             // For desktop, don't prevent default to allow normal navigation
             if (e.type === 'click') {
                 e.preventDefault = function () {}; // Override preventDefault for desktop
@@ -411,13 +380,11 @@ function setupMobileDropdowns() {
 
     // Close dropdowns when clicking outside, with state management
     window._dropdownClickHandler = function (e) {
-        debugLog('Document click handler');
         const dropdowns = document.querySelectorAll('.nav-dropdown');
         const dropdownStates = window._dropdownStates;
 
         // Don't close if clicking on a dropdown item
         if (e.target.closest('.dropdown-content a')) {
-            debugLog('Clicked dropdown item - closing all');
             // Allow dropdown item navigation, close dropdown after click
             dropdowns.forEach((dropdown) => {
                 const state = dropdownStates.get(dropdown);
@@ -427,13 +394,11 @@ function setupMobileDropdowns() {
                 }
                 dropdown.classList.remove('mobile-open');
             });
-            updateDebugState();
             return;
         }
 
         // Close if clicking outside any dropdown
         if (!e.target.closest('.nav-dropdown')) {
-            debugLog('Clicked outside - closing all');
             dropdowns.forEach((dropdown) => {
                 const state = dropdownStates.get(dropdown);
                 if (state) {
@@ -442,12 +407,10 @@ function setupMobileDropdowns() {
                 }
                 dropdown.classList.remove('mobile-open');
             });
-            updateDebugState();
         }
     };
 
     document.addEventListener('click', window._dropdownClickHandler);
-    debugLog('Added document click handler');
 
     // Also add touchstart handler for mobile outside clicks (passive to not interfere with scroll)
     if (isTouchDevice) {
@@ -461,7 +424,6 @@ function setupMobileDropdowns() {
             );
 
             if (hasOpenDropdowns && !e.target.closest('.nav-dropdown')) {
-                debugLog('Touch outside - closing all');
                 // Use requestAnimationFrame to avoid interfering with scroll
                 requestAnimationFrame(() => {
                     dropdowns.forEach((dropdown) => {
@@ -472,7 +434,6 @@ function setupMobileDropdowns() {
                         }
                         dropdown.classList.remove('mobile-open');
                     });
-                    updateDebugState();
                 });
             }
         };
@@ -480,73 +441,7 @@ function setupMobileDropdowns() {
         document.addEventListener('touchstart', window._dropdownTouchHandler, {
             passive: true,
         });
-        debugLog('Added document touch handler');
     }
-}
-
-// Debug functions for iPhone testing
-function createDebugPanel() {
-    // Don't create multiple panels
-    if (document.getElementById('debug-panel')) return;
-
-    const panel = document.createElement('div');
-    panel.id = 'debug-panel';
-    panel.style.cssText = `
-        position: fixed;
-        top: 60px;
-        right: 10px;
-        width: 300px;
-        max-height: 200px;
-        background: rgba(0, 0, 0, 0.9);
-        color: white;
-        font-size: 11px;
-        font-family: monospace;
-        padding: 8px;
-        border-radius: 4px;
-        z-index: 99999;
-        overflow-y: auto;
-        pointer-events: none;
-    `;
-
-    panel.innerHTML = '<div id="debug-content">Debug Panel Ready</div>';
-    document.body.appendChild(panel);
-}
-
-function debugLog(message) {
-    const content = document.getElementById('debug-content');
-    if (content) {
-        const time = new Date().toLocaleTimeString();
-        content.innerHTML += `<div>${time}: ${message}</div>`;
-        content.scrollTop = content.scrollHeight;
-
-        // Keep only last 10 messages
-        const messages = content.children;
-        while (messages.length > 10) {
-            content.removeChild(messages[0]);
-        }
-    }
-}
-
-function updateDebugState() {
-    if (!window._dropdownStates) return;
-
-    const states = [];
-    document.querySelectorAll('.nav-dropdown').forEach((dropdown, i) => {
-        const state = window._dropdownStates.get(dropdown);
-        const trigger = dropdown.querySelector('.dropdown-trigger');
-        const name = trigger
-            ? trigger.textContent.trim().split(' ')[0]
-            : `DD${i}`;
-        if (state) {
-            states.push(
-                `${name}: ${state.isOpen ? 'OPEN' : 'closed'}${
-                    state.isNavigating ? ' (nav)' : ''
-                }`
-            );
-        }
-    });
-
-    debugLog(`States: ${states.join(', ')}`);
 }
 
 // Make navigation utilities available globally
