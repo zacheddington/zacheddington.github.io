@@ -272,24 +272,21 @@ function setupMobileDropdowns() {
 
             const isCurrentlyOpen = dropdown.classList.contains('mobile-open');
 
-            // If dropdown is closed, open it and prevent navigation
-            if (!isCurrentlyOpen) {
-                e.preventDefault(); // Prevent navigation on first touch
-                e.stopPropagation();
+            // Always prevent default to control the behavior
+            e.preventDefault();
+            e.stopPropagation();
 
-                // Close all other dropdowns first
+            // If this dropdown is closed, open it and close all others
+            if (!isCurrentlyOpen) {
+                // Close ALL dropdowns first
                 dropdowns.forEach((otherDropdown) => {
                     otherDropdown.classList.remove('mobile-open');
                 });
 
-                // Then open this dropdown
+                // Then open this specific dropdown
                 dropdown.classList.add('mobile-open');
             } else {
-                // If dropdown is already open, navigate immediately
-                // This happens on second touch of the same trigger
-                e.preventDefault(); // Prevent default to control the navigation
-
-                // Close the dropdown
+                // If this dropdown is already open, close it and navigate
                 dropdown.classList.remove('mobile-open');
 
                 // Navigate to the href immediately
