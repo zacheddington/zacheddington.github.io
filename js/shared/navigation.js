@@ -261,9 +261,7 @@ function setupMobileDropdowns() {
         // Remove existing listeners to prevent duplicates
         if (trigger._clickHandler) {
             trigger.removeEventListener('click', trigger._clickHandler);
-        }
-
-        // Enhanced click handler for touch devices
+        } // Enhanced click handler for touch devices
         const clickHandler = function (e) {
             // Only handle dropdown triggers with dropdown content
             const hasDropdown = dropdown.querySelector('.dropdown-content');
@@ -279,31 +277,26 @@ function setupMobileDropdowns() {
                 e.preventDefault(); // Prevent navigation on first touch
                 e.stopPropagation();
 
-                dropdown.classList.add('mobile-open');
-
-                // Close other dropdowns
-                dropdowns.forEach((otherDropdown) => {
-                    if (otherDropdown !== dropdown) {
-                        otherDropdown.classList.remove('mobile-open');
-                    }
-                });
-            } else {
-                // If dropdown is already open, allow navigation immediately
-                // This happens on second touch of the same trigger
-                dropdown.classList.remove('mobile-open');
-
-                // Close all other dropdowns
+                // Close all other dropdowns first
                 dropdowns.forEach((otherDropdown) => {
                     otherDropdown.classList.remove('mobile-open');
                 });
 
+                // Then open this dropdown
+                dropdown.classList.add('mobile-open');
+            } else {
+                // If dropdown is already open, navigate immediately
+                // This happens on second touch of the same trigger
+                e.preventDefault(); // Prevent default to control the navigation
+
+                // Close the dropdown
+                dropdown.classList.remove('mobile-open');
+
                 // Navigate to the href immediately
                 const href = trigger.getAttribute('href');
                 if (href && href !== '#') {
-                    e.preventDefault(); // Prevent default to control the navigation
                     window.location.href = href;
                 }
-                // If no href, don't prevent default (shouldn't happen but safety)
             }
         };
 
