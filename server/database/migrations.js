@@ -33,8 +33,8 @@ const runDatabaseMigrations = async () => {
             // Add user session table
             await addUserSessionTable(client);
 
-            // Add user session table
-            await addUserSessionTable(client);
+            // Update accepts_texts column to support unknown option
+            await updateAcceptsTextsColumn(client);
 
             console.log('Database migration completed successfully');
         } finally {
@@ -305,6 +305,63 @@ const addUserSessionTable = async (client) => {
     }
 };
 
+// Update accepts_texts column to support 'yes', 'no', 'unknown' values
+const updateAcceptsTextsColumn = async (client) => {
+    console.log('Updating accepts_texts column to support unknown option...');
+
+    try {
+        // First, check if the column is still BOOLEAN
+        const columnInfo = await client.query(`
+            SELECT data_type 
+            FROM information_schema.columns 
+            WHERE table_name = 'tbl_patient' 
+            AND column_name = 'accepts_texts'
+        `);
+
+        if (
+            columnInfo.rows.length > 0 &&
+            columnInfo.rows[0].data_type === 'boolean'
+        ) {
+            console.log('Converting accepts_texts from BOOLEAN to VARCHAR...');
+
+            // Convert existing boolean values to string format
+            await client.query(`
+                ALTER TABLE tbl_patient 
+                ADD COLUMN accepts_texts_temp VARCHAR(10) DEFAULT 'no'
+            `);
+
+            // Migrate existing data
+            await client.query(`
+                UPDATE tbl_patient 
+                SET accepts_texts_temp = CASE 
+                    WHEN accepts_texts = TRUE THEN 'yes'
+                    WHEN accepts_texts = FALSE THEN 'no'
+                    ELSE 'unknown'
+                END
+            `);
+
+            // Drop old column and rename new column
+            await client.query(
+                `ALTER TABLE tbl_patient DROP COLUMN accepts_texts`
+            );
+            await client.query(
+                `ALTER TABLE tbl_patient RENAME COLUMN accepts_texts_temp TO accepts_texts`
+            );
+
+            console.log(
+                'Successfully converted accepts_texts column to VARCHAR'
+            );
+        } else {
+            console.log(
+                'accepts_texts column is already VARCHAR or does not exist'
+            );
+        }
+    } catch (error) {
+        console.error('Error updating accepts_texts column:', error);
+        throw error;
+    }
+};
+
 // Future migration placeholder
 const runFutureMigrations = async () => {
     // Add new migrations here as needed
@@ -318,5 +375,6 @@ module.exports = {
     addPatientTableColumns,
     addUserTableColumns,
     addUserSessionTable,
+    updateAcceptsTextsColumn,
     runFutureMigrations,
 };

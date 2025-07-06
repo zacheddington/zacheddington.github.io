@@ -806,8 +806,22 @@ function displayPatients(patients) {
                 ? `${patient.first_name} ${patient.middle_name} ${patient.last_name}`
                 : `${patient.first_name} ${patient.last_name}`;
 
-            const acceptsTexts = patient.accepts_texts ? 'Yes' : 'No';
-            const acceptsTextsClass = patient.accepts_texts ? 'yes' : 'no';
+            const acceptsTexts =
+                patient.accepts_texts === 'yes'
+                    ? 'Yes'
+                    : patient.accepts_texts === 'no'
+                    ? 'No'
+                    : patient.accepts_texts === 'unknown'
+                    ? 'Unknown'
+                    : 'No';
+            const acceptsTextsClass =
+                patient.accepts_texts === 'yes'
+                    ? 'yes'
+                    : patient.accepts_texts === 'no'
+                    ? 'no'
+                    : patient.accepts_texts === 'unknown'
+                    ? 'unknown'
+                    : 'no';
 
             // Format phone number
             const formattedPhone = patient.phone
@@ -1001,7 +1015,7 @@ async function editPatient(patientId) {
             phoneInput.value = formatPhoneNumber(phoneInput.value);
         }
         document.getElementById('editAcceptsTexts').value =
-            patient.accepts_texts ? 'yes' : 'no';
+            patient.accepts_texts || 'no';
         document.getElementById('editPatientAddress1').value =
             patient.street_1 || '';
         document.getElementById('editPatientAddress2').value =

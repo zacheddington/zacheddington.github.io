@@ -7,6 +7,7 @@ const router = express.Router();
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const {
     validateRequiredFields,
+    validateAcceptsTexts,
     sanitizeInput,
 } = require('../middleware/validation');
 const { pool } = require('../config/database');
@@ -207,6 +208,7 @@ router.post(
         'phone',
         'acceptsTexts',
     ]),
+    validateAcceptsTexts,
     async (req, res) => {
         try {
             const {
@@ -267,7 +269,7 @@ router.post(
                         nameKey,
                         addressKey,
                         phone,
-                        acceptsTexts === 'yes',
+                        acceptsTexts,
                         dateOfBirth,
                         creatorUsername,
                     ]
@@ -295,7 +297,7 @@ router.post(
                         state,
                         zip,
                         phone,
-                        acceptsTexts: acceptsTexts === 'yes',
+                        acceptsTexts: acceptsTexts,
                         nameKey,
                         addressKey,
                     },
@@ -336,6 +338,7 @@ router.put(
         'phone',
         'acceptsTexts',
     ]),
+    validateAcceptsTexts,
     async (req, res) => {
         try {
             const patientKey = req.params.patientKey;
@@ -403,7 +406,7 @@ router.put(
                     'UPDATE tbl_patient SET phone = $1, accepts_texts = $2, date_of_birth = $3, who = $4, date_when = NOW() WHERE patient_key = $5',
                     [
                         phone,
-                        acceptsTexts === 'yes',
+                        acceptsTexts,
                         dateOfBirth,
                         updaterUsername,
                         patientKey,
@@ -426,7 +429,7 @@ router.put(
                         state,
                         zip,
                         phone,
-                        acceptsTexts: acceptsTexts === 'yes',
+                        acceptsTexts: acceptsTexts,
                     },
                     'Patient updated successfully'
                 );
