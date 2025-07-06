@@ -285,70 +285,31 @@ function setupMobileDropdowns() {
         const cleanTrigger = trigger.cloneNode(true);
         trigger.parentNode.replaceChild(cleanTrigger, trigger);
 
-        // For touch devices, use touchstart for better responsiveness
+        // For touch devices, use click events but with touch-aware handling
         if (isTouchDevice) {
-            // Use touchstart for immediate response on mobile
-            cleanTrigger.addEventListener(
-                'touchstart',
-                function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    const state = dropdownStates.get(dropdown);
-                    if (state.isNavigating) return; // Prevent double-tap issues
-
-                    if (state.isOpen) {
-                        // Second touch - navigate
-                        state.isNavigating = true;
-                        dropdown.classList.remove('mobile-open');
-                        state.isOpen = false;
-
-                        const href = cleanTrigger.getAttribute('href');
-                        if (href && href !== '#') {
-                            // Small delay to ensure touch event completes
-                            setTimeout(() => {
-                                window.location.href = href;
-                            }, 50);
-                        }
-                    } else {
-                        // First touch - close others and open this one
-                        dropdowns.forEach((otherDropdown) => {
-                            const otherState =
-                                dropdownStates.get(otherDropdown);
-                            if (otherState) {
-                                otherState.isOpen = false;
-                                otherState.isNavigating = false;
-                            }
-                            otherDropdown.classList.remove('mobile-open');
-                        });
-
-                        dropdown.classList.add('mobile-open');
-                        state.isOpen = true;
-                        state.isNavigating = false;
-                    }
-                },
-                { passive: false }
-            );
-
-            // Also handle click as fallback for devices that don't fire touchstart
+            // Use click for mobile to avoid interfering with scroll
             cleanTrigger.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
 
-                // Only handle if touchstart didn't already handle it
                 const state = dropdownStates.get(dropdown);
-                if (state.isNavigating) return;
+                if (state.isNavigating) return; // Prevent double-tap issues
 
                 if (state.isOpen) {
+                    // Second tap - navigate
                     state.isNavigating = true;
                     dropdown.classList.remove('mobile-open');
                     state.isOpen = false;
 
                     const href = cleanTrigger.getAttribute('href');
                     if (href && href !== '#') {
-                        window.location.href = href;
+                        // Small delay to ensure click event completes
+                        setTimeout(() => {
+                            window.location.href = href;
+                        }, 100);
                     }
                 } else {
+                    // First tap - close others and open this one
                     dropdowns.forEach((otherDropdown) => {
                         const otherState = dropdownStates.get(otherDropdown);
                         if (otherState) {
@@ -395,20 +356,27 @@ function setupMobileDropdowns() {
         }
     });
 
-    // Also add touchstart handler for mobile outside clicks
+    // Also add touchstart handler for mobile outside clicks (passive to not interfere with scroll)
     if (isTouchDevice) {
         document.addEventListener(
             'touchstart',
             function (e) {
-                // Only handle if not touching a dropdown
-                if (!e.target.closest('.nav-dropdown')) {
-                    dropdowns.forEach((dropdown) => {
-                        const state = dropdownStates.get(dropdown);
-                        if (state) {
-                            state.isOpen = false;
-                            state.isNavigating = false;
-                        }
-                        dropdown.classList.remove('mobile-open');
+                // Only handle if not touching a dropdown and there are open dropdowns
+                const hasOpenDropdowns = Array.from(dropdowns).some((dd) =>
+                    dd.classList.contains('mobile-open')
+                );
+
+                if (hasOpenDropdowns && !e.target.closest('.nav-dropdown')) {
+                    // Use requestAnimationFrame to avoid interfering with scroll
+                    requestAnimationFrame(() => {
+                        dropdowns.forEach((dropdown) => {
+                            const state = dropdownStates.get(dropdown);
+                            if (state) {
+                                state.isOpen = false;
+                                state.isNavigating = false;
+                            }
+                            dropdown.classList.remove('mobile-open');
+                        });
                     });
                 }
             },
