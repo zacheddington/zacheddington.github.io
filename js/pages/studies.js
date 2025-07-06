@@ -396,13 +396,13 @@ function setupStudyFormSubmission() {
                 'The selected start date is in the past. Do you want to continue?'
             );
             if (!proceed) return;
-        }
-
-        // Update formData to send the combined datetime to server
-        formData.startDate = combinedDateTime;
+        }        // Convert to proper timestamp format for PostgreSQL
+        // PostgreSQL expects ISO 8601 format for TIMESTAMP WITH TIME ZONE
+        formData.startDate = combinedDateTime; // This is already in 'YYYY-MM-DDTHH:MM:SS' format
+        
         // Remove startTime since we've combined it with startDate
         delete formData.startTime;
-
+        
         // Debug: Log the data being sent
         console.log('Sending study data:', formData);
 
