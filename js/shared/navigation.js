@@ -288,10 +288,22 @@ function setupMobileDropdowns() {
                     }
                 });
             } else {
-                // If dropdown is already open, allow navigation
+                // If dropdown is already open, allow navigation immediately
                 // This happens on second touch of the same trigger
                 dropdown.classList.remove('mobile-open');
-                // Don't prevent default - allow navigation
+
+                // Close all other dropdowns
+                dropdowns.forEach((otherDropdown) => {
+                    otherDropdown.classList.remove('mobile-open');
+                });
+
+                // Navigate to the href immediately
+                const href = trigger.getAttribute('href');
+                if (href && href !== '#') {
+                    e.preventDefault(); // Prevent default to control the navigation
+                    window.location.href = href;
+                }
+                // If no href, don't prevent default (shouldn't happen but safety)
             }
         };
 
