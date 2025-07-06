@@ -242,87 +242,141 @@ function setupPatientNumberValidation() {
 }
 
 /**
- * Setup navigation dropdowns - SIMPLIFIED VERSION
- * CSS hover works on all devices and screen sizes
- * JavaScript only adds touch support without interfering with hover
+ * Setup navigation dropdowns - ROBUST MOBILE VERSION
+ * CSS hover works on desktop, JavaScript handles touch devices properly
  */
 function setupMobileDropdowns() {
     const dropdowns = document.querySelectorAll('.nav-dropdown');
 
-    // Detect if device supports hover (desktop) vs touch-only (mobile)
-    const isTouchDevice =
-        'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    // More robust touch detection for various mobile devices
+    const isTouchDevice = (() => {
+        // Check multiple touch indicators
+        if ('ontouchstart' in window) return true;
+        if (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
+            return true;
+        if (navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0)
+            return true;
+
+        // Check for mobile user agents as backup
+        const mobileRegex =
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+        if (mobileRegex.test(navigator.userAgent)) return true;
+
+        // Check for small screen size as final indicator
+        if (window.screen && window.screen.width <= 768) return true;
+
+        return false;
+    })();
+
+    // Store dropdown states to prevent race conditions
+    const dropdownStates = new Map();
 
     dropdowns.forEach((dropdown, index) => {
         const trigger = dropdown.querySelector('.dropdown-trigger');
-
         if (!trigger) return;
 
-        // Remove ALL existing listeners to prevent duplicates
-        if (trigger._clickHandler) {
-            trigger.removeEventListener('click', trigger._clickHandler);
-            delete trigger._clickHandler;
-        }
+        const hasDropdownContent = dropdown.querySelector('.dropdown-content');
+        if (!hasDropdownContent) return;
 
-        // Remove any other potential click listeners
-        const newTrigger = trigger.cloneNode(true);
-        trigger.parentNode.replaceChild(newTrigger, trigger);
+        // Initialize state tracking
+        dropdownStates.set(dropdown, { isOpen: false, isNavigating: false });
 
-        // Update our reference to the new clean trigger
-        const cleanTrigger = dropdown.querySelector('.dropdown-trigger'); // Enhanced click handler for touch devices
-        const clickHandler = function (e) {
-            // Only handle dropdown triggers with dropdown content
-            const hasDropdown = dropdown.querySelector('.dropdown-content');
-            if (!hasDropdown) return;
+        // Clean up any existing listeners completely
+        const cleanTrigger = trigger.cloneNode(true);
+        trigger.parentNode.replaceChild(cleanTrigger, trigger);
 
-            // Only apply special touch behavior on touch devices
-            if (!isTouchDevice) return;
+        // For touch devices, use touchstart for better responsiveness
+        if (isTouchDevice) {
+            // Use touchstart for immediate response on mobile
+            cleanTrigger.addEventListener(
+                'touchstart',
+                function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
 
-            // Always prevent default to control the behavior
-            e.preventDefault();
-            e.stopPropagation();
+                    const state = dropdownStates.get(dropdown);
+                    if (state.isNavigating) return; // Prevent double-tap issues
 
-            // Get current state of all dropdowns
-            const allOpenDropdowns = Array.from(dropdowns).filter((dd) =>
-                dd.classList.contains('mobile-open')
+                    if (state.isOpen) {
+                        // Second touch - navigate
+                        state.isNavigating = true;
+                        dropdown.classList.remove('mobile-open');
+                        state.isOpen = false;
+
+                        const href = cleanTrigger.getAttribute('href');
+                        if (href && href !== '#') {
+                            // Small delay to ensure touch event completes
+                            setTimeout(() => {
+                                window.location.href = href;
+                            }, 50);
+                        }
+                    } else {
+                        // First touch - close others and open this one
+                        dropdowns.forEach((otherDropdown) => {
+                            const otherState =
+                                dropdownStates.get(otherDropdown);
+                            if (otherState) {
+                                otherState.isOpen = false;
+                                otherState.isNavigating = false;
+                            }
+                            otherDropdown.classList.remove('mobile-open');
+                        });
+
+                        dropdown.classList.add('mobile-open');
+                        state.isOpen = true;
+                        state.isNavigating = false;
+                    }
+                },
+                { passive: false }
             );
-            const isThisDropdownOpen =
-                dropdown.classList.contains('mobile-open');
 
-            if (isThisDropdownOpen) {
-                // This dropdown is currently open - second tap should navigate
-                dropdown.classList.remove('mobile-open');
+            // Also handle click as fallback for devices that don't fire touchstart
+            cleanTrigger.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
 
-                // Navigate to the href immediately
-                const href = cleanTrigger.getAttribute('href');
-                if (href && href !== '#') {
-                    window.location.href = href;
+                // Only handle if touchstart didn't already handle it
+                const state = dropdownStates.get(dropdown);
+                if (state.isNavigating) return;
+
+                if (state.isOpen) {
+                    state.isNavigating = true;
+                    dropdown.classList.remove('mobile-open');
+                    state.isOpen = false;
+
+                    const href = cleanTrigger.getAttribute('href');
+                    if (href && href !== '#') {
+                        window.location.href = href;
+                    }
+                } else {
+                    dropdowns.forEach((otherDropdown) => {
+                        const otherState = dropdownStates.get(otherDropdown);
+                        if (otherState) {
+                            otherState.isOpen = false;
+                            otherState.isNavigating = false;
+                        }
+                        otherDropdown.classList.remove('mobile-open');
+                    });
+
+                    dropdown.classList.add('mobile-open');
+                    state.isOpen = true;
+                    state.isNavigating = false;
                 }
-            } else {
-                // This dropdown is closed - first tap should open it and close others
-                // Close ALL dropdowns first
-                dropdowns.forEach((otherDropdown) => {
-                    otherDropdown.classList.remove('mobile-open');
-                });
-
-                // Then open this specific dropdown
-                dropdown.classList.add('mobile-open');
-            }
-        };
-
-        // Store reference for cleanup
-        cleanTrigger._clickHandler = clickHandler;
-
-        // Add click listener - but don't interfere with hover
-        cleanTrigger.addEventListener('click', clickHandler);
+            });
+        }
     });
 
-    // Close dropdowns when clicking outside, but allow dropdown item clicks
+    // Close dropdowns when clicking outside, with state management
     document.addEventListener('click', function (e) {
         // Don't close if clicking on a dropdown item
         if (e.target.closest('.dropdown-content a')) {
             // Allow dropdown item navigation, close dropdown after click
             dropdowns.forEach((dropdown) => {
+                const state = dropdownStates.get(dropdown);
+                if (state) {
+                    state.isOpen = false;
+                    state.isNavigating = false;
+                }
                 dropdown.classList.remove('mobile-open');
             });
             return;
@@ -331,10 +385,36 @@ function setupMobileDropdowns() {
         // Close if clicking outside any dropdown
         if (!e.target.closest('.nav-dropdown')) {
             dropdowns.forEach((dropdown) => {
+                const state = dropdownStates.get(dropdown);
+                if (state) {
+                    state.isOpen = false;
+                    state.isNavigating = false;
+                }
                 dropdown.classList.remove('mobile-open');
             });
         }
     });
+
+    // Also add touchstart handler for mobile outside clicks
+    if (isTouchDevice) {
+        document.addEventListener(
+            'touchstart',
+            function (e) {
+                // Only handle if not touching a dropdown
+                if (!e.target.closest('.nav-dropdown')) {
+                    dropdowns.forEach((dropdown) => {
+                        const state = dropdownStates.get(dropdown);
+                        if (state) {
+                            state.isOpen = false;
+                            state.isNavigating = false;
+                        }
+                        dropdown.classList.remove('mobile-open');
+                    });
+                }
+            },
+            { passive: true }
+        );
+    }
 }
 
 // Make navigation utilities available globally
@@ -343,6 +423,48 @@ window.navigation = {
     loadMenu: loadTopNavigation, // Add loadMenu for backward compatibility
     setupFadeNavigation,
     setupPatientNumberValidation,
+    // Debug function for testing mobile dropdown behavior
+    debugDropdowns: function () {
+        const dropdowns = document.querySelectorAll('.nav-dropdown');
+        const touchDevice = (() => {
+            if ('ontouchstart' in window) return true;
+            if (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
+                return true;
+            if (navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0)
+                return true;
+            const mobileRegex =
+                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+            if (mobileRegex.test(navigator.userAgent)) return true;
+            if (window.screen && window.screen.width <= 768) return true;
+            return false;
+        })();
+
+        console.log('🔍 Dropdown Debug Info:');
+        console.log('📱 Touch Device:', touchDevice);
+        console.log('📊 User Agent:', navigator.userAgent);
+        console.log(
+            '🖥️ Screen Size:',
+            window.screen
+                ? `${window.screen.width}x${window.screen.height}`
+                : 'Unknown'
+        );
+        console.log(
+            '👆 Max Touch Points:',
+            navigator.maxTouchPoints || 'Unknown'
+        );
+        console.log('📂 Dropdowns Found:', dropdowns.length);
+
+        dropdowns.forEach((dropdown, i) => {
+            const trigger = dropdown.querySelector('.dropdown-trigger');
+            const isOpen = dropdown.classList.contains('mobile-open');
+            console.log(`📋 Dropdown ${i + 1}:`, {
+                element: dropdown,
+                trigger: trigger,
+                isOpen: isOpen,
+                href: trigger ? trigger.getAttribute('href') : 'No trigger',
+            });
+        });
+    },
 };
 
 // Also expose individual functions for backward compatibility
