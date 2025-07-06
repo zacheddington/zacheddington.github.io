@@ -285,15 +285,18 @@ function setupMobileDropdowns() {
         const cleanTrigger = trigger.cloneNode(true);
         trigger.parentNode.replaceChild(cleanTrigger, trigger);
 
-        // For touch devices, use click events but with touch-aware handling
-        if (isTouchDevice) {
-            // Use click for mobile to avoid interfering with scroll
-            cleanTrigger.addEventListener('click', function (e) {
+        // Re-initialize state after DOM replacement to ensure proper reference
+        dropdownStates.set(dropdown, { isOpen: false, isNavigating: false });
+
+        // Add click handler for all devices (both desktop and mobile)
+        cleanTrigger.addEventListener('click', function (e) {
+            // For touch devices, use special two-tap behavior
+            if (isTouchDevice) {
                 e.preventDefault();
                 e.stopPropagation();
 
                 const state = dropdownStates.get(dropdown);
-                if (state.isNavigating) return; // Prevent double-tap issues
+                if (!state || state.isNavigating) return; // Prevent double-tap issues
 
                 if (state.isOpen) {
                     // Second tap - navigate
@@ -323,8 +326,9 @@ function setupMobileDropdowns() {
                     state.isOpen = true;
                     state.isNavigating = false;
                 }
-            });
-        }
+            }
+            // For desktop, let CSS hover handle the dropdown behavior naturally
+        });
     });
 
     // Close dropdowns when clicking outside, with state management
