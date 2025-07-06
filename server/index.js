@@ -16,6 +16,7 @@ const patientRoutes = require('./routes/patients');
 const profileRoutes = require('./routes/profile');
 const twofaRoutes = require('./routes/twofa');
 const sessionRoutes = require('./routes/sessions');
+const studiesRoutes = require('./routes/studies');
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/api', patientRoutes);
 app.use('/api', profileRoutes);
 app.use('/api', twofaRoutes);
 app.use('/api', sessionRoutes);
+app.use('/api', studiesRoutes);
 
 // 404 handler for unknown routes
 app.use(notFoundHandler);

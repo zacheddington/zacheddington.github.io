@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Manage Studies - Integris Neuro</title>
+        <base href="/" />
+        <meta
+            http-equiv="Cache-Control"
+            content="no-cache, no-store, must-revalidate"
+        />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <link rel="stylesheet" href="../../css/main.css" />
+        <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+        <link rel="icon" type="image/png" href="../../favicon.png" />
+    </head>
+    <body class="content-page">
+        <header class="app-header">
+            <!-- Navigation will be loaded here by JavaScript -->
+        </header>
+        <div class="content-container">
+            <div class="admin-section">
+                <div class="section-header">
+                    <h2>Manage Studies</h2>
+                    <p>View and manage existing patient studies</p>
+                </div>
+
+                <div class="placeholder-content">
+                    <div class="placeholder-icon">
+                        <svg
+                            width="64"
+                            height="64"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                            />
+                            <polyline points="14,2 14,8 20,8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                    </div>
+                    <h3>Studies Management Coming Soon</h3>
+                    <p>
+                        This page will contain functionality to view, edit, and
+                        manage existing patient studies.
+                    </p>
+                    <p>Features will include:</p>
+                    <ul>
+                        <li>Search and filter studies</li>
+                        <li>Edit study information</li>
+                        <li>View study details and history</li>
+                        <li>Manage study status and progress</li>
+                    </ul>
+                </div>
+
+                <div class="back-to-dashboard">
+                    <a href="/studies/" class="btn btn-link">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <polyline points="15,18 9,12 15,6"></polyline>
+                        </svg>
+                        Back to Studies
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script src="../../js/shared/auth-utils.js"></script>
+        <script src="../../js/shared/navigation.js"></script>
+        <script src="../../js/main.js"></script>
+        <script>
+            // Initialize page
+            document.addEventListener('DOMContentLoaded', function () {
+                // Check authentication
+                if (!window.authUtils.isAuthenticated()) {
+                    window.location.href = '/';
+                    return;
+                }
+
+                // Load navigation
+                window.loadTopNavigation();
+            });
+        </script>
+    </body>
+</html>

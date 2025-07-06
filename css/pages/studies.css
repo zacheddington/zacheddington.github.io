@@ -1,0 +1,180 @@
+/* ================================
+   STUDIES PAGE STYLES
+   ================================ */
+
+/* Patient Search Results */
+.search-results {
+    margin-top: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.search-results-header {
+    padding: 0.75rem 1rem;
+    background: var(--color-background);
+    border-bottom: 1px solid var(--color-border);
+    font-weight: var(--font-weight-semibold);
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+.patient-result {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.patient-result:last-child {
+    border-bottom: none;
+}
+
+.patient-result:hover {
+    background: var(--color-background);
+}
+
+.patient-result-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+    margin-bottom: 0.25rem;
+}
+
+.patient-result-details {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+
+.patient-result-details span {
+    margin-right: 1rem;
+}
+
+/* Selected Patient Info */
+.selected-patient-info {
+    margin-top: 1rem;
+}
+
+.selected-patient {
+    padding: 1rem;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.selected-patient-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.selected-patient-header h4 {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 1.1rem;
+}
+
+.selected-patient-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.patient-detail {
+    font-size: 0.9rem;
+    color: var(--color-text);
+}
+
+.patient-detail strong {
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Checkbox styling for physician same as referring */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    margin: 0;
+}
+
+.checkbox-label input[type='checkbox'] {
+    margin: 0;
+    width: auto;
+}
+
+.checkbox-text {
+    font-size: 0.9rem;
+    color: var(--color-text);
+}
+
+/* Placeholder Content */
+.placeholder-content {
+    text-align: center;
+    padding: 3rem 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.placeholder-icon {
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.placeholder-content h3 {
+    color: var(--color-text);
+    margin-bottom: 1rem;
+}
+
+.placeholder-content p {
+    color: var(--color-text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.placeholder-content ul {
+    text-align: left;
+    max-width: 400px;
+    margin: 1.5rem auto;
+}
+
+.placeholder-content li {
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+/* Form section visibility */
+.form.hidden {
+    display: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .selected-patient-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .selected-patient-details {
+        grid-template-columns: 1fr;
+    }
+
+    .patient-result-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .patient-result-details span {
+        margin-right: 0;
+    }
+}

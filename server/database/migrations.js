@@ -36,6 +36,9 @@ const runDatabaseMigrations = async () => {
             // Update accepts_texts column to support unknown option
             await updateAcceptsTextsColumn(client);
 
+            // Add study tables
+            await addStudyTables(client);
+
             console.log('Database migration completed successfully');
         } finally {
             client.release();
@@ -362,6 +365,72 @@ const updateAcceptsTextsColumn = async (client) => {
     }
 };
 
+// Add study tables for research data management
+const addStudyTables = async (client) => {
+    console.log('Checking study tables...');
+
+    // Create tbl_study table
+    const studyTableExists = await client.query(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_name = 'tbl_study'
+    `);
+
+    if (studyTableExists.rows.length === 0) {
+        console.log('Creating tbl_study table...');
+        await client.query(`
+            CREATE TABLE tbl_study (
+                study_key SERIAL PRIMARY KEY,
+                referring_physician VARCHAR(100) NOT NULL,
+                interpreting_physician VARCHAR(100) NOT NULL,
+                start_date DATE NOT NULL,
+                study_length INTEGER NOT NULL CHECK (study_length > 0 AND study_length <= 365),
+                who VARCHAR(50) NOT NULL,
+                date_when TIMESTAMP DEFAULT NOW(),
+                date_created TIMESTAMP DEFAULT NOW(),
+                date_updated TIMESTAMP DEFAULT NOW()
+            )
+        `);
+        console.log('Successfully created tbl_study table');
+    } else {
+        console.log('tbl_study table already exists');
+    }
+
+    // Create tbl_patient_study table for patient-study associations
+    const patientStudyTableExists = await client.query(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_name = 'tbl_patient_study'
+    `);
+
+    if (patientStudyTableExists.rows.length === 0) {
+        console.log('Creating tbl_patient_study table...');
+        await client.query(`
+            CREATE TABLE tbl_patient_study (
+                patient_study_key SERIAL PRIMARY KEY,
+                patient_key INTEGER NOT NULL REFERENCES tbl_patient(patient_key) ON DELETE CASCADE,
+                study_key INTEGER NOT NULL REFERENCES tbl_study(study_key) ON DELETE CASCADE,
+                who VARCHAR(50) NOT NULL,
+                date_when TIMESTAMP DEFAULT NOW(),
+                date_created TIMESTAMP DEFAULT NOW(),
+                UNIQUE(patient_key, study_key)
+            )
+        `);
+
+        // Create indexes for performance
+        await client.query(`
+            CREATE INDEX idx_patient_study_patient_key ON tbl_patient_study(patient_key)
+        `);
+        await client.query(`
+            CREATE INDEX idx_patient_study_study_key ON tbl_patient_study(study_key)
+        `);
+
+        console.log('Successfully created tbl_patient_study table and indexes');
+    } else {
+        console.log('tbl_patient_study table already exists');
+    }
+};
+
 // Future migration placeholder
 const runFutureMigrations = async () => {
     // Add new migrations here as needed
@@ -376,5 +445,6 @@ module.exports = {
     addUserTableColumns,
     addUserSessionTable,
     updateAcceptsTextsColumn,
+    addStudyTables,
     runFutureMigrations,
 };

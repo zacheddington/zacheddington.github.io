@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Create Study - Integris Neuro</title>
+        <base href="/" />
+        <meta
+            http-equiv="Cache-Control"
+            content="no-cache, no-store, must-revalidate"
+        />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
+        <link rel="stylesheet" href="../../css/main.css" />
+        <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
+        <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+        <link rel="icon" type="image/png" href="../../favicon.png" />
+    </head>
+    <body class="content-page">
+        <header class="app-header">
+            <!-- Navigation will be loaded here by JavaScript -->
+        </header>
+        <div class="content-container">
+            <div class="admin-section" id="createStudySection">
+                <div class="section-header">
+                    <h2>Create New Study</h2>
+                </div>
+
+                <!-- Patient Selection Section -->
+                <div class="form-section" id="patientSelectionSection">
+                    <h3>Patient Selection</h3>
+                    <div class="form-row">
+                        <div class="form-group large">
+                            <label for="patientSearch"
+                                >Search for Patient</label
+                            >
+                            <input
+                                type="text"
+                                id="patientSearch"
+                                name="patientSearch"
+                                placeholder="Search by name, phone, or date of birth..."
+                                autocomplete="off"
+                            />
+                            <small class="field-note"
+                                >Type to search for existing patients</small
+                            >
+                        </div>
+                    </div>
+                    <div
+                        id="patientSearchResults"
+                        class="search-results hidden"
+                    >
+                        <!-- Patient search results will be populated here -->
+                    </div>
+                    <div
+                        id="selectedPatientInfo"
+                        class="selected-patient-info hidden"
+                    >
+                        <!-- Selected patient info will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Study Form Section (initially hidden) -->
+                <form
+                    id="createStudyForm"
+                    class="form hidden"
+                    data-form-type="study-creation"
+                    data-no-transition
+                >
+                    <div class="form-section">
+                        <h3>Study Information</h3>
+
+                        <!-- Physician Information -->
+                        <div class="form-row">
+                            <div class="form-group large">
+                                <label for="referringPhysician"
+                                    >Referring Physician</label
+                                >
+                                <input
+                                    type="text"
+                                    id="referringPhysician"
+                                    name="referringPhysician"
+                                    required
+                                    maxlength="100"
+                                    autocomplete="off"
+                                />
+                                <small class="field-note"
+                                    >Full name of referring physician</small
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group small">
+                                <label
+                                    for="samePhysician"
+                                    class="checkbox-label"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        id="samePhysician"
+                                        name="samePhysician"
+                                    />
+                                    <span class="checkbox-text"
+                                        >Interpreting physician same as
+                                        referring</span
+                                    >
+                                </label>
+                                <small class="field-note"
+                                    >Check if same physician</small
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group large">
+                                <label for="interpretingPhysician"
+                                    >Interpreting Physician</label
+                                >
+                                <input
+                                    type="text"
+                                    id="interpretingPhysician"
+                                    name="interpretingPhysician"
+                                    required
+                                    maxlength="100"
+                                    autocomplete="off"
+                                />
+                                <small class="field-note"
+                                    >Full name of interpreting physician</small
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Study Details -->
+                        <div class="form-row">
+                            <div class="form-group medium">
+                                <label for="startDate">Start Date</label>
+                                <input
+                                    type="text"
+                                    id="startDate"
+                                    name="startDate"
+                                    required
+                                    placeholder="MM/DD/YYYY"
+                                    maxlength="10"
+                                    pattern="^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$"
+                                    title="Enter date in MM/DD/YYYY format"
+                                />
+                                <small class="field-note"
+                                    >MM/DD/YYYY format</small
+                                >
+                            </div>
+                            <div class="form-group medium">
+                                <label for="studyLength"
+                                    >Length of Study (Days)</label
+                                >
+                                <input
+                                    type="number"
+                                    id="studyLength"
+                                    name="studyLength"
+                                    required
+                                    min="1"
+                                    max="365"
+                                    placeholder="7"
+                                />
+                                <small class="field-note"
+                                    >Number of days (1-365)</small
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                            id="createStudyBtn"
+                        >
+                            Create Study
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            id="cancelCreateStudy"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-link"
+                            id="backToStudyChoice"
+                        >
+                            <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <polyline points="15,18 9,12 15,6"></polyline>
+                            </svg>
+                            Back to Studies
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Loading Modal -->
+        <div id="loadingModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="loading-spinner"></div>
+                <p>Creating study...</p>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script src="../../js/shared/auth-utils.js"></script>
+        <script src="../../js/shared/navigation.js"></script>
+        <script src="../../js/shared/field-validation.js"></script>
+        <script src="../../js/shared/date-utils.js"></script>
+        <script src="../../js/shared/api-client.js"></script>
+        <script src="../../js/shared/modal-manager.js"></script>
+        <script src="../../js/pages/studies.js"></script>
+        <script src="../../js/main.js"></script>
+        <script>
+            // Initialize page
+            document.addEventListener('DOMContentLoaded', function () {
+                // Check authentication
+                if (!window.authUtils.isAuthenticated()) {
+                    window.location.href = '/';
+                    return;
+                }
+
+                // Load navigation
+                window.loadTopNavigation();
+
+                // Initialize studies page
+                if (
+                    window.studiesPage &&
+                    window.studiesPage.initializeCreateStudyPage
+                ) {
+                    window.studiesPage.initializeCreateStudyPage();
+                }
+            });
+        </script>
+    </body>
+</html>
