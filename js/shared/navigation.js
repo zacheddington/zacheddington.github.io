@@ -309,17 +309,33 @@ function setupMobileDropdowns() {
         dropdownStates.set(dropdown, { isOpen: false, isNavigating: false });
         debugLog(`Setup dropdown ${index}: ${trigger.textContent.trim()}`);
 
-        // Use event delegation approach to avoid multiple handlers
-        // Remove any existing listeners first
+        // Remove ALL possible event listeners that might interfere
         trigger.removeEventListener('click', handleDropdownClick);
+        trigger.removeEventListener('touchstart', handleDropdownClick);
+        trigger.removeEventListener('touchend', handleDropdownClick);
 
-        // Add single click handler
+        // For touch devices, use both touchstart AND click to ensure we catch the event
+        if (isTouchDevice) {
+            // Add touchstart with immediate response
+            trigger.addEventListener('touchstart', handleDropdownClick, {
+                passive: false,
+            });
+            debugLog(`Added touchstart listener to dropdown ${index}`);
+        }
+
+        // Always add click as backup
         trigger.addEventListener('click', handleDropdownClick);
+        debugLog(`Added click listener to dropdown ${index}`);
     });
 
     // Define the click handler function
     function handleDropdownClick(e) {
-        debugLog('Click event fired!');
+        debugLog(`Event fired: ${e.type}`);
+
+        // Immediately prevent any other handlers from interfering
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
 
         // Find the dropdown container
         const dropdown = e.target.closest('.nav-dropdown');
@@ -334,8 +350,6 @@ function setupMobileDropdowns() {
         // For touch devices, use special two-tap behavior
         if (isTouchDevice) {
             debugLog('Touch device - handling special behavior');
-            e.preventDefault();
-            e.stopPropagation();
 
             const state = dropdownStates.get(dropdown);
             if (!state) {
@@ -388,8 +402,11 @@ function setupMobileDropdowns() {
             updateDebugState();
         } else {
             debugLog('Desktop device - letting CSS handle');
+            // For desktop, don't prevent default to allow normal navigation
+            if (e.type === 'click') {
+                e.preventDefault = function () {}; // Override preventDefault for desktop
+            }
         }
-        // For desktop, let CSS hover handle the dropdown behavior naturally
     }
 
     // Close dropdowns when clicking outside, with state management
