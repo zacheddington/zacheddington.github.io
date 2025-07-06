@@ -258,10 +258,18 @@ function setupMobileDropdowns() {
 
         if (!trigger) return;
 
-        // Remove existing listeners to prevent duplicates
+        // Remove ALL existing listeners to prevent duplicates
         if (trigger._clickHandler) {
             trigger.removeEventListener('click', trigger._clickHandler);
-        } // Enhanced click handler for touch devices
+            delete trigger._clickHandler;
+        }
+
+        // Remove any other potential click listeners
+        const newTrigger = trigger.cloneNode(true);
+        trigger.parentNode.replaceChild(newTrigger, trigger);
+
+        // Update our reference to the new clean trigger
+        const cleanTrigger = dropdown.querySelector('.dropdown-trigger'); // Enhanced click handler for touch devices
         const clickHandler = function (e) {
             // Only handle dropdown triggers with dropdown content
             const hasDropdown = dropdown.querySelector('.dropdown-content');
@@ -270,14 +278,28 @@ function setupMobileDropdowns() {
             // Only apply special touch behavior on touch devices
             if (!isTouchDevice) return;
 
-            const isCurrentlyOpen = dropdown.classList.contains('mobile-open');
-
             // Always prevent default to control the behavior
             e.preventDefault();
             e.stopPropagation();
 
-            // If this dropdown is closed, open it and close all others
-            if (!isCurrentlyOpen) {
+            // Get current state of all dropdowns
+            const allOpenDropdowns = Array.from(dropdowns).filter((dd) =>
+                dd.classList.contains('mobile-open')
+            );
+            const isThisDropdownOpen =
+                dropdown.classList.contains('mobile-open');
+
+            if (isThisDropdownOpen) {
+                // This dropdown is currently open - second tap should navigate
+                dropdown.classList.remove('mobile-open');
+
+                // Navigate to the href immediately
+                const href = cleanTrigger.getAttribute('href');
+                if (href && href !== '#') {
+                    window.location.href = href;
+                }
+            } else {
+                // This dropdown is closed - first tap should open it and close others
                 // Close ALL dropdowns first
                 dropdowns.forEach((otherDropdown) => {
                     otherDropdown.classList.remove('mobile-open');
@@ -285,23 +307,14 @@ function setupMobileDropdowns() {
 
                 // Then open this specific dropdown
                 dropdown.classList.add('mobile-open');
-            } else {
-                // If this dropdown is already open, close it and navigate
-                dropdown.classList.remove('mobile-open');
-
-                // Navigate to the href immediately
-                const href = trigger.getAttribute('href');
-                if (href && href !== '#') {
-                    window.location.href = href;
-                }
             }
         };
 
         // Store reference for cleanup
-        trigger._clickHandler = clickHandler;
+        cleanTrigger._clickHandler = clickHandler;
 
         // Add click listener - but don't interfere with hover
-        trigger.addEventListener('click', clickHandler);
+        cleanTrigger.addEventListener('click', clickHandler);
     });
 
     // Close dropdowns when clicking outside, but allow dropdown item clicks
