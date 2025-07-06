@@ -148,6 +148,8 @@ router.post(
     ]),
     async (req, res) => {
         try {
+            console.log('Study creation request body:', req.body);
+
             const {
                 patientId,
                 referringPhysician,

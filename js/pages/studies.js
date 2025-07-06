@@ -400,6 +400,11 @@ function setupStudyFormSubmission() {
 
         // Update formData to send the combined datetime to server
         formData.startDate = combinedDateTime;
+        // Remove startTime since we've combined it with startDate
+        delete formData.startTime;
+
+        // Debug: Log the data being sent
+        console.log('Sending study data:', formData);
 
         try {
             // Show loading state on button
@@ -423,10 +428,14 @@ function setupStudyFormSubmission() {
             }
         } catch (error) {
             console.error('Study creation error:', error);
-            alert(
-                'Error creating study: ' +
-                    (error.message || 'Please try again.')
-            );
+
+            // Try to get more detailed error information
+            let errorMessage = 'Please try again.';
+            if (error.message) {
+                errorMessage = error.message;
+            }
+
+            alert('Error creating study: ' + errorMessage);
         } finally {
             // Restore button state
             const submitBtn = document.getElementById('createStudyBtn');
