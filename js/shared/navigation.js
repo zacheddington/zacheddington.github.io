@@ -246,6 +246,10 @@ function setupPatientNumberValidation() {
  * CSS hover works on desktop, JavaScript handles touch devices properly
  */
 function setupMobileDropdowns() {
+    // Early return if already setup to prevent multiple initializations
+    if (window._mobileDropdownsSetup) return;
+    window._mobileDropdownsSetup = true;
+
     const dropdowns = document.querySelectorAll('.nav-dropdown');
 
     // More robust touch detection for various mobile devices
@@ -279,8 +283,11 @@ function setupMobileDropdowns() {
         );
     }
 
-    // Store dropdown states to prevent race conditions
-    const dropdownStates = new Map();
+    // Store dropdown states to prevent race conditions - use global storage
+    if (!window._dropdownStates) {
+        window._dropdownStates = new Map();
+    }
+    const dropdownStates = window._dropdownStates;
 
     dropdowns.forEach((dropdown, index) => {
         const trigger = dropdown.querySelector('.dropdown-trigger');
@@ -292,57 +299,66 @@ function setupMobileDropdowns() {
         // Initialize state tracking
         dropdownStates.set(dropdown, { isOpen: false, isNavigating: false });
 
-        // Check if this trigger already has our handler to prevent duplicates
-        if (trigger._mobileDropdownSetup) return;
+        // Use event delegation approach to avoid multiple handlers
+        // Remove any existing listeners first
+        trigger.removeEventListener('click', handleDropdownClick);
 
-        // Mark as setup to prevent duplicate handlers
-        trigger._mobileDropdownSetup = true;
-
-        // Add click handler for all devices (both desktop and mobile)
-        trigger.addEventListener('click', function (e) {
-            // For touch devices, use special two-tap behavior
-            if (isTouchDevice) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                const state = dropdownStates.get(dropdown);
-                if (!state || state.isNavigating) return; // Prevent double-tap issues
-
-                if (state.isOpen) {
-                    // Second tap - navigate
-                    state.isNavigating = true;
-                    dropdown.classList.remove('mobile-open');
-                    state.isOpen = false;
-
-                    const href = trigger.getAttribute('href');
-                    if (href && href !== '#') {
-                        // Small delay to ensure click event completes
-                        setTimeout(() => {
-                            window.location.href = href;
-                        }, 100);
-                    }
-                } else {
-                    // First tap - close others and open this one
-                    dropdowns.forEach((otherDropdown) => {
-                        const otherState = dropdownStates.get(otherDropdown);
-                        if (otherState) {
-                            otherState.isOpen = false;
-                            otherState.isNavigating = false;
-                        }
-                        otherDropdown.classList.remove('mobile-open');
-                    });
-
-                    dropdown.classList.add('mobile-open');
-                    state.isOpen = true;
-                    state.isNavigating = false;
-                }
-            }
-            // For desktop, let CSS hover handle the dropdown behavior naturally
-        });
+        // Add single click handler
+        trigger.addEventListener('click', handleDropdownClick);
     });
+
+    // Define the click handler function
+    function handleDropdownClick(e) {
+        // Find the dropdown container
+        const dropdown = e.target.closest('.nav-dropdown');
+        if (!dropdown) return;
+
+        // For touch devices, use special two-tap behavior
+        if (isTouchDevice) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const state = dropdownStates.get(dropdown);
+            if (!state || state.isNavigating) return; // Prevent double-tap issues
+
+            if (state.isOpen) {
+                // Second tap - navigate
+                state.isNavigating = true;
+                dropdown.classList.remove('mobile-open');
+                state.isOpen = false;
+
+                const trigger = dropdown.querySelector('.dropdown-trigger');
+                const href = trigger.getAttribute('href');
+                if (href && href !== '#') {
+                    // Small delay to ensure click event completes
+                    setTimeout(() => {
+                        window.location.href = href;
+                    }, 100);
+                }
+            } else {
+                // First tap - close others and open this one
+                dropdowns.forEach((otherDropdown) => {
+                    const otherState = dropdownStates.get(otherDropdown);
+                    if (otherState) {
+                        otherState.isOpen = false;
+                        otherState.isNavigating = false;
+                    }
+                    otherDropdown.classList.remove('mobile-open');
+                });
+
+                dropdown.classList.add('mobile-open');
+                state.isOpen = true;
+                state.isNavigating = false;
+            }
+        }
+        // For desktop, let CSS hover handle the dropdown behavior naturally
+    }
 
     // Close dropdowns when clicking outside, with state management
     window._dropdownClickHandler = function (e) {
+        const dropdowns = document.querySelectorAll('.nav-dropdown');
+        const dropdownStates = window._dropdownStates;
+
         // Don't close if clicking on a dropdown item
         if (e.target.closest('.dropdown-content a')) {
             // Allow dropdown item navigation, close dropdown after click
@@ -375,6 +391,9 @@ function setupMobileDropdowns() {
     // Also add touchstart handler for mobile outside clicks (passive to not interfere with scroll)
     if (isTouchDevice) {
         window._dropdownTouchHandler = function (e) {
+            const dropdowns = document.querySelectorAll('.nav-dropdown');
+            const dropdownStates = window._dropdownStates;
+
             // Only handle if not touching a dropdown and there are open dropdowns
             const hasOpenDropdowns = Array.from(dropdowns).some((dd) =>
                 dd.classList.contains('mobile-open')
