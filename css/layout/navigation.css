@@ -243,10 +243,15 @@ body.is-admin .admin-only {
 
 /* But hide the admin dropdown content/trigger when not admin */
 .nav-dropdown.admin-only .dropdown-trigger {
-    display: none;
+    display: none !important;
 }
 
 body.is-admin .nav-dropdown.admin-only .dropdown-trigger {
+    display: flex !important;
+}
+
+/* Ensure admin dropdown trigger is visible on all screen sizes when admin */
+body.is-admin .top-nav-menu .nav-dropdown.admin-only .dropdown-trigger {
     display: flex !important;
 }
 
@@ -385,6 +390,15 @@ body.is-admin .nav-dropdown.admin-only:hover .dropdown-content {
         pointer-events: auto !important;
         touch-action: manipulation !important;
         position: relative !important;
+    }
+
+    /* But still respect admin-only visibility */
+    .nav-dropdown.admin-only .dropdown-trigger {
+        display: none !important;
+    }
+
+    body.is-admin .nav-dropdown.admin-only .dropdown-trigger {
+        display: flex !important;
     }
 
     .logout-btn {

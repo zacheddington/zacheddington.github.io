@@ -153,14 +153,11 @@ function initializePage(page) {
             // Ensure admin-only elements are properly hidden/shown based on user role
             // Use setTimeout to ensure DOM elements are fully rendered
             setTimeout(() => {
-                if (window.authUtils && window.authUtils.updateAdminMenuItem) {
+                if (window.authUtils && window.authUtils.updateAdminUI) {
                     const userData = JSON.parse(
                         localStorage.getItem('user') || '{}'
                     );
-                    const isAdmin = window.authUtils.isUserAdmin
-                        ? window.authUtils.isUserAdmin(userData)
-                        : false;
-                    window.authUtils.updateAdminMenuItem(isAdmin);
+                    window.authUtils.updateAdminUI(userData);
                 }
             }, 100);
             break;

@@ -14,13 +14,10 @@ async function loadTopNavigation() {
         const existingNav = headerContainer.querySelector('.top-nav-menu');
         if (existingNav) {
             // Navigation already exists, just update admin visibility
-            if (window.authUtils && window.authUtils.updateAdminMenuItem) {
+            if (window.authUtils && window.authUtils.updateAdminUI) {
                 const userDataString = localStorage.getItem('user') || '{}';
                 const userData = JSON.parse(userDataString);
-                let isAdmin = window.authUtils.isUserAdmin
-                    ? window.authUtils.isUserAdmin(userData)
-                    : false;
-                window.authUtils.updateAdminMenuItem(isAdmin);
+                window.authUtils.updateAdminUI(userData);
             }
             return;
         }
@@ -29,16 +26,10 @@ async function loadTopNavigation() {
         createProperNavigation();
 
         // Update admin menu visibility based on user role
-        if (window.authUtils && window.authUtils.updateAdminMenuItem) {
+        if (window.authUtils && window.authUtils.updateAdminUI) {
             const userDataString = localStorage.getItem('user') || '{}';
             const userData = JSON.parse(userDataString);
-
-            // Use proper admin detection
-            let isAdmin = window.authUtils.isUserAdmin
-                ? window.authUtils.isUserAdmin(userData)
-                : false;
-
-            window.authUtils.updateAdminMenuItem(isAdmin);
+            window.authUtils.updateAdminUI(userData);
         }
     } catch (err) {
         console.error('❌ NAV: Error loading top navigation');
@@ -173,6 +164,15 @@ function setupTopNavigation() {
             }
         });
     }
+
+    // Initialize admin UI after a short delay to ensure DOM is ready
+    setTimeout(() => {
+        if (window.authUtils && window.authUtils.updateAdminUI) {
+            const userDataString = localStorage.getItem('user') || '{}';
+            const userData = JSON.parse(userDataString);
+            window.authUtils.updateAdminUI(userData);
+        }
+    }, 50);
 }
 
 // Set active navigation item based on current page

@@ -1,5 +1,5 @@
 // Version check for debugging
-console.log('🔧 Auth Utils Version: Single Session Enforcement v1.1');
+// console.log('🔧 Auth Utils Version: Single Session Enforcement v1.1');
 
 // Global version check function
 window.authUtilsVersion = function () {
@@ -235,14 +235,17 @@ function initializeGlobalTokenMonitoring() {
             return;
         }
 
-        // Additionally check with server for session validity (every 5 minutes)
+        // Additionally check with server for session validity (every 30 seconds)
         // This catches cases where session was revoked on server but token is still valid locally
         try {
+            // console.log('🔍 Periodic session check starting...');
             const sessionCheck = await checkCurrentSession();
+            // console.log('🔍 Session check result:', sessionCheck);
+
             if (!sessionCheck.valid) {
-                console.log(
-                    'Server reports session is invalid, logging out user'
-                );
+                // console.log(
+                //     '🚨 Server reports session is invalid, logging out user'
+                // );
                 const currentPath = window.location.pathname;
                 if (
                     !currentPath.includes('/index.html') &&
@@ -252,12 +255,15 @@ function initializeGlobalTokenMonitoring() {
                     let logoutMessage =
                         'Your session has been revoked or expired. Please log in again.';
                     if (sessionCheck.single_session_enforcement) {
+                        // console.log('🚨 Single session enforcement detected!');
                         logoutMessage =
                             'You have been logged out because you logged in from another location. Only one session is allowed per user.';
                     }
 
                     handleSessionExpiration(logoutMessage);
                 }
+            } else {
+                // console.log('✅ Session is still valid');
             }
         } catch (error) {
             console.warn(
@@ -561,27 +567,27 @@ async function checkCurrentSession() {
 
 // Simple manual session check function for debugging
 async function manualSessionCheck() {
-    console.log('🔍 Manual session check...');
+    // console.log('🔍 Manual session check...');
 
     try {
         const token = localStorage.getItem('token');
-        console.log('Token exists:', !!token);
+        // console.log('Token exists:', !!token);
 
         if (!token) {
-            console.log('❌ No token found');
+            // console.log('❌ No token found');
             return { valid: false, reason: 'No token' };
         }
 
         const sessionCheck = await checkCurrentSession();
-        console.log('Session check result:', sessionCheck);
+        // console.log('Session check result:', sessionCheck);
 
         if (!sessionCheck.valid) {
-            console.log('❌ Session is invalid:', sessionCheck.reason);
+            // console.log('❌ Current session is invalid:', sessionCheck.reason);
             if (sessionCheck.single_session_enforcement) {
-                console.log('🚨 Single session enforcement detected!');
+                // console.log('🚨 Single session enforcement detected!');
             }
         } else {
-            console.log('✅ Session is valid');
+            // console.log('✅ Current session is valid');
         }
 
         return sessionCheck;
@@ -593,27 +599,27 @@ async function manualSessionCheck() {
 
 // Test function for single session enforcement
 async function testSingleSessionEnforcement() {
-    console.log('🧪 Starting Single Session Enforcement Test...');
+    // console.log('🧪 Starting Single Session Enforcement Test...');
 
     try {
         // Check if user is logged in
         const token = localStorage.getItem('token');
         if (!token) {
-            console.log('❌ No token found. Please login first.');
+            // console.log('❌ No token found. Please login first.');
             return;
         }
 
         // Check current session status
-        console.log('1️⃣ Checking current session status...');
+        // console.log('1️⃣ Checking current session status...');
         const sessionCheck = await checkCurrentSession();
-        console.log('Current session status:', sessionCheck);
+        // console.log('Current session status:', sessionCheck);
 
         if (!sessionCheck.valid) {
-            console.log('❌ Current session is invalid:', sessionCheck.reason);
+            // console.log('❌ Current session is invalid:', sessionCheck.reason);
             return;
         }
 
-        console.log('✅ Current session is valid');
+        // console.log('✅ Current session is valid');
 
         // Instructions for manual testing
         console.log('📋 Manual Test Instructions:');
@@ -626,24 +632,24 @@ async function testSingleSessionEnforcement() {
         );
 
         // Start monitoring for session changes
-        console.log('🔍 Starting session monitoring...');
+        // console.log('🔍 Starting session monitoring...');
         let checkCount = 0;
 
         const monitorInterval = setInterval(async () => {
             checkCount++;
-            console.log(
-                `⏰ Check #${checkCount} - Verifying session status...`
-            );
+            // console.log(
+            //     `⏰ Check #${checkCount} - Verifying session status...`
+            // );
 
             try {
                 const currentStatus = await checkCurrentSession();
 
                 if (!currentStatus.valid) {
-                    console.log('🚨 SESSION INVALIDATED!');
-                    console.log('Reason:', currentStatus.reason);
+                    // console.log('🚨 SESSION INVALIDATED!');
+                    // console.log('Reason:', currentStatus.reason);
 
                     if (currentStatus.single_session_enforcement) {
-                        console.log('✅ Single session enforcement detected!');
+                        // console.log('✅ Single session enforcement detected!');
                         console.log(
                             '✅ Test PASSED - Session was revoked due to new login elsewhere'
                         );
@@ -658,7 +664,7 @@ async function testSingleSessionEnforcement() {
                     return;
                 }
 
-                console.log('✅ Session still valid');
+                // console.log('✅ Session still valid');
 
                 // Stop monitoring after 10 minutes
                 if (checkCount >= 20) {
@@ -687,35 +693,44 @@ async function testSingleSessionEnforcement() {
 
 // Utility functions for admin detection and menu management
 function isUserAdmin(userData) {
+    // console.log('🔧 isUserAdmin called with userData:', userData);
+
     if (!userData) {
+        // console.log('🔧 No userData provided, returning false');
         return false;
     }
 
     // Primary check: Use server-determined admin status
     if (userData.isAdmin === true) {
+        // console.log('🔧 User is admin via isAdmin property');
         return true;
     }
 
     // Secondary check: Check roles array for Administrator
     if (userData.roles && Array.isArray(userData.roles)) {
+        // console.log('🔧 Checking roles array:', userData.roles);
         const hasAdminRole = userData.roles.some(
             (role) => role && role.toLowerCase().includes('administrator')
         );
         if (hasAdminRole) {
+            // console.log('🔧 User is admin via roles array');
             return true;
         }
     }
 
     // Tertiary check: Check role keys for admin role key (typically 1)
     if (userData.roleKeys && Array.isArray(userData.roleKeys)) {
+        // console.log('🔧 Checking roleKeys array:', userData.roleKeys);
         const hasAdminRoleKey = userData.roleKeys.some(
             (roleKey) => roleKey === 1 || roleKey === '1'
         );
         if (hasAdminRoleKey) {
+            // console.log('🔧 User is admin via roleKeys array');
             return true;
         }
     }
 
+    // console.log('🔧 User is not admin');
     return false;
 }
 
@@ -723,34 +738,81 @@ function isUserAdmin(userData) {
 function updateAdminUI(userData) {
     const isAdmin = isUserAdmin(userData);
 
+    // Update body class for CSS-based admin UI
+    if (isAdmin) {
+        document.body.classList.add('is-admin');
+    } else {
+        document.body.classList.remove('is-admin');
+    }
+
     // Update admin menu items
     updateAdminMenuItem(isAdmin);
 
     // Update any other admin-specific UI elements
     const adminElements = document.querySelectorAll('.admin-only');
     adminElements.forEach((element) => {
-        if (isAdmin) {
+        // For nav dropdowns, let CSS handle the visibility
+        if (element.classList.contains('nav-dropdown')) {
+            // Remove any inline styles to let CSS take control
             element.style.display = '';
+            if (isAdmin) {
+                element.classList.remove('hidden');
+            } else {
+                element.classList.add('hidden');
+            }
         } else {
-            element.style.display = 'none';
+            // For other admin elements, use inline styles as before
+            if (isAdmin) {
+                element.style.display = '';
+                element.classList.remove('hidden');
+            } else {
+                element.style.display = 'none';
+                element.classList.add('hidden');
+            }
         }
     });
 }
 
 // Update admin menu item visibility
 function updateAdminMenuItem(isAdmin) {
-    const adminMenuItem = document.querySelector('.admin-only');
+    // console.log('🔧 updateAdminMenuItem called with isAdmin:', isAdmin);
+
+    // Update body class for CSS-based admin UI
+    if (isAdmin) {
+        document.body.classList.add('is-admin');
+    } else {
+        document.body.classList.remove('is-admin');
+    }
+
     const adminMenuItems = document.querySelectorAll(
         '.admin-only, [data-admin-only]'
     );
 
-    adminMenuItems.forEach((item) => {
-        if (isAdmin) {
+    // console.log('🔧 Found admin menu items:', adminMenuItems.length);
+
+    adminMenuItems.forEach((item, index) => {
+        // console.log(`🔧 Admin item ${index}:`, item.tagName, item.className);
+
+        // For nav dropdowns, let CSS handle the visibility
+        if (item.classList.contains('nav-dropdown')) {
+            // Remove any inline styles to let CSS take control
             item.style.display = '';
-            item.classList.remove('hidden');
+            if (isAdmin) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
         } else {
-            item.style.display = 'none';
-            item.classList.add('hidden');
+            // For other admin elements, use inline styles as before
+            if (isAdmin) {
+                item.style.display = '';
+                item.classList.remove('hidden');
+                // console.log(`🔧 Showing admin item ${index}`);
+            } else {
+                item.style.display = 'none';
+                item.classList.add('hidden');
+                // console.log(`🔧 Hiding admin item ${index}`);
+            }
         }
     });
 }
@@ -758,19 +820,19 @@ function updateAdminMenuItem(isAdmin) {
 // Add session status indicator (placeholder)
 function addSessionStatusIndicator() {
     // This function can be enhanced to show session status
-    console.log('Session status indicator functionality available');
+    // console.log('Session status indicator functionality available');
 }
 
 // Setup secure history management (placeholder)
 function setupSecureHistoryManagement() {
     // This function can be enhanced for secure navigation
-    console.log('Secure history management functionality available');
+    // console.log('Secure history management functionality available');
 }
 
 // Prevent auth page back navigation (placeholder)
 function preventAuthPageBackNavigation() {
     // This function can be enhanced to prevent back navigation to auth pages
-    console.log('Auth page back navigation prevention functionality available');
+    // console.log('Auth page back navigation prevention functionality available');
 }
 
 // Secure history replacement (placeholder)
