@@ -80,7 +80,7 @@ function loadAllPatients() {
     async function fetchAllPatients() {
         try {
             console.log('Fetching patients from /api/patients...');
-            const response = await window.apiClient.get('/api/patients');
+            const response = await window.apiClient.apiRequest('/api/patients');
             console.log('Patients API response:', response);
 
             if (response.patients && response.patients.length > 0) {
@@ -361,10 +361,10 @@ function setupStudyFormSubmission() {
             }
 
             // Submit study creation request
-            const response = await window.apiClient.post(
-                '/api/studies',
-                formData
-            );
+            const response = await window.apiClient.apiRequest('/api/studies', {
+                method: 'POST',
+                body: JSON.stringify(formData),
+            });
 
             if (response.success) {
                 alert('Study created successfully!');
