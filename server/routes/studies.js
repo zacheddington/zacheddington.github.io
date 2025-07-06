@@ -156,37 +156,38 @@ router.post(
                 studyLength,
             } = req.body;
 
-            // Validate study length
+            // Validate study length (must be 1-4 days as per schema)
             const studyLengthNum = parseInt(studyLength);
             if (
                 isNaN(studyLengthNum) ||
                 studyLengthNum < 1 ||
-                studyLengthNum > 365
+                studyLengthNum > 4
             ) {
                 return errorResponse(
                     res,
-                    'Study length must be a number between 1 and 365 days',
+                    'Study length must be between 1 and 4 days',
                     400
                 );
             }
 
-            // Validate date format (MM/DD/YYYY)
-            const dateRegex =
-                /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
-            if (!dateRegex.test(startDate)) {
+            // Validate and parse datetime-local input (YYYY-MM-DDTHH:MM format)
+            const datetimeRegex = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
+            if (!datetimeRegex.test(startDate)) {
                 return errorResponse(
                     res,
-                    'Start date must be in MM/DD/YYYY format',
+                    'Start date must be in YYYY-MM-DDTHH:MM format',
                     400
                 );
             }
 
-            // Convert MM/DD/YYYY to ISO date format for database
-            const [month, day, year] = startDate.split('/');
-            const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(
-                2,
-                '0'
-            )}`;
+            // Convert datetime-local to proper timestamp with timezone
+            const startDateTime = new Date(startDate);
+            if (isNaN(startDateTime.getTime())) {
+                return errorResponse(res, 'Invalid start date and time', 400);
+            }
+
+            // Format as ISO timestamp for database (TIMESTAMP WITH TIME ZONE)
+            const isoTimestamp = startDateTime.toISOString();
 
             // Production database logic
             const client = await pool.connect();
@@ -212,7 +213,7 @@ router.post(
                     [
                         referringPhysician,
                         interpretingPhysician,
-                        isoDate,
+                        isoTimestamp,
                         studyLengthNum,
                         creatorUsername,
                     ]
@@ -239,7 +240,7 @@ router.post(
                         patient_key: parseInt(patientId),
                         referring_physician: referringPhysician,
                         interpreting_physician: interpretingPhysician,
-                        start_date: isoDate,
+                        start_date: isoTimestamp,
                         study_length: studyLengthNum,
                     },
                     'Study created successfully'

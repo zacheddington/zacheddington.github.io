@@ -51,14 +51,11 @@ function initializeManageStudiesPage() {
 function initializeCreateStudyPage() {
     console.log('Create study page initialized');
 
-    // Setup patient search functionality
-    setupPatientSearch();
+    // Load all patients for selection
+    loadAllPatients();
 
     // Setup physician checkbox logic
     setupPhysicianCheckbox();
-
-    // Setup date validation
-    setupDateValidation();
 
     // Setup form submission
     setupStudyFormSubmission();
@@ -67,110 +64,123 @@ function initializeCreateStudyPage() {
     setupStudyPageNavigation();
 }
 
-// Setup patient search functionality
-function setupPatientSearch() {
-    const searchInput = document.getElementById('patientSearch');
-    const resultsContainer = document.getElementById('patientSearchResults');
-    const selectedPatientContainer = document.getElementById(
-        'selectedPatientInfo'
-    );
-    const studyForm = document.getElementById('createStudyForm');
+// Load all patients for selection
+function loadAllPatients() {
+    const patientListContainer = document.getElementById('patientList');
 
-    if (!searchInput) return;
+    if (!patientListContainer) return;
 
-    let searchTimeout;
+    // Show loading message
+    patientListContainer.innerHTML =
+        '<div class="loading-message">Loading patients...</div>';
 
-    searchInput.addEventListener('input', function () {
-        const query = this.value.trim();
+    // Fetch all patients
+    fetchAllPatients();
 
-        // Clear previous timeout
-        clearTimeout(searchTimeout);
-
-        if (query.length < 2) {
-            resultsContainer.classList.add('hidden');
-            return;
-        }
-
-        // Debounce search
-        searchTimeout = setTimeout(() => {
-            searchPatients(query);
-        }, 300);
-    });
-
-    async function searchPatients(query) {
+    async function fetchAllPatients() {
         try {
-            resultsContainer.innerHTML =
-                '<div class="loading-message">Searching patients...</div>';
-            resultsContainer.classList.remove('hidden');
-
-            const response = await window.apiClient.get(
-                `/api/patients?search=${encodeURIComponent(query)}&limit=10`
-            );
+            console.log('Fetching patients from /api/patients...');
+            const response = await window.apiClient.get('/api/patients');
+            console.log('Patients API response:', response);
 
             if (response.patients && response.patients.length > 0) {
-                displayPatientResults(response.patients);
+                console.log(`Found ${response.patients.length} patients`);
+                displayPatientList(response.patients);
             } else {
-                resultsContainer.innerHTML =
-                    '<div class="no-results">No patients found matching your search.</div>';
+                console.log('No patients found');
+                showNoPatientsMessage();
             }
         } catch (error) {
-            console.error('Patient search error:', error);
-            resultsContainer.innerHTML =
-                '<div class="error-message">Error searching patients. Please try again.</div>';
+            console.error('Failed to load patients:', error);
+            patientListContainer.innerHTML = `
+                <div class="loading-message" style="color: var(--color-error);">
+                    Failed to load patients. Please try refreshing the page.
+                    <br><small>Error: ${error.message}</small>
+                </div>
+            `;
         }
     }
 
-    function displayPatientResults(patients) {
-        const resultsHtml = patients
+    function displayPatientList(patients) {
+        const listHTML = patients
             .map((patient) => {
-                const fullName = patient.middle_name
-                    ? `${patient.first_name} ${patient.middle_name} ${patient.last_name}`
-                    : `${patient.first_name} ${patient.last_name}`;
-
-                const formattedPhone = patient.phone
-                    ? formatPhoneNumber(patient.phone)
-                    : 'No phone';
+                const fullName = `${patient.first_name}${
+                    patient.middle_name ? ' ' + patient.middle_name : ''
+                } ${patient.last_name}`;
                 const dateOfBirth = formatDateForDisplay(patient.date_of_birth);
 
                 return `
-                <div class="patient-result" data-patient-id="${
+                <div class="patient-list-item" data-patient-id="${
                     patient.patient_key
-                }" onclick="selectPatient(${
-                    patient.patient_key
-                }, '${fullName.replace(
-                    /'/g,
-                    "\\'"
-                )}', '${formattedPhone}', '${dateOfBirth}')">
-                    <div class="patient-result-name">${fullName}</div>
-                    <div class="patient-result-details">
-                        <span>DOB: ${dateOfBirth}</span>
-                        <span>Phone: ${formattedPhone}</span>
+                }">
+                    <div>
+                        <div class="patient-name">${escapeHtml(fullName)}</div>
+                        <div class="patient-info">DOB: ${dateOfBirth}</div>
+                    </div>
+                    <div class="patient-select-btn">
+                        <button type="button" class="btn btn-primary btn-sm">Select</button>
                     </div>
                 </div>
             `;
             })
             .join('');
 
-        resultsContainer.innerHTML = `
-            <div class="search-results-header">Select a patient:</div>
-            ${resultsHtml}
+        patientListContainer.innerHTML = listHTML;
+
+        // Add click handlers for patient selection
+        patientListContainer.addEventListener('click', function (e) {
+            const patientItem = e.target.closest('.patient-list-item');
+            if (patientItem) {
+                const patientId = patientItem.dataset.patientId;
+                const patientData = patients.find(
+                    (p) => p.patient_key.toString() === patientId
+                );
+                if (patientData) {
+                    selectPatientFromList(patientData);
+                }
+            }
+        });
+    }
+
+    function showNoPatientsMessage() {
+        patientListContainer.innerHTML = `
+            <div class="no-patients-message">
+                <p>No patients found in the system.</p>
+                <p><a href="/patients/create-patient/">Create a new patient</a> first before creating a study.</p>
+            </div>
         `;
     }
 }
 
-// Select a patient for the study
-function selectPatient(patientId, patientName, phone, dateOfBirth) {
-    selectedPatientId = patientId;
+// Select a patient from the list for the study
+function selectPatientFromList(patientData) {
+    selectedPatientId = patientData.patient_key;
 
-    const resultsContainer = document.getElementById('patientSearchResults');
+    const fullName = `${patientData.first_name}${
+        patientData.middle_name ? ' ' + patientData.middle_name : ''
+    } ${patientData.last_name}`;
+    const dateOfBirth = formatDateForDisplay(patientData.date_of_birth);
+    const phone = patientData.phone
+        ? formatPhoneNumber(patientData.phone)
+        : 'No phone';
+
+    const patientListContainer = document.getElementById('patientList');
     const selectedPatientContainer = document.getElementById(
         'selectedPatientInfo'
     );
     const studyForm = document.getElementById('createStudyForm');
-    const searchInput = document.getElementById('patientSearch');
 
-    // Hide search results
-    resultsContainer.classList.add('hidden');
+    // Mark the selected patient in the list
+    const allItems =
+        patientListContainer.querySelectorAll('.patient-list-item');
+    allItems.forEach((item) => item.classList.remove('selected'));
+
+    const selectedItem = patientListContainer.querySelector(
+        `[data-patient-id="${patientData.patient_key}"]`
+    );
+    if (selectedItem) {
+        selectedItem.classList.add('selected');
+    }
 
     // Show selected patient info
     selectedPatientContainer.innerHTML = `
@@ -181,7 +191,7 @@ function selectPatient(patientId, patientName, phone, dateOfBirth) {
             </div>
             <div class="selected-patient-details">
                 <div class="patient-detail">
-                    <strong>Name:</strong> ${patientName}
+                    <strong>Name:</strong> ${escapeHtml(fullName)}
                 </div>
                 <div class="patient-detail">
                     <strong>Date of Birth:</strong> ${dateOfBirth}
@@ -196,31 +206,27 @@ function selectPatient(patientId, patientName, phone, dateOfBirth) {
 
     // Show study form
     studyForm.classList.remove('hidden');
-
-    // Clear and disable search input
-    searchInput.value = '';
-    searchInput.disabled = true;
 }
 
 // Clear patient selection
+// Clear patient selection and return to patient list
 function clearPatientSelection() {
     selectedPatientId = null;
 
-    const resultsContainer = document.getElementById('patientSearchResults');
+    const patientListContainer = document.getElementById('patientList');
     const selectedPatientContainer = document.getElementById(
         'selectedPatientInfo'
     );
     const studyForm = document.getElementById('createStudyForm');
-    const searchInput = document.getElementById('patientSearch');
 
-    // Hide selected patient and form
+    // Remove selection from patient list
+    const allItems =
+        patientListContainer.querySelectorAll('.patient-list-item');
+    allItems.forEach((item) => item.classList.remove('selected'));
+
+    // Hide selected patient info and form
     selectedPatientContainer.classList.add('hidden');
     studyForm.classList.add('hidden');
-    resultsContainer.classList.add('hidden');
-
-    // Re-enable search input
-    searchInput.disabled = false;
-    searchInput.focus();
 }
 
 // Setup physician checkbox logic
@@ -327,9 +333,25 @@ function setupStudyFormSubmission() {
             return;
         }
 
-        if (formData.studyLength < 1 || formData.studyLength > 365) {
-            alert('Study length must be between 1 and 365 days.');
+        if (formData.studyLength < 1 || formData.studyLength > 4) {
+            alert('Study length must be between 1 and 4 days.');
             return;
+        }
+
+        // Validate datetime input
+        const startDateTime = new Date(formData.startDate);
+        if (isNaN(startDateTime.getTime())) {
+            alert('Please enter a valid start date and time.');
+            return;
+        }
+
+        // Check if the date is in the future (optional validation)
+        const now = new Date();
+        if (startDateTime < now) {
+            const proceed = confirm(
+                'The selected start date is in the past. Do you want to continue?'
+            );
+            if (!proceed) return;
         }
 
         try {
@@ -392,19 +414,20 @@ function setupStudyPageNavigation() {
 
 // Utility function to format phone numbers (reuse from patients.js logic)
 function formatPhoneNumber(phone) {
-    if (!phone) return '';
+    if (!phone) return 'No phone';
 
     // Remove all non-digits
     const cleaned = phone.replace(/\D/g, '');
 
-    // Format as (XXX) XXX-XXXX
+    // Format as (XXX) XXX-XXXX for 10-digit numbers
     if (cleaned.length === 10) {
         return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
             6
         )}`;
     }
 
-    return phone; // Return original if not 10 digits
+    // Return as-is for other lengths
+    return phone;
 }
 
 // Utility function to format date for display (reuse from patients.js logic)
@@ -433,15 +456,22 @@ function formatDateForDisplay(dateString) {
     }
 }
 
+// Utility function to escape HTML characters
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Make functions available globally
 window.studiesPage = {
     initializeStudiesPage,
     initializeCreateStudyPage,
     initializeManageStudiesPage,
-    selectPatient,
+    selectPatientFromList,
     clearPatientSelection,
 };
 
 // Also expose individual functions for backward compatibility
-window.selectPatient = selectPatient;
+window.selectPatientFromList = selectPatientFromList;
 window.clearPatientSelection = clearPatientSelection;
