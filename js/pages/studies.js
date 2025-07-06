@@ -60,6 +60,9 @@ function initializeCreateStudyPage() {
     // Setup form submission
     setupStudyFormSubmission();
 
+    // Setup time input formatting
+    setupTimeInput();
+
     // Setup navigation buttons
     setupStudyPageNavigation();
 }
@@ -295,6 +298,32 @@ function setupDateValidation() {
     }
 }
 
+// Setup time input with helpful formatting
+function setupTimeInput() {
+    const timeInput = document.getElementById('startTime');
+
+    if (!timeInput) return;
+
+    // Add input event listener for formatting
+    timeInput.addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+
+        if (value.length >= 2) {
+            value = value.slice(0, 2) + ':' + value.slice(2, 4);
+        }
+
+        e.target.value = value;
+    });
+
+    // Set a default time if none is set
+    if (!timeInput.value) {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        timeInput.value = `${hours}:${minutes}`;
+    }
+}
+
 // Setup study form submission
 function setupStudyFormSubmission() {
     const form = document.getElementById('createStudyForm');
@@ -310,6 +339,9 @@ function setupStudyFormSubmission() {
         }
 
         // Collect form data
+        const startDate = document.getElementById('startDate').value.trim();
+        const startTime = document.getElementById('startTime').value.trim();
+
         const formData = {
             patientId: selectedPatientId,
             referringPhysician: document
@@ -318,7 +350,8 @@ function setupStudyFormSubmission() {
             interpretingPhysician: document
                 .getElementById('interpretingPhysician')
                 .value.trim(),
-            startDate: document.getElementById('startDate').value.trim(),
+            startDate: startDate,
+            startTime: startTime,
             studyLength: parseInt(document.getElementById('studyLength').value),
         };
 
@@ -327,9 +360,19 @@ function setupStudyFormSubmission() {
             !formData.referringPhysician ||
             !formData.interpretingPhysician ||
             !formData.startDate ||
+            !formData.startTime ||
             !formData.studyLength
         ) {
             alert('Please fill in all required fields.');
+            return;
+        }
+
+        // Validate time format (HH:MM)
+        const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        if (!timeRegex.test(formData.startTime)) {
+            alert(
+                'Please enter time in HH:MM format (24-hour), for example 14:30 for 2:30 PM.'
+            );
             return;
         }
 
@@ -338,8 +381,9 @@ function setupStudyFormSubmission() {
             return;
         }
 
-        // Validate datetime input
-        const startDateTime = new Date(formData.startDate);
+        // Combine date and time for validation
+        const combinedDateTime = `${formData.startDate}T${formData.startTime}:00`;
+        const startDateTime = new Date(combinedDateTime);
         if (isNaN(startDateTime.getTime())) {
             alert('Please enter a valid start date and time.');
             return;
@@ -354,11 +398,15 @@ function setupStudyFormSubmission() {
             if (!proceed) return;
         }
 
+        // Update formData to send the combined datetime to server
+        formData.startDate = combinedDateTime;
+
         try {
-            // Show loading modal
-            if (window.modalManager && window.modalManager.showModal) {
-                window.modalManager.showModal('loadingModal');
-            }
+            // Show loading state on button
+            const submitBtn = document.getElementById('createStudyBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Creating Study...';
+            submitBtn.disabled = true;
 
             // Submit study creation request
             const response = await window.apiClient.apiRequest('/api/studies', {
@@ -380,9 +428,11 @@ function setupStudyFormSubmission() {
                     (error.message || 'Please try again.')
             );
         } finally {
-            // Hide loading modal
-            if (window.modalManager && window.modalManager.hideModal) {
-                window.modalManager.hideModal('loadingModal');
+            // Restore button state
+            const submitBtn = document.getElementById('createStudyBtn');
+            if (submitBtn) {
+                submitBtn.textContent = 'Create Study';
+                submitBtn.disabled = false;
             }
         }
     });
