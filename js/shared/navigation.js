@@ -268,6 +268,17 @@ function setupMobileDropdowns() {
         return false;
     })();
 
+    // Clear any existing global listeners first to prevent duplicates
+    if (window._dropdownClickHandler) {
+        document.removeEventListener('click', window._dropdownClickHandler);
+    }
+    if (window._dropdownTouchHandler) {
+        document.removeEventListener(
+            'touchstart',
+            window._dropdownTouchHandler
+        );
+    }
+
     // Store dropdown states to prevent race conditions
     const dropdownStates = new Map();
 
@@ -281,15 +292,14 @@ function setupMobileDropdowns() {
         // Initialize state tracking
         dropdownStates.set(dropdown, { isOpen: false, isNavigating: false });
 
-        // Clean up any existing listeners completely
-        const cleanTrigger = trigger.cloneNode(true);
-        trigger.parentNode.replaceChild(cleanTrigger, trigger);
+        // Check if this trigger already has our handler to prevent duplicates
+        if (trigger._mobileDropdownSetup) return;
 
-        // Re-initialize state after DOM replacement to ensure proper reference
-        dropdownStates.set(dropdown, { isOpen: false, isNavigating: false });
+        // Mark as setup to prevent duplicate handlers
+        trigger._mobileDropdownSetup = true;
 
         // Add click handler for all devices (both desktop and mobile)
-        cleanTrigger.addEventListener('click', function (e) {
+        trigger.addEventListener('click', function (e) {
             // For touch devices, use special two-tap behavior
             if (isTouchDevice) {
                 e.preventDefault();
@@ -304,7 +314,7 @@ function setupMobileDropdowns() {
                     dropdown.classList.remove('mobile-open');
                     state.isOpen = false;
 
-                    const href = cleanTrigger.getAttribute('href');
+                    const href = trigger.getAttribute('href');
                     if (href && href !== '#') {
                         // Small delay to ensure click event completes
                         setTimeout(() => {
@@ -332,7 +342,7 @@ function setupMobileDropdowns() {
     });
 
     // Close dropdowns when clicking outside, with state management
-    document.addEventListener('click', function (e) {
+    window._dropdownClickHandler = function (e) {
         // Don't close if clicking on a dropdown item
         if (e.target.closest('.dropdown-content a')) {
             // Allow dropdown item navigation, close dropdown after click
@@ -358,34 +368,36 @@ function setupMobileDropdowns() {
                 dropdown.classList.remove('mobile-open');
             });
         }
-    });
+    };
+
+    document.addEventListener('click', window._dropdownClickHandler);
 
     // Also add touchstart handler for mobile outside clicks (passive to not interfere with scroll)
     if (isTouchDevice) {
-        document.addEventListener(
-            'touchstart',
-            function (e) {
-                // Only handle if not touching a dropdown and there are open dropdowns
-                const hasOpenDropdowns = Array.from(dropdowns).some((dd) =>
-                    dd.classList.contains('mobile-open')
-                );
+        window._dropdownTouchHandler = function (e) {
+            // Only handle if not touching a dropdown and there are open dropdowns
+            const hasOpenDropdowns = Array.from(dropdowns).some((dd) =>
+                dd.classList.contains('mobile-open')
+            );
 
-                if (hasOpenDropdowns && !e.target.closest('.nav-dropdown')) {
-                    // Use requestAnimationFrame to avoid interfering with scroll
-                    requestAnimationFrame(() => {
-                        dropdowns.forEach((dropdown) => {
-                            const state = dropdownStates.get(dropdown);
-                            if (state) {
-                                state.isOpen = false;
-                                state.isNavigating = false;
-                            }
-                            dropdown.classList.remove('mobile-open');
-                        });
+            if (hasOpenDropdowns && !e.target.closest('.nav-dropdown')) {
+                // Use requestAnimationFrame to avoid interfering with scroll
+                requestAnimationFrame(() => {
+                    dropdowns.forEach((dropdown) => {
+                        const state = dropdownStates.get(dropdown);
+                        if (state) {
+                            state.isOpen = false;
+                            state.isNavigating = false;
+                        }
+                        dropdown.classList.remove('mobile-open');
                     });
-                }
-            },
-            { passive: true }
-        );
+                });
+            }
+        };
+
+        document.addEventListener('touchstart', window._dropdownTouchHandler, {
+            passive: true,
+        });
     }
 }
 
