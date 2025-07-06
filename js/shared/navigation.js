@@ -289,34 +289,7 @@ function setupMobileDropdowns() {
     }
     const dropdownStates = window._dropdownStates;
 
-    dropdowns.forEach((dropdown, index) => {
-        const trigger = dropdown.querySelector('.dropdown-trigger');
-        if (!trigger) return;
-
-        const hasDropdownContent = dropdown.querySelector('.dropdown-content');
-        if (!hasDropdownContent) return;
-
-        // Initialize state tracking
-        dropdownStates.set(dropdown, { isOpen: false, isNavigating: false });
-
-        // Remove ALL possible event listeners that might interfere
-        trigger.removeEventListener('click', handleDropdownClick);
-        trigger.removeEventListener('touchstart', handleDropdownClick);
-        trigger.removeEventListener('touchend', handleDropdownClick);
-
-        // For touch devices, use both touchstart AND click to ensure we catch the event
-        if (isTouchDevice) {
-            // Add touchstart with immediate response
-            trigger.addEventListener('touchstart', handleDropdownClick, {
-                passive: false,
-            });
-        }
-
-        // Always add click as backup
-        trigger.addEventListener('click', handleDropdownClick);
-    });
-
-    // Define the click handler function
+    // Define the click handler function FIRST
     function handleDropdownClick(e) {
         // Immediately prevent any other handlers from interfering
         e.preventDefault();
@@ -377,6 +350,33 @@ function setupMobileDropdowns() {
             }
         }
     }
+
+    dropdowns.forEach((dropdown, index) => {
+        const trigger = dropdown.querySelector('.dropdown-trigger');
+        if (!trigger) return;
+
+        const hasDropdownContent = dropdown.querySelector('.dropdown-content');
+        if (!hasDropdownContent) return;
+
+        // Initialize state tracking
+        dropdownStates.set(dropdown, { isOpen: false, isNavigating: false });
+
+        // Remove ALL possible event listeners that might interfere
+        trigger.removeEventListener('click', handleDropdownClick);
+        trigger.removeEventListener('touchstart', handleDropdownClick);
+        trigger.removeEventListener('touchend', handleDropdownClick);
+
+        // For touch devices, use both touchstart AND click to ensure we catch the event
+        if (isTouchDevice) {
+            // Add touchstart with immediate response
+            trigger.addEventListener('touchstart', handleDropdownClick, {
+                passive: false,
+            });
+        }
+
+        // Always add click as backup
+        trigger.addEventListener('click', handleDropdownClick);
+    });
 
     // Close dropdowns when clicking outside, with state management
     window._dropdownClickHandler = function (e) {
