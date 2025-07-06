@@ -5,6 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Studies - Integris Neuro</title>
         <base href="/" />
+
+        <!-- Security: Prevent caching of authenticated pages -->
         <meta
             http-equiv="Cache-Control"
             content="no-cache, no-store, must-revalidate"
@@ -17,111 +19,51 @@
         <link rel="icon" type="image/png" href="../favicon.png" />
     </head>
     <body class="content-page">
+        <!-- Header Bar with Top Navigation -->
         <header class="app-header">
             <!-- Navigation will be loaded here by JavaScript -->
         </header>
         <div class="content-container">
-            <div class="admin-section">
-                <div class="section-header">
-                    <h2>Studies Management</h2>
-                    <p>Manage patient studies and research data</p>
-                </div>
-                <div class="choice-container">
-                    <div class="choice-grid">
-                        <div class="choice-card">
-                            <div class="choice-icon">
-                                <svg
-                                    width="48"
-                                    height="48"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                                    />
-                                    <polyline points="14,2 14,8 20,8" />
-                                    <line x1="12" y1="18" x2="12" y2="12" />
-                                    <line x1="9" y1="15" x2="15" y2="15" />
-                                </svg>
-                            </div>
-                            <h3>Create New Study</h3>
-                            <p>
-                                Start a new patient study with physician
-                                information and scheduling details
-                            </p>
-                            <a
-                                href="/studies/create-study/"
-                                class="btn btn-primary"
-                                >Create Study</a
-                            >
-                        </div>
-                        <div class="choice-card">
-                            <div class="choice-icon">
-                                <svg
-                                    width="48"
-                                    height="48"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                >
-                                    <path
-                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                                    />
-                                    <polyline points="14,2 14,8 20,8" />
-                                    <line x1="16" y1="13" x2="8" y2="13" />
-                                    <line x1="16" y1="17" x2="8" y2="17" />
-                                </svg>
-                            </div>
-                            <h3>Manage Studies</h3>
-                            <p>
-                                View, edit, and manage existing patient studies
-                                and research data
-                            </p>
-                            <a
-                                href="/studies/manage-studies/"
-                                class="btn btn-secondary"
-                                >Manage Studies</a
-                            >
-                        </div>
-                    </div>
-                </div>
-                <div class="back-to-dashboard">
-                    <a href="/welcome/" class="btn btn-link">
-                        <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <polyline points="15,18 9,12 15,6"></polyline>
-                        </svg>
-                        Back to Dashboard
+            <!-- Studies Management Choice Buttons -->
+            <div class="admin-choice" id="studiesChoice">
+                <div class="choice-buttons">
+                    <a
+                        href="/studies/create-study/"
+                        class="choice-btn primary fade-nav"
+                    >
+                        <h3>Create New Study</h3>
+                        <p>
+                            Start a new patient study with physician information
+                            and scheduling details
+                        </p>
+                    </a>
+                    <a
+                        href="/studies/manage-studies/"
+                        class="choice-btn primary fade-nav"
+                    >
+                        <h3>Manage Existing Studies</h3>
+                        <p>
+                            View, edit, and manage existing patient studies and
+                            research data
+                        </p>
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Scripts -->
+        <!-- Load shared modules first -->
+        <script src="../js/shared/api-client.js"></script>
+        <script src="../js/shared/modal-manager.js"></script>
+        <script src="../js/shared/password-utils.js"></script>
+        <script src="../js/shared/field-validation.js"></script>
         <script src="../js/shared/auth-utils.js"></script>
+        <script src="../js/shared/page-transitions.js"></script>
         <script src="../js/shared/navigation.js"></script>
+        <script src="../js/shared/table-utils.js"></script>
+        <script src="../js/shared/address-validation.js"></script>
+        <!-- Load page-specific modules -->
+        <script src="../js/pages/studies.js"></script>
+        <!-- Load main controller -->
         <script src="../js/main.js"></script>
-        <script>
-            // Initialize page
-            document.addEventListener('DOMContentLoaded', function () {
-                // Check authentication
-                if (!window.authUtils.isAuthenticated()) {
-                    window.location.href = '/';
-                    return;
-                }
-
-                // Load navigation
-                window.loadTopNavigation();
-            });
-        </script>
     </body>
 </html>
