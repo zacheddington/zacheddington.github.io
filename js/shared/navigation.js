@@ -423,48 +423,6 @@ window.navigation = {
     loadMenu: loadTopNavigation, // Add loadMenu for backward compatibility
     setupFadeNavigation,
     setupPatientNumberValidation,
-    // Debug function for testing mobile dropdown behavior
-    debugDropdowns: function () {
-        const dropdowns = document.querySelectorAll('.nav-dropdown');
-        const touchDevice = (() => {
-            if ('ontouchstart' in window) return true;
-            if (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)
-                return true;
-            if (navigator.msMaxTouchPoints && navigator.msMaxTouchPoints > 0)
-                return true;
-            const mobileRegex =
-                /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-            if (mobileRegex.test(navigator.userAgent)) return true;
-            if (window.screen && window.screen.width <= 768) return true;
-            return false;
-        })();
-
-        console.log('🔍 Dropdown Debug Info:');
-        console.log('📱 Touch Device:', touchDevice);
-        console.log('📊 User Agent:', navigator.userAgent);
-        console.log(
-            '🖥️ Screen Size:',
-            window.screen
-                ? `${window.screen.width}x${window.screen.height}`
-                : 'Unknown'
-        );
-        console.log(
-            '👆 Max Touch Points:',
-            navigator.maxTouchPoints || 'Unknown'
-        );
-        console.log('📂 Dropdowns Found:', dropdowns.length);
-
-        dropdowns.forEach((dropdown, i) => {
-            const trigger = dropdown.querySelector('.dropdown-trigger');
-            const isOpen = dropdown.classList.contains('mobile-open');
-            console.log(`📋 Dropdown ${i + 1}:`, {
-                element: dropdown,
-                trigger: trigger,
-                isOpen: isOpen,
-                href: trigger ? trigger.getAttribute('href') : 'No trigger',
-            });
-        });
-    },
 };
 
 // Also expose individual functions for backward compatibility
