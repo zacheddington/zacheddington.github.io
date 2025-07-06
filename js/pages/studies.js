@@ -83,9 +83,9 @@ function loadAllPatients() {
             const response = await window.apiClient.apiRequest('/api/patients');
             console.log('Patients API response:', response);
 
-            if (response.patients && response.patients.length > 0) {
-                console.log(`Found ${response.patients.length} patients`);
-                displayPatientList(response.patients);
+            if (response.data && response.data.length > 0) {
+                console.log(`Found ${response.data.length} patients`);
+                displayPatientList(response.data);
             } else {
                 console.log('No patients found');
                 showNoPatientsMessage();
