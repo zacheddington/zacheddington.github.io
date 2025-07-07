@@ -345,8 +345,8 @@ function setupStudyFormSubmission() {
         if (!selectedPatientId) {
             this.dataset.submitting = 'false';
             if (window.modalManager) {
-                window.modalManager.showErrorModal(
-                    'Validation Error',
+                window.modalManager.showModal(
+                    'error',
                     'Please select a patient before creating the study.'
                 );
             } else {
@@ -382,8 +382,8 @@ function setupStudyFormSubmission() {
         ) {
             this.dataset.submitting = 'false';
             if (window.modalManager) {
-                window.modalManager.showErrorModal(
-                    'Validation Error',
+                window.modalManager.showModal(
+                    'error',
                     'Please fill in all required fields.'
                 );
             } else {
@@ -397,8 +397,8 @@ function setupStudyFormSubmission() {
         if (!timeRegex.test(formData.startTime)) {
             this.dataset.submitting = 'false';
             if (window.modalManager) {
-                window.modalManager.showErrorModal(
-                    'Time Format Error',
+                window.modalManager.showModal(
+                    'error',
                     'Please enter time in HH:MM format (24-hour), for example 14:30 for 2:30 PM.'
                 );
             } else {
@@ -412,8 +412,8 @@ function setupStudyFormSubmission() {
         if (formData.studyLength < 1 || formData.studyLength > 4) {
             this.dataset.submitting = 'false';
             if (window.modalManager) {
-                window.modalManager.showErrorModal(
-                    'Study Length Error',
+                window.modalManager.showModal(
+                    'error',
                     'Study length must be between 1 and 4 days.'
                 );
             } else {
@@ -428,8 +428,8 @@ function setupStudyFormSubmission() {
         if (isNaN(startDateTime.getTime())) {
             this.dataset.submitting = 'false';
             if (window.modalManager) {
-                window.modalManager.showErrorModal(
-                    'Date Error',
+                window.modalManager.showModal(
+                    'error',
                     'Please enter a valid start date and time.'
                 );
             } else {
@@ -481,8 +481,8 @@ function setupStudyFormSubmission() {
 
             if (response.success) {
                 if (window.modalManager) {
-                    window.modalManager.showSuccessModal(
-                        'Success',
+                    window.modalManager.showModal(
+                        'success',
                         'Study created successfully!'
                     );
                     // Wait a moment then redirect
@@ -506,8 +506,8 @@ function setupStudyFormSubmission() {
             }
 
             if (window.modalManager) {
-                window.modalManager.showErrorModal(
-                    'Creation Failed',
+                window.modalManager.showModal(
+                    'error',
                     'Error creating study: ' + errorMessage
                 );
             } else {
