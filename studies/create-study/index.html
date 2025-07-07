@@ -246,13 +246,8 @@
                 // Load navigation
                 window.loadTopNavigation();
 
-                // Initialize studies page
-                if (
-                    window.studiesPage &&
-                    window.studiesPage.initializeCreateStudyPage
-                ) {
-                    window.studiesPage.initializeCreateStudyPage();
-                }
+                // Studies page initialization is handled by main.js
+                // No need to initialize here as main.js will detect this page type
             });
         </script>
     </body>
