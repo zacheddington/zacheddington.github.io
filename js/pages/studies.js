@@ -333,8 +333,25 @@ function setupStudyFormSubmission() {
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
+        // Prevent double submission
+        if (this.dataset.submitting === 'true') {
+            console.log(
+                'Form already submitting, ignoring duplicate submission'
+            );
+            return;
+        }
+        this.dataset.submitting = 'true';
+
         if (!selectedPatientId) {
-            alert('Please select a patient before creating the study.');
+            this.dataset.submitting = 'false';
+            if (window.modalManager) {
+                window.modalManager.showErrorModal(
+                    'Validation Error',
+                    'Please select a patient before creating the study.'
+                );
+            } else {
+                alert('Please select a patient before creating the study.');
+            }
             return;
         }
 
@@ -363,21 +380,45 @@ function setupStudyFormSubmission() {
             !formData.startTime ||
             !formData.studyLength
         ) {
-            alert('Please fill in all required fields.');
+            this.dataset.submitting = 'false';
+            if (window.modalManager) {
+                window.modalManager.showErrorModal(
+                    'Validation Error',
+                    'Please fill in all required fields.'
+                );
+            } else {
+                alert('Please fill in all required fields.');
+            }
             return;
         }
 
         // Validate time format (HH:MM)
         const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
         if (!timeRegex.test(formData.startTime)) {
-            alert(
-                'Please enter time in HH:MM format (24-hour), for example 14:30 for 2:30 PM.'
-            );
+            this.dataset.submitting = 'false';
+            if (window.modalManager) {
+                window.modalManager.showErrorModal(
+                    'Time Format Error',
+                    'Please enter time in HH:MM format (24-hour), for example 14:30 for 2:30 PM.'
+                );
+            } else {
+                alert(
+                    'Please enter time in HH:MM format (24-hour), for example 14:30 for 2:30 PM.'
+                );
+            }
             return;
         }
 
         if (formData.studyLength < 1 || formData.studyLength > 4) {
-            alert('Study length must be between 1 and 4 days.');
+            this.dataset.submitting = 'false';
+            if (window.modalManager) {
+                window.modalManager.showErrorModal(
+                    'Study Length Error',
+                    'Study length must be between 1 and 4 days.'
+                );
+            } else {
+                alert('Study length must be between 1 and 4 days.');
+            }
             return;
         }
 
@@ -385,36 +426,45 @@ function setupStudyFormSubmission() {
         const combinedDateTime = `${formData.startDate}T${formData.startTime}:00`;
         const startDateTime = new Date(combinedDateTime);
         if (isNaN(startDateTime.getTime())) {
-            alert('Please enter a valid start date and time.');
+            this.dataset.submitting = 'false';
+            if (window.modalManager) {
+                window.modalManager.showErrorModal(
+                    'Date Error',
+                    'Please enter a valid start date and time.'
+                );
+            } else {
+                alert('Please enter a valid start date and time.');
+            }
             return;
         }
 
         // Check if the date is in the future (optional validation)
         const now = new Date();
         if (startDateTime < now) {
-            const proceed = confirm(
-                'The selected start date is in the past. Do you want to continue?'
-            );
-            if (!proceed) return;
-        }        // Send in both formats to handle production server compatibility
+            const proceed = window.modalManager
+                ? await window.modalManager.showConfirmModal(
+                      'Past Date Warning',
+                      'The selected start date is in the past. Do you want to continue?'
+                  )
+                : confirm(
+                      'The selected start date is in the past. Do you want to continue?'
+                  );
+
+            if (!proceed) {
+                this.dataset.submitting = 'false';
+                return;
+            }
+        } // Send in both formats to handle production server compatibility
         // New format for updated servers
         formData.startDate = combinedDateTime; // 'YYYY-MM-DDTHH:MM:SS'
-        
+
         // Legacy format for production servers that haven't been updated yet
         const dateParts = startDate.split('-'); // YYYY-MM-DD
         const legacyDate = `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}`; // MM/DD/YYYY
         formData.startDateLegacy = legacyDate;
-        
+
         // Remove startTime since we've combined it with startDate
         delete formData.startTime;
-        
-        // Debug: Log the data being sent
-        console.log('=== CLIENT SIDE DEBUG ===');
-        console.log('Form data before sending:', JSON.stringify(formData, null, 2));
-        console.log('Combined datetime:', combinedDateTime);
-        console.log('Legacy date:', legacyDate);
-        console.log('Selected patient ID:', selectedPatientId);
-        console.log('==========================');
 
         try {
             // Show loading state on button
@@ -430,9 +480,19 @@ function setupStudyFormSubmission() {
             });
 
             if (response.success) {
-                alert('Study created successfully!');
-                // Redirect to studies management or clear form
-                window.location.href = '/studies/';
+                if (window.modalManager) {
+                    window.modalManager.showSuccessModal(
+                        'Success',
+                        'Study created successfully!'
+                    );
+                    // Wait a moment then redirect
+                    setTimeout(() => {
+                        window.location.href = '/studies/';
+                    }, 1500);
+                } else {
+                    alert('Study created successfully!');
+                    window.location.href = '/studies/';
+                }
             } else {
                 throw new Error(response.message || 'Failed to create study');
             }
@@ -445,14 +505,22 @@ function setupStudyFormSubmission() {
                 errorMessage = error.message;
             }
 
-            alert('Error creating study: ' + errorMessage);
+            if (window.modalManager) {
+                window.modalManager.showErrorModal(
+                    'Creation Failed',
+                    'Error creating study: ' + errorMessage
+                );
+            } else {
+                alert('Error creating study: ' + errorMessage);
+            }
         } finally {
-            // Restore button state
+            // Restore button state and reset submission flag
             const submitBtn = document.getElementById('createStudyBtn');
             if (submitBtn) {
                 submitBtn.textContent = 'Create Study';
                 submitBtn.disabled = false;
             }
+            this.dataset.submitting = 'false';
         }
     });
 }

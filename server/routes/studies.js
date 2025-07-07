@@ -145,13 +145,9 @@ router.post(
         'interpretingPhysician',
         'startDate',
         'studyLength',
-    ]),    async (req, res) => {
+    ]),
+    async (req, res) => {
         try {
-            console.log('=== STUDY CREATION DEBUG ===');
-            console.log('Raw request body:', JSON.stringify(req.body, null, 2));
-            console.log('Request headers:', req.headers);
-            console.log('User:', req.user ? req.user.username : 'No user');
-            
             const {
                 patientId,
                 referringPhysician,
@@ -159,61 +155,49 @@ router.post(
                 startDate,
                 studyLength,
             } = req.body;
-            
-            console.log('Extracted fields:', {
-                patientId: patientId,
-                referringPhysician: referringPhysician,
-                interpretingPhysician: interpretingPhysician,
-                startDate: startDate,
-                studyLength: studyLength,
-                startDateType: typeof startDate,
-                studyLengthType: typeof studyLength
-            });
 
             // Validate study length (must be 1-4 days as per schema)
-            console.log('Validating study length:', studyLength, 'Type:', typeof studyLength);
             const studyLengthNum = parseInt(studyLength);
-            console.log('Parsed study length:', studyLengthNum, 'isNaN:', isNaN(studyLengthNum));
-            
             if (
                 isNaN(studyLengthNum) ||
                 studyLengthNum < 1 ||
                 studyLengthNum > 4
             ) {
-                console.log('❌ Study length validation failed!');
                 return errorResponse(
                     res,
                     'Study length must be between 1 and 4 days',
                     400
                 );
             }
-            console.log('✅ Study length validation passed');
 
             // Handle both new and legacy date formats for backward compatibility
             let isoTimestamp;
-            
-            console.log('Checking date format for:', startDate);
+
             // Try new timestamp format first (YYYY-MM-DDTHH:MM)
             const datetimeRegex = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
             if (datetimeRegex.test(startDate)) {
-                console.log('✅ New timestamp format detected');
                 // New format - convert to proper timestamp with timezone
                 const startDateTime = new Date(startDate);
                 if (isNaN(startDateTime.getTime())) {
-                    console.log('❌ Date creation failed for new format');
-                    return errorResponse(res, 'Invalid start date and time', 400);
+                    return errorResponse(
+                        res,
+                        'Invalid start date and time',
+                        400
+                    );
                 }
                 isoTimestamp = startDateTime.toISOString();
-                console.log('✅ ISO timestamp created:', isoTimestamp);
             } else {
-                console.log('⚠️ New format failed, trying legacy format');
                 // Legacy format (MM/DD/YYYY) - check if startDateLegacy exists
                 const { startDateLegacy } = req.body;
-                const legacyDateRegex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+                const legacyDateRegex =
+                    /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
                 if (startDateLegacy && legacyDateRegex.test(startDateLegacy)) {
                     // Convert MM/DD/YYYY to ISO date format for database
                     const [month, day, year] = startDateLegacy.split('/');
-                    const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                    const isoDate = `${year}-${month.padStart(
+                        2,
+                        '0'
+                    )}-${day.padStart(2, '0')}`;
                     isoTimestamp = new Date(isoDate).toISOString();
                 } else {
                     return errorResponse(
