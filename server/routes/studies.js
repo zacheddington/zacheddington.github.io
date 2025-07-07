@@ -173,11 +173,24 @@ router.post(
             // Handle both new and legacy date formats for backward compatibility
             let isoTimestamp;
 
-            // Try new timestamp format first (YYYY-MM-DDTHH:MM)
-            const datetimeRegex = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
+            // Try new timestamp format first (YYYY-MM-DDTHH:MM:SS)
+            const datetimeRegex =
+                /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/;
             if (datetimeRegex.test(startDate)) {
-                // New format - convert to proper timestamp with timezone
-                const startDateTime = new Date(startDate);
+                // New format - parse components to ensure proper timezone handling
+                const match = startDate.match(datetimeRegex);
+                const [, year, month, day, hour, minute, second] = match;
+
+                // Create a timestamp that preserves the entered time (no timezone conversion)
+                // We'll treat this as the local timezone of the facility
+                const startDateTime = new Date(
+                    year,
+                    month - 1,
+                    day,
+                    hour,
+                    minute,
+                    second
+                );
                 if (isNaN(startDateTime.getTime())) {
                     return errorResponse(
                         res,
