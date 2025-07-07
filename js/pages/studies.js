@@ -396,9 +396,14 @@ function setupStudyFormSubmission() {
                 'The selected start date is in the past. Do you want to continue?'
             );
             if (!proceed) return;
-        }        // Convert to proper timestamp format for PostgreSQL
-        // PostgreSQL expects ISO 8601 format for TIMESTAMP WITH TIME ZONE
-        formData.startDate = combinedDateTime; // This is already in 'YYYY-MM-DDTHH:MM:SS' format
+        }        // Send in both formats to handle production server compatibility
+        // New format for updated servers
+        formData.startDate = combinedDateTime; // 'YYYY-MM-DDTHH:MM:SS'
+        
+        // Legacy format for production servers that haven't been updated yet
+        const dateParts = startDate.split('-'); // YYYY-MM-DD
+        const legacyDate = `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}`; // MM/DD/YYYY
+        formData.startDateLegacy = legacyDate;
         
         // Remove startTime since we've combined it with startDate
         delete formData.startTime;
