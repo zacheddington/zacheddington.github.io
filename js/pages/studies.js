@@ -409,7 +409,12 @@ function setupStudyFormSubmission() {
         delete formData.startTime;
         
         // Debug: Log the data being sent
-        console.log('Sending study data:', formData);
+        console.log('=== CLIENT SIDE DEBUG ===');
+        console.log('Form data before sending:', JSON.stringify(formData, null, 2));
+        console.log('Combined datetime:', combinedDateTime);
+        console.log('Legacy date:', legacyDate);
+        console.log('Selected patient ID:', selectedPatientId);
+        console.log('==========================');
 
         try {
             // Show loading state on button
