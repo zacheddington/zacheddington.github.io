@@ -57,6 +57,9 @@ function initializeCreateStudyPage() {
     // Setup physician checkbox logic
     setupPhysicianCheckbox();
 
+    // Setup timezone default
+    setupTimezoneDefault();
+
     // Setup form submission
     setupStudyFormSubmission();
 
@@ -358,6 +361,7 @@ function setupStudyFormSubmission() {
         // Collect form data
         const startDate = document.getElementById('startDate').value.trim();
         const startTime = document.getElementById('startTime').value.trim();
+        const timezone = document.getElementById('timezone').value;
 
         const formData = {
             patientId: selectedPatientId,
@@ -369,6 +373,7 @@ function setupStudyFormSubmission() {
                 .value.trim(),
             startDate: startDate,
             startTime: startTime,
+            timezone: timezone,
             studyLength: parseInt(document.getElementById('studyLength').value),
         };
 
@@ -546,6 +551,49 @@ function setupStudyPageNavigation() {
         backBtn.addEventListener('click', function () {
             window.location.href = '/studies/';
         });
+    }
+}
+
+// Setup timezone default based on browser detection
+function setupTimezoneDefault() {
+    const timezoneSelect = document.getElementById('timezone');
+
+    if (!timezoneSelect) return;
+
+    // Try to detect user's timezone
+    try {
+        const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        // Check if the detected timezone is in our list
+        const option = timezoneSelect.querySelector(`option[value="${detectedTimezone}"]`);
+        if (option) {
+            timezoneSelect.value = detectedTimezone;
+        } else {
+            // If not found, try to map to a common US timezone
+            const timezoneMappings = {
+                'America/New_York': ['US/Eastern', 'EST', 'EDT'],
+                'America/Chicago': ['US/Central', 'CST', 'CDT'],
+                'America/Denver': ['US/Mountain', 'MST', 'MDT'],
+                'America/Los_Angeles': ['US/Pacific', 'PST', 'PDT'],
+            };
+
+            let found = false;
+            for (const [canonical, variants] of Object.entries(timezoneMappings)) {
+                if (variants.includes(detectedTimezone) || detectedTimezone.includes(canonical.split('/')[1])) {
+                    timezoneSelect.value = canonical;
+                    found = true;
+                    break;
+                }
+            }
+
+            // Default to Central Time if no match found
+            if (!found) {
+                timezoneSelect.value = 'America/Chicago';
+            }
+        }
+    } catch (error) {
+        console.warn('Could not detect timezone, defaulting to Central Time');
+        timezoneSelect.value = 'America/Chicago';
     }
 }
 

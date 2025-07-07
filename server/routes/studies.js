@@ -3,6 +3,7 @@
 
 const express = require('express');
 const router = express.Router();
+const moment = require('moment-timezone');
 
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const {
@@ -144,6 +145,7 @@ router.post(
         'referringPhysician',
         'interpretingPhysician',
         'startDate',
+        'timezone',
         'studyLength',
     ]),
     async (req, res) => {
@@ -153,6 +155,7 @@ router.post(
                 referringPhysician,
                 interpretingPhysician,
                 startDate,
+                timezone,
                 studyLength,
             } = req.body;
 
@@ -168,37 +171,44 @@ router.post(
                     'Study length must be between 1 and 4 days',
                     400
                 );
-            }
-
-            // Handle both new and legacy date formats for backward compatibility
+            }            // Handle both new and legacy date formats for backward compatibility
             let isoTimestamp;
+
+            // Validate timezone
+            if (timezone && !moment.tz.zone(timezone)) {
+                return errorResponse(
+                    res,
+                    'Invalid timezone specified',
+                    400
+                );
+            }
 
             // Try new timestamp format first (YYYY-MM-DDTHH:MM:SS)
             const datetimeRegex =
                 /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/;
             if (datetimeRegex.test(startDate)) {
-                // New format - parse components to ensure proper timezone handling
+                // New format - parse with timezone support
                 const match = startDate.match(datetimeRegex);
                 const [, year, month, day, hour, minute, second] = match;
 
-                // Create a timestamp that preserves the entered time (no timezone conversion)
-                // We'll treat this as the local timezone of the facility
-                const startDateTime = new Date(
-                    year,
-                    month - 1,
-                    day,
-                    hour,
-                    minute,
-                    second
+                // Create a moment object in the specified timezone
+                const timezoneName = timezone || 'America/Chicago'; // Default to Central Time
+                const momentInTimezone = moment.tz(
+                    `${year}-${month}-${day} ${hour}:${minute}:${second}`,
+                    'YYYY-MM-DD HH:mm:ss',
+                    timezoneName
                 );
-                if (isNaN(startDateTime.getTime())) {
+                
+                if (!momentInTimezone.isValid()) {
                     return errorResponse(
                         res,
                         'Invalid start date and time',
                         400
                     );
                 }
-                isoTimestamp = startDateTime.toISOString();
+                
+                // Convert to UTC ISO string for database storage
+                isoTimestamp = momentInTimezone.toISOString();
             } else {
                 // Legacy format (MM/DD/YYYY) - check if startDateLegacy exists
                 const { startDateLegacy } = req.body;
