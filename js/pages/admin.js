@@ -1443,17 +1443,7 @@ async function performSessionRevocation(sessionId) {
 
     setSessionActionLoading(sessionId, true);
 
-    // Comprehensive debugging
-    console.log("=== SESSION REVOCATION DEBUG START ===");
-    console.log("Session ID to revoke:", sessionId);
-    console.log("Session ID type:", typeof sessionId);
-    console.log("Session ID length:", sessionId.length);
-    console.log("API URL:", API_URL);
-    console.log("Token present:", !!token);
-    console.log("Token length:", token ? token.length : "N/A");
-
-    // First, let's try the body method (new endpoint)
-    console.log("Attempting new endpoint: POST /api/sessions/revoke with body");
+    // First, try the body method (new endpoint)
 
     let response = await fetch(`${API_URL}/api/sessions/revoke`, {
       method: "POST",
@@ -1467,22 +1457,10 @@ async function performSessionRevocation(sessionId) {
       }),
     });
 
-    console.log("Response status:", response.status);
-    console.log(
-      "Response headers:",
-      Object.fromEntries(response.headers.entries())
-    );
-
     // If the new endpoint doesn't exist (404), try the old URL path method
     if (response.status === 404) {
-      console.log(
-        "New endpoint not found, trying old endpoint: POST /api/sessions/:sessionId/revoke"
-      );
-
       // URL encode the session ID for the path
       const encodedSessionId = encodeURIComponent(sessionId);
-      console.log("Original session ID:", sessionId);
-      console.log("Encoded session ID:", encodedSessionId);
 
       response = await fetch(
         `${API_URL}/api/sessions/${encodedSessionId}/revoke`,
@@ -1497,20 +1475,15 @@ async function performSessionRevocation(sessionId) {
           }),
         }
       );
-
-      console.log("Old endpoint response status:", response.status);
     }
 
     if (response.ok) {
-      console.log("Success! Session revoked successfully");
-
       // Check if we just revoked our own session
       setTimeout(async () => {
         try {
           if (window.authUtils && window.authUtils.checkCurrentSession) {
             const sessionCheck = await window.authUtils.checkCurrentSession();
             if (!sessionCheck.valid) {
-              console.log("Current session was revoked, logging out user");
               if (window.modalManager) {
                 window.modalManager.showModal(
                   "warning",
@@ -1552,9 +1525,6 @@ async function performSessionRevocation(sessionId) {
       let errorMessage = `Failed to revoke session (${response.status})`;
       let serverError = null;
 
-      console.log("Error response status:", response.status);
-      console.log("Error response status text:", response.statusText);
-
       try {
         const errorData = await response.json();
         serverError = errorData;
@@ -1584,7 +1554,6 @@ async function performSessionRevocation(sessionId) {
           }
         }
       } catch (parseError) {
-        console.log("Could not parse JSON response, trying text...");
 
         // If we can't parse the response, try to get text
         try {
@@ -1618,8 +1587,6 @@ async function performSessionRevocation(sessionId) {
         }
       }
 
-      console.log("Final error message:", errorMessage);
-      console.log("=== SESSION REVOCATION DEBUG END ===");
       throw new Error(errorMessage);
     }
   } catch (error) {
@@ -1823,15 +1790,12 @@ const escapeHtml = (text) =>
 const escapeJavaScript = (text) =>
   window.stringUtils?.escapeJavaScript?.(text) || text || "";
 
-// Debug function to test available session endpoints on production server
+// Debug function to test available session endpoints (dev use only)
 // Call this from browser console: window.adminPage.testSessionEndpoints()
 async function testSessionEndpoints() {
   const API_URL = window.apiClient.getAPIUrl();
   const token = localStorage.getItem("token");
-
-  console.log("=== TESTING PRODUCTION SERVER ENDPOINTS ===");
-  console.log("API URL:", API_URL);
-  console.log("Token present:", !!token);
+  const results = { apiUrl: API_URL, tokenPresent: !!token, endpoints: [] };
 
   const endpoints = [
     {
@@ -1863,11 +1827,8 @@ async function testSessionEndpoints() {
   ];
 
   for (const endpoint of endpoints) {
+    const result = { endpoint: endpoint.url, method: endpoint.method, description: endpoint.description };
     try {
-      console.log(
-        `\nTesting: ${endpoint.method} ${endpoint.url} - ${endpoint.description}`
-      );
-
       const requestOptions = {
         method: endpoint.method,
         headers: {
@@ -1884,46 +1845,31 @@ async function testSessionEndpoints() {
       }
 
       const response = await fetch(`${API_URL}${endpoint.url}`, requestOptions);
-
-      console.log(`  Status: ${response.status} ${response.statusText}`);
-
-      if (response.status === 404) {
-        console.log("  ❌ Endpoint not found");
-      } else if (response.status === 400) {
-        console.log(
-          "  ✅ Endpoint exists (bad request expected for test data)"
-        );
-      } else if (response.status === 500) {
-        console.log("  ⚠️ Endpoint exists but has server error");
-      } else if (response.status < 300) {
-        console.log("  ✅ Endpoint working");
-      } else {
-        console.log("  ⚠️ Unexpected status");
-      }
+      result.status = response.status;
+      result.statusText = response.statusText;
+      result.available = response.status !== 404;
 
       // Try to get response details
       try {
-        const responseData = await response.json();
-        console.log("  Response:", responseData);
+        result.responseData = await response.json();
       } catch (e) {
         const responseText = await response.text();
         if (responseText) {
-          console.log("  Response text:", responseText.substring(0, 200));
+          result.responseText = responseText.substring(0, 200);
         }
       }
     } catch (error) {
-      console.log(`  ❌ Error: ${error.message}`);
+      result.error = error.message;
     }
+    results.endpoints.push(result);
   }
 
-  console.log("\n=== ENDPOINT TESTING COMPLETE ===");
+  return results;
 }
 
-// Simple function to verify if enhanced session revocation is deployed
-// Call this from browser console: window.adminPage.checkDeployment()
+// Verify if enhanced session revocation is deployed (dev use only)
+// Call from browser console: window.adminPage.checkDeployment()
 async function checkDeployment() {
-  console.log("🔍 Checking if enhanced session revocation is deployed...");
-
   const API_URL = window.apiClient.getAPIUrl();
   const token = localStorage.getItem("token");
 
@@ -1938,31 +1884,29 @@ async function checkDeployment() {
 
     if (response.ok) {
       const data = await response.json();
-      console.log("✅ Enhanced session revocation is deployed!");
-      console.log("Server version:", data.data.serverVersion);
-      console.log("Features:", data.data.features);
-      console.log("Available endpoints:", data.data.endpoints);
-      return true;
+      return {
+        deployed: true,
+        serverVersion: data.data?.serverVersion,
+        features: data.data?.features,
+        endpoints: data.data?.endpoints
+      };
     } else {
-      console.log("❌ Enhanced session revocation is NOT deployed");
-      console.log("Status:", response.status, response.statusText);
       const errorData = await response.json().catch(() => null);
-      if (errorData) {
-        console.log("Error:", errorData);
-      }
-      return false;
+      return {
+        deployed: false,
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      };
     }
   } catch (error) {
-    console.log("❌ Error checking deployment:", error.message);
-    return false;
+    return { deployed: false, error: error.message };
   }
 }
 
-// Simple function to check if current session is still valid (useful for testing revocation)
-// Call this from browser console: window.adminPage.checkCurrentSession()
+// Check if current session is still valid (dev use only)
+// Call from browser console: window.adminPage.checkCurrentSession()
 async function checkCurrentSession() {
-  console.log("🔍 Checking if current session is still valid...");
-
   const API_URL = window.apiClient.getAPIUrl();
   const token = localStorage.getItem("token");
 
@@ -1977,49 +1921,33 @@ async function checkCurrentSession() {
 
     if (response.ok) {
       const data = await response.json();
-      console.log("✅ Current session is VALID and ACTIVE");
-      console.log("Session info:", data.data);
-      return { valid: true, data: data.data };
+      return { valid: true, active: true, data: data.data };
     } else if (response.status === 403) {
-      console.log("❌ Current session is INVALID or REVOKED");
-      console.log("Status:", response.status, response.statusText);
       const errorData = await response.json().catch(() => null);
-      if (errorData) {
-        console.log("Error details:", errorData);
-      }
-      return { valid: false, revoked: true };
+      return { valid: false, revoked: true, error: errorData };
     } else {
-      console.log("⚠️ Unexpected response status:", response.status);
       return { valid: false, error: response.status };
     }
   } catch (error) {
-    console.log("❌ Error checking session:", error.message);
     return { valid: false, error: error.message };
   }
 }
 
-// Test function to verify session revocation detection functionality
+// Test session revocation detection functionality (dev use only)
 async function testSessionRevocationDetection() {
-  console.log("🧪 Testing session revocation detection...");
+  const results = { sessionCheck: null, errorHandlingTest: null };
 
   try {
-    // First, check current session status
-    console.log("1️⃣ Checking current session validity...");
+    // Check current session status
     const sessionCheck = await window.authUtils.checkCurrentSession();
-    console.log("Current session check result:", sessionCheck);
+    results.sessionCheck = sessionCheck;
 
     if (!sessionCheck.valid) {
-      console.log(
-        "❌ Current session is already invalid:",
-        sessionCheck.reason
-      );
-      return sessionCheck;
+      results.status = 'Session already invalid';
+      return results;
     }
 
-    console.log("✅ Current session is valid");
-
     // Test the auth error handling with a mock 403 response
-    console.log("2️⃣ Testing 403 error handling...");
     const mockResponse = {
       status: 403,
       clone: () => ({
@@ -2032,16 +1960,14 @@ async function testSessionRevocationDetection() {
       mockResponse,
       "Test call"
     );
-    console.log("403 error handled:", handledAs403);
+    results.errorHandlingTest = handledAs403;
+    results.status = 'Test completed';
 
-    return {
-      sessionValid: sessionCheck.valid,
-      errorHandlingTest: handledAs403,
-      status: "Test completed successfully",
-    };
+    return results;
   } catch (error) {
-    console.error("❌ Error during session revocation test:", error);
-    return { error: error.message };
+    results.error = error.message;
+    results.status = 'Test failed';
+    return results;
   }
 }
 

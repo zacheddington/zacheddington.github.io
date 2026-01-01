@@ -393,8 +393,6 @@ async function changeForcePassword() {
         return;
       } else if (response.status === 500) {
         // Server error - check if it's related to password already being changed
-        console.log("500 error response:", result); // Debug logging
-
         // Check multiple possible fields for the error message
         const errorText =
           result.error || result.message || result.details || "";

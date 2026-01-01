@@ -856,7 +856,6 @@ function preventAuthPageBackNavigation() {
 // Secure history replacement (placeholder)
 function secureHistoryReplacement() {
   // This function can be enhanced for secure history management
-  console.log("Secure history replacement functionality available");
 }
 
 // Logout function

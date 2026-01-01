@@ -20,6 +20,16 @@
 let selectedPatientId = null;
 let allPatients = [];
 
+// Use centralized utilities from shared modules (defined early for use throughout file)
+const formatPhoneNumber = (phone) =>
+  window.stringUtils?.formatPhoneNumber?.(phone) || phone || "No phone";
+
+const formatDateForDisplay = (dateString) =>
+  window.dateUtils?.formatDateForDisplay?.(dateString) || "Not provided";
+
+const escapeHtml = (text) =>
+  window.stringUtils?.escapeHtml?.(text) || text || "";
+
 /**
  * Initialize studies page based on current route
  * Detects sub-page and initializes appropriate functionality
@@ -57,18 +67,16 @@ function getCurrentStudyPageType() {
 
 // Initialize the studies index page
 function initializeStudiesIndexPage() {
-  console.log("Studies index page initialized");
+  // No specific initialization needed for choice page
 }
 
 // Initialize the manage studies page
 function initializeManageStudiesPage() {
-  console.log("Manage studies page initialized");
+  // Manage studies page can be initialized here
 }
 
 // Initialize the create study page
 function initializeCreateStudyPage() {
-  console.log("Create study page initialized");
-
   // Load all patients for selection
   loadAllPatients();
 
@@ -103,15 +111,11 @@ function loadAllPatients() {
 
   async function fetchAllPatients() {
     try {
-      console.log("Fetching patients from /api/patients...");
       const response = await window.apiClient.apiRequest("/api/patients");
-      console.log("Patients API response:", response);
 
       if (response.data && response.data.length > 0) {
-        console.log(`Found ${response.data.length} patients`);
         displayPatientList(response.data);
       } else {
-        console.log("No patients found");
         showNoPatientsMessage();
       }
     } catch (error) {
@@ -350,7 +354,6 @@ function setupStudyFormSubmission() {
 
     // Prevent double submission
     if (this.dataset.submitting === "true") {
-      console.log("Form already submitting, ignoring duplicate submission");
       return;
     }
     this.dataset.submitting = "true";
@@ -611,16 +614,6 @@ function setupTimezoneDefault() {
     timezoneSelect.value = "America/Chicago";
   }
 }
-
-// Use centralized utilities from shared modules
-const formatPhoneNumber = (phone) =>
-  window.stringUtils?.formatPhoneNumber?.(phone) || phone || "No phone";
-
-const formatDateForDisplay = (dateString) =>
-  window.dateUtils?.formatDateForDisplay?.(dateString) || "Not provided";
-
-const escapeHtml = (text) =>
-  window.stringUtils?.escapeHtml?.(text) || text || "";
 
 // Make functions available globally
 window.studiesPage = {
