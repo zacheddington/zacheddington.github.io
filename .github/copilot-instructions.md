@@ -101,6 +101,7 @@ zacheddington.github.io/
 - Avoid working on more than one file at a time
 - Multiple simultaneous edits to a file will cause corruption
 - Explain changes while coding for educational purposes
+-Every edit resulting in a commit and push to GitHub requires the update of App_Version in js/shared/navigation.js
 
 ### Large File Protocol (>300 lines)
 
