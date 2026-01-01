@@ -1,257 +1,246 @@
 // User Management Routes
 // Admin endpoints for user creation, management, and role assignment
 
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 
 const {
-    authenticateToken,
-    requireAdmin,
-    preventSelfModification,
-} = require('../middleware/auth');
+  authenticateToken,
+  requireAdmin,
+  preventSelfModification,
+} = require("../middleware/auth");
 const {
-    validateRequiredFields,
-    validateFieldLengths,
-    validateEmail,
-    sanitizeInput,
-} = require('../middleware/validation');
-const { pool } = require('../config/database');
-const { validatePasswordSecurity } = require('../utils/passwordValidator');
+  validateRequiredFields,
+  validateFieldLengths,
+  validateEmail,
+  sanitizeInput,
+} = require("../middleware/validation");
+const { pool } = require("../config/database");
+const { validatePasswordSecurity } = require("../utils/passwordValidator");
 const {
-    successResponse,
-    errorResponse,
-    createdResponse,
-    updatedResponse,
-    deletedResponse,
-    conflictResponse,
-    notFoundResponse,
-} = require('../utils/responseHelpers');
-const { FIELD_LIMITS } = require('../utils/constants');
-const config = require('../config/environment');
+  successResponse,
+  errorResponse,
+  createdResponse,
+  updatedResponse,
+  deletedResponse,
+  conflictResponse,
+  notFoundResponse,
+} = require("../utils/responseHelpers");
+const { FIELD_LIMITS } = require("../utils/constants");
+const config = require("../config/environment");
 
 // Get all roles endpoint for admin management
-router.get('/roles', authenticateToken, requireAdmin, async (req, res) => {
-    try {
-        // Production database logic
-        const rolesResult = await pool.query(
-            'SELECT role_key, role_name FROM tbl_role ORDER BY role_name'
-        );
+router.get("/roles", authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    // Production database logic
+    const rolesResult = await pool.query(
+      "SELECT role_key, role_name FROM tbl_role ORDER BY role_name"
+    );
 
-        return successResponse(
-            res,
-            rolesResult.rows,
-            'Roles retrieved successfully'
-        );
-    } catch (err) {
-        console.error('Get roles error:', err);
-        return errorResponse(res, 'Failed to fetch roles', 500);
-    }
+    return successResponse(
+      res,
+      rolesResult.rows,
+      "Roles retrieved successfully"
+    );
+  } catch (err) {
+    console.error("Get roles error:", err);
+    return errorResponse(res, "Failed to fetch roles", 500);
+  }
 });
 
 // Create user endpoint
 router.post(
-    '/create-user',
-    authenticateToken,
-    requireAdmin,
-    sanitizeInput,
-    validateRequiredFields([
-        'firstName',
-        'lastName',
-        'email',
-        'username',
-        'password',
-        'roleKey',
-    ]),
-    validateFieldLengths({
-        firstName: FIELD_LIMITS.FIRST_NAME,
-        middleName: FIELD_LIMITS.MIDDLE_NAME,
-        lastName: FIELD_LIMITS.LAST_NAME,
-        email: FIELD_LIMITS.EMAIL,
-        username: FIELD_LIMITS.USERNAME,
-    }),
-    validateEmail,
-    async (req, res) => {
-        try {
-            const {
-                firstName,
-                middleName,
-                lastName,
-                email,
-                username,
-                password,
-                roleKey,
-            } = req.body;
+  "/create-user",
+  authenticateToken,
+  requireAdmin,
+  sanitizeInput,
+  validateRequiredFields([
+    "firstName",
+    "lastName",
+    "email",
+    "username",
+    "password",
+    "roleKey",
+  ]),
+  validateFieldLengths({
+    firstName: FIELD_LIMITS.FIRST_NAME,
+    middleName: FIELD_LIMITS.MIDDLE_NAME,
+    lastName: FIELD_LIMITS.LAST_NAME,
+    email: FIELD_LIMITS.EMAIL,
+    username: FIELD_LIMITS.USERNAME,
+  }),
+  validateEmail,
+  async (req, res) => {
+    try {
+      const {
+        firstName,
+        middleName,
+        lastName,
+        email,
+        username,
+        password,
+        roleKey,
+      } = req.body;
 
-            // Validate password security
-            const passwordValidation = validatePasswordSecurity(password);
-            if (!passwordValidation.isValid) {
-                return errorResponse(
-                    res,
-                    'Password does not meet security requirements',
-                    400,
-                    passwordValidation.errors
-                );
-            }
+      // Validate password security
+      const passwordValidation = validatePasswordSecurity(password);
+      if (!passwordValidation.isValid) {
+        return errorResponse(
+          res,
+          "Password does not meet security requirements",
+          400,
+          passwordValidation.errors
+        );
+      }
 
-            // Production database logic
-            const client = await pool.connect();
-            try {
-                await client.query('BEGIN');
+      // Production database logic
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
 
-                // Check if username already exists (case-insensitive)
-                const existingUserResult = await client.query(
-                    'SELECT username FROM tbl_user WHERE LOWER(username) = LOWER($1)',
-                    [username]
-                );
+        // Check if username already exists (case-insensitive)
+        const existingUserResult = await client.query(
+          "SELECT username FROM tbl_user WHERE LOWER(username) = LOWER($1)",
+          [username]
+        );
 
-                if (existingUserResult.rows.length > 0) {
-                    await client.query('ROLLBACK');
-                    return conflictResponse(
-                        res,
-                        'Username already exists. Please choose a different username.'
-                    );
-                }
-
-                // Check if email already exists
-                const existingEmailResult = await client.query(
-                    'SELECT email FROM tbl_user WHERE email = $1',
-                    [email]
-                );
-
-                if (existingEmailResult.rows.length > 0) {
-                    await client.query('ROLLBACK');
-                    return conflictResponse(
-                        res,
-                        'Email address is already registered. Please use a different email.'
-                    );
-                }
-
-                // Get the creator's username for the 'who' field
-                const creatorUsername = req.user.username;
-
-                // Insert into tbl_name_data
-                const nameResult = await client.query(
-                    'INSERT INTO tbl_name_data (first_name, middle_name, last_name, who, date_when) VALUES ($1, $2, $3, $4, NOW()) RETURNING name_key',
-                    [firstName, middleName || null, lastName, creatorUsername]
-                );
-
-                if (nameResult.rows.length === 0) {
-                    throw new Error('Failed to create name record');
-                }
-
-                const nameKey = nameResult.rows[0].name_key;
-
-                // Hash password
-                const saltRounds = 10;
-                const passwordHash = await bcrypt.hash(password, saltRounds);
-
-                // Insert into tbl_user
-                const userResult = await client.query(
-                    'INSERT INTO tbl_user (username, password_hash, email, name_key, who, date_created, date_when, password_change_required) VALUES ($1, $2, $3, $4, $5, NOW(), NOW(), $6) RETURNING user_key',
-                    [
-                        username,
-                        passwordHash,
-                        email,
-                        nameKey,
-                        creatorUsername,
-                        true,
-                    ]
-                );
-
-                if (userResult.rows.length === 0) {
-                    throw new Error('Failed to create user account');
-                }
-
-                const userKey = userResult.rows[0].user_key;
-
-                // Insert into tbl_user_role
-                const userRoleResult = await client.query(
-                    'INSERT INTO tbl_user_role (user_key, role_key, date_created, date_when) VALUES ($1, $2, NOW(), NOW())',
-                    [userKey, roleKey]
-                );
-
-                if (userRoleResult.rowCount === 0) {
-                    throw new Error('Failed to assign user role');
-                }
-
-                await client.query('COMMIT');
-
-                return createdResponse(
-                    res,
-                    {
-                        username,
-                        firstName,
-                        middleName,
-                        lastName,
-                        email,
-                        roleKey,
-                        userKey,
-                        nameKey,
-                    },
-                    'User created successfully'
-                );
-            } catch (err) {
-                await client.query('ROLLBACK');
-                throw err;
-            } finally {
-                client.release();
-            }
-        } catch (err) {
-            console.error('User creation error:', err);
-            return errorResponse(
-                res,
-                err.message || 'Failed to create user. Please try again later.',
-                500
-            );
+        if (existingUserResult.rows.length > 0) {
+          await client.query("ROLLBACK");
+          return conflictResponse(
+            res,
+            "Username already exists. Please choose a different username."
+          );
         }
+
+        // Check if email already exists
+        const existingEmailResult = await client.query(
+          "SELECT email FROM tbl_user WHERE email = $1",
+          [email]
+        );
+
+        if (existingEmailResult.rows.length > 0) {
+          await client.query("ROLLBACK");
+          return conflictResponse(
+            res,
+            "Email address is already registered. Please use a different email."
+          );
+        }
+
+        // Get the creator's username for the 'who' field
+        const creatorUsername = req.user.username;
+
+        // Insert into tbl_name_data
+        const nameResult = await client.query(
+          "INSERT INTO tbl_name_data (first_name, middle_name, last_name, who, date_when) VALUES ($1, $2, $3, $4, NOW()) RETURNING name_key",
+          [firstName, middleName || null, lastName, creatorUsername]
+        );
+
+        if (nameResult.rows.length === 0) {
+          throw new Error("Failed to create name record");
+        }
+
+        const nameKey = nameResult.rows[0].name_key;
+
+        // Hash password
+        const saltRounds = 10;
+        const passwordHash = await bcrypt.hash(password, saltRounds);
+
+        // Insert into tbl_user
+        const userResult = await client.query(
+          "INSERT INTO tbl_user (username, password_hash, email, name_key, who, date_created, date_when, password_change_required) VALUES ($1, $2, $3, $4, $5, NOW(), NOW(), $6) RETURNING user_key",
+          [username, passwordHash, email, nameKey, creatorUsername, true]
+        );
+
+        if (userResult.rows.length === 0) {
+          throw new Error("Failed to create user account");
+        }
+
+        const userKey = userResult.rows[0].user_key;
+
+        // Insert into tbl_user_role
+        const userRoleResult = await client.query(
+          "INSERT INTO tbl_user_role (user_key, role_key, date_created, date_when) VALUES ($1, $2, NOW(), NOW())",
+          [userKey, roleKey]
+        );
+
+        if (userRoleResult.rowCount === 0) {
+          throw new Error("Failed to assign user role");
+        }
+
+        await client.query("COMMIT");
+
+        return createdResponse(
+          res,
+          {
+            username,
+            firstName,
+            middleName,
+            lastName,
+            email,
+            roleKey,
+            userKey,
+            nameKey,
+          },
+          "User created successfully"
+        );
+      } catch (err) {
+        await client.query("ROLLBACK");
+        throw err;
+      } finally {
+        client.release();
+      }
+    } catch (err) {
+      console.error("User creation error:", err);
+      return errorResponse(
+        res,
+        err.message || "Failed to create user. Please try again later.",
+        500
+      );
     }
+  }
 );
 
 // Check username availability endpoint
 router.post(
-    '/check-username',
-    authenticateToken,
-    requireAdmin,
-    validateRequiredFields(['username']),
-    async (req, res) => {
-        try {
-            const { username } = req.body;
+  "/check-username",
+  authenticateToken,
+  requireAdmin,
+  validateRequiredFields(["username"]),
+  async (req, res) => {
+    try {
+      const { username } = req.body;
 
-            // Production database logic
-            const result = await pool.query(
-                'SELECT username FROM tbl_user WHERE LOWER(username) = LOWER($1)',
-                [username]
-            );
+      // Production database logic
+      const result = await pool.query(
+        "SELECT username FROM tbl_user WHERE LOWER(username) = LOWER($1)",
+        [username]
+      );
 
-            const available = result.rows.length === 0;
+      const available = result.rows.length === 0;
 
-            return successResponse(
-                res,
-                {
-                    available,
-                    message: available
-                        ? 'Username is available'
-                        : 'Username is already taken',
-                },
-                'Username availability checked'
-            );
-        } catch (err) {
-            console.error('Username check error:', err);
-            return errorResponse(
-                res,
-                'Unable to check username availability',
-                500
-            );
-        }
+      return successResponse(
+        res,
+        {
+          available,
+          message: available
+            ? "Username is available"
+            : "Username is already taken",
+        },
+        "Username availability checked"
+      );
+    } catch (err) {
+      console.error("Username check error:", err);
+      return errorResponse(res, "Unable to check username availability", 500);
     }
+  }
 );
 
 // Get all users endpoint for admin management
-router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
-    try {
-        // Production database logic
-        const usersResult = await pool.query(`
+router.get("/users", authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    // Production database logic
+    const usersResult = await pool.query(`
             SELECT 
                 u.user_key,
                 u.username,
@@ -270,170 +259,164 @@ router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
             ORDER BY u.username
         `);
 
-        return successResponse(
-            res,
-            usersResult.rows,
-            'Users retrieved successfully'
-        );
-    } catch (err) {
-        console.error('Get users error:', err);
-        return errorResponse(res, 'Failed to fetch users', 500);
-    }
+    return successResponse(
+      res,
+      usersResult.rows,
+      "Users retrieved successfully"
+    );
+  } catch (err) {
+    console.error("Get users error:", err);
+    return errorResponse(res, "Failed to fetch users", 500);
+  }
 });
 
 // Update user role endpoint
 router.put(
-    '/users/:userId/role',
-    authenticateToken,
-    requireAdmin,
-    preventSelfModification,
-    sanitizeInput,
-    validateRequiredFields(['roleKey']),
-    async (req, res) => {
-        try {
-            const userId = req.params.userId;
-            const { roleKey } = req.body;
+  "/users/:userId/role",
+  authenticateToken,
+  requireAdmin,
+  preventSelfModification,
+  sanitizeInput,
+  validateRequiredFields(["roleKey"]),
+  async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const { roleKey } = req.body;
 
-            // Production database logic
-            const client = await pool.connect();
-            try {
-                await client.query('BEGIN');
+      // Production database logic
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
 
-                // Verify user exists
-                const userCheck = await client.query(
-                    'SELECT user_key FROM tbl_user WHERE user_key = $1',
-                    [userId]
-                );
+        // Verify user exists
+        const userCheck = await client.query(
+          "SELECT user_key FROM tbl_user WHERE user_key = $1",
+          [userId]
+        );
 
-                if (userCheck.rows.length === 0) {
-                    await client.query('ROLLBACK');
-                    return notFoundResponse(res, 'User');
-                }
-
-                // Verify role exists
-                const roleCheck = await client.query(
-                    'SELECT role_key FROM tbl_role WHERE role_key = $1',
-                    [roleKey]
-                );
-
-                if (roleCheck.rows.length === 0) {
-                    await client.query('ROLLBACK');
-                    return errorResponse(res, 'Invalid role selected', 400);
-                }
-
-                // Remove existing role assignments for this user
-                await client.query(
-                    'DELETE FROM tbl_user_role WHERE user_key = $1',
-                    [userId]
-                );
-
-                // Add new role assignment
-                await client.query(
-                    'INSERT INTO tbl_user_role (user_key, role_key, date_created, date_when) VALUES ($1, $2, NOW(), NOW())',
-                    [userId, roleKey]
-                );
-
-                await client.query('COMMIT');
-
-                return updatedResponse(
-                    res,
-                    {
-                        userId: userId,
-                        roleKey: roleKey,
-                    },
-                    'User role updated successfully'
-                );
-            } catch (err) {
-                await client.query('ROLLBACK');
-                throw err;
-            } finally {
-                client.release();
-            }
-        } catch (err) {
-            console.error('Update user role error:', err);
-            return errorResponse(res, 'Failed to update user role', 500);
+        if (userCheck.rows.length === 0) {
+          await client.query("ROLLBACK");
+          return notFoundResponse(res, "User");
         }
+
+        // Verify role exists
+        const roleCheck = await client.query(
+          "SELECT role_key FROM tbl_role WHERE role_key = $1",
+          [roleKey]
+        );
+
+        if (roleCheck.rows.length === 0) {
+          await client.query("ROLLBACK");
+          return errorResponse(res, "Invalid role selected", 400);
+        }
+
+        // Remove existing role assignments for this user
+        await client.query("DELETE FROM tbl_user_role WHERE user_key = $1", [
+          userId,
+        ]);
+
+        // Add new role assignment
+        await client.query(
+          "INSERT INTO tbl_user_role (user_key, role_key, date_created, date_when) VALUES ($1, $2, NOW(), NOW())",
+          [userId, roleKey]
+        );
+
+        await client.query("COMMIT");
+
+        return updatedResponse(
+          res,
+          {
+            userId: userId,
+            roleKey: roleKey,
+          },
+          "User role updated successfully"
+        );
+      } catch (err) {
+        await client.query("ROLLBACK");
+        throw err;
+      } finally {
+        client.release();
+      }
+    } catch (err) {
+      console.error("Update user role error:", err);
+      return errorResponse(res, "Failed to update user role", 500);
     }
+  }
 );
 
 // Delete user endpoint
 router.delete(
-    '/users/:userId',
-    authenticateToken,
-    requireAdmin,
-    preventSelfModification,
-    async (req, res) => {
-        const userId = req.params.userId;
+  "/users/:userId",
+  authenticateToken,
+  requireAdmin,
+  preventSelfModification,
+  async (req, res) => {
+    const userId = req.params.userId;
 
-        try {
-            // Production database logic
-            const client = await pool.connect();
-            try {
-                await client.query('BEGIN');
+    try {
+      // Production database logic
+      const client = await pool.connect();
+      try {
+        await client.query("BEGIN");
 
-                // Verify user exists
-                const userCheck = await client.query(
-                    'SELECT user_key, username FROM tbl_user WHERE user_key = $1',
-                    [userId]
-                );
+        // Verify user exists
+        const userCheck = await client.query(
+          "SELECT user_key, username FROM tbl_user WHERE user_key = $1",
+          [userId]
+        );
 
-                if (userCheck.rows.length === 0) {
-                    await client.query('ROLLBACK');
-                    return notFoundResponse(res, 'User');
-                } // Get the user's name_key before deletion for cleanup
-                const userResult = await client.query(
-                    'SELECT name_key FROM tbl_user WHERE user_key = $1',
-                    [userId]
-                );
-                const nameKey = userResult.rows[0]?.name_key;
+        if (userCheck.rows.length === 0) {
+          await client.query("ROLLBACK");
+          return notFoundResponse(res, "User");
+        } // Get the user's name_key before deletion for cleanup
+        const userResult = await client.query(
+          "SELECT name_key FROM tbl_user WHERE user_key = $1",
+          [userId]
+        );
+        const nameKey = userResult.rows[0]?.name_key;
 
-                // CORRECT ORDER: Delete child tables first, parent tables last
-                // 1. Delete user role assignments first (child of tbl_user)
-                await client.query(
-                    'DELETE FROM tbl_user_role WHERE user_key = $1',
-                    [userId]
-                ); // 2. Delete the user (child of tbl_name_data)
-                await client.query('DELETE FROM tbl_user WHERE user_key = $1', [
-                    userId,
-                ]);
+        // CORRECT ORDER: Delete child tables first, parent tables last
+        // 1. Delete user role assignments first (child of tbl_user)
+        await client.query("DELETE FROM tbl_user_role WHERE user_key = $1", [
+          userId,
+        ]); // 2. Delete the user (child of tbl_name_data)
+        await client.query("DELETE FROM tbl_user WHERE user_key = $1", [
+          userId,
+        ]);
 
-                // 3. FINALLY: Clean up tbl_name_data if no other users reference it (parent table)
-                if (nameKey) {
-                    const nameUsageCheck = await client.query(
-                        'SELECT COUNT(*) FROM tbl_user WHERE name_key = $1',
-                        [nameKey]
-                    );
+        // 3. FINALLY: Clean up tbl_name_data if no other users reference it (parent table)
+        if (nameKey) {
+          const nameUsageCheck = await client.query(
+            "SELECT COUNT(*) FROM tbl_user WHERE name_key = $1",
+            [nameKey]
+          );
 
-                    if (parseInt(nameUsageCheck.rows[0].count) === 0) {
-                        // No other users reference this name_key, safe to delete
-                        await client.query(
-                            'DELETE FROM tbl_name_data WHERE name_key = $1',
-                            [nameKey]
-                        );
-                    }
-                }
-
-                await client.query('COMMIT');
-
-                return deletedResponse(
-                    res,
-                    { userId: userId },
-                    'User deleted successfully'
-                );
-            } catch (err) {
-                await client.query('ROLLBACK');
-                throw err;
-            } finally {
-                client.release();
-            }
-        } catch (err) {
-            return errorResponse(
-                res,
-                `Failed to delete user: ${err.message}`,
-                500
+          if (parseInt(nameUsageCheck.rows[0].count) === 0) {
+            // No other users reference this name_key, safe to delete
+            await client.query(
+              "DELETE FROM tbl_name_data WHERE name_key = $1",
+              [nameKey]
             );
+          }
         }
+
+        await client.query("COMMIT");
+
+        return deletedResponse(
+          res,
+          { userId: userId },
+          "User deleted successfully"
+        );
+      } catch (err) {
+        await client.query("ROLLBACK");
+        throw err;
+      } finally {
+        client.release();
+      }
+    } catch (err) {
+      return errorResponse(res, `Failed to delete user: ${err.message}`, 500);
     }
+  }
 );
 
 module.exports = router;
