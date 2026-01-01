@@ -2,577 +2,577 @@
 /* Modern horizontal navigation bar integrated into the header */
 
 .top-nav-menu {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    margin: 0 2rem;
-    overflow: visible; /* Allow dropdowns to overflow */
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  margin: 0 2rem;
+  overflow: visible; /* Allow dropdowns to overflow */
 }
 
 .top-nav-menu ul {
-    display: flex;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    gap: 2rem;
-    align-items: center;
-    flex-wrap: wrap;
-    overflow: visible; /* Allow dropdowns to overflow */
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 2rem;
+  align-items: center;
+  flex-wrap: wrap;
+  overflow: visible; /* Allow dropdowns to overflow */
 }
 
 .top-nav-menu li {
-    position: relative;
+  position: relative;
 }
 
 /* Default state: like the current logout button - minimal styling */
 .top-nav-menu a {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    color: rgba(255, 255, 255, 0.8);
-    text-decoration: none;
-    font-weight: 500;
-    border-radius: var(--border-radius);
-    transition: var(--transition-all);
-    white-space: nowrap;
-    font-size: 0.95rem;
-    background: transparent;
-    border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: var(--radius-lg);
+  transition: var(--transition-all);
+  white-space: nowrap;
+  font-size: 0.95rem;
+  background: transparent;
+  border: 1px solid transparent;
 }
 
 .top-nav-menu a svg {
-    width: 18px;
-    height: 18px;
-    stroke-width: 2.5;
-    transition: var(--transition-all);
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
+  transition: var(--transition-all);
 }
 
 /* Hover state: elevated with glassmorphism effect */
 .top-nav-menu a:hover,
 .top-nav-menu a:hover:visited {
-    color: white !important;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: white !important;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .top-nav-menu a:hover svg {
-    transform: scale(1.1);
+  transform: scale(1.1);
 }
 
 .top-nav-menu a:active {
-    transform: translateY(0);
+  transform: translateY(0);
 }
 
 /* Active page styling: looks like the old non-hovered state */
 .top-nav-menu a.active {
-    color: rgba(255, 255, 255, 0.9);
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 600;
 }
 
 .top-nav-menu a.active svg {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 /* User Profile Section */
 .user-profile {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
 }
 
 .logout-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: transparent;
-    color: rgba(255, 255, 255, 0.8);
-    border: 1px solid transparent;
-    padding: 0.75rem 1.25rem;
-    border-radius: var(--border-radius);
-    font-weight: 500;
-    cursor: pointer;
-    transition: var(--transition-all);
-    font-size: 0.95rem;
-    white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid transparent;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-lg);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-all);
+  font-size: 0.95rem;
+  white-space: nowrap;
 }
 
 .logout-btn svg {
-    width: 18px;
-    height: 18px;
-    stroke-width: 2.5;
-    transition: var(--transition-all);
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
+  transition: var(--transition-all);
 }
 
 .logout-btn:hover {
-    color: white !important;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: white !important;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .logout-btn:hover svg {
-    transform: scale(1.1);
+  transform: scale(1.1);
 }
 
 .logout-btn:active {
-    transform: translateY(0);
+  transform: translateY(0);
 }
 
 /* Dropdown Navigation Styles - WORKING VERSION */
 .nav-dropdown {
-    position: relative;
-    display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 
 .dropdown-trigger {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .dropdown-arrow {
-    margin-left: 0.25rem;
-    transition: transform 0.2s ease;
+  margin-left: 0.25rem;
+  transition: transform 0.2s ease;
 }
 
 /* Hover bridge - invisible area that prevents dropdown from disappearing during mouse movement */
 .nav-dropdown::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    height: 2px; /* Small buffer zone for smooth mouse movement */
-    background: transparent;
-    z-index: calc(var(--z-dropdown) - 1);
-    pointer-events: auto;
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 2px; /* Small buffer zone for smooth mouse movement */
+  background: transparent;
+  z-index: calc(var(--z-dropdown) - 1);
+  pointer-events: auto;
 }
 
 .dropdown-content {
-    position: absolute;
-    top: calc(100% + 2px); /* Position just below the hover bridge */
-    left: 0;
-    background: rgba(var(--color-primary-rgb), 0.9); /* More transparent */
-    backdrop-filter: blur(10px); /* Add glass effect */
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: var(--border-radius);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    min-width: 220px;
-    width: max-content;
-    z-index: var(--z-dropdown);
-    margin-top: 0; /* Remove gap - dropdown connects directly to trigger */
+  position: absolute;
+  top: calc(100% + 2px); /* Position just below the hover bridge */
+  left: 0;
+  background: rgba(var(--color-primary-rgb), 0.9); /* More transparent */
+  backdrop-filter: blur(10px); /* Add glass effect */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  min-width: 220px;
+  width: max-content;
+  z-index: var(--z-dropdown);
+  margin-top: 0; /* Remove gap - dropdown connects directly to trigger */
 
-    /* SIMPLE HIDE/SHOW - like isolated test */
-    display: none;
+  /* SIMPLE HIDE/SHOW - like isolated test */
+  display: none;
 }
 
 .dropdown-content a {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    color: rgba(255, 255, 255, 0.9);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 44px;
 }
 
 .dropdown-content a:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .dropdown-content a:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 .dropdown-content a svg {
-    width: 16px;
-    height: 16px;
-    stroke: currentColor;
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
 }
 
 /* SHOW DROPDOWN - SIMPLE HOVER (like isolated test) */
 .nav-dropdown:hover .dropdown-content {
-    display: block;
+  display: block;
 }
 
 .nav-dropdown:hover .dropdown-arrow {
-    transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 /* MOBILE/TOUCH SUPPORT */
 .nav-dropdown.mobile-open .dropdown-content {
-    display: block;
+  display: block;
 }
 
 .nav-dropdown.mobile-open .dropdown-arrow {
-    transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 /* Ensure dropdown appears above other content */
 .nav-dropdown:hover,
 .nav-dropdown.mobile-open {
-    z-index: calc(var(--z-dropdown) + 1);
+  z-index: calc(var(--z-dropdown) + 1);
 }
 
 /* Admin-only elements visibility - FIXED for dropdown hover */
 .admin-only {
-    display: none !important;
+  display: none !important;
 }
 
 body.is-admin .admin-only {
-    display: block !important;
+  display: block !important;
 }
 
 /* CRITICAL: Admin dropdown should always be visible for hover to work */
 .nav-dropdown.admin-only {
-    display: block !important; /* Override admin-only hiding for nav dropdowns */
+  display: block !important; /* Override admin-only hiding for nav dropdowns */
 }
 
 /* But hide the admin dropdown content/trigger when not admin */
 .nav-dropdown.admin-only .dropdown-trigger {
-    display: none !important;
+  display: none !important;
 }
 
 body.is-admin .nav-dropdown.admin-only .dropdown-trigger {
-    display: flex !important;
+  display: flex !important;
 }
 
 /* Ensure admin dropdown trigger is visible on all screen sizes when admin */
 body.is-admin .top-nav-menu .nav-dropdown.admin-only .dropdown-trigger {
-    display: flex !important;
+  display: flex !important;
 }
 
 /* Ensure admin dropdowns are visible when opened */
 body.is-admin .nav-dropdown.mobile-open.admin-only {
-    display: block !important;
+  display: block !important;
 }
 
 body.is-admin .nav-dropdown.admin-only:hover .dropdown-content {
-    display: block !important;
+  display: block !important;
 }
 
 /* Responsive Design - Better zoom handling */
 @media (max-width: 1200px) {
-    .top-nav-menu {
-        margin: 0 1rem;
-    }
+  .top-nav-menu {
+    margin: 0 1rem;
+  }
 
-    .top-nav-menu ul {
-        gap: 1.5rem;
-    }
+  .top-nav-menu ul {
+    gap: 1.5rem;
+  }
 
-    .top-nav-menu a {
-        padding: 0.6rem 1rem;
-        font-size: 0.9rem;
-    }
+  .top-nav-menu a {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
 
-    .logout-btn {
-        padding: 0.6rem 1rem;
-        font-size: 0.9rem;
-    }
+  .logout-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 1024px) {
-    .top-nav-menu {
-        margin: 0 0.75rem;
-    }
+  .top-nav-menu {
+    margin: 0 0.75rem;
+  }
 
-    .top-nav-menu ul {
-        gap: 1rem;
-    }
+  .top-nav-menu ul {
+    gap: 1rem;
+  }
 
-    .top-nav-menu a {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.85rem;
-    }
+  .top-nav-menu a {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
 
-    .logout-btn {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.85rem;
-    }
+  .logout-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 900px) {
-    .top-nav-menu {
-        margin: 0 0.5rem;
-    }
+  .top-nav-menu {
+    margin: 0 0.5rem;
+  }
 
-    .top-nav-menu ul {
-        gap: 0.75rem;
-    }
+  .top-nav-menu ul {
+    gap: 0.75rem;
+  }
 
-    .top-nav-menu a {
-        padding: 0.4rem 0.6rem;
-        font-size: 0.8rem;
-    }
+  .top-nav-menu a {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
 
-    .logout-btn {
-        padding: 0.4rem 0.6rem;
-        font-size: 0.8rem;
-    }
+  .logout-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
 
-    /* Hide text on smaller screens, show only icons */
-    .top-nav-menu a {
-        flex-direction: column;
-        gap: 0.25rem;
-        min-width: auto;
-    }
+  /* Hide text on smaller screens, show only icons */
+  .top-nav-menu a {
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: auto;
+  }
 
-    .top-nav-menu a svg {
-        width: 16px;
-        height: 16px;
-    }
+  .top-nav-menu a svg {
+    width: 16px;
+    height: 16px;
+  }
 
-    .logout-btn {
-        flex-direction: column;
-        gap: 0.25rem;
-    }
+  .logout-btn {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
 
-    .logout-btn svg {
-        width: 16px;
-        height: 16px;
-    }
+  .logout-btn svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 @media (max-width: 768px) {
-    .top-nav-menu ul {
-        gap: 0.5rem;
-    }
+  .top-nav-menu ul {
+    gap: 0.5rem;
+  }
 
-    .top-nav-menu a {
-        padding: 0.3rem 0.4rem;
-        font-size: 0.75rem;
-    }
+  .top-nav-menu a {
+    padding: 0.3rem 0.4rem;
+    font-size: 0.75rem;
+  }
 
-    .logout-btn {
-        padding: 0.3rem 0.4rem;
-        font-size: 0.75rem;
-    }
+  .logout-btn {
+    padding: 0.3rem 0.4rem;
+    font-size: 0.75rem;
+  }
 }
 
 /* CRITICAL: Override all conflicting styles at 450px and below to prevent wrapping */
 @media screen and (max-width: 450px) {
-    .top-nav-menu ul {
-        gap: 0.2rem;
-        flex-wrap: nowrap; /* Prevent wrapping at small screens */
-    }
+  .top-nav-menu ul {
+    gap: 0.2rem;
+    flex-wrap: nowrap; /* Prevent wrapping at small screens */
+  }
 
-    /* Make navigation items smaller, but ensure dropdowns still work */
-    .top-nav-menu a:not(.dropdown-trigger) {
-        font-size: 0.7rem;
-        padding: 0.25rem 0.3rem;
-    }
+  /* Make navigation items smaller, but ensure dropdowns still work */
+  .top-nav-menu a:not(.dropdown-trigger) {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.3rem;
+  }
 
-    /* Override any conflicting dropdown trigger styles */
-    .nav-dropdown .dropdown-trigger,
-    .top-nav-menu .nav-dropdown .dropdown-trigger {
-        font-size: 0.7rem !important;
-        padding: 0.4rem 0.3rem !important;
-        min-height: 44px !important;
-        min-width: 44px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        -webkit-tap-highlight-color: transparent !important;
-        pointer-events: auto !important;
-        touch-action: manipulation !important;
-        position: relative !important;
-    }
+  /* Override any conflicting dropdown trigger styles */
+  .nav-dropdown .dropdown-trigger,
+  .top-nav-menu .nav-dropdown .dropdown-trigger {
+    font-size: 0.7rem !important;
+    padding: 0.4rem 0.3rem !important;
+    min-height: 44px !important;
+    min-width: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    -webkit-tap-highlight-color: transparent !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    position: relative !important;
+  }
 
-    /* But still respect admin-only visibility */
-    .nav-dropdown.admin-only .dropdown-trigger {
-        display: none !important;
-    }
+  /* But still respect admin-only visibility */
+  .nav-dropdown.admin-only .dropdown-trigger {
+    display: none !important;
+  }
 
-    body.is-admin .nav-dropdown.admin-only .dropdown-trigger {
-        display: flex !important;
-    }
+  body.is-admin .nav-dropdown.admin-only .dropdown-trigger {
+    display: flex !important;
+  }
 
-    .logout-btn {
-        font-size: 0.7rem;
-        padding: 0.25rem 0.3rem;
-    }
+  .logout-btn {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.3rem;
+  }
 
-    /* Ensure navigation doesn't wrap but ALLOW dropdowns to overflow */
-    .app-header {
-        overflow: visible !important; /* CRITICAL: Allow dropdowns to overflow in all directions */
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none; /* IE/Edge */
-    }
+  /* Ensure navigation doesn't wrap but ALLOW dropdowns to overflow */
+  .app-header {
+    overflow: visible !important; /* CRITICAL: Allow dropdowns to overflow in all directions */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
 
-    /* Dropdown positioning for small screens */
-    .dropdown-content {
-        min-width: 180px !important;
-        max-width: calc(100vw - 40px) !important;
-        font-size: 0.8rem !important;
-        z-index: var(--z-dropdown) !important;
-    }
+  /* Dropdown positioning for small screens */
+  .dropdown-content {
+    min-width: 180px !important;
+    max-width: calc(100vw - 40px) !important;
+    font-size: 0.8rem !important;
+    z-index: var(--z-dropdown) !important;
+  }
 
-    .dropdown-content a {
-        padding: 0.8rem !important;
-        min-height: 44px !important;
-    }
+  .dropdown-content a {
+    padding: 0.8rem !important;
+    min-height: 44px !important;
+  }
 }
 
 /* Very small mobile devices (330px and below) - was 425px */
 @media (max-width: 330px) {
-    .top-nav-menu ul {
-        gap: 0.1rem;
-        flex-wrap: nowrap; /* Ensure no wrapping on very small screens */
-    }
+  .top-nav-menu ul {
+    gap: 0.1rem;
+    flex-wrap: nowrap; /* Ensure no wrapping on very small screens */
+  }
 
-    /* Only affect non-dropdown elements */
-    .top-nav-menu a:not(.dropdown-trigger) {
-        font-size: 0.65rem;
-        padding: 0.2rem 0.25rem;
-    }
+  /* Only affect non-dropdown elements */
+  .top-nav-menu a:not(.dropdown-trigger) {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.25rem;
+  }
 
-    .logout-btn {
-        font-size: 0.65rem;
-        padding: 0.2rem 0.25rem;
-    }
+  .logout-btn {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.25rem;
+  }
 
-    /* Ensure dropdown triggers maintain proper sizing */
-    .nav-dropdown .dropdown-trigger {
-        font-size: 0.65rem !important;
-        padding: 0.3rem 0.25rem !important;
-        min-height: 44px !important;
-        min-width: 44px !important;
-    }
+  /* Ensure dropdown triggers maintain proper sizing */
+  .nav-dropdown .dropdown-trigger {
+    font-size: 0.65rem !important;
+    padding: 0.3rem 0.25rem !important;
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
 
-    /* Extra small screen optimizations - icon-only navigation */
-    .top-nav-menu {
-        margin: 0 0.25rem;
-    }
+  /* Extra small screen optimizations - icon-only navigation */
+  .top-nav-menu {
+    margin: 0 0.25rem;
+  }
 
-    .top-nav-menu ul {
-        gap: 0.1rem;
-        justify-content: space-between;
-        width: 100%;
-    }
+  .top-nav-menu ul {
+    gap: 0.1rem;
+    justify-content: space-between;
+    width: 100%;
+  }
 
-    /* Hide text, show only icons for navigation items */
-    .top-nav-menu a:not(.dropdown-trigger) {
-        font-size: 0;
-        padding: 0.2rem;
-        min-width: 40px;
-        min-height: 40px;
-        flex-direction: column;
-        justify-content: center;
-    }
+  /* Hide text, show only icons for navigation items */
+  .top-nav-menu a:not(.dropdown-trigger) {
+    font-size: 0;
+    padding: 0.2rem;
+    min-width: 40px;
+    min-height: 40px;
+    flex-direction: column;
+    justify-content: center;
+  }
 
-    /* Show icons only for dropdown triggers */
-    .nav-dropdown .dropdown-trigger {
-        font-size: 0 !important;
-        padding: 0.2rem !important;
-        min-height: 40px !important;
-        min-width: 40px !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-    }
+  /* Show icons only for dropdown triggers */
+  .nav-dropdown .dropdown-trigger {
+    font-size: 0 !important;
+    padding: 0.2rem !important;
+    min-height: 40px !important;
+    min-width: 40px !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
 
-    /* Keep SVG icons visible */
-    .top-nav-menu a svg,
-    .nav-dropdown .dropdown-trigger svg:not(.dropdown-arrow) {
-        width: 16px;
-        height: 16px;
-        margin: 0;
-    }
+  /* Keep SVG icons visible */
+  .top-nav-menu a svg,
+  .nav-dropdown .dropdown-trigger svg:not(.dropdown-arrow) {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+  }
 
-    /* Hide dropdown arrows at this size */
-    .dropdown-arrow {
-        display: none;
-    }
+  /* Hide dropdown arrows at this size */
+  .dropdown-arrow {
+    display: none;
+  }
 
-    /* Make logout button icon-only */
-    .logout-btn {
-        font-size: 0;
-        padding: 0.2rem;
-        min-width: 40px;
-        min-height: 40px;
-        flex-direction: column;
-        justify-content: center;
-    }
+  /* Make logout button icon-only */
+  .logout-btn {
+    font-size: 0;
+    padding: 0.2rem;
+    min-width: 40px;
+    min-height: 40px;
+    flex-direction: column;
+    justify-content: center;
+  }
 
-    .logout-btn svg {
-        width: 16px;
-        height: 16px;
-        margin: 0;
-    }
+  .logout-btn svg {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+  }
 
-    /* Adjust dropdown content for small screens */
-    .dropdown-content {
-        min-width: 160px !important;
-        max-width: calc(100vw - 20px) !important;
-        font-size: 0.75rem !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-    }
+  /* Adjust dropdown content for small screens */
+  .dropdown-content {
+    min-width: 160px !important;
+    max-width: calc(100vw - 20px) !important;
+    font-size: 0.75rem !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
 
-    .dropdown-content a {
-        padding: 0.6rem !important;
-        min-height: 40px !important;
-        font-size: 0.75rem !important;
-    }
+  .dropdown-content a {
+    padding: 0.6rem !important;
+    min-height: 40px !important;
+    font-size: 0.75rem !important;
+  }
 
-    /* Ensure header doesn't overflow */
-    .app-header {
-        padding: 0 0.25rem;
-        min-height: 50px;
-    }
+  /* Ensure header doesn't overflow */
+  .app-header {
+    padding: 0 0.25rem;
+    min-height: 50px;
+  }
 }
 
 /* Focus styles for accessibility */
 .top-nav-menu a:focus {
-    outline: 2px solid rgba(255, 255, 255, 0.5);
-    outline-offset: 2px;
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
 }
 
 .logout-btn:focus {
-    outline: 2px solid rgba(220, 53, 69, 0.5);
-    outline-offset: 2px;
+  outline: 2px solid rgba(220, 53, 69, 0.5);
+  outline-offset: 2px;
 }
 
 /* UNIVERSAL HOVER BEHAVIOR - Works on all devices and screen sizes */
 .nav-dropdown:hover .dropdown-content {
-    display: block !important;
+  display: block !important;
 }
 
 .nav-dropdown:hover .dropdown-arrow {
-    transform: rotate(180deg) !important;
+  transform: rotate(180deg) !important;
 }
 
 /* MOBILE/TOUCH SUPPORT for devices that don't support hover */
 .nav-dropdown.mobile-open .dropdown-content {
-    display: block !important;
+  display: block !important;
 }
 
 .nav-dropdown.mobile-open .dropdown-arrow {
-    transform: rotate(180deg) !important;
+  transform: rotate(180deg) !important;
 }
 
 /* Hover bridge - invisible area that connects trigger to dropdown for smooth mouse movement */
 .nav-dropdown::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    height: 4px; /* Small buffer zone */
-    background: transparent;
-    z-index: calc(var(--z-dropdown) - 1);
-    pointer-events: auto;
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 4px; /* Small buffer zone */
+  background: transparent;
+  z-index: calc(var(--z-dropdown) - 1);
+  pointer-events: auto;
 }

@@ -369,24 +369,24 @@ input.password-mismatch {
 
 /* Error and Success Message Styling */
 .error-message {
-  background-color: #fee;
-  color: #c33;
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
   padding: 10px;
-  border: 1px solid #fcc;
+  border: 1px solid var(--color-error-border);
   border-radius: var(--radius-md);
   margin: 10px 0;
   font-size: 14px;
 }
 
 .form-group .error-message {
-  color: #dc3545;
+  color: var(--color-error);
   font-size: 0.85rem;
   margin-top: 0.25rem;
   font-weight: var(--font-weight-medium);
 }
 
 .form-group .success-message {
-  color: #28a745;
+  color: var(--color-success);
   font-size: 0.85rem;
   margin-top: 0.25rem;
   font-weight: var(--font-weight-medium);
@@ -415,10 +415,10 @@ input.password-mismatch {
 
 /* Profile form disabled styling */
 .form input:disabled {
-  background: #f5f5f5 !important;
+  background: var(--color-gray-100) !important;
   cursor: not-allowed !important;
-  color: #6c757d !important;
-  border-color: #dee2e6 !important;
+  color: var(--color-gray-500) !important;
+  border-color: var(--color-border) !important;
 }
 
 .form input[readonly] {
@@ -431,11 +431,11 @@ input.password-mismatch {
    ================================ */
 
 .requirement.valid {
-  color: #28a745;
+  color: var(--color-success);
 }
 
 .requirement.invalid {
-  color: #dc3545;
+  color: var(--color-error);
 }
 
 /* Password strength text */
@@ -447,16 +447,16 @@ input.password-mismatch {
 }
 
 .password-strength-text.weak {
-  color: #f44336;
+  color: var(--color-error);
 }
 .password-strength-text.fair {
-  color: #ff9800;
+  color: var(--color-warning);
 }
 .password-strength-text.good {
-  color: #2196f3;
+  color: var(--color-info);
 }
 .password-strength-text.strong {
-  color: #4caf50;
+  color: var(--color-success);
 }
 
 /* Address Row - Uses unified system with semantic sizing */
@@ -560,9 +560,9 @@ input.password-mismatch {
 }
 
 .form-group .checking-message {
-  color: #1976d2;
-  background-color: #e3f2fd;
-  border: var(--border-thin) solid #bbdefb;
+  color: var(--color-info-text);
+  background-color: var(--color-info-bg);
+  border: var(--border-thin) solid var(--color-info-border);
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-sm);
   pointer-events: auto; /* Re-enable pointer events for styled messages */
@@ -570,9 +570,9 @@ input.password-mismatch {
 }
 
 .form-group .success-message {
-  color: #28a745;
-  background-color: #e8f5e8;
-  border: var(--border-thin) solid #c8e6c9;
+  color: var(--color-success);
+  background-color: var(--color-valid-bg);
+  border: var(--border-thin) solid var(--color-valid-border);
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-sm);
   pointer-events: auto;
@@ -580,9 +580,9 @@ input.password-mismatch {
 }
 
 .form-group .error-message {
-  color: #dc3545;
-  background-color: #ffebee;
-  border: var(--border-thin) solid #ffcdd2;
+  color: var(--color-error);
+  background-color: var(--color-invalid-bg);
+  border: var(--border-thin) solid var(--color-invalid-border);
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-sm);
   pointer-events: auto;

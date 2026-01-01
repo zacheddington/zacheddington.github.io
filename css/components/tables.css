@@ -188,7 +188,7 @@
     max-width: none;
     z-index: var(--z-sticky);
     position: relative;
-    background-color: #f8fdff;
+    background-color: var(--color-primary-bg);
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
     border-radius: 4px;
   }
@@ -214,11 +214,11 @@
 
 /* Active (Selected) Row */
 .data-table tbody tr.active {
-  background-color: #e3f2fd !important;
+  background-color: var(--color-info-bg) !important;
 }
 
 .data-table tbody tr.active:hover {
-  background-color: #e3f2fd !important;
+  background-color: var(--color-info-bg) !important;
 }
 
 /* Prevent text selection cursor on table cells */

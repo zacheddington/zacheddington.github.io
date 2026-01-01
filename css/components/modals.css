@@ -193,20 +193,20 @@
 /* Danger button for destructive actions */
 .modal-actions .danger-btn,
 .form-actions .danger-btn {
-  background: #dc3545;
+  background: var(--color-error);
   color: var(--color-white);
   border: none;
 }
 
 .modal-actions .danger-btn:hover,
 .form-actions .danger-btn:hover {
-  background: #c82333;
+  background: var(--color-error-dark);
   transform: translateY(-1px);
 }
 
 /* Warning text in modals */
 .warning-text {
-  color: #dc3545;
+  color: var(--color-error);
   font-weight: var(--font-weight-medium);
   margin-top: var(--space-sm);
 }
@@ -241,7 +241,7 @@
 
 .tooltip {
   position: absolute;
-  background-color: #f44336;
+  background-color: var(--color-error);
   color: var(--color-white);
   padding: 8px;
   border-radius: var(--radius-md);
@@ -266,7 +266,7 @@
   left: 15px;
   width: 8px;
   height: 8px;
-  background-color: #f44336;
+  background-color: var(--color-error);
   transform: rotate(45deg);
 }
 

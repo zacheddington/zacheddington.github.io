@@ -31,7 +31,7 @@
   padding: var(--space-sm) var(--space-md);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   background: var(--color-background);
   border-block-end: var(--border-thin) solid var(--color-border);
 }
@@ -40,7 +40,7 @@
   padding: var(--space-md);
   border-block-end: var(--border-thin) solid var(--color-border);
   cursor: pointer;
-  transition: background-color var(--duration-fast);
+  transition: background-color var(--transition-fast);
 }
 
 .patient-result:last-child {
@@ -59,7 +59,7 @@
 
 .patient-result-details {
   font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
 }
 
 .patient-result-details span {
@@ -110,7 +110,7 @@
 
 .patient-detail strong {
   font-weight: var(--font-weight-semibold);
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
 }
 
 /* ================================
@@ -125,7 +125,7 @@
   cursor: pointer;
 }
 
-.checkbox-label input[type='checkbox'] {
+.checkbox-label input[type="checkbox"] {
   width: auto;
   margin: 0;
 }
@@ -148,7 +148,7 @@
 
 .placeholder-icon {
   margin-block-end: var(--space-lg);
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
 }
 
 .placeholder-content h3 {
@@ -159,7 +159,7 @@
 .placeholder-content p {
   margin-block-end: var(--space-md);
   line-height: var(--line-height-relaxed);
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
 }
 
 .placeholder-content ul {
@@ -172,7 +172,7 @@
 .placeholder-content li {
   margin-block-end: var(--space-xs);
   line-height: var(--line-height-normal);
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
 }
 
 /* ================================
@@ -221,19 +221,19 @@
 
 .patient-info {
   font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
 }
 
 .loading-message {
   padding: var(--space-xl);
   font-style: italic;
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   text-align: center;
 }
 
 .no-patients-message {
   padding: var(--space-xl);
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   text-align: center;
 }
 
@@ -250,12 +250,12 @@
    6. TIME INPUT
    ================================ */
 
-input[type='text'][id='startTime'] {
+input[type="text"][id="startTime"] {
   font-family: var(--font-mono);
   letter-spacing: 0.5px;
 }
 
-input[type='text'][id='startTime']:focus {
+input[type="text"][id="startTime"]:focus {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }

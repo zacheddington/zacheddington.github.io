@@ -100,6 +100,13 @@
   --color-border: #dee2e6;
   --color-border-dark: #adb5bd;
   --color-border-light: #e9ecef;
+
+  /* Table Colors */
+  --color-table-header: #f8f9fa;
+
+  /* Semantic Aliases (for consistency across codebase) */
+  --color-text-secondary: var(--color-text-muted);
+
   /* ================================
      TYPOGRAPHY
      ================================ */
@@ -231,6 +238,7 @@
   --transition-fast: 150ms;
   --transition-normal: 300ms;
   --transition-slow: 450ms;
+  --duration-fast: var(--transition-fast); /* Alias for compatibility */
 
   /* Transition Easing */
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
@@ -256,6 +264,7 @@
   --z-overlay: 200;
   --z-modal: 300;
   --z-tooltip: 400;
+  --z-max: 9999;
   --z-debug: 9999;
 }
 
