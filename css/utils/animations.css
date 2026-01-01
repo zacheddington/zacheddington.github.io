@@ -17,7 +17,7 @@
 
 :root {
   --page-transition-duration: 300ms;
-  --page-transition-easing: var(--ease-out);
+  --page-transition-easing: ease-out;
 }
 
 /* ================================
@@ -31,18 +31,19 @@
 
 .page-fade-in {
   animation: pageTransitionIn var(--page-transition-duration)
-    var(--page-transition-easing) forwards;
+    var(--page-transition-easing) forwards !important;
 }
 
-.page-fade-out {
+.page-fade-out,
+.page-transition-out {
   animation: pageTransitionOut var(--page-transition-duration)
-    var(--page-transition-easing) forwards;
+    var(--page-transition-easing) forwards !important;
 }
 
 /* Legacy class support */
 .fade-out {
   animation: pageTransitionOut var(--page-transition-duration)
-    var(--page-transition-easing) forwards;
+    var(--page-transition-easing) forwards !important;
 }
 
 @keyframes pageTransitionIn {

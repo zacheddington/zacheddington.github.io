@@ -115,10 +115,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 
-  /* Page load animation */
-  animation: pageTransitionIn var(--page-transition-duration, 450ms)
-    var(--ease-in-out);
-  animation-fill-mode: forwards;
+  /* Page load animation - handled by page-transitions.js via .page-fade-in class */
+  opacity: 0;
+}
+
+/* Page fade-in animation class (applied by JS) */
+body.page-fade-in {
+  animation: pageTransitionIn var(--page-transition-duration, 300ms) ease-out forwards;
 }
 
 /* ================================
@@ -127,8 +130,7 @@ body {
 
 /* Page transition out state */
 body.page-transition-out {
-  animation: pageTransitionOut var(--page-transition-duration, 450ms)
-    var(--ease-in-out) forwards;
+  animation: pageTransitionOut var(--page-transition-duration, 300ms) ease-out forwards;
 }
 
 /* Legacy support for backward compatibility */
