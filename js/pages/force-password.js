@@ -1,558 +1,561 @@
-// Force Password Change Page Module
-// Contains functionality for mandatory password changes on first login
+/**
+ * Force Password Change Page Module
+ * @module pages/force-password
+ * @description Handles mandatory password changes including:
+ * - First login password change requirement
+ * - Password strength validation
+ * - New password confirmation matching
+ * - Security URL parameter clearing
+ * - Autofill protection for password fields
+ *
+ * @requires api-client.js - API communication
+ * @requires modal-manager.js - User feedback modals
+ * @requires password-utils.js - Password validation and strength
+ * @requires auth-utils.js - Token management
+ *
+ * @exports window.forcePasswordPage - Global namespace for force password functions
+ */
 
-// Defensive wrapper to prevent autofill conflicts
+/**
+ * Safely get password field element with autofill protection
+ * @param {string} fieldId - ID of the password field
+ * @returns {HTMLInputElement|null} - Password field element or null
+ */
 function safeGetPasswordField(fieldId) {
-    try {
-        const field = document.getElementById(fieldId);
-        if (field && field.nodeType === Node.ELEMENT_NODE) {
-            return field;
-        }
-    } catch (error) {
-        // Ignore autofill-related errors
+  try {
+    const field = document.getElementById(fieldId);
+    if (field && field.nodeType === Node.ELEMENT_NODE) {
+      return field;
     }
-    return null;
+  } catch (error) {
+    // Ignore autofill-related errors
+  }
+  return null;
 }
 
-// Security: Clear any sensitive URL parameters immediately
+/**
+ * Clear sensitive URL parameters for security
+ * Prevents password-related data from appearing in browser history
+ */
 function clearSensitiveURLParameters() {
-    if (window.location.search || window.location.hash) {
-        console.warn('URL parameters cleared for security');
-        window.history.replaceState(
-            {},
-            document.title,
-            window.location.pathname
-        );
-    }
+  if (window.location.search || window.location.hash) {
+    console.warn("URL parameters cleared for security");
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
 
-    // Prevent form data from being stored in browser history
-    if (window.history && window.history.replaceState) {
-        window.addEventListener('beforeunload', function () {
-            window.history.replaceState(
-                {},
-                document.title,
-                window.location.pathname
-            );
-        });
-    }
+  // Prevent form data from being stored in browser history
+  if (window.history && window.history.replaceState) {
+    window.addEventListener("beforeunload", function () {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    });
+  }
 }
 
 // Initialize force password change page functionality
 async function initializeForcePasswordChangePage() {
-    // Clear sensitive URL parameters for security
-    clearSensitiveURLParameters();
+  // Clear sensitive URL parameters for security
+  clearSensitiveURLParameters();
 
-    // Check if user is authenticated and actually needs to change password
-    await validateForcePasswordAccess();
-    setupForcePasswordForm();
-    displayUserInfo();
+  // Check if user is authenticated and actually needs to change password
+  await validateForcePasswordAccess();
+  setupForcePasswordForm();
+  displayUserInfo();
 
-    // Clear any initial error states
-    clearForcePasswordErrors();
+  // Clear any initial error states
+  clearForcePasswordErrors();
 
-    // Focus on new password field
-    const newPasswordField = safeGetPasswordField('newPassword');
-    if (newPasswordField) {
-        setTimeout(() => {
-            try {
-                newPasswordField.focus();
-            } catch (error) {
-                // Ignore focus errors from autofill conflicts
-            }
-        }, 100);
-    }
+  // Focus on new password field
+  const newPasswordField = safeGetPasswordField("newPassword");
+  if (newPasswordField) {
+    setTimeout(() => {
+      try {
+        newPasswordField.focus();
+      } catch (error) {
+        // Ignore focus errors from autofill conflicts
+      }
+    }, 100);
+  }
 }
 
 // Validate that user has access to this page
 async function validateForcePasswordAccess() {
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    if (!token || !userStr) {
-        // No authentication, redirect to login
-        window.location.href = '/';
-        return;
+  const token = localStorage.getItem("token");
+  const userStr = localStorage.getItem("user");
+  if (!token || !userStr) {
+    // No authentication, redirect to login
+    window.location.href = "/";
+    return;
+  }
+
+  try {
+    const user = JSON.parse(userStr);
+
+    // First check local storage - if password change is required, stay on this page
+    if (user.passwordChangeRequired === true) {
+      // User needs to change password, stay on this page
+      return;
     }
 
+    // If local storage says no password change needed, double-check with server
+    // This handles cases where localStorage might be stale
+    const API_URL = window.apiClient.getAPIUrl();
     try {
-        const user = JSON.parse(userStr);
+      const userCheckResponse = await fetch(`${API_URL}/api/user/profile`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        // First check local storage - if password change is required, stay on this page
-        if (user.passwordChangeRequired === true) {
-            // User needs to change password, stay on this page
-            return;
+      if (userCheckResponse.ok) {
+        const userProfile = await userCheckResponse.json();
+        if (userProfile.data && userProfile.data.passwordChangeRequired) {
+          // Server says password change is still required, update local storage
+          user.passwordChangeRequired = true;
+          localStorage.setItem("user", JSON.stringify(user));
+          return; // Stay on this page
+        } else if (
+          userProfile.data &&
+          !userProfile.data.passwordChangeRequired
+        ) {
+          // Server confirms no password change needed, redirect
+          user.passwordChangeRequired = false;
+          localStorage.setItem("user", JSON.stringify(user));
+
+          // Redirect based on role
+          if (window.authUtils.isAdmin()) {
+            window.location.href = "/admin/";
+          } else {
+            window.location.href = "/welcome/";
+          }
+          return;
         }
-
-        // If local storage says no password change needed, double-check with server
-        // This handles cases where localStorage might be stale
-        const API_URL = window.apiClient.getAPIUrl();
-        try {
-            const userCheckResponse = await fetch(
-                `${API_URL}/api/user/profile`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            if (userCheckResponse.ok) {
-                const userProfile = await userCheckResponse.json();
-                if (
-                    userProfile.data &&
-                    userProfile.data.passwordChangeRequired
-                ) {
-                    // Server says password change is still required, update local storage
-                    user.passwordChangeRequired = true;
-                    localStorage.setItem('user', JSON.stringify(user));
-                    return; // Stay on this page
-                } else if (
-                    userProfile.data &&
-                    !userProfile.data.passwordChangeRequired
-                ) {
-                    // Server confirms no password change needed, redirect
-                    user.passwordChangeRequired = false;
-                    localStorage.setItem('user', JSON.stringify(user));
-
-                    // Redirect based on role
-                    if (window.authUtils.isAdmin()) {
-                        window.location.href = '/admin/';
-                    } else {
-                        window.location.href = '/welcome/';
-                    }
-                    return;
-                }
-            }
-        } catch (serverError) {
-            console.warn(
-                'Could not verify password change status with server, using local storage'
-            );
-            // If server check fails, fall back to local storage value
-        }
-
-        // If we reach here and local storage says no password change needed, redirect
-        if (!user.passwordChangeRequired) {
-            if (window.authUtils.isAdmin()) {
-                window.location.href = '/admin/';
-            } else {
-                window.location.href = '/welcome/';
-            }
-            return;
-        }
-    } catch (error) {
-        console.error('Error validating force password access');
-        // On error, fall back to login redirect for security
-        window.location.href = '/';
-        return;
+      }
+    } catch (serverError) {
+      console.warn(
+        "Could not verify password change status with server, using local storage"
+      );
+      // If server check fails, fall back to local storage value
     }
+
+    // If we reach here and local storage says no password change needed, redirect
+    if (!user.passwordChangeRequired) {
+      if (window.authUtils.isAdmin()) {
+        window.location.href = "/admin/";
+      } else {
+        window.location.href = "/welcome/";
+      }
+      return;
+    }
+  } catch (error) {
+    console.error("Error validating force password access");
+    // On error, fall back to login redirect for security
+    window.location.href = "/";
+    return;
+  }
 }
 
 // Display user information
 function displayUserInfo() {
-    try {
-        const userStr = localStorage.getItem('user');
-        if (!userStr) return;
+  try {
+    const userStr = localStorage.getItem("user");
+    if (!userStr) return;
 
-        const user = JSON.parse(userStr);
-        const userNameElement = document.getElementById('userDisplayName');
-        const userEmailElement = document.getElementById('userDisplayEmail');
-        if (userNameElement) {
-            userNameElement.textContent = `${user.firstName} ${user.lastName}`;
-        }
-        if (userEmailElement) {
-            userEmailElement.textContent = user.email;
-        }
-    } catch (error) {
-        console.error('Error displaying user info');
+    const user = JSON.parse(userStr);
+    const userNameElement = document.getElementById("userDisplayName");
+    const userEmailElement = document.getElementById("userDisplayEmail");
+    if (userNameElement) {
+      userNameElement.textContent = `${user.firstName} ${user.lastName}`;
     }
+    if (userEmailElement) {
+      userEmailElement.textContent = user.email;
+    }
+  } catch (error) {
+    console.error("Error displaying user info");
+  }
 }
 
 // Set up force password change form functionality
 function setupForcePasswordForm() {
-    const forcePasswordForm = document.getElementById(
-        'forcePasswordChangeForm'
-    );
-    if (!forcePasswordForm) return;
+  const forcePasswordForm = document.getElementById("forcePasswordChangeForm");
+  if (!forcePasswordForm) return;
 
-    // Set up field validation
-    setupForcePasswordFieldValidation();
+  // Set up field validation
+  setupForcePasswordFieldValidation();
 
-    // Set up logout button event listener
-    setupLogoutButton();
+  // Set up logout button event listener
+  setupLogoutButton();
 
-    // Handle form submission
-    forcePasswordForm.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        await changeForcePassword();
-    });
+  // Handle form submission
+  forcePasswordForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    await changeForcePassword();
+  });
 }
 
 // Set up logout button event listener
 function setupLogoutButton() {
-    const logoutButton = document.querySelector('.logout-link-button');
-    if (logoutButton) {
-        logoutButton.addEventListener('click', function (e) {
-            e.preventDefault();
-            handleForcePasswordLogout();
-        });
-    }
+  const logoutButton = document.querySelector(".logout-link-button");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", function (e) {
+      e.preventDefault();
+      handleForcePasswordLogout();
+    });
+  }
 
-    // Set up error modal "Try Again" button
-    const tryAgainButton = document.querySelector('#errorModal .modal-btn');
-    if (tryAgainButton) {
-        tryAgainButton.addEventListener('click', function (e) {
-            e.preventDefault();
-            closeErrorModal();
-        });
-    }
+  // Set up error modal "Try Again" button
+  const tryAgainButton = document.querySelector("#errorModal .modal-btn");
+  if (tryAgainButton) {
+    tryAgainButton.addEventListener("click", function (e) {
+      e.preventDefault();
+      closeErrorModal();
+    });
+  }
 }
 
 // Set up field validation for force password form
 function setupForcePasswordFieldValidation() {
-    const newPasswordField = document.getElementById('newPassword');
-    const confirmPasswordField = document.getElementById('confirmPassword');
+  const newPasswordField = document.getElementById("newPassword");
+  const confirmPasswordField = document.getElementById("confirmPassword");
 
-    if (newPasswordField) {
-        // Add shared password strength indicator
-        window.passwordUtils.addPasswordStrengthIndicator(newPasswordField);
+  if (newPasswordField) {
+    // Add shared password strength indicator
+    window.passwordUtils.addPasswordStrengthIndicator(newPasswordField);
 
-        newPasswordField.addEventListener('input', function () {
-            // Check password match if confirm password has value
-            if (confirmPasswordField && confirmPasswordField.value) {
-                validateForcePasswordMatch();
-            }
-        });
-    }
+    newPasswordField.addEventListener("input", function () {
+      // Check password match if confirm password has value
+      if (confirmPasswordField && confirmPasswordField.value) {
+        validateForcePasswordMatch();
+      }
+    });
+  }
 
-    if (confirmPasswordField) {
-        confirmPasswordField.addEventListener('input', function () {
-            validateForcePasswordMatch();
-        });
+  if (confirmPasswordField) {
+    confirmPasswordField.addEventListener("input", function () {
+      validateForcePasswordMatch();
+    });
 
-        confirmPasswordField.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                changeForcePassword();
-            }
-        });
-    }
+    confirmPasswordField.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        changeForcePassword();
+      }
+    });
+  }
 }
 
 // Update password validation indicators
 // Validate password match for force password form
 function validateForcePasswordMatch() {
-    const newPasswordField = document.getElementById('newPassword');
-    const confirmPasswordField = document.getElementById('confirmPassword');
-    const matchIndicator = document.getElementById('passwordMatch');
+  const newPasswordField = document.getElementById("newPassword");
+  const confirmPasswordField = document.getElementById("confirmPassword");
+  const matchIndicator = document.getElementById("passwordMatch");
 
-    if (!newPasswordField || !confirmPasswordField || !matchIndicator) return;
+  if (!newPasswordField || !confirmPasswordField || !matchIndicator) return;
 
-    const isMatch = window.passwordUtils.passwordsMatch(
-        newPasswordField.value,
-        confirmPasswordField.value
-    );
+  const isMatch = window.passwordUtils.passwordsMatch(
+    newPasswordField.value,
+    confirmPasswordField.value
+  );
 
-    if (confirmPasswordField.value === '') {
-        matchIndicator.textContent = '';
-        matchIndicator.className = 'password-match';
-        return;
-    }
+  if (confirmPasswordField.value === "") {
+    matchIndicator.textContent = "";
+    matchIndicator.className = "password-match";
+    return;
+  }
 
-    if (isMatch) {
-        matchIndicator.textContent = '✓ Passwords match';
-        matchIndicator.className = 'password-match valid';
-    } else {
-        matchIndicator.textContent = '✗ Passwords do not match';
-        matchIndicator.className = 'password-match invalid';
-    }
+  if (isMatch) {
+    matchIndicator.textContent = "✓ Passwords match";
+    matchIndicator.className = "password-match valid";
+  } else {
+    matchIndicator.textContent = "✗ Passwords do not match";
+    matchIndicator.className = "password-match invalid";
+  }
 }
 
 // Change password during forced password change
 async function changeForcePassword() {
-    // Prevent multiple simultaneous submissions
-    if (changeForcePassword.isRunning) {
-        return;
+  // Prevent multiple simultaneous submissions
+  if (changeForcePassword.isRunning) {
+    return;
+  }
+
+  changeForcePassword.isRunning = true;
+
+  const submitBtn = document.getElementById("changePasswordBtn");
+  const originalText = submitBtn.textContent;
+  let response = null;
+
+  try {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Changing Password...";
+
+    // Pre-flight connectivity check
+    const connectivity = await window.apiClient.checkConnectivity();
+    if (!connectivity.connected) {
+      throw new Error(`Connection failed: ${connectivity.error}`);
     }
 
-    changeForcePassword.isRunning = true;
+    // Get form data
+    const newPassword = document.getElementById("newPassword").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
 
-    const submitBtn = document.getElementById('changePasswordBtn');
-    const originalText = submitBtn.textContent;
-    let response = null;
+    // Validate input
+    if (!newPassword || !confirmPassword) {
+      throw new Error("Both password fields are required.");
+    }
 
-    try {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Changing Password...';
+    // Validate new password
+    const passwordValidation =
+      window.passwordUtils.validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      throw new Error("Password does not meet security requirements.");
+    }
 
-        // Pre-flight connectivity check
-        const connectivity = await window.apiClient.checkConnectivity();
-        if (!connectivity.connected) {
-            throw new Error(`Connection failed: ${connectivity.error}`);
+    // Validate password match
+    if (!window.passwordUtils.passwordsMatch(newPassword, confirmPassword)) {
+      throw new Error("Passwords do not match.");
+    }
+    const token = localStorage.getItem("token");
+    const API_URL = window.apiClient.getAPIUrl();
+
+    // Proceed directly to password change - let the server handle validation
+    // If there's a conflict, the server will return an appropriate error
+    response = await fetch(`${API_URL}/api/user/force-change-password`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        newPassword,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      // Update user data to reflect password change
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          user.passwordChangeRequired = false;
+          localStorage.setItem("user", JSON.stringify(user));
+        } catch (error) {
+          console.error("Error updating user data");
         }
+      } // Clear the form
+      document.getElementById("forcePasswordChangeForm").reset();
+      clearForcePasswordErrors();
 
-        // Get form data
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword =
-            document.getElementById('confirmPassword').value;
+      // Reset password validation indicators
+      resetForcePasswordValidationIndicators(); // Show success modal and redirect
+      window.modalManager.showModal(
+        "success",
+        "Password changed successfully! Redirecting to your dashboard...",
+        false,
+        { redirect: true }
+      );
 
-        // Validate input
-        if (!newPassword || !confirmPassword) {
-            throw new Error('Both password fields are required.');
-        }
-
-        // Validate new password
-        const passwordValidation =
-            window.passwordUtils.validatePassword(newPassword);
-        if (!passwordValidation.isValid) {
-            throw new Error('Password does not meet security requirements.');
-        }
-
-        // Validate password match
-        if (
-            !window.passwordUtils.passwordsMatch(newPassword, confirmPassword)
-        ) {
-            throw new Error('Passwords do not match.');
-        }
-        const token = localStorage.getItem('token');
-        const API_URL = window.apiClient.getAPIUrl();
-
-        // Proceed directly to password change - let the server handle validation
-        // If there's a conflict, the server will return an appropriate error
-        response = await fetch(`${API_URL}/api/user/force-change-password`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-                newPassword,
-            }),
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            // Update user data to reflect password change
-            const userStr = localStorage.getItem('user');
-            if (userStr) {
-                try {
-                    const user = JSON.parse(userStr);
-                    user.passwordChangeRequired = false;
-                    localStorage.setItem('user', JSON.stringify(user));
-                } catch (error) {
-                    console.error('Error updating user data');
-                }
-            } // Clear the form
-            document.getElementById('forcePasswordChangeForm').reset();
-            clearForcePasswordErrors();
-
-            // Reset password validation indicators
-            resetForcePasswordValidationIndicators(); // Show success modal and redirect
-            window.modalManager.showModal(
-                'success',
-                'Password changed successfully! Redirecting to your dashboard...',
-                false,
-                { redirect: true }
-            );
-
-            // Redirect based on user role after delay
-            setTimeout(() => {
-                if (window.authUtils.isAdmin()) {
-                    window.location.href = '/admin/';
-                } else {
-                    window.location.href = '/welcome/';
-                }
-            }, 2000);
+      // Redirect based on user role after delay
+      setTimeout(() => {
+        if (window.authUtils.isAdmin()) {
+          window.location.href = "/admin/";
         } else {
-            // Handle error responses based on status code
-            if (response.status === 400) {
-                throw new Error(
-                    result.error ||
-                        result.message ||
-                        'Invalid request. Please check your input.'
-                );
-            } else if (response.status === 409) {
-                // Conflict - password was already changed elsewhere
-                window.modalManager.showModal(
-                    'warning',
-                    'Your password has already been changed on another device or session. For security, you will be logged out and need to sign in again.',
-                    false,
-                    { redirect: true }
-                );
-
-                setTimeout(() => {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    sessionStorage.clear();
-                    window.location.href = '/';
-                }, 3000);
-                return;
-            } else if (response.status === 500) {
-                // Server error - check if it's related to password already being changed
-                console.log('500 error response:', result); // Debug logging
-
-                // Check multiple possible fields for the error message
-                const errorText =
-                    result.error || result.message || result.details || '';
-
-                if (
-                    errorText.includes('currentPassword') ||
-                    errorText.includes('password') ||
-                    errorText.includes('already') ||
-                    errorText.includes('changed') ||
-                    errorText.includes('not defined') ||
-                    errorText.includes('undefined')
-                ) {
-                    // Password was likely changed elsewhere - log out for security
-                    window.modalManager.showModal(
-                        'warning',
-                        'Your password appears to have been changed elsewhere. For security, you will be logged out and need to sign in again.',
-                        false,
-                        { redirect: true }
-                    );
-
-                    setTimeout(() => {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('user');
-                        sessionStorage.clear();
-                        window.location.href = '/';
-                    }, 3000);
-                    return;
-                } else {
-                    throw new Error(
-                        result.error ||
-                            result.message ||
-                            'Server error occurred. Please try again.'
-                    );
-                }
-            } else {
-                throw new Error(
-                    result.error ||
-                        result.message ||
-                        `Server error (${response.status}). Please try again.`
-                );
-            }
+          window.location.href = "/welcome/";
         }
-    } catch (error) {
-        console.error('Force password change failed');
+      }, 2000);
+    } else {
+      // Handle error responses based on status code
+      if (response.status === 400) {
+        throw new Error(
+          result.error ||
+            result.message ||
+            "Invalid request. Please check your input."
+        );
+      } else if (response.status === 409) {
+        // Conflict - password was already changed elsewhere
+        window.modalManager.showModal(
+          "warning",
+          "Your password has already been changed on another device or session. For security, you will be logged out and need to sign in again.",
+          false,
+          { redirect: true }
+        );
 
-        // Extract error message from response or error object
-        let errorMessage = 'Failed to change password. Please try again.';
+        setTimeout(() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          sessionStorage.clear();
+          window.location.href = "/";
+        }, 3000);
+        return;
+      } else if (response.status === 500) {
+        // Server error - check if it's related to password already being changed
+        console.log("500 error response:", result); // Debug logging
 
-        if (error.message) {
-            errorMessage = error.message;
+        // Check multiple possible fields for the error message
+        const errorText =
+          result.error || result.message || result.details || "";
+
+        if (
+          errorText.includes("currentPassword") ||
+          errorText.includes("password") ||
+          errorText.includes("already") ||
+          errorText.includes("changed") ||
+          errorText.includes("not defined") ||
+          errorText.includes("undefined")
+        ) {
+          // Password was likely changed elsewhere - log out for security
+          window.modalManager.showModal(
+            "warning",
+            "Your password appears to have been changed elsewhere. For security, you will be logged out and need to sign in again.",
+            false,
+            { redirect: true }
+          );
+
+          setTimeout(() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            sessionStorage.clear();
+            window.location.href = "/";
+          }, 3000);
+          return;
+        } else {
+          throw new Error(
+            result.error ||
+              result.message ||
+              "Server error occurred. Please try again."
+          );
         }
-
-        // Always show modal for better user experience
-        window.modalManager.showModal('error', errorMessage);
-    } finally {
-        // Reset the guard flag
-        changeForcePassword.isRunning = false;
-
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
+      } else {
+        throw new Error(
+          result.error ||
+            result.message ||
+            `Server error (${response.status}). Please try again.`
+        );
+      }
     }
+  } catch (error) {
+    console.error("Force password change failed");
+
+    // Extract error message from response or error object
+    let errorMessage = "Failed to change password. Please try again.";
+
+    if (error.message) {
+      errorMessage = error.message;
+    }
+
+    // Always show modal for better user experience
+    window.modalManager.showModal("error", errorMessage);
+  } finally {
+    // Reset the guard flag
+    changeForcePassword.isRunning = false;
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
+  }
 }
 
 // Show force password change success message
 function showForcePasswordSuccess() {
-    const forcePasswordSection = document.querySelector(
-        '.force-password-container'
+  const forcePasswordSection = document.querySelector(
+    ".force-password-container"
+  );
+  if (forcePasswordSection) {
+    window.fieldValidation.showSectionMessage(
+      forcePasswordSection,
+      "Password changed successfully! Redirecting to your dashboard...",
+      "success"
     );
-    if (forcePasswordSection) {
-        window.fieldValidation.showSectionMessage(
-            forcePasswordSection,
-            'Password changed successfully! Redirecting to your dashboard...',
-            'success'
-        );
-    }
+  }
 }
 
 // Show force password change error message
 function showForcePasswordError(message) {
-    const forcePasswordSection = document.querySelector(
-        '.force-password-container'
+  const forcePasswordSection = document.querySelector(
+    ".force-password-container"
+  );
+  if (forcePasswordSection) {
+    window.fieldValidation.showSectionMessage(
+      forcePasswordSection,
+      message,
+      "error"
     );
-    if (forcePasswordSection) {
-        window.fieldValidation.showSectionMessage(
-            forcePasswordSection,
-            message,
-            'error'
-        );
-    }
+  }
 }
 
 // Clear force password change errors
 function clearForcePasswordErrors() {
-    const forcePasswordSection = document.querySelector(
-        '.force-password-container'
-    );
-    if (!forcePasswordSection) return;
+  const forcePasswordSection = document.querySelector(
+    ".force-password-container"
+  );
+  if (!forcePasswordSection) return;
 
-    // Clear section-level error messages
-    const messages = forcePasswordSection.querySelectorAll('.section-message');
-    messages.forEach((message) => message.remove());
+  // Clear section-level error messages
+  const messages = forcePasswordSection.querySelectorAll(".section-message");
+  messages.forEach((message) => message.remove());
 
-    // Clear field-level errors
-    const errorGroups =
-        forcePasswordSection.querySelectorAll('.form-group.error');
-    errorGroups.forEach((group) => {
-        group.classList.remove('error');
-        const errorMsg = group.querySelector('.error-message');
-        if (errorMsg) {
-            errorMsg.remove();
-        }
-    });
+  // Clear field-level errors
+  const errorGroups =
+    forcePasswordSection.querySelectorAll(".form-group.error");
+  errorGroups.forEach((group) => {
+    group.classList.remove("error");
+    const errorMsg = group.querySelector(".error-message");
+    if (errorMsg) {
+      errorMsg.remove();
+    }
+  });
 
-    // Clear success states
-    const successGroups = forcePasswordSection.querySelectorAll(
-        '.form-group.success'
-    );
-    successGroups.forEach((group) => {
-        group.classList.remove('success');
-        const successMsg = group.querySelector('.success-message');
-        if (successMsg) {
-            successMsg.remove();
-        }
-    });
+  // Clear success states
+  const successGroups = forcePasswordSection.querySelectorAll(
+    ".form-group.success"
+  );
+  successGroups.forEach((group) => {
+    group.classList.remove("success");
+    const successMsg = group.querySelector(".success-message");
+    if (successMsg) {
+      successMsg.remove();
+    }
+  });
 }
 
 // Reset password validation indicators
 function resetForcePasswordValidationIndicators() {
-    // Clear password match indicator
-    const matchIndicator = document.getElementById('passwordMatch');
-    if (matchIndicator) {
-        matchIndicator.textContent = '';
-        matchIndicator.className = 'password-match';
-    }
+  // Clear password match indicator
+  const matchIndicator = document.getElementById("passwordMatch");
+  if (matchIndicator) {
+    matchIndicator.textContent = "";
+    matchIndicator.className = "password-match";
+  }
 
-    // The shared password strength indicator will handle its own reset when the field is cleared
+  // The shared password strength indicator will handle its own reset when the field is cleared
 }
 
 // Handle logout from force password page
 function handleForcePasswordLogout() {
-    window.modalManager.showLogoutConfirmation(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        sessionStorage.clear();
-        window.location.href = '/';
-    });
+  window.modalManager.showLogoutConfirmation(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.clear();
+    window.location.href = "/";
+  });
 }
 
 // Close error modal
 function closeErrorModal() {
-    const errorModal = document.getElementById('errorModal');
-    if (errorModal) {
-        errorModal.style.display = 'none';
-    }
+  const errorModal = document.getElementById("errorModal");
+  if (errorModal) {
+    errorModal.style.display = "none";
+  }
 }
 
 // Expose functions to global scope
 window.forcePasswordPage = {
-    initializeForcePasswordChangePage,
-    changeForcePassword,
-    handleForcePasswordLogout,
+  initializeForcePasswordChangePage,
+  changeForcePassword,
+  handleForcePasswordLogout,
 };
 
 // Also expose individual functions for HTML onclick handlers

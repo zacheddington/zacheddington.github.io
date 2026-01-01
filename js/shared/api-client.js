@@ -123,14 +123,19 @@ async function validateToken(token) {
 }
 
 /**
- * Generic API request wrapper with automatic error handling and authentication
+ * Generic API request wrapper with automatic error handling, authentication, and timeout
  * @async
  * @param {string} endpoint - The API endpoint (e.g., '/api/users')
  * @param {Object} [options={}] - Fetch options (method, headers, body, etc.)
+ * @param {number} [options.timeout=30000] - Request timeout in milliseconds (default 30s)
  * @returns {Promise<Object>} The parsed JSON response
- * @throws {Error} If the request fails
+ * @throws {Error} If the request fails or times out
  */
 async function apiRequest(endpoint, options = {}) {
+  const { timeout = 30000, ...fetchOptions } = options;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
   try {
     const API_URL = getAPIUrl();
     const url = `${API_URL}${endpoint}`;
@@ -140,6 +145,7 @@ async function apiRequest(endpoint, options = {}) {
       headers: {
         "Content-Type": "application/json",
       },
+      signal: controller.signal,
     };
 
     // Add auth token if available
@@ -150,26 +156,136 @@ async function apiRequest(endpoint, options = {}) {
 
     const finalOptions = {
       ...defaultOptions,
-      ...options,
+      ...fetchOptions,
       headers: {
         ...defaultOptions.headers,
-        ...options.headers,
+        ...fetchOptions.headers,
       },
     };
 
     const response = await fetch(url, finalOptions);
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error(
+      const error = new Error(
         `API request failed: ${response.status} ${response.statusText}`
       );
+      error.status = response.status;
+      error.response = response;
+      throw error;
     }
 
     return await response.json();
   } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === "AbortError") {
+      const timeoutError = new Error("Request timed out. Please try again.");
+      timeoutError.isTimeout = true;
+      throw timeoutError;
+    }
     console.error("API request error:", error);
     throw error;
   }
+}
+
+/**
+ * Categorizes errors into user-friendly messages and determines display method
+ * @param {Error} error - The error object
+ * @param {Response|null} response - The fetch response object (if available)
+ * @returns {{message: string, type: string, modal: boolean, retry: boolean}}
+ */
+function categorizeError(error, response = null) {
+  // Timeout errors
+  if (error.isTimeout || error.name === "AbortError") {
+    return {
+      message: "Request timed out. The server may be busy. Please try again.",
+      type: "timeout",
+      modal: true,
+      retry: true,
+    };
+  }
+
+  // Network errors (no response)
+  if (
+    !response &&
+    (error.message?.includes("fetch") || error.message?.includes("network"))
+  ) {
+    return {
+      message: "Network error. Please check your connection and try again.",
+      type: "network",
+      modal: true,
+      retry: true,
+    };
+  }
+
+  // HTTP status-based categorization
+  const status = response?.status || error.status;
+  if (status) {
+    switch (status) {
+      case 400:
+        return {
+          message: error.message || "Invalid request. Please check your input.",
+          type: "validation",
+          modal: false,
+          retry: false,
+        };
+      case 401:
+        return {
+          message: "Your session has expired. Please log in again.",
+          type: "auth",
+          modal: true,
+          retry: false,
+        };
+      case 403:
+        return {
+          message: "You don't have permission to perform this action.",
+          type: "forbidden",
+          modal: true,
+          retry: false,
+        };
+      case 404:
+        return {
+          message: "The requested resource was not found.",
+          type: "not_found",
+          modal: true,
+          retry: false,
+        };
+      case 409:
+        return {
+          message:
+            error.message ||
+            "A conflict occurred. Please refresh and try again.",
+          type: "conflict",
+          modal: true,
+          retry: true,
+        };
+      case 429:
+        return {
+          message: "Too many requests. Please wait a moment and try again.",
+          type: "rate_limit",
+          modal: true,
+          retry: true,
+        };
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        return {
+          message: "Server error. Please try again later.",
+          type: "server",
+          modal: true,
+          retry: true,
+        };
+    }
+  }
+
+  // Default fallback
+  return {
+    message: error.message || "An unexpected error occurred. Please try again.",
+    type: "unknown",
+    modal: true,
+    retry: true,
+  };
 }
 
 /**
@@ -181,7 +297,9 @@ window.apiClient = {
   checkConnectivity,
   validateToken,
   apiRequest,
+  categorizeError,
 };
 
-// Also provide global alias for getAPIUrl for convenience
+// Also provide global aliases for convenience
 window.getAPIUrl = getAPIUrl;
+window.categorizeError = categorizeError;

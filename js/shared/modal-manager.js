@@ -192,10 +192,8 @@ const modalManager = {
           }, 450); // FADE_DURATION
         }, 2000);
       } else {
-        // On admin or patient management pages, auto-hide success modal after 4 seconds
-        setTimeout(() => {
-          this.closeModal();
-        }, 4000);
+        // On admin or patient management pages, require manual close
+        // No auto-close - user must click OK or press Enter/Escape
       }
     }
 
@@ -226,96 +224,13 @@ const modalManager = {
     // Remove body scroll prevention
     document.body.classList.remove("modal-open");
   },
+  /**
+   * Show logout confirmation modal with dark mode support
+   * @param {Function} onConfirm - Callback when user confirms logout
+   * @returns {Promise<boolean>} Resolves to true if confirmed, false if cancelled
+   */
   showLogoutConfirmation: function (onConfirm) {
-    return new Promise((resolve) => {
-      // Prevent duplicate modals
-      const existingModal = document.querySelector(".modal-overlay");
-      if (existingModal) {
-        return resolve(false);
-      }
-
-      const logoutModal = document.createElement("div");
-      logoutModal.className = "modal-overlay";
-      logoutModal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3>🚪 Confirm Logout</h3>
-                    </div>
-                    <div class="modal-body">
-                        <p>Are you sure you want to log out?</p>
-                        <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">You will be redirected to the login page and will need to sign in again to access the system.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="modal-btn cancel" id="cancelLogout">Cancel</button>
-                        <button class="modal-btn confirm" id="confirmLogout">Logout</button>
-                    </div>
-                </div>
-            `;
-
-      document.body.appendChild(logoutModal);
-
-      // Prevent body scrolling
-      document.body.classList.add("modal-open");
-
-      // Force modal to center in viewport with inline styles - higher z-index than sidebar
-      logoutModal.style.display = "flex";
-      logoutModal.style.position = "fixed";
-      logoutModal.style.top = "0";
-      logoutModal.style.left = "0";
-      logoutModal.style.width = "100vw";
-      logoutModal.style.height = "100vh";
-      logoutModal.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-      logoutModal.style.justifyContent = "center";
-      logoutModal.style.alignItems = "center";
-      logoutModal.style.zIndex = "99999";
-      logoutModal.style.margin = "0";
-      logoutModal.style.padding = "0";
-
-      // Ensure it's above everything else with !important - higher than sidebar z-index
-      logoutModal.style.setProperty("position", "fixed", "important");
-      logoutModal.style.setProperty("z-index", "99999", "important");
-      logoutModal.style.setProperty("display", "flex", "important");
-      logoutModal.style.setProperty("top", "0", "important");
-      logoutModal.style.setProperty("left", "0", "important");
-      logoutModal.style.setProperty("width", "100vw", "important");
-      logoutModal.style.setProperty("height", "100vh", "important");
-
-      // Focus on the modal for accessibility
-      logoutModal.focus(); // Set up event handlers
-      const cancelHandler = () => {
-        document.body.removeChild(logoutModal);
-        document.body.classList.remove("modal-open");
-        resolve(false);
-      };
-
-      const confirmHandler = () => {
-        document.body.removeChild(logoutModal);
-        document.body.classList.remove("modal-open");
-        if (onConfirm) {
-          onConfirm();
-        }
-        resolve(true);
-      };
-
-      document
-        .getElementById("cancelLogout")
-        .addEventListener("click", cancelHandler);
-      document
-        .getElementById("confirmLogout")
-        .addEventListener("click", confirmHandler);
-
-      // Keyboard support
-      logoutModal.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          cancelHandler();
-        } else if (e.key === "Enter") {
-          confirmHandler();
-        }
-      });
-
-      // Close on background click (using proper utility function)
-      addModalBackgroundClickHandler(logoutModal, cancelHandler);
-    });
+    return this.showLogoutModal(onConfirm);
   },
   showConfirmModal: function (title, message, onConfirm, onCancel) {
     if (this.isShowingModal) {
@@ -382,15 +297,29 @@ const modalManager = {
         modalElement.style.setProperty("height", "100vh", "important");
 
         const modalContent = modalElement.querySelector(".modal-content");
+        // Use theme-aware colors for dark mode support
+        const isDarkMode =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
         if (modalContent) {
-          modalContent.style.backgroundColor = "white";
+          modalContent.style.backgroundColor = isDarkMode ? "#1a1a1a" : "white";
+          modalContent.style.color = isDarkMode ? "#e0e0e0" : "#333333";
           modalContent.style.padding = "2rem";
           modalContent.style.borderRadius = "8px";
           modalContent.style.maxWidth = "500px";
           modalContent.style.width = "90%";
           modalContent.style.maxHeight = "80vh";
           modalContent.style.overflowY = "auto";
-          modalContent.style.boxShadow = "0 4px 20px rgba(0, 0, 0, 0.3)";
+          modalContent.style.boxShadow = isDarkMode
+            ? "0 4px 20px rgba(0, 0, 0, 0.6)"
+            : "0 4px 20px rgba(0, 0, 0, 0.3)";
+          modalContent.style.border = isDarkMode ? "1px solid #424242" : "none";
+        }
+
+        // Update hint text color for dark mode
+        const hintText = modalElement.querySelector(".modal-hint");
+        if (hintText) {
+          hintText.style.color = isDarkMode ? "#9e9e9e" : "#666";
         }
 
         // Style buttons
@@ -460,7 +389,12 @@ const modalManager = {
     return true;
   },
 
-  // Enhanced logout confirmation modal - unified function
+  /**
+   * Show logout confirmation modal with dark mode support
+   * Unified function - showLogoutConfirmation is an alias to this
+   * @param {Function} confirmCallback - Callback when user confirms logout
+   * @returns {Promise<boolean>} Resolves to true if confirmed, false if cancelled
+   */
   showLogoutModal: function (confirmCallback) {
     return new Promise((resolve) => {
       // Prevent duplicate modals
@@ -471,27 +405,34 @@ const modalManager = {
         return resolve(false);
       }
 
+      // Detect dark mode
+      const isDarkMode =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+
       const logoutModal = document.createElement("div");
       logoutModal.className = "modal-overlay";
       logoutModal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3>🚪 Confirm Logout</h3>
-                    </div>
-                    <div class="modal-body">
-                        <p>Are you sure you want to log out?</p>
-                        <p style="color: #666; font-size: 0.9rem; margin-top: 1rem;">You will be redirected to the login page and will need to sign in again to access the system.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="modal-btn cancel" id="cancelLogout">Cancel</button>
-                        <button class="modal-btn confirm" id="confirmLogout">Logout</button>
-                    </div>
-                </div>
-            `;
-      document.body.appendChild(logoutModal); // Prevent body scrolling
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>🚪 Confirm Logout</h3>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to log out?</p>
+            <p class="modal-hint">You will be redirected to the login page and will need to sign in again to access the system.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="modal-btn cancel" id="cancelLogout">Cancel</button>
+            <button class="modal-btn confirm" id="confirmLogout">Logout</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(logoutModal);
+
+      // Prevent body scrolling
       document.body.classList.add("modal-open");
 
-      // Force modal to center in viewport with inline styles - higher z-index than sidebar
+      // Force modal to center in viewport with inline styles
       logoutModal.style.display = "flex";
       logoutModal.style.position = "fixed";
       logoutModal.style.top = "0";
@@ -505,17 +446,38 @@ const modalManager = {
       logoutModal.style.margin = "0";
       logoutModal.style.padding = "0";
 
-      // Ensure it's above everything else with !important - higher than sidebar z-index
+      // Ensure it's above everything else
       logoutModal.style.setProperty("position", "fixed", "important");
       logoutModal.style.setProperty("z-index", "99999", "important");
       logoutModal.style.setProperty("display", "flex", "important");
-      logoutModal.style.setProperty("top", "0", "important");
-      logoutModal.style.setProperty("left", "0", "important");
-      logoutModal.style.setProperty("width", "100vw", "important");
-      logoutModal.style.setProperty("height", "100vh", "important");
+
+      // Style modal content with dark mode support
+      const modalContent = logoutModal.querySelector(".modal-content");
+      if (modalContent) {
+        modalContent.style.backgroundColor = isDarkMode ? "#1a1a1a" : "white";
+        modalContent.style.color = isDarkMode ? "#e0e0e0" : "#333333";
+        modalContent.style.padding = "2rem";
+        modalContent.style.borderRadius = "8px";
+        modalContent.style.maxWidth = "450px";
+        modalContent.style.width = "90%";
+        modalContent.style.boxShadow = isDarkMode
+          ? "0 4px 20px rgba(0, 0, 0, 0.6)"
+          : "0 4px 20px rgba(0, 0, 0, 0.3)";
+        modalContent.style.border = isDarkMode ? "1px solid #424242" : "none";
+      }
+
+      // Style hint text
+      const hintText = logoutModal.querySelector(".modal-hint");
+      if (hintText) {
+        hintText.style.color = isDarkMode ? "#9e9e9e" : "#666";
+        hintText.style.fontSize = "0.9rem";
+        hintText.style.marginTop = "1rem";
+      }
 
       // Focus on the modal for accessibility
-      logoutModal.focus(); // Set up event handlers
+      logoutModal.focus();
+
+      // Set up event handlers
       const cancelHandler = () => {
         document.body.removeChild(logoutModal);
         document.body.classList.remove("modal-open");
@@ -545,7 +507,7 @@ const modalManager = {
         }
       });
 
-      // Close on background click (using proper utility function)
+      // Close on background click
       addModalBackgroundClickHandler(logoutModal, cancelHandler);
     });
   },
