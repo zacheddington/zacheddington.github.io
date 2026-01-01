@@ -93,6 +93,13 @@ function initializeApp() {
     }
   }
 
+  // Always load the app footer (version number) on all pages
+  if (window.navigation && window.navigation.loadAppFooter) {
+    window.navigation.loadAppFooter();
+  } else if (window.loadAppFooter) {
+    window.loadAppFooter();
+  }
+
   // Initialize page-specific functionality
   initializePage(currentPage);
 }

@@ -1,8 +1,27 @@
 // Top Navigation Utilities
 // Handles top menu loading, navigation, and page transitions
 
+// Application version - update this with each deployment
+const APP_VERSION = '0.0.480';
+
+// Load application footer with version
+function loadAppFooter() {
+    // Check if footer already exists
+    if (document.querySelector('.app-footer')) {
+        return;
+    }
+
+    const footer = document.createElement('footer');
+    footer.className = 'app-footer';
+    footer.innerHTML = `<span class="version-text">Integris Neuro Data Entry ${APP_VERSION}</span>`;
+    document.body.appendChild(footer);
+}
+
 // Load top navigation menu
 async function loadTopNavigation() {
+    // Always load the footer on every page
+    loadAppFooter();
+
     try {
         const headerContainer = document.querySelector('.app-header');
         if (!headerContainer) {
@@ -480,12 +499,15 @@ function setupMobileDropdowns() {
 window.navigation = {
     loadTopNavigation,
     loadMenu: loadTopNavigation, // Add loadMenu for backward compatibility
+    loadAppFooter,
     setupFadeNavigation,
     setupPatientNumberValidation,
+    APP_VERSION,
 };
 
 // Also expose individual functions for backward compatibility
 window.loadMenu = loadTopNavigation; // Backward compatibility
 window.loadTopNavigation = loadTopNavigation;
+window.loadAppFooter = loadAppFooter;
 window.setupFadeNavigation = setupFadeNavigation;
 window.setupPatientNumberValidation = setupPatientNumberValidation;

@@ -212,3 +212,37 @@ body.content-page {
     padding-block-start: calc(var(--header-height) - 10px);
   }
 }
+
+/* ================================
+   7. FOOTER
+   ================================ */
+
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-xs) var(--space-md);
+  background: transparent;
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.app-footer .version-text {
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.app-footer:hover .version-text {
+  opacity: 1;
+}
+
+/* Hide footer on very small screens to save space */
+@media screen and (max-height: 600px) {
+  .app-footer {
+    display: none;
+  }
+}
