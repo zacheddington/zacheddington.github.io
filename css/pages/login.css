@@ -15,26 +15,11 @@
    1. PAGE BACKGROUND
    ================================ */
 
+/* Login page inherits the system-wide gradient from containers.css */
+/* Only override padding for full-height centering */
 body.login-page,
 body.login-body {
   padding-block-start: 0;
-  background: var(--color-background-dark);
-  background-image: 
-    linear-gradient(
-      135deg,
-      var(--color-background-dark) 0%,
-      var(--color-gray-200) 100%
-    ),
-    radial-gradient(
-      circle at 20% 50%,
-      rgba(0, 150, 136, 0.03) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 80% 20%,
-      rgba(0, 59, 73, 0.03) 0%,
-      transparent 50%
-    );
 }
 
 /* ================================

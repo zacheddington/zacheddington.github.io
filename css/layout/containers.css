@@ -35,12 +35,12 @@ body {
     ),
     radial-gradient(
       circle at 20% 50%,
-      rgba(var(--color-primary-rgb), 0.02) 0%,
+      rgba(var(--color-primary-rgb), 0.04) 0%,
       transparent 50%
     ),
     radial-gradient(
       circle at 80% 20%,
-      rgba(var(--color-secondary-rgb), 0.02) 0%,
+      rgba(var(--color-secondary-rgb), 0.03) 0%,
       transparent 50%
     );
   transition: var(--transition-all);

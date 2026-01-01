@@ -347,6 +347,7 @@
 
     /* Secondary Colors */
     --color-secondary: #b2dfdb; /* Light teal for text on dark */
+    --color-secondary-rgb: 178, 223, 219; /* For rgba() usage */
     --color-secondary-light: #80cbc4;
 
     /* Status Colors - adjusted for dark mode visibility */
