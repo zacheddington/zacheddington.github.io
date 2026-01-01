@@ -427,15 +427,6 @@ router.delete(
                 client.release();
             }
         } catch (err) {
-            console.error('🔥 DELETE USER ERROR:', {
-                userId,
-                error: err.message,
-                code: err.code,
-                detail: err.detail,
-                constraint: err.constraint,
-                table: err.table,
-                stack: err.stack,
-            });
             return errorResponse(
                 res,
                 `Failed to delete user: ${err.message}`,

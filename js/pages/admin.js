@@ -1554,7 +1554,6 @@ async function performSessionRevocation(sessionId) {
           }
         }
       } catch (parseError) {
-
         // If we can't parse the response, try to get text
         try {
           const errorText = await response.text();
@@ -1827,7 +1826,11 @@ async function testSessionEndpoints() {
   ];
 
   for (const endpoint of endpoints) {
-    const result = { endpoint: endpoint.url, method: endpoint.method, description: endpoint.description };
+    const result = {
+      endpoint: endpoint.url,
+      method: endpoint.method,
+      description: endpoint.description,
+    };
     try {
       const requestOptions = {
         method: endpoint.method,
@@ -1888,7 +1891,7 @@ async function checkDeployment() {
         deployed: true,
         serverVersion: data.data?.serverVersion,
         features: data.data?.features,
-        endpoints: data.data?.endpoints
+        endpoints: data.data?.endpoints,
       };
     } else {
       const errorData = await response.json().catch(() => null);
@@ -1896,7 +1899,7 @@ async function checkDeployment() {
         deployed: false,
         status: response.status,
         statusText: response.statusText,
-        error: errorData
+        error: errorData,
       };
     }
   } catch (error) {
@@ -1943,7 +1946,7 @@ async function testSessionRevocationDetection() {
     results.sessionCheck = sessionCheck;
 
     if (!sessionCheck.valid) {
-      results.status = 'Session already invalid';
+      results.status = "Session already invalid";
       return results;
     }
 
@@ -1961,12 +1964,12 @@ async function testSessionRevocationDetection() {
       "Test call"
     );
     results.errorHandlingTest = handledAs403;
-    results.status = 'Test completed';
+    results.status = "Test completed";
 
     return results;
   } catch (error) {
     results.error = error.message;
-    results.status = 'Test failed';
+    results.status = "Test failed";
     return results;
   }
 }

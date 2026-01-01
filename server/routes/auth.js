@@ -211,24 +211,12 @@ router.post(
 
       // SINGLE SESSION ENFORCEMENT: Revoke all other existing sessions for this user
       // This ensures only one active session per user at a time
-      console.log(
-        `🔐 SINGLE SESSION ENFORCEMENT: Revoking other sessions for user ${user.username}`
-      );
-      const revokedCount = await SessionManager.revokeUserSessions(
+      await SessionManager.revokeUserSessions(
         user.user_key,
         "new_login_single_session_enforcement",
         session.session_token // Exclude the newly created session
       );
 
-      if (revokedCount > 0) {
-        console.log(
-          `🔐 Revoked ${revokedCount} existing sessions for user ${user.username}, keeping only the new session`
-        );
-      } else {
-        console.log(
-          `🔐 No existing sessions found for user ${user.username}, new session is the only one`
-        );
-      }
       return successResponse(
         res,
         {
@@ -254,7 +242,6 @@ router.post(
         "Login successful"
       );
     } catch (err) {
-      console.error("Login error:", err);
       return errorResponse(res, "Internal server error", 500);
     }
   }
@@ -273,12 +260,8 @@ router.post("/logout", authenticateToken, async (req, res) => {
       );
 
       if (sessionEnded) {
-        console.log(
-          `User ${req.user.username} logged out at ${new Date().toISOString()}`
-        );
         return successResponse(res, null, "Successfully logged out");
       } else {
-        console.warn(`Failed to end session for user ${req.user.username}`);
         return successResponse(
           res,
           null,
@@ -289,7 +272,6 @@ router.post("/logout", authenticateToken, async (req, res) => {
       return successResponse(res, null, "No active session found");
     }
   } catch (err) {
-    console.error("Logout error:", err);
     return errorResponse(res, "Logout failed", 500);
   }
 });
