@@ -1,152 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Two-Factor Authentication Setup - IntegrisNeuro</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Two-Factor Authentication Setup - IntegrisNeuro</title>
 
-        <!-- Security: Prevent caching of authenticated pages -->
-        <meta
-            http-equiv="Cache-Control"
-            content="no-cache, no-store, must-revalidate"
-        />
-        <meta http-equiv="Pragma" content="no-cache" />
-        <meta http-equiv="Expires" content="0" />
-        <link rel="stylesheet" href="../css/main.css" />
-    </head>
-    <body class="content-page">
-        <!-- Header Bar with Top Navigation -->
-        <header class="app-header">
-            <!-- Navigation will be loaded here by JavaScript -->
-        </header>
-        <div class="content-container">
-            <h1>Two-Factor Authentication Setup</h1>
-            <p>
-                Enhance your account security by enabling two-factor
-                authentication (2FA).
-            </p>
+    <!-- Security: Prevent caching of authenticated pages -->
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="stylesheet" href="../css/main.css" />
+  </head>
+  <body class="content-page">
+    <!-- Header Bar with Top Navigation -->
+    <header class="app-header">
+      <!-- Navigation will be loaded here by JavaScript -->
+    </header>
+    <div class="content-container">
+      <h1>Two-Factor Authentication Setup</h1>
+      <p>
+        Enhance your account security by enabling two-factor authentication
+        (2FA).
+      </p>
 
-            <!-- Step 1: Download App -->
-            <div class="step active" id="step1">
-                <h3>
-                    <span class="step-number">1</span>Download Authenticator App
-                </h3>
-                <p>
-                    If you don't already have one, download a TOTP authenticator
-                    app:
-                </p>
-                <ul>
-                    <li><strong>Google Authenticator</strong> (iOS/Android)</li>
-                    <li>
-                        <strong>Microsoft Authenticator</strong> (iOS/Android)
-                    </li>
-                    <li><strong>Authy</strong> (iOS/Android/Desktop)</li>
-                    <li>
-                        <strong>1Password</strong> (if you have a subscription)
-                    </li>
-                </ul>
-                <button class="btn btn-primary authenticator-button">
-                    I have an authenticator app
-                </button>
-            </div>
+      <!-- Step 1: Download App -->
+      <div class="step active" id="step1">
+        <h3><span class="step-number">1</span>Download Authenticator App</h3>
+        <p>If you don't already have one, download a TOTP authenticator app:</p>
+        <ul>
+          <li><strong>Google Authenticator</strong> (iOS/Android)</li>
+          <li><strong>Microsoft Authenticator</strong> (iOS/Android)</li>
+          <li><strong>Authy</strong> (iOS/Android/Desktop)</li>
+          <li><strong>1Password</strong> (if you have a subscription)</li>
+        </ul>
+        <button class="btn btn-primary authenticator-button">
+          I have an authenticator app
+        </button>
+      </div>
 
-            <!-- Step 2: Scan QR Code -->
-            <div class="step hidden" id="step2">
-                <h3><span class="step-number">2</span>Scan QR Code</h3>
-                <p>Open your authenticator app and scan this QR code:</p>
+      <!-- Step 2: Scan QR Code -->
+      <div class="step hidden" id="step2">
+        <h3><span class="step-number">2</span>Scan QR Code</h3>
+        <p>Open your authenticator app and scan this QR code:</p>
 
-                <div class="qr-code" id="qrCodeContainer">
-                    <p>Loading QR code...</p>
-                </div>
-
-                <details>
-                    <summary>Can't scan the QR code?</summary>
-                    <p>You can manually enter this key instead:</p>
-                    <div class="manual-entry" id="manualKey">Loading...</div>
-                    <p>
-                        <strong>Account:</strong> <span id="accountName"></span>
-                    </p>
-                    <p>
-                        <strong>Issuer:</strong> IntegrisNeuro Medical Records
-                    </p>
-                </details>
-                <button class="btn btn-primary">I've added the account</button>
-            </div>
-
-            <!-- Step 3: Verify Code -->
-            <div class="step hidden" id="step3">
-                <h3><span class="step-number">3</span>Verify Setup</h3>
-                <p>
-                    Enter the 6-digit code from your authenticator app to verify
-                    the setup:
-                </p>
-
-                <div class="form-group">
-                    <input
-                        type="text"
-                        id="verificationCode"
-                        class="verification-input"
-                        placeholder="000000"
-                        maxlength="6"
-                        autocomplete="off"
-                        inputmode="numeric"
-                    />
-                </div>
-                <div id="verificationError" class="error-message hidden"></div>
-
-                <div class="verification-buttons">
-                    <button class="btn btn-primary" id="verifyBtn">
-                        Verify & Enable 2FA
-                    </button>
-                    <button class="btn btn-secondary">Back</button>
-                </div>
-            </div>
-
-            <!-- Step 4: Backup Codes -->
-            <div class="step hidden" id="step4">
-                <h3><span class="step-number">4</span>Save Backup Codes</h3>
-                <div class="success-message">
-                    <strong>Success!</strong> Two-factor authentication has been
-                    enabled for your account.
-                </div>
-
-                <div class="backup-codes">
-                    <h4>⚠️ Important: Save these backup codes</h4>
-                    <p>
-                        Store these codes in a safe place. You can use them to
-                        access your account if you lose your phone:
-                    </p>
-                    <div class="backup-codes-grid" id="backupCodesContainer">
-                        <!-- Backup codes will be inserted here -->
-                    </div>
-                    <p><strong>Each code can only be used once.</strong></p>
-                </div>
-                <div class="backup-codes-actions">
-                    <button class="btn btn-secondary">Download Codes</button>
-                    <button class="btn btn-primary">Complete Setup</button>
-                </div>
-            </div>
-
-            <!-- Loading/Error States -->
-            <div id="loadingMessage" class="hidden">
-                <p>Setting up 2FA...</p>
-            </div>
-
-            <div id="errorMessage" class="error-message hidden"></div>
+        <div class="qr-code" id="qrCodeContainer">
+          <p>Loading QR code...</p>
         </div>
-        <!-- Load shared modules first -->
-        <script src="../js/shared/api-client.js"></script>
-        <script src="../js/shared/modal-manager.js"></script>
-        <script src="../js/shared/password-utils.js"></script>
-        <script src="../js/shared/field-validation.js"></script>
-        <script src="../js/shared/auth-utils.js"></script>
-        <script src="../js/shared/page-transitions.js"></script>
-        <script src="../js/shared/navigation.js"></script>
 
-        <!-- Load page-specific module -->
-        <script src="../js/pages/2fa-setup.js"></script>
+        <details>
+          <summary>Can't scan the QR code?</summary>
+          <p>You can manually enter this key instead:</p>
+          <div class="manual-entry" id="manualKey">Loading...</div>
+          <p><strong>Account:</strong> <span id="accountName"></span></p>
+          <p><strong>Issuer:</strong> IntegrisNeuro Medical Records</p>
+        </details>
+        <button class="btn btn-primary">I've added the account</button>
+      </div>
 
-        <!-- Load main controller -->
-        <script src="../js/main.js"></script>
-    </body>
+      <!-- Step 3: Verify Code -->
+      <div class="step hidden" id="step3">
+        <h3><span class="step-number">3</span>Verify Setup</h3>
+        <p>
+          Enter the 6-digit code from your authenticator app to verify the
+          setup:
+        </p>
+
+        <div class="form-group">
+          <input
+            type="text"
+            id="verificationCode"
+            class="verification-input"
+            placeholder="000000"
+            maxlength="6"
+            autocomplete="off"
+            inputmode="numeric"
+          />
+        </div>
+        <div id="verificationError" class="error-message hidden"></div>
+
+        <div class="verification-buttons">
+          <button class="btn btn-primary" id="verifyBtn">
+            Verify & Enable 2FA
+          </button>
+          <button class="btn btn-secondary">Back</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Backup Codes -->
+      <div class="step hidden" id="step4">
+        <h3><span class="step-number">4</span>Save Backup Codes</h3>
+        <div class="success-message">
+          <strong>Success!</strong> Two-factor authentication has been enabled
+          for your account.
+        </div>
+
+        <div class="backup-codes">
+          <h4>⚠️ Important: Save these backup codes</h4>
+          <p>
+            Store these codes in a safe place. You can use them to access your
+            account if you lose your phone:
+          </p>
+          <div class="backup-codes-grid" id="backupCodesContainer">
+            <!-- Backup codes will be inserted here -->
+          </div>
+          <p><strong>Each code can only be used once.</strong></p>
+        </div>
+        <div class="backup-codes-actions">
+          <button class="btn btn-secondary">Download Codes</button>
+          <button class="btn btn-primary">Complete Setup</button>
+        </div>
+      </div>
+
+      <!-- Loading/Error States -->
+      <div id="loadingMessage" class="hidden">
+        <p>Setting up 2FA...</p>
+      </div>
+
+      <div id="errorMessage" class="error-message hidden"></div>
+    </div>
+    <!-- Load shared modules first -->
+    <script src="../js/shared/api-client.js"></script>
+    <script src="../js/shared/modal-manager.js"></script>
+    <script src="../js/shared/password-utils.js"></script>
+    <script src="../js/shared/field-validation.js"></script>
+    <script src="../js/shared/form-utils.js"></script>
+    <script src="../js/shared/auth-utils.js"></script>
+    <script src="../js/shared/page-transitions.js"></script>
+    <script src="../js/shared/navigation.js"></script>
+
+    <!-- Load page-specific module -->
+    <script src="../js/pages/2fa-setup.js"></script>
+
+    <!-- Load main controller -->
+    <script src="../js/main.js"></script>
+  </body>
 </html>

@@ -1,223 +1,277 @@
+/**
+ * Card Components
+ * ================
+ * Content containers and card layouts.
+ *
+ * Sections:
+ * 1. Option Cards
+ * 2. Login Card
+ * 3. Admin Sections
+ * 4. Profile Sections
+ * 5. Info Cards
+ * 6. Security Section
+ * 7. Status Badges
+ * 8. Responsive
+ */
+
 /* ================================
-   CARD COMPONENTS
+   1. OPTION CARDS
    ================================ */
 
-/* Option Cards for Welcome Page */
 .options {
-    display: flex;
-    gap: var(--space-xl);
-    margin-top: 40px; /* Match the choice-buttons top margin */
-    justify-content: center;
-    flex-wrap: wrap;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xl);
+  justify-content: center;
+  margin-block-start: 40px;
 }
 
 .option-card {
-    background: var(--color-white);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-lg);
-    padding: var(--padding-card);
-    text-align: center;
-    width: 100%;
-    max-width: 400px;
-    box-sizing: border-box;
-    margin: 0 auto;
-    transition: var(--transition-all);
-    border: var(--border-medium) solid var(--color-border-dark);
+  width: 100%;
+  max-width: 400px;
+  margin-inline: auto;
+  padding: var(--padding-card);
+  text-align: center;
+  background: var(--color-white);
+  border: var(--border-medium) solid var(--color-border-dark);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  box-sizing: border-box;
+  transition: var(--transition-all);
 }
 
 .option-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-xl);
-    border-color: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-3px);
 }
 
 .option-card h2 {
-    margin-bottom: var(--space-md);
-    color: var(--color-primary);
-    font-size: var(--font-size-xl);
+  margin-block-end: var(--space-md);
+  font-size: var(--font-size-xl);
+  color: var(--color-primary);
 }
 
 /* ================================
-   LOGIN CARD
+   2. LOGIN CARD
    ================================ */
 
 .login-card {
-    background: var(--color-white);
-    padding: var(--space-xl);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-xl);
-    max-width: 420px;
-    width: 90%;
-    margin: 0 auto; /* Removed vertical margin to eliminate extra spacing */
-    border: 3px solid var(--color-border-dark);
-    position: relative;
-    backdrop-filter: blur(10px);
+  position: relative;
+  width: 90%;
+  max-width: 420px;
+  margin-inline: auto;
+  padding: var(--space-xl);
+  background: var(--color-white);
+  border: 3px solid var(--color-border-dark);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: blur(10px);
 }
 
-/* Add a subtle inner shadow for more depth */
 .login-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: var(--radius-lg);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    pointer-events: none;
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  pointer-events: none;
 }
 
 /* ================================
-   ADMIN SECTIONS
+   3. ADMIN SECTIONS
    ================================ */
 
 .admin-choice {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin-bottom: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-block-end: var(--space-xl);
 }
 
 .admin-section {
-    background: var(--color-white);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    padding: var(--space-xl);
-    margin-top: 0; /* Remove margin-top since the container already has margin */
-    border: var(--border-medium) solid var(--color-border-dark);
-    transition: var(--transition-all);
+  margin-block-start: 0;
+  padding: var(--space-xl);
+  background: var(--color-white);
+  border: var(--border-medium) solid var(--color-border-dark);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  transition: var(--transition-all);
 }
 
 .admin-section.hidden {
-    display: none;
+  display: none;
 }
 
 .section-header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    margin-bottom: var(--space-xl);
-    padding-bottom: var(--space-md);
-    border-bottom: var(--border-medium) solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-block-end: var(--space-xl);
+  padding-block-end: var(--space-md);
+  border-block-end: var(--border-medium) solid var(--color-border);
 }
 
 .section-header h2 {
-    margin: 0;
-    color: var(--color-primary);
+  margin: 0;
+  color: var(--color-primary);
 }
 
 /* ================================
-   PROFILE SECTIONS
+   4. PROFILE SECTIONS
    ================================ */
 
 .profile-section {
-    background: var(--color-white);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    padding: var(--space-xl);
-    margin-bottom: var(--space-xl);
-    border: var(--border-medium) solid var(--color-border-dark);
-    transition: var(--transition-all);
+  margin-block-end: var(--space-xl);
+  padding: var(--space-xl);
+  background: var(--color-white);
+  border: var(--border-medium) solid var(--color-border-dark);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  transition: var(--transition-all);
 }
 
 .profile-section:hover {
-    box-shadow: var(--shadow-xl);
-    border-color: var(--color-primary-light);
+  border-color: var(--color-primary-light);
+  box-shadow: var(--shadow-xl);
 }
 
 .profile-section:last-child {
-    margin-bottom: 0;
+  margin-block-end: 0;
 }
 
 .profile-section h2 {
-    margin-top: 0;
-    margin-bottom: var(--space-lg);
-    color: var(--color-primary);
-    font-size: var(--font-size-xl);
-    border-bottom: var(--border-medium) solid var(--color-border);
-    padding-bottom: 0.5rem;
+  margin-block-start: 0;
+  margin-block-end: var(--space-lg);
+  padding-block-end: var(--space-xs);
+  font-size: var(--font-size-xl);
+  color: var(--color-primary);
+  border-block-end: var(--border-medium) solid var(--color-border);
 }
 
 /* ================================
-   INFO CARDS
+   5. INFO CARDS
    ================================ */
 
 .profile-info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 
 .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-md);
-    background: var(--color-gray-50);
-    border-radius: var(--radius-md);
-    border: var(--border-thin) solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  border: var(--border-thin) solid var(--color-border);
 }
 
 .info-row label {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-primary);
-    margin-bottom: 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  margin-bottom: 0;
 }
 
 .info-row span {
-    color: var(--color-text-muted);
+  color: var(--color-text-muted);
 }
 
 .info-only {
-    background: var(--color-gray-50);
+  background: var(--color-gray-50);
 }
 
 .info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-md);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
 }
 
 .info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem;
-    background: var(--color-white);
-    border-radius: var(--radius-md);
-    border: var(--border-thin) solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--color-white);
+  border-radius: var(--radius-md);
+  border: var(--border-thin) solid #e0e0e0;
 }
 
 .info-label {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
 }
 
 .info-value {
-    color: var(--color-text-muted);
+  color: var(--color-text-muted);
 }
 
 /* ================================
-   SECURITY SECTION
+   SECURITY SECTION (Shared across pages)
    ================================ */
 
 .security-section {
-    border: var(--border-thin) solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-md);
+  border: var(--border-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
+}
+
+.security-option {
+  border: var(--border-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
 }
 
 .security-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .security-header h3 {
-    margin: 0;
-    color: var(--color-primary);
+  margin: 0;
+  color: var(--color-primary);
+}
+
+.security-description {
+  color: var(--color-text-muted);
+  margin: var(--space-md) 0;
+  line-height: 1.5;
+}
+
+.security-actions {
+  margin-top: var(--space-md);
+}
+
+/* ================================
+   STATUS BADGES (Shared across pages)
+   ================================ */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.status-badge.active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.inactive {
+  background-color: #f8d7da;
+  color: #721c24;
 }
 
 /* ================================
@@ -226,171 +280,171 @@
 
 /* ULTRAWIDE MONITORS (1400px and up) */
 @media screen and (min-width: 1400px) {
-    .options {
-        gap: 48px;
-        margin-top: 5px;
-    }
+  .options {
+    gap: 48px;
+    margin-top: 5px;
+  }
 
-    .option-card {
-        max-width: 450px;
-        padding: 40px 48px;
-    }
+  .option-card {
+    max-width: 450px;
+    padding: 40px 48px;
+  }
 }
 
 /* LARGE DESKTOP (1200px - 1399px) */
 @media screen and (min-width: 1200px) and (max-width: 1399px) {
-    .options {
-        gap: 40px;
-        margin-top: 4px;
-    }
+  .options {
+    gap: 40px;
+    margin-top: 4px;
+  }
 
-    .option-card {
-        max-width: 420px;
-        padding: 36px 42px;
-    }
+  .option-card {
+    max-width: 420px;
+    padding: 36px 42px;
+  }
 }
 
 /* STANDARD DESKTOP (992px - 1199px) */
 @media screen and (min-width: 992px) and (max-width: 1199px) {
-    .options {
-        gap: 32px;
-        margin-top: 2px;
-    }
+  .options {
+    gap: 32px;
+    margin-top: 2px;
+  }
 
-    .option-card {
-        max-width: 380px;
-        padding: 32px 36px;
-    }
+  .option-card {
+    max-width: 380px;
+    padding: 32px 36px;
+  }
 }
 
 /* TABLET LANDSCAPE (768px - 991px) */
 @media screen and (min-width: 768px) and (max-width: 991px) {
-    .options {
-        flex-direction: column;
-        align-items: center;
-        gap: 24px;
-        margin-top: 2px;
-    }
+  .options {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    margin-top: 2px;
+  }
 
-    .option-card {
-        max-width: 450px;
-        width: 100%;
-        padding: 28px 32px;
-    }
+  .option-card {
+    max-width: 450px;
+    width: 100%;
+    padding: 28px 32px;
+  }
 
-    .admin-section {
-        padding: var(--space-lg);
-    }
+  .admin-section {
+    padding: var(--space-lg);
+  }
 
-    .profile-section {
-        padding: var(--space-lg);
-    }
+  .profile-section {
+    padding: var(--space-lg);
+  }
 
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 }
 
 /* TABLET PORTRAIT (576px - 767px) */
 @media screen and (min-width: 576px) and (max-width: 767px) {
-    .options {
-        flex-direction: column;
-        align-items: center;
-        gap: 16px;
-        margin-top: 2px;
-    }
+  .options {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: 2px;
+  }
 
-    .option-card {
-        max-width: 350px;
-        width: 100%;
-        padding: 20px 24px;
-    }
+  .option-card {
+    max-width: 350px;
+    width: 100%;
+    padding: 20px 24px;
+  }
 
-    .option-card h2 {
-        font-size: var(--font-size-lg);
-        margin-bottom: 0.75rem;
-    }
+  .option-card h2 {
+    font-size: var(--font-size-lg);
+    margin-bottom: 0.75rem;
+  }
 
-    .admin-section {
-        padding: var(--space-lg);
-    }
+  .admin-section {
+    padding: var(--space-lg);
+  }
 
-    .profile-section {
-        padding: var(--space-lg);
-    }
+  .profile-section {
+    padding: var(--space-lg);
+  }
 
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 }
 
 /* MOBILE LANDSCAPE (480px - 575px) */
 @media screen and (min-width: 480px) and (max-width: 575px) {
-    .options {
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-        margin-top: 2px;
-    }
+  .options {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 2px;
+  }
 
-    .option-card {
-        max-width: 300px;
-        width: 100%;
-        padding: 16px 12px;
-    }
+  .option-card {
+    max-width: 300px;
+    width: 100%;
+    padding: 16px 12px;
+  }
 
-    .option-card h2 {
-        font-size: var(--font-size-base);
-        margin-bottom: 0.5rem;
-    }
+  .option-card h2 {
+    font-size: var(--font-size-base);
+    margin-bottom: 0.5rem;
+  }
 }
 
 /* MOBILE PORTRAIT (320px - 479px) */
 @media screen and (max-width: 479px) {
-    .options {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        margin-top: 2px;
-    }
+  .options {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+  }
 
-    .option-card {
-        max-width: 280px;
-        width: 100%;
-        padding: 12px 10px;
-    }
+  .option-card {
+    max-width: 280px;
+    width: 100%;
+    padding: 12px 10px;
+  }
 
-    .option-card h2 {
-        font-size: var(--font-size-base);
-        margin-bottom: 0.5rem;
-    }
+  .option-card h2 {
+    font-size: var(--font-size-base);
+    margin-bottom: 0.5rem;
+  }
 
-    .admin-section {
-        padding: var(--space-lg);
-    }
+  .admin-section {
+    padding: var(--space-lg);
+  }
 
-    .profile-section {
-        padding: var(--space-lg);
-    }
+  .profile-section {
+    padding: var(--space-lg);
+  }
 
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 }
 
 /* Fix for very narrow screens */
 @media screen and (max-width: 320px) {
-    .option-card {
-        min-width: 240px;
-        width: 100%;
-        padding: 10px 8px;
-    }
+  .option-card {
+    min-width: 240px;
+    width: 100%;
+    padding: 10px 8px;
+  }
 }
 
 /* ================================
@@ -399,43 +453,43 @@
 
 /* Adjust option cards positioning for all mobile screens - aligned with management cards */
 @media screen and (max-width: 480px) {
-    .options {
-        margin-top: 0px !important; /* Align with management cards */
-        gap: var(--space-sm); /* Reduce gap between cards */
-        transform: translateY(0px); /* No additional transform needed */
-        justify-content: center !important; /* Ensure horizontal centering */
-        align-items: center; /* Center cards within container */
-    }
+  .options {
+    margin-top: 0px !important; /* Align with management cards */
+    gap: var(--space-sm); /* Reduce gap between cards */
+    transform: translateY(0px); /* No additional transform needed */
+    justify-content: center !important; /* Ensure horizontal centering */
+    align-items: center; /* Center cards within container */
+  }
 
-    .option-card {
-        margin-bottom: var(--space-xs); /* Reduce bottom margin */
-    }
+  .option-card {
+    margin-bottom: var(--space-xs); /* Reduce bottom margin */
+  }
 }
 
 /* Adjust option cards positioning for tall mobile screens (iPhone 16 Pro Max, etc.) */
 @media screen and (min-height: 800px) and (max-width: 480px) {
-    .options {
-        margin-top: 0px !important; /* Keep aligned with management cards */
-        gap: var(--space-xs); /* Further reduce gap between cards */
-        transform: translateY(0px); /* No additional transform */
-        justify-content: center !important; /* Ensure horizontal centering */
-        align-items: center; /* Center cards within container */
-    }
+  .options {
+    margin-top: 0px !important; /* Keep aligned with management cards */
+    gap: var(--space-xs); /* Further reduce gap between cards */
+    transform: translateY(0px); /* No additional transform */
+    justify-content: center !important; /* Ensure horizontal centering */
+    align-items: center; /* Center cards within container */
+  }
 
-    .option-card {
-        margin-bottom: 0; /* Remove bottom margin completely */
-    }
+  .option-card {
+    margin-bottom: 0; /* Remove bottom margin completely */
+  }
 }
 
 @media screen and (min-height: 900px) and (max-width: 480px) {
-    /* Extra tall mobile screens - keep aligned */
-    .options {
-        margin-top: 0px !important; /* Aligned with management cards */
-        gap: 8px; /* Minimal gap */
-        transform: translateY(0px); /* No additional transform */
-        justify-content: center !important; /* Ensure horizontal centering */
-        align-items: center; /* Center cards within container */
-    }
+  /* Extra tall mobile screens - keep aligned */
+  .options {
+    margin-top: 0px !important; /* Aligned with management cards */
+    gap: 8px; /* Minimal gap */
+    transform: translateY(0px); /* No additional transform */
+    justify-content: center !important; /* Ensure horizontal centering */
+    align-items: center; /* Center cards within container */
+  }
 }
 
 /* ================================
@@ -444,25 +498,87 @@
 
 /* Prevent management page cards (admin-section, choice-buttons) from going above header */
 @media screen and (max-width: 480px) {
-    .admin-section,
-    .choice-buttons {
-        margin-top: 10px !important; /* Ensure they stay below header */
-        transform: translateY(0px); /* No upward movement */
-    }
+  .admin-section,
+  .choice-buttons {
+    margin-top: 10px !important; /* Ensure they stay below header */
+    transform: translateY(0px); /* No upward movement */
+  }
 }
 
 @media screen and (min-height: 800px) and (max-width: 480px) {
-    .admin-section,
-    .choice-buttons {
-        margin-top: 5px !important; /* Slightly closer but safe */
-        transform: translateY(0px);
-    }
+  .admin-section,
+  .choice-buttons {
+    margin-top: 5px !important; /* Slightly closer but safe */
+    transform: translateY(0px);
+  }
 }
 
 @media screen and (min-height: 900px) and (max-width: 480px) {
-    .admin-section,
-    .choice-buttons {
-        margin-top: 0px !important; /* Minimal margin for extra tall screens */
-        transform: translateY(0px);
-    }
+  .admin-section,
+  .choice-buttons {
+    margin-top: 0px !important; /* Minimal margin for extra tall screens */
+    transform: translateY(0px);
+  }
+}
+
+/* ================================
+   EXTRA SMALL SCREEN OPTIMIZATIONS (320px)
+   ================================ */
+
+@media screen and (max-width: 359px) {
+  .login-card {
+    padding: var(--space-md);
+    width: 95%;
+    border-width: 2px;
+  }
+
+  .login-card h1 {
+    font-size: var(--font-size-xl);
+  }
+
+  .option-card,
+  .admin-section,
+  .profile-section {
+    padding: var(--space-sm);
+    border-width: 1px;
+  }
+
+  .choice-btn {
+    padding: var(--space-sm);
+    min-width: 100%;
+  }
+
+  .choice-btn h3 {
+    font-size: var(--font-size-base);
+  }
+
+  .choice-btn p {
+    font-size: var(--font-size-xs);
+  }
+
+  .section-header h2 {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media screen and (max-width: 320px) {
+  .login-card {
+    padding: var(--space-sm);
+    width: 98%;
+    border-radius: var(--radius-md);
+  }
+
+  .choice-buttons {
+    gap: var(--space-xs);
+  }
+
+  .choice-btn {
+    padding: 0.75rem;
+  }
+
+  .admin-section,
+  .profile-section {
+    padding: 0.75rem;
+    margin-bottom: var(--space-sm);
+  }
 }

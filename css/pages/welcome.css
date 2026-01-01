@@ -1,25 +1,26 @@
+/**
+ * Welcome Page Styles
+ * ===================
+ * Landing page after login.
+ *
+ * NOTE: Most welcome page styles are handled by:
+ * - buttons.css for choice button styles
+ * - containers.css for content-container layout
+ */
+
 /* ================================
-   WELCOME PAGE STYLES
+   WELCOME PAGE CUSTOMIZATIONS
    ================================ */
 
-/* Welcome page content is handled by buttons.css for choice buttons */
-/* and containers.css for content-container layout */
-
-/* This file is reserved for welcome-page specific styles that don't fit elsewhere */
-
-/* Style welcome page choice buttons */
 .welcome-page .choice-btn {
-    text-align: center;
+  text-align: center;
 }
 
 .welcome-page .choice-btn h3 {
-    margin-bottom: 0.75rem;
+  margin-block-end: var(--space-sm);
 }
 
-/* Adjust choice buttons layout for welcome page */
 #welcomeChoice .choice-buttons {
-    justify-content: center;
-    margin-top: 40px; /* Match standard choice-buttons spacing */
+  justify-content: center;
+  margin-block-start: 40px;
 }
-
-/* Remove page-specific overrides - all pages should have consistent spacing */

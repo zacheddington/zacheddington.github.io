@@ -1,108 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Login - Integris Neuro</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Integris Neuro</title>
 
-        <!-- Security: Prevent caching of authentication pages -->
-        <meta
-            http-equiv="Cache-Control"
-            content="no-cache, no-store, must-revalidate"
-        />
-        <meta http-equiv="Pragma" content="no-cache" />
-        <meta http-equiv="Expires" content="0" />
+    <!-- Security: Prevent caching of authentication pages -->
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
 
-        <link rel="stylesheet" href="css/main.css" />
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="icon" type="image/png" href="/favicon.png" />
-    </head>
-    <body class="login-page">
-        <div class="content-container">
-            <div class="login-card">
-                <h1>Welcome to</h1>
-                <h1>Integris Neuro</h1>
-                <form id="loginForm" method="post" action="javascript:void(0);">
-                    <div id="credentialsStep">
-                        <div class="form-group">
-                            <label for="username">Username</label>
-                            <input
-                                type="text"
-                                id="username"
-                                name="username"
-                                required
-                                autocomplete="username"
-                            />
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                required
-                                autocomplete="current-password"
-                            />
-                        </div>
-                        <button type="submit" id="loginBtn" class="submit-btn">
-                            Login
-                        </button>
-                    </div>
-                    <div class="hidden" id="twofaStep">
-                        <div class="twofa-header">
-                            <h2>Two-Factor Authentication</h2>
-                            <p class="twofa-instruction">
-                                Enter the 6-digit code from your authenticator
-                                app
-                            </p>
-                        </div>
-                        <div class="form-group">
-                            <label for="twofaToken">Authentication Code</label>
-                            <input
-                                type="text"
-                                id="twofaToken"
-                                name="twofaToken"
-                                maxlength="6"
-                                placeholder="000000"
-                                autocomplete="one-time-code"
-                                inputmode="numeric"
-                            />
-                        </div>
-                        <div class="twofa-actions">
-                            <button
-                                type="button"
-                                id="backToLogin"
-                                class="secondary-btn"
-                            >
-                                Back
-                            </button>
-                            <button
-                                type="submit"
-                                id="twofa-submit"
-                                class="submit-btn"
-                            >
-                                Verify
-                            </button>
-                        </div>
-                    </div>
-                </form>
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+  </head>
+  <body class="login-page">
+    <div class="content-container">
+      <div class="login-card">
+        <h1>Welcome to</h1>
+        <h1>Integris Neuro</h1>
+        <form id="loginForm" method="post" action="javascript:void(0);">
+          <div id="credentialsStep">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                required
+                autocomplete="username"
+              />
             </div>
-        </div>
-        <!-- Load shared modules first -->
-        <script src="js/shared/api-client.js"></script>
-        <script src="js/shared/modal-manager.js"></script>
-        <script src="js/shared/password-utils.js"></script>
-        <script src="js/shared/field-validation.js"></script>
-        <script src="js/shared/date-utils.js"></script>
-        <script src="js/shared/auth-utils.js"></script>
-        <script src="js/shared/page-transitions.js"></script>
-        <script src="js/shared/navigation.js"></script>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                autocomplete="current-password"
+              />
+            </div>
+            <button type="submit" id="loginBtn" class="submit-btn">
+              Login
+            </button>
+          </div>
+          <div class="hidden" id="twofaStep">
+            <div class="twofa-header">
+              <h2>Two-Factor Authentication</h2>
+              <p class="twofa-instruction">
+                Enter the 6-digit code from your authenticator app
+              </p>
+            </div>
+            <div class="form-group">
+              <label for="twofaToken">Authentication Code</label>
+              <input
+                type="text"
+                id="twofaToken"
+                name="twofaToken"
+                maxlength="6"
+                placeholder="000000"
+                autocomplete="one-time-code"
+                inputmode="numeric"
+              />
+            </div>
+            <div class="twofa-actions">
+              <button type="button" id="backToLogin" class="secondary-btn">
+                Back
+              </button>
+              <button type="submit" id="twofa-submit" class="submit-btn">
+                Verify
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Load shared modules first -->
+    <script src="js/shared/api-client.js"></script>
+    <script src="js/shared/modal-manager.js"></script>
+    <script src="js/shared/password-utils.js"></script>
+    <script src="js/shared/field-validation.js"></script>
+    <script src="js/shared/date-utils.js"></script>
+    <script src="js/shared/form-utils.js"></script>
+    <script src="js/shared/auth-utils.js"></script>
+    <script src="js/shared/page-transitions.js"></script>
+    <script src="js/shared/navigation.js"></script>
 
-        <!-- Load page-specific module -->
-        <script src="js/pages/login.js"></script>
+    <!-- Load page-specific module -->
+    <script src="js/pages/login.js"></script>
 
-        <!-- Load main controller -->
-        <script src="js/main.js"></script>
-    </body>
+    <!-- Load main controller -->
+    <script src="js/main.js"></script>
+  </body>
 </html>

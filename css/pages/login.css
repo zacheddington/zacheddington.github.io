@@ -1,252 +1,228 @@
+/**
+ * Login Page Styles
+ * =================
+ * Authentication page layouts and styling.
+ *
+ * Sections:
+ * 1. Page Background
+ * 2. Login Container & Card
+ * 3. Form Elements
+ * 4. 2FA Step Styles
+ * 5. Form Helpers
+ */
+
 /* ================================
-   LOGIN PAGE STYLES
+   1. PAGE BACKGROUND
    ================================ */
 
-/* Login specific body styles */
 body.login-page,
 body.login-body {
-    padding-top: 0; /* No header on login page */
-    background: var(--color-background-dark);
-    background-image: linear-gradient(
-            135deg,
-            var(--color-background-dark) 0%,
-            var(--color-gray-200) 100%
-        ),
-        radial-gradient(
-            circle at 20% 50%,
-            rgba(0, 150, 136, 0.03) 0%,
-            transparent 50%
-        ),
-        radial-gradient(
-            circle at 80% 20%,
-            rgba(0, 59, 73, 0.03) 0%,
-            transparent 50%
-        );
+  padding-block-start: 0;
+  background: var(--color-background-dark);
+  background-image: 
+    linear-gradient(
+      135deg,
+      var(--color-background-dark) 0%,
+      var(--color-gray-200) 100%
+    ),
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(0, 150, 136, 0.03) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(0, 59, 73, 0.03) 0%,
+      transparent 50%
+    );
 }
 
-/* Additional styling for login-container (used in force-password-change) */
+/* ================================
+   2. LOGIN CONTAINER & CARD
+   ================================ */
+
 .login-container {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-lg);
 }
 
-/* Enhanced login form styling */
 .login-card h1 {
-    color: var(--color-secondary);
-    text-align: center;
-    margin-bottom: var(--space-sm);
-    font-weight: var(--font-weight-bold);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  margin-block-end: var(--space-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-secondary);
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Last h1 in login card should have more bottom margin for spacing from form */
 .login-card h1:last-of-type {
-    margin-bottom: var(--space-xl);
+  margin-block-end: var(--space-xl);
 }
 
-/* Login header styling for password change page */
 .login-header h1 {
-    color: var(--color-secondary);
-    text-align: center;
-    margin-bottom: var(--space-md);
-    font-weight: var(--font-weight-bold);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  margin-block-end: var(--space-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-secondary);
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .login-subtitle {
-    color: var(--color-gray-600);
-    text-align: center;
-    margin-bottom: var(--space-xl);
-    font-size: var(--font-size-sm);
+  margin-block-end: var(--space-xl);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  text-align: center;
 }
 
-/* Enhanced form styling within login cards */
+/* ================================
+   3. FORM ELEMENTS
+   ================================ */
+
 .login-card .form-group {
-    margin-bottom: var(--space-lg);
+  margin-block-end: var(--space-lg);
 }
 
 .login-card .form-group label {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-secondary);
-    margin-bottom: var(--space-sm);
-    display: block;
+  display: block;
+  margin-block-end: var(--space-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-secondary);
 }
 
 .login-card input[type='text'],
 .login-card input[type='password'],
 .login-card input[type='email'] {
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-md);
-    width: 100%;
-    font-size: var(--font-size-base);
-    transition: var(--transition-all);
-    background: var(--color-white);
+  width: 100%;
+  padding: var(--space-md);
+  font-size: var(--font-size-base);
+  background: var(--color-white);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: var(--transition-all);
 }
 
 .login-card input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.1);
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.1);
 }
 
-/* Login form buttons */
 .login-card button[type='submit'] {
-    background: var(--color-primary);
-    color: var(--color-white);
-    border: none;
-    border-radius: var(--radius-md);
-    padding: var(--space-md) var(--space-xl);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    width: 100%;
-    cursor: pointer;
-    transition: var(--transition-all);
-    margin-top: var(--space-md);
-    box-shadow: var(--shadow-button);
+  width: 100%;
+  margin-block-start: var(--space-md);
+  padding: var(--space-md) var(--space-xl);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-button);
+  cursor: pointer;
+  transition: var(--transition-all);
 }
 
 .login-card button[type='submit']:hover {
-    background: var(--color-primary-dark);
-    box-shadow: var(--shadow-button-hover);
-    transform: translateY(-1px);
+  background: var(--color-primary-dark);
+  box-shadow: var(--shadow-button-hover);
+  transform: translateY(-1px);
 }
 
 /* ================================
-   2FA STEP STYLES
+   4. 2FA STEP STYLES
    ================================ */
 
-/* 2FA step container */
-#twofaStep {
-    transition: opacity 0.3s ease-in-out;
+#twofaStep,
+#credentialsStep {
+  transition: opacity 0.3s ease-in-out;
 }
 
-#twofaStep.hidden {
-    display: none;
+#twofaStep.hidden,
+#credentialsStep.hidden {
+  display: none;
 }
 
-/* 2FA header styling */
 .twofa-header {
-    text-align: center;
-    margin-bottom: var(--space-xl);
+  margin-block-end: var(--space-xl);
+  text-align: center;
 }
 
 .twofa-header h2 {
-    color: var(--color-secondary);
-    margin-bottom: var(--space-sm);
-    font-weight: var(--font-weight-bold);
+  margin-block-end: var(--space-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-secondary);
 }
 
 .twofa-instruction {
-    color: var(--color-gray-600);
-    font-size: var(--font-size-sm);
-    margin: 0;
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
 }
 
-/* 2FA input field styling */
 #twofaToken {
-    text-align: center;
-    font-size: 1.5rem;
-    letter-spacing: 0.5em;
-    font-family: monospace;
-    font-weight: bold;
-    padding: var(--space-lg);
+  padding: var(--space-lg);
+  font-family: monospace;
+  font-size: 1.5rem;
+  font-weight: bold;
+  letter-spacing: 0.5em;
+  text-align: center;
 }
 
-/* 2FA actions (buttons) */
 .twofa-actions {
-    display: flex;
-    gap: var(--space-md);
-    margin-top: var(--space-lg);
+  display: flex;
+  gap: var(--space-md);
+  margin-block-start: var(--space-lg);
 }
 
 .twofa-actions .secondary-btn {
-    flex: 1;
-    background: var(--color-gray-100);
-    color: var(--color-secondary);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-md);
-    font-weight: var(--font-weight-semibold);
-    cursor: pointer;
-    transition: var(--transition-all);
+  flex: 1;
+  padding: var(--space-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-secondary);
+  background: var(--color-gray-100);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-all);
 }
 
 .twofa-actions .secondary-btn:hover {
-    background: var(--color-gray-200);
-    border-color: var(--color-gray-400);
+  background: var(--color-gray-200);
+  border-color: var(--color-gray-400);
 }
 
 .twofa-actions .submit-btn {
-    flex: 2;
+  flex: 2;
 }
 
-/* Credentials step transition */
-#credentialsStep {
-    transition: opacity 0.3s ease-in-out;
-}
-
-#credentialsStep.hidden {
-    display: none;
-}
-
-/* ================================
-   2FA FIELD STYLES (Legacy - for backward compatibility)
-   ================================ */
-
-/* 2FA input field styling */
-#twofaToken {
-    text-align: center;
-    font-size: 1.2rem;
-    letter-spacing: 0.5em;
-    font-family: monospace;
-    font-weight: bold;
-}
-
-/* 2FA group styling */
+/* Legacy 2FA group styles */
 #twofaGroup {
-    transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out;
+  transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out;
 }
 
 #twofaGroup.hidden {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
+  max-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  opacity: 0;
 }
 
 #twofaGroup:not(.hidden) {
-    max-height: 200px;
-    opacity: 1;
-}
-
-/* Form helper text for 2FA */
-.form-helper {
-    font-size: 0.875rem;
-    color: var(--color-gray-600);
-    margin-top: 0.25rem;
-    display: block;
-    text-align: center;
+  max-height: 200px;
+  opacity: 1;
 }
 
 /* ================================
-   RESPONSIVE LOGIN POSITIONING
+   5. FORM HELPERS
    ================================ */
 
-/* LARGE DESKTOP SCREENS (1400px and up) */
-
-/* STANDARD DESKTOP SCREENS (992px - 1399px) */
-
-/* TABLET LANDSCAPE AND SMALLER */
-
-/* TABLET PORTRAIT */
-
-/* MOBILE LANDSCAPE */
-
-/* MOBILE PORTRAIT */
-
-/* LANDSCAPE ORIENTATION ADJUSTMENTS */
+.form-helper {
+  display: block;
+  margin-block-start: var(--space-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  text-align: center;
+}

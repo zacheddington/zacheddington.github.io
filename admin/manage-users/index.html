@@ -1,86 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Manage Users - Integris Neuro</title>
-        <meta
-            http-equiv="Cache-Control"
-            content="no-cache, no-store, must-revalidate"
-        />
-        <meta http-equiv="Pragma" content="no-cache" />
-        <meta http-equiv="Expires" content="0" />
-        <link rel="stylesheet" href="../../css/main.css" />
-        <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
-        <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
-        <link rel="icon" type="image/png" href="../../favicon.png" />
-    </head>
-    <body class="content-page">
-        <header class="app-header">
-            <!-- Navigation will be loaded here by JavaScript -->
-        </header>
-        <div class="content-container">
-            <div class="admin-section" id="manageUsersSection">
-                <div class="section-header">
-                    <h2>Manage Existing Users</h2>
-                </div>
-                <div class="table-filter">
-                    <div class="form-group">
-                        <label for="userFilter">Search Users</label>
-                        <input
-                            type="text"
-                            id="userFilter"
-                            placeholder="Search by username, name, or email..."
-                            autocomplete="off"
-                        />
-                        <small class="field-note"
-                            >Filter users to quickly find specific
-                            accounts</small
-                        >
-                    </div>
-                    <div class="filter-actions">
-                        <!-- No sort functionality needed - unified table system handles everything -->
-                    </div>
-                </div>
-                <div class="table-container">
-                    <div class="table-responsive">
-                        <table class="data-table" id="usersTable">
-                            <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Full Name</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Created</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTableBody"></tbody>
-                        </table>
-                    </div>
-                    <div id="usersLoading" class="loading-message">
-                        Loading users...
-                    </div>
-                    <div id="noUsersFound" class="no-results hidden">
-                        No users found matching your search.
-                    </div>
-                </div>
-            </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Users - Integris Neuro</title>
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="stylesheet" href="../../css/main.css" />
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <link rel="icon" type="image/png" href="../../favicon.png" />
+  </head>
+  <body class="content-page">
+    <header class="app-header">
+      <!-- Navigation will be loaded here by JavaScript -->
+    </header>
+    <div class="content-container">
+      <div class="admin-section" id="manageUsersSection">
+        <div class="section-header">
+          <h2>Manage Existing Users</h2>
         </div>
-        <!-- Load shared modules first -->
-        <script src="../../js/shared/api-client.js"></script>
-        <script src="../../js/shared/modal-manager.js"></script>
-        <script src="../../js/shared/password-utils.js"></script>
-        <script src="../../js/shared/field-validation.js"></script>
-        <script src="../../js/shared/auth-utils.js"></script>
-        <script src="../../js/shared/page-transitions.js"></script>
-        <script src="../../js/shared/navigation.js"></script>
-        <script src="../../js/shared/table-utils.js"></script>
+        <div class="table-filter">
+          <div class="form-group">
+            <label for="userFilter">Search Users</label>
+            <input
+              type="text"
+              id="userFilter"
+              placeholder="Search by username, name, or email..."
+              autocomplete="off"
+            />
+            <small class="field-note"
+              >Filter users to quickly find specific accounts</small
+            >
+          </div>
+          <div class="filter-actions">
+            <!-- No sort functionality needed - unified table system handles everything -->
+          </div>
+        </div>
+        <div class="table-container">
+          <div class="table-responsive">
+            <table class="data-table" id="usersTable">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody"></tbody>
+            </table>
+          </div>
+          <div id="usersLoading" class="loading-message">Loading users...</div>
+          <div id="noUsersFound" class="no-results hidden">
+            No users found matching your search.
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Load shared modules first -->
+    <script src="../../js/shared/api-client.js"></script>
+    <script src="../../js/shared/modal-manager.js"></script>
+    <script src="../../js/shared/password-utils.js"></script>
+    <script src="../../js/shared/field-validation.js"></script>
+    <script src="../../js/shared/form-utils.js"></script>
+    <script src="../../js/shared/auth-utils.js"></script>
+    <script src="../../js/shared/page-transitions.js"></script>
+    <script src="../../js/shared/navigation.js"></script>
+    <script src="../../js/shared/table-utils.js"></script>
 
-        <!-- Load page-specific module -->
-        <script src="../../js/pages/admin.js"></script>
+    <!-- Load page-specific module -->
+    <script src="../../js/pages/admin.js"></script>
 
-        <!-- Load main controller -->
-        <script src="../../js/main.js"></script>
-    </body>
+    <!-- Load main controller -->
+    <script src="../../js/main.js"></script>
+  </body>
 </html>

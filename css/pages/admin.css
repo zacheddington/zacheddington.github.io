@@ -1,217 +1,228 @@
-/* Admin Page Session Management Styles */
+/**
+ * Admin Page Styles
+ * =================
+ * Admin dashboard and session management.
+ *
+ * Sections:
+ * 1. Session Status Badges
+ * 2. Session Actions
+ * 3. Session Method Badges
+ * 4. Session Time Formatting
+ * 5. Filter Actions
+ * 6. Session Stats
+ * 7. Status Badge Enhancements
+ */
 
-/* Session status indicators */
+/* ================================
+   1. SESSION STATUS BADGES
+   ================================ */
+
 .session-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.875rem;
-    font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-full);
 }
 
 .session-status.active {
-    background-color: #d4edda;
-    color: #155724;
+  color: #155724;
+  background-color: #d4edda;
 }
 
 .session-status.expired {
-    background-color: #f8d7da;
-    color: #721c24;
+  color: #721c24;
+  background-color: #f8d7da;
 }
 
 .session-status.revoked {
-    background-color: #ffeaa7;
-    color: #856404;
+  color: #856404;
+  background-color: #ffeaa7;
 }
 
 .session-status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: currentColor;
+  width: 8px;
+  height: 8px;
+  background-color: currentColor;
+  border-radius: var(--radius-full);
 }
 
-/* Session action buttons are now handled by unified table-actions in tables.css */
+/* ================================
+   2. SESSION ACTIONS
+   ================================ */
 
 .btn-session-revoke {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 0.25rem 0.75rem;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: var(--transition-all);
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
+  background: #dc3545;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-all);
 }
 
 .btn-session-revoke:hover {
-    background: #c82333;
-    transform: translateY(-1px);
+  background: #c82333;
+  transform: translateY(-1px);
 }
 
 .btn-session-revoke:disabled {
-    background: #6c757d;
-    cursor: not-allowed;
-    transform: none;
+  background: var(--color-gray-500);
+  cursor: not-allowed;
+  transform: none;
 }
 
-/* Session method badges */
+/* ================================
+   3. SESSION METHOD BADGES
+   ================================ */
+
 .session-method {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
+  display: inline-block;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  border-radius: var(--radius-md);
 }
 
 .session-method.password {
-    background-color: #e3f2fd;
-    color: #1565c0;
+  color: #1565c0;
+  background-color: #e3f2fd;
 }
 
 .session-method.twofa {
-    background-color: #e8f5e8;
-    color: #2e7d32;
+  color: #2e7d32;
+  background-color: #e8f5e8;
 }
 
 .session-method.backup-code {
-    background-color: #fff3e0;
-    color: #ef6c00;
+  color: #ef6c00;
+  background-color: #fff3e0;
 }
 
-/* Session time formatting */
+/* ================================
+   4. SESSION TIME FORMATTING
+   ================================ */
+
 .session-time {
-    font-family: 'Courier New', monospace;
-    font-size: 0.875rem;
-    color: #6c757d;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
 }
 
 .session-time.recent {
-    color: #28a745;
-    font-weight: 500;
+  font-weight: var(--font-weight-medium);
+  color: #28a745;
 }
 
-/* Filter actions specific to sessions */
+/* ================================
+   5. FILTER ACTIONS
+   ================================ */
+
 .session-filter-actions {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 1rem;
+  display: flex;
+  gap: var(--space-sm);
+  margin-block-start: var(--space-md);
 }
 
 .danger-btn {
-    background: var(--gradient-danger);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: var(--transition-all);
+  padding: var(--space-sm) var(--space-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-white);
+  background: var(--gradient-danger);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-all);
 }
 
 .danger-btn:hover {
-    background: var(--gradient-danger-hover);
-    transform: translateY(-1px);
+  background: var(--gradient-danger-hover);
+  transform: translateY(-1px);
+}
+
+/* ================================
+   6. SESSION STATS
+   ================================ */
+
+.session-stats {
+  display: flex;
+  gap: var(--space-lg);
+  margin-block: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-gray-50);
+  border: var(--border-thin) solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-500);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-700);
+}
+
+.stat-value.active {
+  color: #28a745;
+}
+
+.stat-value.inactive {
+  color: #dc3545;
+}
+
+/* ================================
+   7. STATUS BADGE ENHANCEMENTS
+   ================================ */
+
+/* Admin-specific status badge with dot indicator */
+.status-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background-color: currentColor;
+  border-radius: var(--radius-full);
 }
 
 /* Session details tooltip */
 .session-details {
-    position: relative;
-    cursor: help;
+  position: relative;
+  cursor: help;
 }
 
 .session-details:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: white;
-    padding: 0.5rem;
-    border-radius: 4px;
-    white-space: nowrap;
-    font-size: 0.75rem;
-    z-index: var(--z-tooltip);
+  content: attr(data-tooltip);
+  position: absolute;
+  inset-block-end: 100%;
+  inset-inline-start: 50%;
+  padding: var(--space-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-white);
+  white-space: nowrap;
+  background: var(--color-gray-800);
+  border-radius: var(--radius-sm);
+  transform: translateX(-50%);
+  z-index: var(--z-tooltip);
 }
 
-/* Session statistics display */
-.session-stats {
-    display: flex;
-    gap: 1.5rem;
-    margin: 1rem 0;
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-}
-
-.stat-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.stat-label {
-    font-size: 0.875rem;
-    color: #6c757d;
-    font-weight: 500;
-}
-
-.stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #495057;
-}
-
-.stat-value.active {
-    color: #28a745;
-}
-
-.stat-value.inactive {
-    color: #dc3545;
-}
-
-/* Status badges */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-}
-
-.status-badge.active {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.status-badge.inactive {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.status-badge::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: currentColor;
-}
-
-/* No data message */
+/* No data state */
 .no-data {
-    text-align: center;
-    color: #6c757d;
-    font-style: italic;
-    padding: 2rem;
+  padding: var(--space-xl);
+  font-style: italic;
+  color: var(--color-gray-500);
+  text-align: center;
 }
-
-/* End of admin page styles */

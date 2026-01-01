@@ -1,76 +1,36 @@
+/**
+ * Profile Page Styles
+ * ===================
+ * User profile and 2FA status display.
+ *
+ * Sections:
+ * 1. 2FA Status Badges
+ *
+ * NOTE: Most profile styles are handled by:
+ * - containers.css for content-container layout
+ * - cards.css for profile-section and security-option styles
+ * - forms.css for form styles
+ */
+
 /* ================================
-   2FA STATUS STYLING
+   1. 2FA STATUS BADGES
    ================================ */
 
-.status-badge {
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
-    font-size: 0.875rem;
-    font-weight: var(--font-weight-semibold);
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
-}
-
+/* 2FA-specific status badge extensions */
 .status-badge.enabled {
-    background: rgba(40, 167, 69, 0.1);
-    color: #155724;
-    border: 1px solid #28a745;
+  color: #155724;
+  background: rgba(40, 167, 69, 0.1);
+  border: var(--border-thin) solid #28a745;
 }
 
 .status-badge.disabled {
-    background: rgba(220, 53, 69, 0.1);
-    color: #721c24;
-    border: 1px solid #dc3545;
+  color: #721c24;
+  background: rgba(220, 53, 69, 0.1);
+  border: var(--border-thin) solid #dc3545;
 }
 
 .status-badge.error {
-    background: rgba(255, 193, 7, 0.1);
-    color: #856404;
-    border: 1px solid #ffc107;
+  color: #856404;
+  background: rgba(255, 193, 7, 0.1);
+  border: var(--border-thin) solid #ffc107;
 }
-
-.security-option {
-    border: var(--border-thin) solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-md);
-}
-
-.security-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-.security-header h3 {
-    margin: 0;
-    color: var(--color-primary);
-}
-
-.security-description {
-    color: var(--color-text-muted);
-    margin: var(--space-md) 0;
-    line-height: 1.5;
-}
-
-.security-actions {
-    margin-top: var(--space-md);
-}
-
-/* ================================
-   PROFILE PAGE STYLES
-   ================================ */
-
-/* Hidden utility class */
-.hidden {
-    display: none !important;
-}
-
-/* Profile specific styles are primarily handled by:
-   - containers.css for content-container layout
-   - cards.css for profile-section styles
-   - forms.css for form styles
-*/
-
-/* This file is reserved for profile-page specific styles that don't fit elsewhere */

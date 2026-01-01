@@ -1,254 +1,214 @@
+/**
+ * Container & Grid Systems
+ * ========================
+ * Layout primitives for page structure.
+ *
+ * Sections:
+ * 1. Body Layout
+ * 2. Container System
+ * 3. Content Container
+ * 4. Grid System
+ * 5. Flexbox Utilities
+ * 6. Responsive Adjustments
+ */
+
 /* ================================
-   CONTAINER & GRID SYSTEMS
+   1. BODY LAYOUT
    ================================ */
 
-/* Global box-sizing for maintainability */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
-
-/* Body Layout */
 body {
-    background: var(--color-background);
-    background-image: linear-gradient(
-            135deg,
-            var(--color-background) 0%,
-            var(--color-background-dark) 100%
-        ),
-        radial-gradient(
-            circle at 20% 50%,
-            rgba(0, 150, 136, 0.02) 0%,
-            transparent 50%
-        ),
-        radial-gradient(
-            circle at 80% 20%,
-            rgba(0, 59, 73, 0.02) 0%,
-            transparent 50%
-        );
-    font-family: var(--font-primary);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    overflow-x: hidden; /* Prevent horizontal scroll */
-    padding-top: var(--header-height); /* Account for fixed header */
-    transition: var(--transition-all);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  padding-block-start: var(--header-height);
+  overflow-x: hidden;
+  background: var(--color-background);
+  background-image: linear-gradient(
+      135deg,
+      var(--color-background) 0%,
+      var(--color-background-dark) 100%
+    ),
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(var(--color-primary-rgb), 0.02) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(var(--color-secondary-rgb), 0.02) 0%,
+      transparent 50%
+    );
+  transition: var(--transition-all);
 }
 
-/* Mobile-first approach - prevent centering on mobile */
-@media screen and (max-width: 480px) {
-    body {
-        justify-content: flex-start !important;
-        align-items: center !important; /* Keep horizontal centering */
-    }
-
-    /* Ensure welcome-page gets same treatment as content-page */
-    body.welcome-page {
-        justify-content: flex-start !important;
-        align-items: center !important;
-    } /* Keep consistent spacing for all containers on mobile */
-    .content-container {
-        margin: 2rem auto 0; /* Standard 2rem top margin on all devices */
-    }
+/* Page type modifiers */
+body.login-page {
+  padding-block-start: 0;
 }
 
-/* All content pages should start from top, not center vertically */
 body.welcome-page,
 body.content-page {
-    justify-content: flex-start;
-}
-
-/* Login page has no header, so remove the top padding */
-body.login-page {
-    padding-top: 0;
+  justify-content: flex-start;
 }
 
 /* ================================
-   CONTAINER SYSTEM
+   2. CONTAINER SYSTEM
    ================================ */
 
-/* Container system for consistent layout */
 .container {
-    width: 100%;
-    max-width: var(--container-max-width);
-    margin: 0 auto;
-    padding: 0 var(--container-padding);
-    box-sizing: border-box;
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin-inline: auto;
+  padding-inline: var(--container-padding);
 }
 
 /* ================================
-   UNIFIED CONTAINER SYSTEM
+   3. CONTENT CONTAINER
    ================================ */
 
-/* Single unified container for all content pages */
 .content-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 1200px;
-    margin: 2rem auto 0; /* Consistent top margin of 2rem (32px) */
-    padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1200px;
+  margin: var(--space-xl) auto 0;
+  padding-inline: var(--space-md);
 }
 
 /* ================================
-   RESPONSIVE FIXES FOR ALL CONTENT PAGES
+   4. GRID SYSTEM
    ================================ */
 
-/* Tablet portrait and mobile landscape - prevent vertical centering issues */
-@media screen and (min-height: 600px) and (max-width: 1024px) {
-    body:not(.login-page) {
-        justify-content: flex-start; /* Override centering for all non-login pages */
-    }
-}
-
-/* Large mobile portrait - reduce excessive top spacing */
-@media screen and (min-height: 800px) and (max-width: 430px) {
-    body:not(.login-page) {
-        padding-top: calc(var(--header-height) - 20px);
-        padding-top: max(
-            calc(var(--header-height) - 20px),
-            env(safe-area-inset-top, 0px)
-        );
-    }
-}
-
-/* Extra large mobile (iPhone Pro Max, etc.) - further reduce spacing */
-@media screen and (min-height: 900px) and (max-width: 430px) {
-    body:not(.login-page) {
-        padding-top: calc(var(--header-height) - 30px);
-        padding-top: max(
-            calc(var(--header-height) - 30px),
-            env(safe-area-inset-top, 0px)
-        );
-    }
-}
-
-/* Foldable devices and very tall screens */
-@media screen and (min-height: 1200px) {
-    body:not(.login-page) {
-        justify-content: flex-start;
-        padding-top: calc(var(--header-height) - 10px);
-    }
-}
-
-/* ================================
-   AGGRESSIVE MOBILE POSITIONING FIXES
-   ================================ */
-
-/* ALL MOBILE SCREENS - force content to top but differentiate between page types */
-@media screen and (max-width: 480px) {
-    body:not(.login-page) {
-        justify-content: flex-start !important; /* Force top alignment */
-        align-items: center !important; /* Keep horizontal centering */
-        padding-top: calc(var(--header-height) - 15px) !important;
-    } /* All containers get consistent top positioning */
-    .content-container {
-        margin-top: 2rem !important; /* Consistent 2rem spacing */
-        transform: translateY(0); /* No transform */
-    }
-}
-
-/* TALL MOBILE SCREENS - more differentiated positioning */
-@media screen and (min-height: 800px) and (max-width: 480px) {
-    body:not(.login-page) {
-        padding-top: calc(var(--header-height) - 30px) !important;
-    } /* All containers get consistent top positioning */
-    .content-container {
-        margin-top: 2rem !important; /* Consistent 2rem spacing */
-        transform: translateY(0px);
-    }
-}
-
-/* EXTRA TALL MOBILE (iPhone Pro Max) - maximum differentiation */
-@media screen and (min-height: 900px) and (max-width: 480px) {
-    body:not(.login-page) {
-        padding-top: calc(var(--header-height) - 45px) !important;
-    } /* All containers get identical positioning for consistency */
-    .content-container {
-        margin-top: 2rem !important; /* Consistent 2rem spacing */
-        transform: translateY(0);
-    }
-}
-
-/* ================================
-   GRID SYSTEM
-   ================================ */
-
-/* Responsive grid system */
 .grid {
-    display: grid;
-    gap: var(--grid-gap);
+  display: grid;
+  gap: var(--grid-gap);
 }
 
 .grid-1 {
-    grid-template-columns: 1fr;
+  grid-template-columns: 1fr;
 }
 .grid-2 {
-    grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr);
 }
 .grid-3 {
-    grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr);
 }
 .grid-4 {
-    grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Auto-fit grid for responsive cards */
+.grid-auto {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
 /* ================================
-   FLEXBOX UTILITIES
+   5. FLEXBOX UTILITIES
    ================================ */
 
-/* Responsive flexbox utilities */
 .flex {
-    display: flex;
+  display: flex;
 }
-
 .flex-column {
-    flex-direction: column;
+  flex-direction: column;
 }
-
 .flex-wrap {
-    flex-wrap: wrap;
+  flex-wrap: wrap;
 }
-
 .flex-center {
-    align-items: center;
-    justify-content: center;
+  align-items: center;
+  justify-content: center;
 }
-
 .flex-between {
-    justify-content: space-between;
+  justify-content: space-between;
 }
-
 .flex-start {
-    justify-content: flex-start;
+  justify-content: flex-start;
 }
-
 .flex-end {
-    justify-content: flex-end;
+  justify-content: flex-end;
+}
+.items-center {
+  align-items: center;
+}
+.items-start {
+  align-items: flex-start;
+}
+.items-end {
+  align-items: flex-end;
 }
 
 /* ================================
-   SIMPLIFIED RESPONSIVE CONTAINERS
+   6. RESPONSIVE ADJUSTMENTS
    ================================ */
 
-/* Content container gets consistent responsive behavior */
-.content-container {
-    margin: 2rem auto 0; /* Consistent spacing at all screen sizes */
+/* Tablet portrait and landscape */
+@media screen and (min-height: 600px) and (max-width: 1024px) {
+  body:not(.login-page) {
+    justify-content: flex-start;
+  }
 }
 
-/* Mobile adjustments */
+/* Tablet */
 @media screen and (max-width: 768px) {
-    body {
-        padding-top: var(--header-height);
-    }
+  body {
+    padding-block-start: var(--header-height);
+  }
 
-    .content-container {
-        margin: 2rem auto 0.5rem;
-        padding: 0.75rem;
-    }
+  .content-container {
+    margin: var(--space-xl) auto var(--space-sm);
+    padding-inline: 0.75rem;
+  }
+
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile */
+@media screen and (max-width: 480px) {
+  body:not(.login-page) {
+    justify-content: flex-start;
+    align-items: center;
+    padding-block-start: calc(var(--header-height) - 15px);
+  }
+
+  .content-container {
+    margin-block-start: var(--space-xl);
+  }
+
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tall mobile screens */
+@media screen and (min-height: 800px) and (max-width: 480px) {
+  body:not(.login-page) {
+    padding-block-start: calc(var(--header-height) - 30px);
+  }
+}
+
+/* Extra tall mobile (iPhone Pro Max) */
+@media screen and (min-height: 900px) and (max-width: 480px) {
+  body:not(.login-page) {
+    padding-block-start: calc(var(--header-height) - 45px);
+  }
+}
+
+/* Foldable/very tall screens */
+@media screen and (min-height: 1200px) {
+  body:not(.login-page) {
+    justify-content: flex-start;
+    padding-block-start: calc(var(--header-height) - 10px);
+  }
 }

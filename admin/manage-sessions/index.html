@@ -1,134 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Session Management - Integris Neuro Admin</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Session Management - Integris Neuro Admin</title>
 
-        <!-- Security: Prevent caching of authenticated pages -->
-        <meta
-            http-equiv="Cache-Control"
-            content="no-cache, no-store, must-revalidate"
-        />
-        <meta http-equiv="Pragma" content="no-cache" />
-        <meta http-equiv="Expires" content="0" />
+    <!-- Security: Prevent caching of authenticated pages -->
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
 
-        <!-- Favicon and Icons -->
-        <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
-        <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
-        <link rel="icon" type="image/png" href="../../favicon.png" />
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <link rel="icon" type="image/png" href="../../favicon.png" />
 
-        <!-- Fonts and CSS -->
-        <link
-            href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700&display=swap"
-            rel="stylesheet"
-        />
-        <link rel="stylesheet" href="../../css/main.css" />
-    </head>
-    <body class="content-page">
-        <!-- Header -->
-        <header class="app-header">
-            <!-- Navigation will be loaded here by JavaScript -->
-        </header>
+    <!-- Fonts and CSS -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/main.css" />
+  </head>
+  <body class="content-page">
+    <!-- Header -->
+    <header class="app-header">
+      <!-- Navigation will be loaded here by JavaScript -->
+    </header>
 
-        <div class="content-container">
-            <!-- Session Management Section -->
-            <div class="admin-section" id="sessionManagementSection">
-                <div class="section-header">
-                    <h2>User Session Management</h2>
-                    <p>View and manage active user sessions</p>
-                </div>
-
-                <!-- Load/Refresh Actions -->
-                <div class="form">
-                    <div class="form-actions">
-                        <button
-                            type="button"
-                            class="primary-btn"
-                            id="loadSessionsBtn"
-                        >
-                            Load Sessions
-                        </button>
-                        <button
-                            type="button"
-                            class="secondary-btn"
-                            id="refreshSessionsBtn"
-                        >
-                            Refresh
-                        </button>
-                        <button
-                            type="button"
-                            class="danger-btn"
-                            id="cleanupSessionsBtn"
-                        >
-                            Cleanup Expired
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Unified Table Filter (consistent with Users/Patients) -->
-                <div class="table-filter">
-                    <div class="form-group">
-                        <label for="sessionFilter">Search Sessions</label>
-                        <input
-                            type="text"
-                            id="sessionFilter"
-                            placeholder="Search by username, IP address, or browser..."
-                            autocomplete="off"
-                        />
-                        <small class="field-note"
-                            >Filter sessions to quickly find specific
-                            sessions</small
-                        >
-                    </div>
-                    <div class="filter-actions">
-                        <!-- No sort functionality needed - unified table system handles everything -->
-                    </div>
-                </div>
-                <div class="table-container">
-                    <div class="table-responsive">
-                        <table class="data-table" id="sessionsTable">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Status</th>
-                                    <th>Login Time</th>
-                                    <th>Last Activity</th>
-                                    <th>Logout Time</th>
-                                    <th>IP Address</th>
-                                    <th>Browser</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sessionsTableBody">
-                                <!-- Sessions will be loaded here dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="sessionsLoading" class="loading-message hidden">
-                        Loading sessions...
-                    </div>
-                    <div id="noSessionsFound" class="no-results hidden">
-                        No active sessions found.
-                    </div>
-                </div>
-            </div>
+    <div class="content-container">
+      <!-- Session Management Section -->
+      <div class="admin-section" id="sessionManagementSection">
+        <div class="section-header">
+          <h2>User Session Management</h2>
+          <p>View and manage active user sessions</p>
         </div>
-        <!-- Load shared modules first -->
-        <script src="../../js/shared/api-client.js"></script>
-        <script src="../../js/shared/modal-manager.js"></script>
-        <script src="../../js/shared/password-utils.js"></script>
-        <script src="../../js/shared/field-validation.js"></script>
-        <script src="../../js/shared/auth-utils.js"></script>
-        <script src="../../js/shared/page-transitions.js"></script>
-        <script src="../../js/shared/navigation.js"></script>
-        <script src="../../js/shared/table-utils.js"></script>
-        <script src="../../js/shared/address-validation.js"></script>
 
-        <!-- Load page-specific module -->
-        <script src="../../js/pages/admin.js"></script>
+        <!-- Load/Refresh Actions -->
+        <div class="form">
+          <div class="form-actions">
+            <button type="button" class="primary-btn" id="loadSessionsBtn">
+              Load Sessions
+            </button>
+            <button type="button" class="secondary-btn" id="refreshSessionsBtn">
+              Refresh
+            </button>
+            <button type="button" class="danger-btn" id="cleanupSessionsBtn">
+              Cleanup Expired
+            </button>
+          </div>
+        </div>
 
-        <!-- Load main controller -->
-        <script src="../../js/main.js"></script>
-    </body>
+        <!-- Unified Table Filter (consistent with Users/Patients) -->
+        <div class="table-filter">
+          <div class="form-group">
+            <label for="sessionFilter">Search Sessions</label>
+            <input
+              type="text"
+              id="sessionFilter"
+              placeholder="Search by username, IP address, or browser..."
+              autocomplete="off"
+            />
+            <small class="field-note"
+              >Filter sessions to quickly find specific sessions</small
+            >
+          </div>
+          <div class="filter-actions">
+            <!-- No sort functionality needed - unified table system handles everything -->
+          </div>
+        </div>
+        <div class="table-container">
+          <div class="table-responsive">
+            <table class="data-table" id="sessionsTable">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Status</th>
+                  <th>Login Time</th>
+                  <th>Last Activity</th>
+                  <th>Logout Time</th>
+                  <th>IP Address</th>
+                  <th>Browser</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sessionsTableBody">
+                <!-- Sessions will be loaded here dynamically -->
+              </tbody>
+            </table>
+          </div>
+          <div id="sessionsLoading" class="loading-message hidden">
+            Loading sessions...
+          </div>
+          <div id="noSessionsFound" class="no-results hidden">
+            No active sessions found.
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Load shared modules first -->
+    <script src="../../js/shared/api-client.js"></script>
+    <script src="../../js/shared/modal-manager.js"></script>
+    <script src="../../js/shared/password-utils.js"></script>
+    <script src="../../js/shared/field-validation.js"></script>
+    <script src="../../js/shared/form-utils.js"></script>
+    <script src="../../js/shared/auth-utils.js"></script>
+    <script src="../../js/shared/page-transitions.js"></script>
+    <script src="../../js/shared/navigation.js"></script>
+    <script src="../../js/shared/table-utils.js"></script>
+    <script src="../../js/shared/address-validation.js"></script>
+
+    <!-- Load page-specific module -->
+    <script src="../../js/pages/admin.js"></script>
+
+    <!-- Load main controller -->
+    <script src="../../js/main.js"></script>
+  </body>
 </html>

@@ -1,112 +1,92 @@
-/* ================================
-   PATIENTS PAGE STYLES
-   ================================ */
-
-/* Patients page styles are primarily handled by:
-   - forms.css for patient form styles
-   - containers.css for general layout
-   - buttons.css for choice-btn and form buttons
-*/
-
-/* This file is reserved for patients-page specific styles that don't fit elsewhere */
-
-/* ================================
-   UTILITY CLASSES
-   ================================ */
-
-/* Hidden utility class */
-.hidden {
-    display: none !important;
-}
-
-/* Utility class for margin-right auto */
-.ml-auto {
-    margin-right: auto !important;
-}
+/**
+ * Patients Page Styles
+ * ====================
+ * Patient management and table display.
+ *
+ * Sections:
+ * 1. Patient Info Display
+ * 2. Text Acceptance Badges
+ * 3. Button Overrides
+ * 4. Table Cell Styles
+ */
 
 /* ================================
-   PATIENT SPECIFIC STYLES
+   1. PATIENT INFO DISPLAY
    ================================ */
 
-/* Patient Table Styles */
 .patient-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
 }
 
 .patient-full-name {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-primary);
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    max-width: 100%;
-}
-
-/* Patient action buttons are now handled by unified table-actions in tables.css */
-
-.accepts-texts {
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    font-weight: var(--font-weight-semibold);
-    text-align: center;
-    min-width: 40px;
-}
-
-.accepts-texts.yes {
-    background: var(--gradient-success);
-    color: var(--color-white);
-}
-
-.accepts-texts.no {
-    background: var(--gradient-error);
-    color: var(--color-white);
-}
-
-.accepts-texts.unknown {
-    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-    color: var(--color-white);
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ================================
-   PATIENT BUTTON OVERRIDES
+   2. TEXT ACCEPTANCE BADGES
    ================================ */
 
-/* Make back and cancel buttons match the create button color */
+.accepts-texts {
+  min-width: 40px;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  border-radius: var(--radius-md);
+}
+
+.accepts-texts.yes {
+  color: var(--color-white);
+  background: var(--gradient-success);
+}
+
+.accepts-texts.no {
+  color: var(--color-white);
+  background: var(--gradient-error);
+}
+
+.accepts-texts.unknown {
+  color: var(--color-white);
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+}
+
+/* ================================
+   3. BUTTON OVERRIDES
+   ================================ */
+
 #backToChoiceFromCreate,
 #backToChoiceFromManage,
 #cancelCreatePatient {
-    background: linear-gradient(
-        135deg,
-        var(--color-secondary) 0%,
-        #00796b 100%
-    ) !important;
-    color: var(--color-white) !important;
-    border: var(--border-thin) solid transparent !important;
-    box-shadow: var(--shadow-button) !important;
+  color: var(--color-white) !important;
+  background: linear-gradient(
+    135deg,
+    var(--color-secondary) 0%,
+    #00796b 100%
+  ) !important;
+  border: var(--border-thin) solid transparent !important;
+  box-shadow: var(--shadow-button) !important;
 }
 
 #backToChoiceFromCreate:hover,
 #backToChoiceFromManage:hover,
 #cancelCreatePatient:hover {
-    background: var(--gradient-primary-hover) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: var(--shadow-button-hover) !important;
+  background: var(--gradient-primary-hover) !important;
+  box-shadow: var(--shadow-button-hover) !important;
+  transform: translateY(-2px) !important;
 }
 
 /* ================================
-   PATIENT TABLE RESPONSIVE STYLES
+   4. TABLE CELL STYLES
    ================================ */
 
-/* Column widths removed - let unified table system handle all column sizing */
-/* These CSS rules were interfering with the resize functionality by overriding inline styles */
-
-/* Patient address cell specific style */
 #patientsTable td.patient-address {
-    text-align: left; /* Left-align address text */
-    position: relative; /* For potential overflow indicator */
+  position: relative;
+  text-align: start;
 }
-
-/* End of patients page styles */

@@ -1,73 +1,109 @@
-/* Main CSS Entry Point */
-/* Imports all CSS modules in the correct order */
+/**
+ * Integris Neuro - CSS Architecture
+ * ==================================
+ * Enterprise-grade stylesheet following ITCSS methodology.
+ *
+ * Layer Order (Specificity: Low → High):
+ * ─────────────────────────────────────
+ * 1. SETTINGS   - Design tokens, CSS custom properties
+ * 2. TOOLS      - Fonts, mixins (via @import)
+ * 3. GENERIC    - Reset, normalize, box-sizing
+ * 4. ELEMENTS   - Base typography (h1-h6, p, a, etc.)
+ * 5. LAYOUT     - Page structure (header, containers, grid)
+ * 6. COMPONENTS - UI components (buttons, forms, modals)
+ * 7. PAGES      - Page-specific overrides (minimal)
+ * 8. UTILITIES  - Helper classes (!important allowed)
+ *
+ * Canonical Class Locations:
+ * ─────────────────────────
+ * .hidden, .ml-auto, .sr-only → utils/responsive.css
+ * .status-badge, .security-* → components/cards.css
+ * .field-note               → base/typography.css
+ * .btn-*, .choice-btn       → components/buttons.css
+ * .form-*, .input-*         → components/forms.css
+ *
+ * Design Tokens (variables.css):
+ * ─────────────────────────────
+ * --color-*    : Color palette
+ * --font-*     : Typography scale
+ * --space-*    : Spacing scale (4px base)
+ * --radius-*   : Border radius scale
+ * --shadow-*   : Elevation scale
+ * --z-*        : Z-index hierarchy
+ * --transition-* : Animation timing
+ *
+ * Browser Support: Chrome, Edge, Safari, Firefox, Opera (last 2 versions)
+ * Minimum Width: 320px | Dark Mode: prefers-color-scheme
+ */
 
 /* ================================
-   0. EXTERNAL FONTS & RESOURCES
+   0. EXTERNAL FONTS
    ================================ */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 /* ================================
-   1. BASE STYLES (Variables, Reset, Typography)
+   1. BASE (Settings, Generic, Elements)
    ================================ */
-@import 'base/variables.css';
-@import 'base/reset.css';
-@import 'base/typography.css';
+@import "base/variables.css";
+@import "base/reset.css";
+@import "base/typography.css";
 
 /* ================================
-   2. LAYOUT COMPONENTS
+   2. LAYOUT
    ================================ */
-@import 'layout/containers.css';
-@import 'layout/header.css';
-@import 'layout/navigation.css';
+@import "layout/containers.css";
+@import "layout/header.css";
+@import "layout/navigation.css";
 
 /* ================================
-   3. REUSABLE COMPONENTS
+   3. COMPONENTS
    ================================ */
-@import 'components/buttons.css';
-@import 'components/forms.css';
-@import 'components/modals.css';
-@import 'components/tables.css';
-@import 'components/cards.css';
+@import "components/buttons.css";
+@import "components/forms.css";
+@import "components/modals.css";
+@import "components/tables.css";
+@import "components/cards.css";
 
 /* ================================
-   4. PAGE-SPECIFIC STYLES
+   4. PAGE-SPECIFIC (Minimal overrides only)
    ================================ */
-@import 'pages/login.css';
-@import 'pages/welcome.css';
-@import 'pages/admin.css';
-@import 'pages/patients.css';
-@import 'pages/studies.css';
-@import 'pages/profile.css';
-@import 'pages/2fa-setup.css';
-@import 'pages/force-password.css';
+@import "pages/login.css";
+@import "pages/welcome.css";
+@import "pages/admin.css";
+@import "pages/patients.css";
+@import "pages/studies.css";
+@import "pages/profile.css";
+@import "pages/2fa-setup.css";
+@import "pages/force-password.css";
 
-/* ================================   5. UTILITIES & RESPONSIVE
+/* ================================
+   5. UTILITIES (Loaded last for override capability)
    ================================ */
-@import 'utils/responsive.css';
-@import 'utils/animations.css';
-/* @import 'utils/zoom-fix.css'; */
+@import "utils/responsive.css";
+@import "utils/animations.css";
 
-/* ZOOM FIX - SIMPLIFIED - Inlined to avoid 404 */
-@media (min-device-pixel-ratio: 2), (-webkit-min-device-pixel-ratio: 2) {
-    html,
-    body {
-        image-rendering: -webkit-optimize-contrast;
-        image-rendering: pixelated;
-    }
+/* ================================
+   GLOBAL OPTIMIZATIONS
+   ================================ */
+
+/* High-DPI display optimization */
+@media (min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 2) {
+  html,
+  body {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
 }
 
-/* Ensure no transforms are applied that could break fixed positioning */
+/* Ensure fixed positioning works correctly */
 html,
 body {
-    transform: none !important;
-    contain: none !important;
-    isolation: auto !important;
-    will-change: auto !important;
-    perspective: none !important;
+  transform-style: flat;
 }
-
-/* ================================
-   TEMPORARY: Legacy styles.css
-   Remove this import after migration is complete
-   ================================ */
-/* @import 'styles.css'; */
+body {
+  transform: none !important;
+  contain: none !important;
+  isolation: auto !important;
+  will-change: auto !important;
+  perspective: none !important;
+}

@@ -1,212 +1,177 @@
+/**
+ * Typography System
+ * =================
+ * Comprehensive typography styles following a modular scale.
+ *
+ * Sections:
+ * 1. Font Settings
+ * 2. Headings (h1-h6)
+ * 3. Body Text
+ * 4. Text Utilities
+ * 5. Links
+ * 6. Labels & Form Text
+ * 7. Responsive Typography
+ */
+
 /* ================================
-   IMPROVED TYPOGRAPHY SETTINGS
+   1. FONT SETTINGS
    ================================ */
 
-/* Enhanced font rendering for Inter */
 html {
   font-family: var(--font-primary);
-  font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "pnum" 1, "tnum" 0,
-    "onum" 0, "lnum" 1, "dlig" 0;
+
+  /* OpenType feature settings for Inter font */
+  font-feature-settings:
+    "kern" 1,   /* Kerning */
+    "liga" 1,   /* Standard ligatures */
+    "calt" 1,   /* Contextual alternates */
+    "pnum" 1,   /* Proportional numbers */
+    "tnum" 0,   /* Tabular numbers off */
+    "onum" 0,   /* Old-style numbers off */
+    "lnum" 1,   /* Lining numbers */
+    "dlig" 0;   /* Discretionary ligatures off */
+
+  /* Text rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
 /* ================================
-   HEADINGS
+   2. HEADINGS
    ================================ */
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-primary);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: -0.025em;
-  color: var(--color-secondary);
   line-height: var(--line-height-tight);
-  margin: 0 0 var(--space-md) 0;
+  color: var(--color-secondary);
+  letter-spacing: -0.025em;
+  margin-block: 0 var(--space-md);
 }
 
-h1 {
-  font-size: var(--font-size-4xl);
-}
-
-h2 {
-  font-size: var(--font-size-3xl);
-}
-
-h3 {
-  font-size: var(--font-size-2xl);
-}
-
-h4 {
-  font-size: var(--font-size-xl);
-}
-
-h5 {
-  font-size: var(--font-size-lg);
-}
-
-h6 {
-  font-size: var(--font-size-base);
-}
+h1 { font-size: var(--font-size-4xl); }
+h2 { font-size: var(--font-size-3xl); }
+h3 { font-size: var(--font-size-2xl); }
+h4 { font-size: var(--font-size-xl); }
+h5 { font-size: var(--font-size-lg); }
+h6 { font-size: var(--font-size-base); }
 
 /* ================================
-   BODY TEXT
+   3. BODY TEXT
    ================================ */
 
 p {
-  font-family: var(--font-primary);
   font-weight: var(--font-weight-normal);
   line-height: var(--line-height-relaxed);
-  margin: 0 0 var(--space-md) 0;
   color: var(--color-gray-700);
+  margin-block: 0 var(--space-md);
 }
 
-/* Text size utilities */
-.text-xs {
-  font-size: var(--font-size-xs);
-}
-.text-sm {
-  font-size: var(--font-size-sm);
-}
-.text-base {
-  font-size: var(--font-size-base);
-}
-.text-lg {
-  font-size: var(--font-size-lg);
-}
-.text-xl {
-  font-size: var(--font-size-xl);
-}
-.text-2xl {
-  font-size: var(--font-size-2xl);
+/* Remove margin from last paragraph in containers */
+p:last-child {
+  margin-block-end: 0;
 }
 
 /* ================================
-   TEXT STYLING
+   4. TEXT UTILITIES
    ================================ */
 
-/* Font weight utilities */
-.font-normal {
-  font-weight: var(--font-weight-normal);
-}
-.font-semibold {
-  font-weight: var(--font-weight-semibold);
-}
-.font-bold {
-  font-weight: var(--font-weight-bold);
-}
+/* Font Size Scale */
+.text-xs  { font-size: var(--font-size-xs); }
+.text-sm  { font-size: var(--font-size-sm); }
+.text-base { font-size: var(--font-size-base); }
+.text-lg  { font-size: var(--font-size-lg); }
+.text-xl  { font-size: var(--font-size-xl); }
+.text-2xl { font-size: var(--font-size-2xl); }
 
-/* Text color utilities */
-.text-primary {
-  color: var(--color-primary);
-}
-.text-secondary {
-  color: var(--color-secondary);
-}
-.text-success {
-  color: var(--color-success);
-}
-.text-warning {
-  color: var(--color-warning-dark);
-}
-.text-error {
-  color: var(--color-error);
-}
-.text-gray {
-  color: var(--color-gray-600);
-}
-.text-muted {
-  color: var(--color-gray-500);
-}
+/* Font Weights */
+.font-normal   { font-weight: var(--font-weight-normal); }
+.font-medium   { font-weight: var(--font-weight-medium); }
+.font-semibold { font-weight: var(--font-weight-semibold); }
+.font-bold     { font-weight: var(--font-weight-bold); }
 
-/* Text alignment utilities */
-.text-left {
-  text-align: left;
-}
-.text-center {
-  text-align: center;
-}
-.text-right {
-  text-align: right;
+/* Text Colors - Semantic */
+.text-primary   { color: var(--color-primary); }
+.text-secondary { color: var(--color-secondary); }
+.text-success   { color: var(--color-success); }
+.text-warning   { color: var(--color-warning-dark); }
+.text-error     { color: var(--color-error); }
+.text-gray      { color: var(--color-gray-600); }
+.text-muted     { color: var(--color-gray-500); }
+
+/* Text Alignment */
+.text-left   { text-align: left; }
+.text-center { text-align: center; }
+.text-right  { text-align: right; }
+
+/* Text Transform */
+.uppercase  { text-transform: uppercase; }
+.lowercase  { text-transform: lowercase; }
+.capitalize { text-transform: capitalize; }
+
+/* Text Overflow */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ================================
-   LINKS
+   5. LINKS
    ================================ */
 
 a {
   color: var(--color-primary);
   text-decoration: none;
-  transition: var(--transition-color);
+  transition: color var(--transition-fast) var(--ease-out);
 }
 
 a:hover {
   color: var(--color-primary-dark);
   text-decoration: underline;
 }
+}
 
 /* ================================
-   LABELS & FORM TEXT
+   6. LABELS & FORM TEXT
    ================================ */
 
 label {
-  font-family: var(--font-primary);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-secondary);
-  font-size: var(--font-size-base);
-  margin-bottom: var(--space-xs);
   display: block;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+  color: var(--color-secondary);
+  margin-block-end: var(--space-xs);
 }
 
-/* Field notes and helper text */
+/* Helper/note text below form fields */
 .field-note {
   font-size: var(--font-size-sm);
-  color: var(--color-gray-600);
-  margin-top: var(--space-xs);
   line-height: var(--line-height-normal);
+  color: var(--color-gray-600);
+  margin-block-start: var(--space-xs);
 }
 
 /* ================================
-   RESPONSIVE TYPOGRAPHY
+   7. RESPONSIVE TYPOGRAPHY
    ================================ */
 
-/* Adjust heading sizes for smaller screens */
+/* Tablet and below */
 @media screen and (max-width: 768px) {
-  h1 {
-    font-size: var(--font-size-3xl);
-  }
-  h2 {
-    font-size: var(--font-size-2xl);
-  }
-  h3 {
-    font-size: var(--font-size-xl);
-  }
+  h1 { font-size: var(--font-size-3xl); }
+  h2 { font-size: var(--font-size-2xl); }
+  h3 { font-size: var(--font-size-xl); }
 }
 
+/* Mobile portrait */
 @media screen and (max-width: 480px) {
-  h1 {
-    font-size: var(--font-size-2xl);
-  }
-  h2 {
-    font-size: var(--font-size-xl);
-  }
-  h3 {
-    font-size: var(--font-size-lg);
-  }
-  h4 {
-    font-size: var(--font-size-base);
-  }
-  h5 {
-    font-size: var(--font-size-sm);
-  }
-  h6 {
-    font-size: var(--font-size-xs);
-  }
+  h1 { font-size: var(--font-size-2xl); }
+  h2 { font-size: var(--font-size-xl); }
+  h3 { font-size: var(--font-size-lg); }
+  h4 { font-size: var(--font-size-base); }
+  h5 { font-size: var(--font-size-sm); }
+  h6 { font-size: var(--font-size-xs); }
 
   body {
     font-size: 0.9rem;

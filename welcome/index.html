@@ -1,62 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-        />
-        <title>Welcome - IntegrisNeuro</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Welcome - IntegrisNeuro</title>
 
-        <!-- Security: Prevent caching of authenticated pages -->
-        <meta
-            http-equiv="Cache-Control"
-            content="no-cache, no-store, must-revalidate"
-        />
-        <meta http-equiv="Pragma" content="no-cache" />
-        <meta http-equiv="Expires" content="0" />
+    <!-- Security: Prevent caching of authenticated pages -->
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
 
-        <link rel="stylesheet" href="../css/main.css" />
-        <link rel="icon" type="image/x-icon" href="../favicon.ico" />
-        <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
-        <link rel="icon" type="image/png" href="../favicon.png" />
-    </head>
-    <body class="content-page welcome-page">
-        <!-- Header Bar with Top Navigation -->
-        <header class="app-header">
-            <!-- Navigation will be loaded here by JavaScript -->
-        </header>
-        <div class="content-container">
-            <!-- Welcome Page Choice Buttons -->
-            <div class="admin-choice" id="welcomeChoice">
-                <div class="choice-buttons">
-                    <a href="/patients/" class="choice-btn primary fade-nav">
-                        <h3>Patients</h3>
-                        <p>Manage patient records</p>
-                    </a>
-                    <a href="/profile/" class="choice-btn primary fade-nav">
-                        <h3>Access Profile</h3>
-                        <p>View and edit your profile</p>
-                    </a>
-                    <a
-                        href="/admin/"
-                        class="choice-btn primary fade-nav admin-only"
-                    >
-                        <h3>Administration</h3>
-                        <p>User management and system settings</p>
-                    </a>
-                </div>
-            </div>
+    <link rel="stylesheet" href="../css/main.css" />
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="icon" type="image/png" href="../favicon.png" />
+  </head>
+  <body class="content-page welcome-page">
+    <!-- Header Bar with Top Navigation -->
+    <header class="app-header">
+      <!-- Navigation will be loaded here by JavaScript -->
+    </header>
+    <div class="content-container">
+      <!-- Welcome Page Choice Buttons -->
+      <div class="admin-choice" id="welcomeChoice">
+        <div class="choice-buttons">
+          <a href="/patients/" class="choice-btn primary fade-nav">
+            <h3>Patients</h3>
+            <p>Manage patient records</p>
+          </a>
+          <a href="/profile/" class="choice-btn primary fade-nav">
+            <h3>Access Profile</h3>
+            <p>View and edit your profile</p>
+          </a>
+          <a href="/admin/" class="choice-btn primary fade-nav admin-only">
+            <h3>Administration</h3>
+            <p>User management and system settings</p>
+          </a>
         </div>
-        <!-- Load shared modules first -->
-        <script src="../js/shared/api-client.js"></script>
-        <script src="../js/shared/modal-manager.js"></script>
-        <script src="../js/shared/password-utils.js"></script>
-        <script src="../js/shared/field-validation.js"></script>
-        <script src="../js/shared/auth-utils.js"></script>
-        <script src="../js/shared/page-transitions.js"></script>
-        <script src="../js/shared/navigation.js"></script>
-        <!-- Load main controller -->
-        <script src="../js/main.js"></script>
-    </body>
+      </div>
+    </div>
+    <!-- Load shared modules first -->
+    <script src="../js/shared/api-client.js"></script>
+    <script src="../js/shared/modal-manager.js"></script>
+    <script src="../js/shared/password-utils.js"></script>
+    <script src="../js/shared/field-validation.js"></script>
+    <script src="../js/shared/form-utils.js"></script>
+    <script src="../js/shared/auth-utils.js"></script>
+    <script src="../js/shared/page-transitions.js"></script>
+    <script src="../js/shared/navigation.js"></script>
+    <!-- Load main controller -->
+    <script src="../js/main.js"></script>
+  </body>
 </html>

@@ -1,59 +1,71 @@
+/**
+ * App Header Bar
+ * ==============
+ * Fixed header with navigation integration.
+ */
+
 /* ================================
-   APP HEADER BAR (UPDATED FOR TOP NAV)
+   HEADER BASE STYLES
    ================================ */
 
 .app-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: var(--header-height);
-    background: linear-gradient(
-        135deg,
-        var(--color-primary),
-        var(--color-primary-dark)
-    );
-    box-shadow: var(--shadow-lg);
-    display: flex;
-    align-items: center;
-    justify-content: center; /* Center the navigation */
-    padding: 0 var(--space-lg);
-    z-index: var(--z-header);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    min-height: var(--header-height);
-    flex-wrap: nowrap; /* Prevent wrapping */
+  /* Positioning */
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: var(--z-header);
+
+  /* Dimensions */
+  width: 100%;
+  height: var(--header-height);
+  min-height: var(--header-height);
+
+  /* Layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  padding-inline: var(--space-lg);
+
+  /* Appearance */
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary-dark)
+  );
+  border-block-end: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
 }
 
 /* ================================
-   RESPONSIVE HEADER STYLES
+   RESPONSIVE HEADER
    ================================ */
 
-/* Mobile responsive adjustments for header */
 @media screen and (max-width: 768px) {
-    .page-title {
-        font-size: var(--font-size-lg);
-    }
+  .app-header {
+    padding-inline: var(--space-md);
+  }
 
-    .app-header {
-        padding: 0 var(--space-md);
-    }
+  .page-title {
+    font-size: var(--font-size-lg);
+  }
 }
 
 @media screen and (max-width: 480px) {
-    .app-header {
-        padding: 0 15px;
-    }
+  .app-header {
+    padding-inline: 15px;
+  }
 
-    .page-title {
-        font-size: var(--font-size-base);
-    }
+  .page-title {
+    font-size: var(--font-size-base);
+  }
 }
 
 @media screen and (max-width: 330px) {
-    .app-header {
-        padding: 0 8px;
-        min-height: 50px;
-        height: 50px;
-    }
+  .app-header {
+    padding-inline: 8px;
+    min-height: 50px;
+    height: 50px;
+  }
 }

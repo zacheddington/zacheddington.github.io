@@ -1,23 +1,43 @@
+/**
+ * Button Components
+ * =================
+ * Consistent button styles following design system.
+ *
+ * Button Types:
+ * - Primary (.btn-primary, .submit-btn)
+ * - Secondary (.btn-secondary, .secondary-btn)
+ * - Icon (.btn-icon)
+ * - Choice (.choice-btn)
+ * - Action (.btn-save, .btn-cancel, .btn-edit, .btn-delete)
+ *
+ * States: default, :hover, :focus, :disabled
+ */
+
 /* ================================
-   BUTTON COMPONENTS
+   BASE BUTTON STYLES
    ================================ */
 
-/* Base Button Styles */
 button,
 .btn {
-    min-height: 44px; /* Touch-friendly size */
-    min-width: 44px;
-    box-sizing: border-box;
-    font-family: var(--font-primary);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    border: none;
-    border-radius: var(--radius-lg);
-    transition: var(--transition-all);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Sizing - WCAG touch target */
+  min-height: var(--touch-target-min, 44px);
+  min-width: var(--touch-target-min, 44px);
+
+  /* Typography */
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+
+  /* Appearance */
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: var(--transition-all);
 }
 
 /* ================================
@@ -26,28 +46,35 @@ button,
 
 .submit-btn,
 .btn-primary {
-    background: var(--gradient-primary);
-    color: var(--color-white);
-    padding: var(--padding-button);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    box-shadow: var(--shadow-button);
-    border: var(--border-thin) solid transparent;
+  padding: var(--padding-button);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  background: var(--gradient-primary);
+  border: var(--border-thin) solid transparent;
+  box-shadow: var(--shadow-button);
 }
 
 .submit-btn:hover,
 .btn-primary:hover {
-    background: var(--gradient-primary-hover);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-button-hover);
+  background: var(--gradient-primary-hover);
+  box-shadow: var(--shadow-button-hover);
+  transform: translateY(-2px);
+}
+
+.submit-btn:focus-visible,
+.btn-primary:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-button-hover), var(--shadow-focus);
 }
 
 .submit-btn:disabled,
 .btn-primary:disabled {
-    background: var(--color-gray-300);
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
+  background: var(--color-gray-300);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ================================
@@ -56,95 +83,34 @@ button,
 
 .secondary-btn,
 .btn-secondary {
-    background: linear-gradient(
-        135deg,
-        var(--color-secondary) 0%,
-        #00796b 100%
-    );
-    color: var(--color-white);
-    border: none;
-    border-radius: var(--radius-lg);
-    padding: var(--padding-button);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    cursor: pointer;
-    transition: var(--transition-all);
-    box-shadow: var(--shadow-button);
+  padding: var(--padding-button);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  background: linear-gradient(
+    135deg,
+    var(--color-secondary) 0%,
+    var(--color-primary-dark) 100%
+  );
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-button);
+  cursor: pointer;
+  transition: var(--transition-all);
 }
 
 .secondary-btn:hover,
 .btn-secondary:hover {
-    background: var(--gradient-primary-hover);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-button-hover);
+  background: var(--gradient-primary-hover);
+  box-shadow: var(--shadow-button-hover);
+  transform: translateY(-2px);
 }
 
-/* ================================
-   CHOICE CONTAINERS & BUTTONS
-   ================================ */
-
-.admin-choice {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin-bottom: var(--space-xl);
-}
-
-.choice-buttons {
-    display: flex;
-    gap: var(--space-xl);
-    margin-top: 40px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.choice-btn {
-    background: var(--color-white);
-    border: var(--border-medium) solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-xl);
-    min-width: 280px;
-    width: 280px;
-    min-height: 140px; /* Set minimum height for consistent sizing */
-    cursor: pointer;
-    transition: var(--transition-all);
-    text-align: left;
-    box-shadow: var(--shadow-sm);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}
-
-.choice-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--color-secondary);
-}
-
-.choice-btn.primary {
-    border-color: var(--color-secondary);
-}
-
-.choice-btn.primary:hover {
-    background: var(--color-primary-bg);
-}
-
-.choice-btn h3 {
-    margin: 0 0 0.5rem 0;
-    color: var(--color-primary);
-    font-size: var(--font-size-xl);
-    line-height: 1.3;
-    min-height: 1.6rem; /* Ensure consistent height */
-    text-align: center; /* Ensure text is centered */
-}
-
-.choice-btn p {
-    margin: 0;
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-    line-height: 1.4;
-    flex-grow: 1; /* Allow paragraph to fill remaining space */
-    text-align: center; /* Ensure text is centered */
+.secondary-btn:focus-visible,
+.btn-secondary:focus-visible {
+  outline: 3px solid var(--color-secondary);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-button-hover), var(--shadow-focus);
 }
 
 /* ================================
@@ -152,57 +118,119 @@ button,
    ================================ */
 
 .btn-icon {
-    background: var(--color-white);
-    border: var(--border-thin) solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 8px;
-    cursor: pointer;
-    transition: var(--transition-all);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 8px;
+  background: var(--color-white);
+  border: var(--border-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition-all);
 }
 
+/* Icon button variants */
 .btn-save {
-    background: var(--gradient-success);
-    color: var(--color-white);
+  color: var(--color-white);
+  background: var(--gradient-success);
 }
 
 .btn-save:hover {
-    background: var(--gradient-success-hover);
-    transform: translateY(-1px);
+  background: var(--gradient-success-hover);
+  transform: translateY(-1px);
 }
 
 .btn-cancel {
-    background: var(--gradient-primary);
-    color: var(--color-white);
+  color: var(--color-white);
+  background: var(--gradient-primary);
 }
 
 .btn-cancel:hover {
-    background: var(--gradient-primary-hover);
-    transform: translateY(-1px);
+  background: var(--gradient-primary-hover);
+  transform: translateY(-1px);
 }
 
 .btn-edit {
-    background: var(--gradient-info);
-    color: var(--color-white);
+  color: var(--color-white);
+  background: var(--gradient-info);
 }
 
 .btn-edit:hover {
-    background: var(--gradient-info-hover);
-    transform: translateY(-1px);
+  background: var(--gradient-info-hover);
+  transform: translateY(-1px);
 }
 
 .btn-delete {
-    background: var(--gradient-danger);
-    color: var(--color-white);
+  color: var(--color-white);
+  background: var(--gradient-danger);
 }
 
 .btn-delete:hover {
-    background: var(--gradient-danger-hover);
-    transform: translateY(-1px);
+  background: var(--gradient-danger-hover);
+  transform: translateY(-1px);
+}
+
+/* ================================
+   CHOICE BUTTONS
+   ================================ */
+
+.choice-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xl);
+  justify-content: center;
+  margin-block-start: 40px;
+}
+
+.choice-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-width: 280px;
+  width: 280px;
+  min-height: 140px;
+  padding: var(--space-xl);
+  text-align: left;
+  background: var(--color-white);
+  border: var(--border-medium) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: var(--transition-all);
+}
+
+.choice-btn:hover {
+  border-color: var(--color-secondary);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.choice-btn.primary {
+  border-color: var(--color-secondary);
+}
+
+.choice-btn.primary:hover {
+  background: var(--color-primary-bg);
+}
+
+.choice-btn h3 {
+  min-height: 1.6rem;
+  margin: 0 0 0.5rem;
+  font-size: var(--font-size-xl);
+  line-height: 1.3;
+  color: var(--color-primary);
+  text-align: center;
+}
+
+.choice-btn p {
+  flex-grow: 1;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  text-align: center;
 }
 
 /* ================================
@@ -210,22 +238,22 @@ button,
    ================================ */
 
 .back-btn {
-    margin-top: var(--space-sm);
-    background: var(--gradient-primary);
-    border: none;
-    color: var(--color-white);
-    padding: var(--padding-button-sm);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: var(--transition-all);
-    font-size: var(--font-size-sm);
-    box-shadow: var(--shadow-sm);
+  margin-block-start: var(--space-sm);
+  padding: var(--padding-button-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: var(--transition-all);
 }
 
 .back-btn:hover {
-    background: var(--gradient-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+  background: var(--gradient-primary-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 /* ================================
@@ -233,26 +261,26 @@ button,
    ================================ */
 
 .option-link {
-    background: linear-gradient(
-        135deg,
-        var(--color-secondary) 0%,
-        #00796b 100%
-    );
-    color: var(--color-white);
-    text-decoration: none;
-    padding: 12px 32px;
-    border-radius: var(--radius-lg);
-    font-weight: var(--font-weight-semibold);
-    transition: var(--transition-all);
-    display: inline-block;
-    margin-top: var(--space-md);
-    box-shadow: var(--shadow-sm);
+  display: inline-block;
+  margin-block-start: var(--space-md);
+  padding: 12px 32px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-white);
+  text-decoration: none;
+  background: linear-gradient(
+    135deg,
+    var(--color-secondary) 0%,
+    var(--color-primary-dark) 100%
+  );
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-all);
 }
 
 .option-link:hover {
-    background: var(--gradient-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+  background: var(--gradient-primary-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 /* ================================
@@ -261,174 +289,174 @@ button,
 
 /* ULTRAWIDE MONITORS (1400px and up) */
 @media screen and (min-width: 1400px) {
-    .choice-buttons {
-        gap: 3rem;
-    }
+  .choice-buttons {
+    gap: 3rem;
+  }
 
-    .choice-btn {
-        min-width: 320px;
-        width: calc(33.33% - 2rem);
-        max-width: 380px;
-        padding: 2.5rem;
-    }
+  .choice-btn {
+    min-width: 320px;
+    width: calc(33.33% - 2rem);
+    max-width: 380px;
+    padding: 2.5rem;
+  }
 }
 
 /* LARGE DESKTOP (1200px and up) */
 @media screen and (min-width: 1200px) {
-    .choice-buttons {
-        gap: 2.5rem;
-    }
+  .choice-buttons {
+    gap: 2.5rem;
+  }
 
-    .choice-btn {
-        min-width: 300px;
-        width: calc(33.33% - 1.75rem);
-        max-width: 340px;
-    }
+  .choice-btn {
+    min-width: 300px;
+    width: calc(33.33% - 1.75rem);
+    max-width: 340px;
+  }
 }
 
 /* STANDARD DESKTOP (992px - 1199px) - UNIFIED 3-COLUMN LAYOUT */
 @media screen and (min-width: 992px) and (max-width: 1199px) {
-    .choice-buttons {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 2rem;
-    }
+  .choice-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem;
+  }
 
-    .choice-btn {
-        min-width: 280px;
-        width: calc(33.33% - 1.5rem);
-        max-width: 320px;
-    }
+  .choice-btn {
+    min-width: 280px;
+    width: calc(33.33% - 1.5rem);
+    max-width: 320px;
+  }
 }
 
 /* TABLET LANDSCAPE (768px - 991px) - UNIFIED RESPONSIVE BEHAVIOR */
 @media screen and (min-width: 768px) and (max-width: 991px) {
-    .choice-buttons {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: flex-start;
-        gap: 1.5rem;
-        max-width: 650px;
-        margin-left: auto;
-        margin-right: auto;
-    }
+  .choice-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1.5rem;
+    max-width: 650px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 
-    .choice-btn {
-        width: calc(50% - 0.75rem);
-        min-width: 280px;
-        max-width: 320px;
-    }
+  .choice-btn {
+    width: calc(50% - 0.75rem);
+    min-width: 280px;
+    max-width: 320px;
+  }
 
-    /* For pages with 3 cards, the third card will wrap to its own row and center */
-    .choice-buttons .choice-btn:nth-child(3):last-child {
-        margin-left: auto;
-        margin-right: auto;
-    }
+  /* For pages with 3 cards, the third card will wrap to its own row and center */
+  .choice-buttons .choice-btn:nth-child(3):last-child {
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 /* TABLET PORTRAIT (576px - 767px) */
 @media screen and (min-width: 576px) and (max-width: 767px) {
-    .choice-buttons {
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-    }
+  .choice-buttons {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
 
-    .choice-btn {
-        min-width: 220px;
-        width: 100%;
-        max-width: 300px;
-        padding: 1.25rem;
-        min-height: 110px;
-    }
+  .choice-btn {
+    min-width: 220px;
+    width: 100%;
+    max-width: 300px;
+    padding: 1.25rem;
+    min-height: 110px;
+  }
 
-    .choice-btn h3 {
-        font-size: var(--font-size-base);
-        margin-bottom: 0.4rem;
-    }
+  .choice-btn h3 {
+    font-size: var(--font-size-base);
+    margin-bottom: 0.4rem;
+  }
 
-    .choice-btn p {
-        font-size: 0.75rem;
-        line-height: 1.25;
-    }
+  .choice-btn p {
+    font-size: 0.75rem;
+    line-height: 1.25;
+  }
 }
 
 /* MOBILE LANDSCAPE (480px - 575px) */
 @media screen and (min-width: 480px) and (max-width: 575px) {
-    .choice-buttons {
-        flex-direction: column;
-        align-items: center;
-        gap: 1.25rem;
-    }
+  .choice-buttons {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
 
-    .choice-btn {
-        min-width: 250px;
-        width: 100%;
-        max-width: 350px;
-        padding: 1.5rem;
-        min-height: 120px;
-    }
+  .choice-btn {
+    min-width: 250px;
+    width: 100%;
+    max-width: 350px;
+    padding: 1.5rem;
+    min-height: 120px;
+  }
 
-    .choice-btn h3 {
-        font-size: 1.1rem;
-    }
+  .choice-btn h3 {
+    font-size: 1.1rem;
+  }
 
-    .choice-btn p {
-        font-size: 0.85rem;
-    }
+  .choice-btn p {
+    font-size: 0.85rem;
+  }
 }
 
 /* MOBILE PORTRAIT (320px - 479px) */
 @media screen and (max-width: 479px) {
-    .choice-buttons {
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-    }
+  .choice-buttons {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
 
-    .choice-btn {
-        min-width: 200px;
-        width: 100%;
-        max-width: 280px;
-        padding: 1rem;
-        min-height: 100px;
-    }
+  .choice-btn {
+    min-width: 200px;
+    width: 100%;
+    max-width: 280px;
+    padding: 1rem;
+    min-height: 100px;
+  }
 
-    .choice-btn h3 {
-        font-size: 0.95rem;
-        margin-bottom: 0.3rem;
-    }
+  .choice-btn h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+  }
 
-    .choice-btn p {
-        font-size: 0.75rem;
-        line-height: 1.25;
-    }
+  .choice-btn p {
+    font-size: 0.75rem;
+    line-height: 1.25;
+  }
 }
 
 /* Enhanced touch targets for mobile */
 @media (hover: none) and (pointer: coarse) {
-    .btn-icon,
-    button,
-    .option-link,
-    .choice-btn {
-        min-height: 44px;
-        min-width: 44px;
-    }
+  .btn-icon,
+  button,
+  .option-link,
+  .choice-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
 
-    /* Larger tap targets for small buttons */
-    .btn-icon {
-        padding: 0.75rem;
-    }
+  /* Larger tap targets for small buttons */
+  .btn-icon {
+    padding: 0.75rem;
+  }
 }
 
 /* Fix for very narrow screens */
 @media screen and (max-width: 320px) {
-    .choice-btn {
-        min-width: 200px;
-        width: 100%;
-    }
+  .choice-btn {
+    min-width: 200px;
+    width: 100%;
+  }
 }
 
 /* ================================
