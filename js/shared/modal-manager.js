@@ -39,9 +39,9 @@ const modalManager = {
 
     // Build footer content based on whether this redirects
     const footerContent = isRedirectModal
-      ? '<div class="modal-hint" role="status" aria-live="polite" style="font-size: 0.9rem; color: #666; margin-top: 1rem; text-align: center;">Redirecting...</div>'
+      ? '<div class="modal-hint" role="status" aria-live="polite">Redirecting...</div>'
       : `<button class="modal-btn" onclick="window.modalManager.closeModal()" aria-label="Close dialog">OK</button>
-               <div class="modal-hint" style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; text-align: center;">Press Enter or Escape to close</div>`;
+               <div class="modal-hint">Press Enter or Escape to close</div>`;
 
     modal.innerHTML = `
             <div class="modal-content" role="document">
@@ -95,25 +95,36 @@ const modalManager = {
 
         const modalContent = modalElement.querySelector(".modal-content");
         if (modalContent) {
-          modalContent.style.backgroundColor = "white";
+          // Use theme-aware colors for dark mode support
+          const isDarkMode =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          modalContent.style.backgroundColor = isDarkMode ? "#1a1a1a" : "white";
+          modalContent.style.color = isDarkMode ? "#e0e0e0" : "#333333";
           modalContent.style.padding = "2rem";
           modalContent.style.borderRadius = "8px";
           modalContent.style.maxWidth = "500px";
           modalContent.style.width = "90%";
           modalContent.style.maxHeight = "80vh";
           modalContent.style.overflowY = "auto";
-          modalContent.style.boxShadow = "0 4px 20px rgba(0, 0, 0, 0.3)";
+          modalContent.style.boxShadow = isDarkMode
+            ? "0 4px 20px rgba(0, 0, 0, 0.6)"
+            : "0 4px 20px rgba(0, 0, 0, 0.3)";
+          modalContent.style.border = isDarkMode ? "1px solid #424242" : "none";
         }
 
         // Type-specific styling
         const header = modalElement.querySelector(".modal-header h3");
+        const isDarkModeHeader =
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches;
         if (header) {
           if (type === "success") {
-            header.style.color = "#155724";
+            header.style.color = isDarkModeHeader ? "#81c784" : "#155724";
           } else if (type === "error") {
-            header.style.color = "#721c24";
+            header.style.color = isDarkModeHeader ? "#ef9a9a" : "#721c24";
           } else {
-            header.style.color = "#0c5460";
+            header.style.color = isDarkModeHeader ? "#64b5f6" : "#0c5460";
           }
         }
 

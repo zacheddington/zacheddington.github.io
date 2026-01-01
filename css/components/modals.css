@@ -543,3 +543,104 @@ body.modal-open {
     margin: var(--space-sm) auto !important;
   }
 }
+
+/* ================================
+   DARK MODE SUPPORT
+   ================================ */
+
+@media (prefers-color-scheme: dark) {
+  .modal-content {
+    background: var(--color-white);
+    color: var(--color-text);
+    border-color: var(--color-border);
+  }
+
+  .modal-content h2,
+  .modal-content h3 {
+    color: var(--color-text);
+  }
+
+  .modal-content p {
+    color: var(--color-text);
+  }
+
+  .modal-content.success {
+    border-block-start-color: var(--color-success);
+  }
+
+  .modal-content.error {
+    border-block-start-color: var(--color-error);
+  }
+
+  /* Modal header colors for dark mode */
+  .modal-header h3 {
+    color: var(--color-text);
+  }
+
+  .modal.success .modal-header h3,
+  .modal-content.success .modal-header h3 {
+    color: var(--color-success-text);
+  }
+
+  .modal.error .modal-header h3,
+  .modal-content.error .modal-header h3 {
+    color: var(--color-error-text);
+  }
+
+  .modal.info .modal-header h3,
+  .modal-content.info .modal-header h3 {
+    color: var(--color-info-text);
+  }
+
+  /* Modal hint text */
+  .modal-hint {
+    color: var(--color-text-muted);
+  }
+
+  /* Modal form inputs */
+  .modal-content .modal-input {
+    background: var(--color-gray-100);
+    color: var(--color-text);
+    border-color: var(--color-border);
+  }
+
+  .modal-content .modal-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(38, 166, 154, 0.2);
+  }
+
+  /* Secondary button in dark mode */
+  .modal-actions .secondary-btn,
+  .form-actions .secondary-btn {
+    background: var(--color-gray-200);
+    color: var(--color-text);
+    border-color: var(--color-border);
+  }
+
+  .modal-actions .secondary-btn:hover,
+  .form-actions .secondary-btn:hover {
+    background: var(--color-gray-300);
+    border-color: var(--color-gray-400);
+  }
+
+  /* Tooltip in dark mode */
+  .tooltip {
+    background-color: var(--color-error);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .tooltip::before {
+    background-color: var(--color-error);
+  }
+
+  /* Modal close button */
+  .modal .close,
+  .modal-header .close {
+    color: var(--color-text-muted);
+  }
+
+  .modal .close:hover,
+  .modal-header .close:hover {
+    color: var(--color-primary);
+  }
+}
