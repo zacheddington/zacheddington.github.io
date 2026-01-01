@@ -1388,8 +1388,15 @@ function displaySessions(sessions) {
 // Setup session action handlers
 function setupSessionActions() {
   const revokeAllBtn = document.getElementById("revokeAllSessionsBtn");
-  const cleanupBtn = document.getElementById("cleanupExpiredBtn");
+  const cleanupBtn = document.getElementById("cleanupSessionsBtn");
   const refreshBtn = document.getElementById("refreshSessionsBtn");
+  const loadBtn = document.getElementById("loadSessionsBtn");
+
+  if (loadBtn) {
+    loadBtn.addEventListener("click", function () {
+      loadAllSessions();
+    });
+  }
 
   if (revokeAllBtn) {
     revokeAllBtn.addEventListener("click", function () {

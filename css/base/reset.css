@@ -121,7 +121,8 @@ body {
 
 /* Page fade-in animation class (applied by JS) */
 body.page-fade-in {
-  animation: pageTransitionIn var(--page-transition-duration, 300ms) ease-out forwards;
+  animation: pageTransitionIn var(--page-transition-duration, 300ms) ease-out
+    forwards;
 }
 
 /* ================================
@@ -130,7 +131,8 @@ body.page-fade-in {
 
 /* Page transition out state */
 body.page-transition-out {
-  animation: pageTransitionOut var(--page-transition-duration, 300ms) ease-out forwards;
+  animation: pageTransitionOut var(--page-transition-duration, 300ms) ease-out
+    forwards;
 }
 
 /* Legacy support for backward compatibility */
