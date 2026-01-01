@@ -867,7 +867,7 @@ async function logout(reason = "user_logout") {
       try {
         const API_URL = window.apiClient?.getAPIUrl();
         if (API_URL) {
-          await fetch(`${API_URL}/api/auth/logout`, {
+          await fetch(`${API_URL}/api/logout`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

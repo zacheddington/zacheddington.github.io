@@ -93,8 +93,8 @@ async function checkConnectivity() {
 async function validateToken(token) {
   try {
     const API_URL = getAPIUrl();
-    const response = await fetch(`${API_URL}/api/auth/validate`, {
-      method: "POST",
+    const response = await fetch(`${API_URL}/api/sessions/check`, {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
