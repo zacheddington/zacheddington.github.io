@@ -99,8 +99,6 @@
 html,
 body {
   transform-style: flat;
-}
-body {
   transform: none !important;
   contain: none !important;
   isolation: auto !important;
