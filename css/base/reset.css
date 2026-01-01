@@ -115,14 +115,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 
-  /* Page load animation - handled by page-transitions.js via .page-fade-in class */
-  opacity: 0;
-}
-
-/* Page fade-in animation class (applied by JS) */
-body.page-fade-in {
-  animation: pageTransitionIn var(--page-transition-duration, 300ms) ease-out
-    forwards;
+  /* Page load animation - automatic fade-in on page load */
+  animation: pageTransitionIn var(--page-transition-duration, 300ms) ease-out forwards;
 }
 
 /* ================================
