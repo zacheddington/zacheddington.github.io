@@ -1,12 +1,12 @@
 // Page Transitions Manager
-// Ce        document.body.classList.add(this.config.fadeOutClass);lized page transition system for consistent fade in/out effects
+// Centralized page transition system for consistent fade in/out effects
 
 class PageTransitions {
     constructor() {
         // Configuration - change these values to adjust all page transitions
         this.config = {
-            duration: 450, // Transition duration in milliseconds
-            easing: 'ease-in-out', // CSS easing function
+            duration: 300, // Transition duration in milliseconds (snappy but smooth)
+            easing: 'ease-out', // CSS easing function
             fadeOutClass: 'page-transition-out',
             fadeInClass: 'page-fade-in',
         };

@@ -16,8 +16,8 @@
    ================================ */
 
 :root {
-  --page-transition-duration: 450ms;
-  --page-transition-easing: var(--ease-in-out);
+  --page-transition-duration: 300ms;
+  --page-transition-easing: var(--ease-out);
 }
 
 /* ================================
@@ -48,22 +48,18 @@
 @keyframes pageTransitionIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 @keyframes pageTransitionOut {
   from {
     opacity: 1;
-    transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: translateY(-20px);
   }
 }
 
