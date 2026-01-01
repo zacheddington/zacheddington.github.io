@@ -116,7 +116,8 @@ body {
   text-rendering: optimizeLegibility;
 
   /* Page load animation - automatic fade-in on page load */
-  animation: pageTransitionIn var(--page-transition-duration, 300ms) ease-out forwards;
+  animation: pageTransitionIn var(--page-transition-duration, 300ms) ease-out
+    forwards;
 }
 
 /* ================================

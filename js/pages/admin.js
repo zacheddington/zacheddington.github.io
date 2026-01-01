@@ -167,25 +167,32 @@ function setupAdminNavigation() {
     "sessionManagementSection"
   );
 
-  // Choice button handlers
+  // Choice button handlers - use event delegation for reliability
   const createUserBtn = document.getElementById("createUserBtn");
   const manageUsersBtn = document.getElementById("manageUsersBtn");
   const manageSessionsBtn = document.getElementById("manageSessionsBtn");
+  
+  // Add click handlers with explicit navigation
   if (createUserBtn) {
-    createUserBtn.addEventListener("click", function () {
+    createUserBtn.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
       window.location.href = "./create-user/";
-    });
+    };
   }
   if (manageUsersBtn) {
-    manageUsersBtn.addEventListener("click", function () {
+    manageUsersBtn.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
       window.location.href = "./manage-users/";
-    });
+    };
   }
-
   if (manageSessionsBtn) {
-    manageSessionsBtn.addEventListener("click", function () {
+    manageSessionsBtn.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
       window.location.href = "./manage-sessions/";
-    });
+    };
   }
   // Cancel button handler
   document
