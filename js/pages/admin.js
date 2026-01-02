@@ -1692,7 +1692,7 @@ async function cleanupExpiredSessions() {
   // Use custom modal instead of browser confirm
   window.modalManager.showConfirmModal(
     "🧹 Cleanup Sessions",
-    "This will:\n\n• Mark stale/expired active sessions as inactive\n• Delete inactive sessions older than 7 days\n\nAre you sure you want to proceed?",
+    "This will:\\n\\n• Mark stale/expired sessions as inactive (no activity for 24h+)\\n• Delete inactive sessions with no activity for 7+ days\\n\\nAre you sure you want to proceed?",
     async () => {
       // Confirmed - proceed with cleanup
       await performSessionCleanup();
@@ -1715,16 +1715,23 @@ async function performSessionCleanup() {
     });
     if (response.ok) {
       const result = await response.json();
-      const count = result.data?.cleanedCount || result.cleanedCount || 0;
-      if (count > 0) {
-        window.modalManager.showModal(
-          "success",
-          `Successfully cleaned up ${count} session(s).`
-        );
+      const expiredCount = result.data?.expiredCount || 0;
+      const deletedCount = result.data?.deletedCount || 0;
+      const totalCleaned = result.data?.totalCleaned || expiredCount + deletedCount;
+      
+      if (totalCleaned > 0) {
+        let message = "Cleanup complete:\\n\\n";
+        if (expiredCount > 0) {
+          message += `• Marked ${expiredCount} stale session(s) as inactive\\n`;
+        }
+        if (deletedCount > 0) {
+          message += `• Deleted ${deletedCount} old session(s)\\n`;
+        }
+        window.modalManager.showModal("success", message);
       } else {
         window.modalManager.showModal(
           "info",
-          "No sessions needed cleanup. All sessions are either active or less than 7 days old."
+          "No sessions needed cleanup.\\n\\nAll inactive sessions have activity within the last 7 days."
         );
       }
       // Reload sessions to reflect changes

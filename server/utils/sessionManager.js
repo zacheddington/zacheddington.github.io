@@ -171,15 +171,16 @@ class SessionManager {
 
   // Clean up expired sessions
   // This does two things:
-  // 1. Marks active sessions as inactive if they've expired
-  // 2. Deletes old inactive sessions (older than 30 days)
+  // 1. Marks active sessions as inactive if they've expired or been idle
+  // 2. Deletes old inactive sessions based on last_activity (not logout_time)
   static async cleanupExpiredSessions() {
     const client = await pool.connect();
     try {
-      let totalCleaned = 0;
+      let expiredCount = 0;
+      let deletedCount = 0;
 
-      // Step 1: Mark expired active sessions as inactive
-      // This catches: sessions past expires_at, OR sessions with no recent activity (>24h) and no expires_at
+      // Step 1: Mark stale active sessions as inactive
+      // Sessions are stale if: expired, OR no activity for 24+ hours
       const expireResult = await client.query(`
                 UPDATE tbl_user_session 
                 SET is_active = false, 
@@ -190,22 +191,28 @@ class SessionManager {
                     expires_at <= CURRENT_TIMESTAMP
                     OR (expires_at IS NULL AND last_activity < CURRENT_TIMESTAMP - INTERVAL '24 hours')
                     OR (expires_at IS NULL AND last_activity IS NULL AND login_time < CURRENT_TIMESTAMP - INTERVAL '24 hours')
+                    OR last_activity < CURRENT_TIMESTAMP - INTERVAL '7 days'
                 )
             `);
-      totalCleaned += expireResult.rowCount;
+      expiredCount = expireResult.rowCount;
 
-      // Step 2: Delete old inactive sessions (older than 7 days)
+      // Step 2: Delete inactive sessions where last_activity is older than 7 days
+      // Uses last_activity (or login_time if null) as the basis, NOT logout_time
       const deleteResult = await client.query(`
                 DELETE FROM tbl_user_session 
                 WHERE is_active = false 
                 AND (
-                    logout_time < CURRENT_TIMESTAMP - INTERVAL '7 days'
-                    OR (logout_time IS NULL AND login_time < CURRENT_TIMESTAMP - INTERVAL '7 days')
+                    (last_activity IS NOT NULL AND last_activity < CURRENT_TIMESTAMP - INTERVAL '7 days')
+                    OR (last_activity IS NULL AND login_time < CURRENT_TIMESTAMP - INTERVAL '7 days')
                 )
             `);
-      totalCleaned += deleteResult.rowCount;
+      deletedCount = deleteResult.rowCount;
 
-      return totalCleaned;
+      return {
+        expiredCount,
+        deletedCount,
+        totalCleaned: expiredCount + deletedCount,
+      };
     } finally {
       client.release();
     }
