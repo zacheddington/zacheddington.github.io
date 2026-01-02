@@ -17,9 +17,9 @@
  *
  * @exports window.adminPage - Global namespace for admin functions
  */
-console.log('[DEBUG] admin.js: Script starting to load');
-console.log('[DEBUG] admin.js: typeof escapeHtml at load =', typeof escapeHtml);
-console.log('[DEBUG] admin.js: window.stringUtils =', window.stringUtils);
+console.log("[DEBUG] admin.js: Script starting to load");
+console.log("[DEBUG] admin.js: typeof escapeHtml at load =", typeof escapeHtml);
+console.log("[DEBUG] admin.js: window.stringUtils =", window.stringUtils);
 
 // Global variables for admin page
 let allUsers = [];

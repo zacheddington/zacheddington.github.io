@@ -3,7 +3,7 @@
  * Common string manipulation and formatting functions
  * Centralizes duplicate utilities from page-specific modules
  */
-console.log('[DEBUG] string-utils.js: Script starting to load');
+console.log("[DEBUG] string-utils.js: Script starting to load");
 
 /**
  * Escape HTML special characters to prevent XSS attacks
@@ -17,7 +17,10 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
-console.log('[DEBUG] string-utils.js: escapeHtml function defined, typeof escapeHtml =', typeof escapeHtml);
+console.log(
+  "[DEBUG] string-utils.js: escapeHtml function defined, typeof escapeHtml =",
+  typeof escapeHtml
+);
 
 /**
  * Escape JavaScript string special characters
@@ -129,4 +132,7 @@ window.stringUtils = {
   stripHtml,
   slugify,
 };
-console.log('[DEBUG] string-utils.js: Finished loading. window.stringUtils =', window.stringUtils);
+console.log(
+  "[DEBUG] string-utils.js: Finished loading. window.stringUtils =",
+  window.stringUtils
+);
