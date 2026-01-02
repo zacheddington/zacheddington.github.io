@@ -179,6 +179,44 @@ class SessionManager {
       let expiredCount = 0;
       let deletedCount = 0;
 
+      // DEBUG: Check what columns exist and sample data
+      const debugColumns = await client.query(`
+        SELECT column_name, data_type 
+        FROM information_schema.columns 
+        WHERE table_name = 'tbl_user_session'
+        ORDER BY ordinal_position
+      `);
+      console.log('[DEBUG] Session table columns:', debugColumns.rows.map(r => r.column_name));
+
+      // DEBUG: Check inactive sessions that should be deleted
+      const debugInactive = await client.query(`
+        SELECT 
+          session_key,
+          is_active,
+          login_time,
+          last_activity,
+          logout_time,
+          CURRENT_TIMESTAMP as now,
+          CURRENT_TIMESTAMP - INTERVAL '7 days' as cutoff
+        FROM tbl_user_session 
+        WHERE is_active = false
+        ORDER BY login_time DESC
+        LIMIT 10
+      `);
+      console.log('[DEBUG] Sample inactive sessions:', JSON.stringify(debugInactive.rows, null, 2));
+
+      // DEBUG: Count how many SHOULD be deleted
+      const countToDelete = await client.query(`
+        SELECT COUNT(*) as count
+        FROM tbl_user_session 
+        WHERE is_active = false 
+        AND (
+          (last_activity IS NOT NULL AND last_activity < CURRENT_TIMESTAMP - INTERVAL '7 days')
+          OR (last_activity IS NULL AND login_time < CURRENT_TIMESTAMP - INTERVAL '7 days')
+        )
+      `);
+      console.log('[DEBUG] Sessions matching delete criteria:', countToDelete.rows[0].count);
+
       // Step 1: Mark stale active sessions as inactive
       // Sessions are stale if: expired, OR no activity for 24+ hours
       const expireResult = await client.query(`
@@ -195,6 +233,7 @@ class SessionManager {
                 )
             `);
       expiredCount = expireResult.rowCount;
+      console.log('[DEBUG] Sessions marked as expired:', expiredCount);
 
       // Step 2: Delete inactive sessions where last_activity is older than 7 days
       // Uses last_activity (or login_time if null) as the basis, NOT logout_time
@@ -207,6 +246,7 @@ class SessionManager {
                 )
             `);
       deletedCount = deleteResult.rowCount;
+      console.log('[DEBUG] Sessions deleted:', deletedCount);
 
       return {
         expiredCount,

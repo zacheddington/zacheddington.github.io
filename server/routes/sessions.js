@@ -179,7 +179,7 @@ router.post(
   async (req, res) => {
     try {
       const result = await SessionManager.cleanupExpiredSessions();
-      
+
       // Handle both old format (number) and new format (object)
       const expiredCount = result.expiredCount || 0;
       const deletedCount = result.deletedCount || 0;
@@ -191,7 +191,7 @@ router.post(
         `Marked ${expiredCount} sessions as expired, deleted ${deletedCount} old sessions`
       );
     } catch (err) {
-      console.error('Session cleanup error:', err);
+      console.error("Session cleanup error:", err);
       return errorResponse(res, "Failed to cleanup sessions", 500);
     }
   }
