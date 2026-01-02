@@ -178,32 +178,38 @@ class SessionManager {
     try {
       let expiredCount = 0;
       let deletedCount = 0;
+      const debug = {};
 
-      // DEBUG: Check what columns exist and sample data
+      // DEBUG: Check what columns exist
       const debugColumns = await client.query(`
         SELECT column_name, data_type 
         FROM information_schema.columns 
         WHERE table_name = 'tbl_user_session'
         ORDER BY ordinal_position
       `);
-      console.log('[DEBUG] Session table columns:', debugColumns.rows.map(r => r.column_name));
+      debug.columns = debugColumns.rows.map(r => r.column_name);
 
-      // DEBUG: Check inactive sessions that should be deleted
+      // DEBUG: Check inactive sessions sample
       const debugInactive = await client.query(`
         SELECT 
-          session_key,
           is_active,
           login_time,
           last_activity,
-          logout_time,
-          CURRENT_TIMESTAMP as now,
-          CURRENT_TIMESTAMP - INTERVAL '7 days' as cutoff
+          logout_time
         FROM tbl_user_session 
         WHERE is_active = false
         ORDER BY login_time DESC
-        LIMIT 10
+        LIMIT 5
       `);
-      console.log('[DEBUG] Sample inactive sessions:', JSON.stringify(debugInactive.rows, null, 2));
+      debug.sampleInactiveSessions = debugInactive.rows;
+
+      // DEBUG: Get current timestamp and cutoff for reference
+      const timeCheck = await client.query(`
+        SELECT 
+          CURRENT_TIMESTAMP as now,
+          CURRENT_TIMESTAMP - INTERVAL '7 days' as cutoff_7days
+      `);
+      debug.timeInfo = timeCheck.rows[0];
 
       // DEBUG: Count how many SHOULD be deleted
       const countToDelete = await client.query(`
@@ -215,10 +221,15 @@ class SessionManager {
           OR (last_activity IS NULL AND login_time < CURRENT_TIMESTAMP - INTERVAL '7 days')
         )
       `);
-      console.log('[DEBUG] Sessions matching delete criteria:', countToDelete.rows[0].count);
+      debug.sessionsMatchingDeleteCriteria = parseInt(countToDelete.rows[0].count);
+
+      // DEBUG: Total inactive count
+      const totalInactive = await client.query(`
+        SELECT COUNT(*) as count FROM tbl_user_session WHERE is_active = false
+      `);
+      debug.totalInactiveSessions = parseInt(totalInactive.rows[0].count);
 
       // Step 1: Mark stale active sessions as inactive
-      // Sessions are stale if: expired, OR no activity for 24+ hours
       const expireResult = await client.query(`
                 UPDATE tbl_user_session 
                 SET is_active = false, 
@@ -233,10 +244,8 @@ class SessionManager {
                 )
             `);
       expiredCount = expireResult.rowCount;
-      console.log('[DEBUG] Sessions marked as expired:', expiredCount);
 
       // Step 2: Delete inactive sessions where last_activity is older than 7 days
-      // Uses last_activity (or login_time if null) as the basis, NOT logout_time
       const deleteResult = await client.query(`
                 DELETE FROM tbl_user_session 
                 WHERE is_active = false 
@@ -246,12 +255,12 @@ class SessionManager {
                 )
             `);
       deletedCount = deleteResult.rowCount;
-      console.log('[DEBUG] Sessions deleted:', deletedCount);
 
       return {
         expiredCount,
         deletedCount,
         totalCleaned: expiredCount + deletedCount,
+        debug
       };
     } finally {
       client.release();
