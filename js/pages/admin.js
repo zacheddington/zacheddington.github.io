@@ -1728,20 +1728,14 @@ async function performSessionCleanup() {
 
       // Log debug info to console for troubleshooting
       if (debug) {
-        console.log("[DEBUG] Table columns:", debug.columns);
+        console.log("[DEBUG] === SESSION CLEANUP DEBUG ===");
+        console.log("[DEBUG] Total sessions in database:", debug.totalSessions);
+        console.log("[DEBUG] Active sessions:", debug.totalActive);
+        console.log("[DEBUG] Inactive sessions:", debug.totalInactive);
+        console.log("[DEBUG] Old active sessions (login > 7 days):", debug.oldActiveSessionsCount);
+        console.log("[DEBUG] Inactive matching delete criteria:", debug.inactiveMatchingDeleteCriteria);
         console.log("[DEBUG] Time info:", debug.timeInfo);
-        console.log(
-          "[DEBUG] Total inactive sessions:",
-          debug.totalInactiveSessions
-        );
-        console.log(
-          "[DEBUG] Sessions matching delete criteria:",
-          debug.sessionsMatchingDeleteCriteria
-        );
-        console.log(
-          "[DEBUG] Sample inactive sessions:",
-          debug.sampleInactiveSessions
-        );
+        console.log("[DEBUG] Oldest 10 sessions (by login_time):", debug.oldestSessions);
       }
 
       if (totalCleaned > 0) {
