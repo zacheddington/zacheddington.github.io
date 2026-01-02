@@ -1808,7 +1808,8 @@ function setSessionActionLoading(sessionId, isLoading) {
   }
 }
 
-// Note: escapeHtml and escapeJavaScript are available globally from string-utils.js
+// escapeHtml and escapeJavaScript are available globally from string-utils.js
+// No need to redeclare them here
 
 // Debug function to test available session endpoints (dev use only)
 // Call this from browser console: window.adminPage.testSessionEndpoints()
