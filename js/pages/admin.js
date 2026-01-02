@@ -17,9 +17,6 @@
  *
  * @exports window.adminPage - Global namespace for admin functions
  */
-console.log("[DEBUG] admin.js: Script starting to load");
-console.log("[DEBUG] admin.js: typeof escapeHtml at load =", typeof escapeHtml);
-console.log("[DEBUG] admin.js: window.stringUtils =", window.stringUtils);
 
 // Global variables for admin page
 let allUsers = [];
@@ -1715,28 +1712,11 @@ async function performSessionCleanup() {
     });
     if (response.ok) {
       const result = await response.json();
-      console.log(
-        "[DEBUG] Cleanup API response:",
-        JSON.stringify(result, null, 2)
-      );
 
       const expiredCount = result.data?.expiredCount || 0;
       const deletedCount = result.data?.deletedCount || 0;
       const totalCleaned =
         result.data?.totalCleaned || expiredCount + deletedCount;
-      const debug = result.data?.debug;
-
-      // Log debug info to console for troubleshooting
-      if (debug) {
-        console.log("[DEBUG] === SESSION CLEANUP DEBUG ===");
-        console.log("[DEBUG] Total sessions in database:", debug.totalSessions);
-        console.log("[DEBUG] Active sessions:", debug.totalActive);
-        console.log("[DEBUG] Inactive sessions:", debug.totalInactive);
-        console.log("[DEBUG] Old active sessions (login > 7 days):", debug.oldActiveSessionsCount);
-        console.log("[DEBUG] Inactive matching delete criteria:", debug.inactiveMatchingDeleteCriteria);
-        console.log("[DEBUG] Time info:", debug.timeInfo);
-        console.log("[DEBUG] Oldest 10 sessions (by login_time):", debug.oldestSessions);
-      }
 
       if (totalCleaned > 0) {
         let message = "Cleanup complete:\n\n";
