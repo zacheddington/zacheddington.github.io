@@ -1689,7 +1689,7 @@ async function cleanupExpiredSessions() {
   // Use custom modal instead of browser confirm
   window.modalManager.showConfirmModal(
     "🧹 Cleanup Sessions",
-    "This will:\n\n• Mark any expired active sessions as inactive\n• Delete inactive sessions older than 30 days\n\nAre you sure you want to proceed?",
+    "This will:\n\n• Mark stale/expired active sessions as inactive\n• Delete inactive sessions older than 7 days\n\nAre you sure you want to proceed?",
     async () => {
       // Confirmed - proceed with cleanup
       await performSessionCleanup();
@@ -1721,7 +1721,7 @@ async function performSessionCleanup() {
       } else {
         window.modalManager.showModal(
           "info",
-          "No sessions needed cleanup. All sessions are either active or less than 30 days old."
+          "No sessions needed cleanup. All sessions are either active or less than 7 days old."
         );
       }
       // Reload sessions to reflect changes
@@ -1808,11 +1808,7 @@ function setSessionActionLoading(sessionId, isLoading) {
   }
 }
 
-// Use centralized utilities from string-utils.js
-const escapeHtml = (text) =>
-  window.stringUtils?.escapeHtml?.(text) || text || "";
-const escapeJavaScript = (text) =>
-  window.stringUtils?.escapeJavaScript?.(text) || text || "";
+// Note: escapeHtml and escapeJavaScript are available globally from string-utils.js
 
 // Debug function to test available session endpoints (dev use only)
 // Call this from browser console: window.adminPage.testSessionEndpoints()

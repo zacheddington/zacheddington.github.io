@@ -179,23 +179,28 @@ class SessionManager {
       let totalCleaned = 0;
 
       // Step 1: Mark expired active sessions as inactive
+      // This catches: sessions past expires_at, OR sessions with no recent activity (>24h) and no expires_at
       const expireResult = await client.query(`
                 UPDATE tbl_user_session 
                 SET is_active = false, 
                     logout_time = CURRENT_TIMESTAMP,
                     revoked_reason = 'expired'
                 WHERE is_active = true 
-                AND expires_at <= CURRENT_TIMESTAMP
+                AND (
+                    expires_at <= CURRENT_TIMESTAMP
+                    OR (expires_at IS NULL AND last_activity < CURRENT_TIMESTAMP - INTERVAL '24 hours')
+                    OR (expires_at IS NULL AND last_activity IS NULL AND login_time < CURRENT_TIMESTAMP - INTERVAL '24 hours')
+                )
             `);
       totalCleaned += expireResult.rowCount;
 
-      // Step 2: Delete old inactive sessions (older than 30 days)
+      // Step 2: Delete old inactive sessions (older than 7 days)
       const deleteResult = await client.query(`
                 DELETE FROM tbl_user_session 
                 WHERE is_active = false 
                 AND (
-                    logout_time < CURRENT_TIMESTAMP - INTERVAL '30 days'
-                    OR (logout_time IS NULL AND login_time < CURRENT_TIMESTAMP - INTERVAL '30 days')
+                    logout_time < CURRENT_TIMESTAMP - INTERVAL '7 days'
+                    OR (logout_time IS NULL AND login_time < CURRENT_TIMESTAMP - INTERVAL '7 days')
                 )
             `);
       totalCleaned += deleteResult.rowCount;
