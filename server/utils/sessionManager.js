@@ -189,20 +189,6 @@ class SessionManager {
       `);
       debug.columns = debugColumns.rows.map((r) => r.column_name);
 
-      // DEBUG: Check inactive sessions sample
-      const debugInactive = await client.query(`
-        SELECT 
-          is_active,
-          login_time,
-          last_activity,
-          logout_time
-        FROM tbl_user_session 
-        WHERE is_active = false
-        ORDER BY login_time DESC
-        LIMIT 5
-      `);
-      debug.sampleInactiveSessions = debugInactive.rows;
-
       // DEBUG: Get current timestamp and cutoff for reference
       const timeCheck = await client.query(`
         SELECT 
@@ -211,7 +197,41 @@ class SessionManager {
       `);
       debug.timeInfo = timeCheck.rows[0];
 
-      // DEBUG: Count how many SHOULD be deleted
+      // DEBUG: Show OLDEST sessions (both active and inactive) to find the old ones
+      const debugOldest = await client.query(`
+        SELECT 
+          is_active,
+          login_time,
+          last_activity,
+          logout_time
+        FROM tbl_user_session 
+        ORDER BY login_time ASC
+        LIMIT 10
+      `);
+      debug.oldestSessions = debugOldest.rows;
+
+      // DEBUG: Count old ACTIVE sessions (these won't be deleted because they're still active!)
+      const oldActiveSessions = await client.query(`
+        SELECT COUNT(*) as count
+        FROM tbl_user_session 
+        WHERE is_active = true 
+        AND login_time < CURRENT_TIMESTAMP - INTERVAL '7 days'
+      `);
+      debug.oldActiveSessionsCount = parseInt(oldActiveSessions.rows[0].count);
+
+      // DEBUG: Total counts
+      const totalCounts = await client.query(`
+        SELECT 
+          COUNT(*) FILTER (WHERE is_active = true) as active_count,
+          COUNT(*) FILTER (WHERE is_active = false) as inactive_count,
+          COUNT(*) as total_count
+        FROM tbl_user_session
+      `);
+      debug.totalActive = parseInt(totalCounts.rows[0].active_count);
+      debug.totalInactive = parseInt(totalCounts.rows[0].inactive_count);
+      debug.totalSessions = parseInt(totalCounts.rows[0].total_count);
+
+      // DEBUG: Count how many inactive sessions SHOULD be deleted
       const countToDelete = await client.query(`
         SELECT COUNT(*) as count
         FROM tbl_user_session 
@@ -221,15 +241,7 @@ class SessionManager {
           OR (last_activity IS NULL AND login_time < CURRENT_TIMESTAMP - INTERVAL '7 days')
         )
       `);
-      debug.sessionsMatchingDeleteCriteria = parseInt(
-        countToDelete.rows[0].count
-      );
-
-      // DEBUG: Total inactive count
-      const totalInactive = await client.query(`
-        SELECT COUNT(*) as count FROM tbl_user_session WHERE is_active = false
-      `);
-      debug.totalInactiveSessions = parseInt(totalInactive.rows[0].count);
+      debug.inactiveMatchingDeleteCriteria = parseInt(countToDelete.rows[0].count);
 
       // Step 1: Mark stale active sessions as inactive
       const expireResult = await client.query(`
