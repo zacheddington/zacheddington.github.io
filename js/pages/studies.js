@@ -20,15 +20,9 @@
 let selectedPatientId = null;
 let allPatients = [];
 
-// Use centralized utilities from shared modules (defined early for use throughout file)
-const formatPhoneNumber = (phone) =>
-  window.stringUtils?.formatPhoneNumber?.(phone) || phone || "No phone";
-
-const formatDateForDisplay = (dateString) =>
-  window.dateUtils?.formatDateForDisplay?.(dateString) || "Not provided";
-
-const escapeHtml = (text) =>
-  window.stringUtils?.escapeHtml?.(text) || text || "";
+// Utility functions are available globally from shared modules:
+// - formatPhoneNumber, escapeHtml from string-utils.js
+// - formatDateForDisplay from date-utils.js
 
 /**
  * Initialize studies page based on current route

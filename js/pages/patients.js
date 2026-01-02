@@ -20,15 +20,8 @@
 // Global state for patient management
 let allPatients = [];
 
-// Use centralized date formatting from date-utils.js
-const formatDateForDisplay = (dateString) =>
-  window.dateUtils?.formatDateForDisplay?.(dateString) || "Not provided";
-
-// Use centralized escaping from string-utils.js (XSS prevention)
-const escapeHtml = (text) =>
-  window.stringUtils?.escapeHtml?.(text) || text || "";
-const escapeJavaScript = (text) =>
-  window.stringUtils?.escapeJavaScript?.(text) || text || "";
+// formatDateForDisplay is available globally from date-utils.js
+// escapeHtml and escapeJavaScript are available globally from string-utils.js
 
 // Check if current user can delete patients
 function canDeletePatients() {
@@ -151,9 +144,7 @@ async function initializeManagePatientsPage() {
   // Tables are auto-initialized by table-utils.js
 }
 
-// Use centralized phone formatting from string-utils.js
-const formatPhoneNumber = (phone) =>
-  window.stringUtils?.formatPhoneNumber?.(phone) || phone || "";
+// formatPhoneNumber is available globally from string-utils.js
 
 // Set up navigation between patient sections
 function setupPatientsNavigation() {
