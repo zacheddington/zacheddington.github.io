@@ -171,24 +171,24 @@ function setupAdminNavigation() {
   const createUserBtn = document.getElementById("createUserBtn");
   const manageUsersBtn = document.getElementById("manageUsersBtn");
   const manageSessionsBtn = document.getElementById("manageSessionsBtn");
-  
+
   // Add click handlers with explicit navigation
   if (createUserBtn) {
-    createUserBtn.onclick = function(e) {
+    createUserBtn.onclick = function (e) {
       e.preventDefault();
       e.stopPropagation();
       window.location.href = "./create-user/";
     };
   }
   if (manageUsersBtn) {
-    manageUsersBtn.onclick = function(e) {
+    manageUsersBtn.onclick = function (e) {
       e.preventDefault();
       e.stopPropagation();
       window.location.href = "./manage-users/";
     };
   }
   if (manageSessionsBtn) {
-    manageSessionsBtn.onclick = function(e) {
+    manageSessionsBtn.onclick = function (e) {
       e.preventDefault();
       e.stopPropagation();
       window.location.href = "./manage-sessions/";
@@ -1688,8 +1688,8 @@ async function forceLogoutUser(username) {
 async function cleanupExpiredSessions() {
   // Use custom modal instead of browser confirm
   window.modalManager.showConfirmModal(
-    "🧹 Cleanup Expired Sessions",
-    "Are you sure you want to cleanup all expired sessions? This will permanently remove inactive session records.",
+    "🧹 Cleanup Sessions",
+    "This will:\n\n• Mark any expired active sessions as inactive\n• Delete inactive sessions older than 30 days\n\nAre you sure you want to proceed?",
     async () => {
       // Confirmed - proceed with cleanup
       await performSessionCleanup();
@@ -1712,7 +1712,18 @@ async function performSessionCleanup() {
     });
     if (response.ok) {
       const result = await response.json();
-      alert(`Cleaned up ${result.cleanedCount || 0} expired sessions`);
+      const count = result.data?.cleanedCount || result.cleanedCount || 0;
+      if (count > 0) {
+        window.modalManager.showModal(
+          "success",
+          `Successfully cleaned up ${count} session(s).`
+        );
+      } else {
+        window.modalManager.showModal(
+          "info",
+          "No sessions needed cleanup. All sessions are either active or less than 30 days old."
+        );
+      }
       // Reload sessions to reflect changes
       await loadAllSessions();
     } else {

@@ -170,10 +170,16 @@ class SessionManager {
   }
 
   // Clean up expired sessions
+  // This does two things:
+  // 1. Marks active sessions as inactive if they've expired
+  // 2. Deletes old inactive sessions (older than 30 days)
   static async cleanupExpiredSessions() {
     const client = await pool.connect();
     try {
-      const result = await client.query(`
+      let totalCleaned = 0;
+
+      // Step 1: Mark expired active sessions as inactive
+      const expireResult = await client.query(`
                 UPDATE tbl_user_session 
                 SET is_active = false, 
                     logout_time = CURRENT_TIMESTAMP,
@@ -181,8 +187,20 @@ class SessionManager {
                 WHERE is_active = true 
                 AND expires_at <= CURRENT_TIMESTAMP
             `);
+      totalCleaned += expireResult.rowCount;
 
-      return result.rowCount;
+      // Step 2: Delete old inactive sessions (older than 30 days)
+      const deleteResult = await client.query(`
+                DELETE FROM tbl_user_session 
+                WHERE is_active = false 
+                AND (
+                    logout_time < CURRENT_TIMESTAMP - INTERVAL '30 days'
+                    OR (logout_time IS NULL AND login_time < CURRENT_TIMESTAMP - INTERVAL '30 days')
+                )
+            `);
+      totalCleaned += deleteResult.rowCount;
+
+      return totalCleaned;
     } finally {
       client.release();
     }
