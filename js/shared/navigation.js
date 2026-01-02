@@ -2,7 +2,7 @@
 // Handles top menu loading, navigation, and page transitions
 
 // Application version - update this with each deployment
-const APP_VERSION = "0.0.496";
+const APP_VERSION = "0.0.497";
 
 // Load application footer with version
 function loadAppFooter() {

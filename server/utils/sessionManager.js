@@ -187,7 +187,7 @@ class SessionManager {
         WHERE table_name = 'tbl_user_session'
         ORDER BY ordinal_position
       `);
-      debug.columns = debugColumns.rows.map(r => r.column_name);
+      debug.columns = debugColumns.rows.map((r) => r.column_name);
 
       // DEBUG: Check inactive sessions sample
       const debugInactive = await client.query(`
@@ -221,7 +221,9 @@ class SessionManager {
           OR (last_activity IS NULL AND login_time < CURRENT_TIMESTAMP - INTERVAL '7 days')
         )
       `);
-      debug.sessionsMatchingDeleteCriteria = parseInt(countToDelete.rows[0].count);
+      debug.sessionsMatchingDeleteCriteria = parseInt(
+        countToDelete.rows[0].count
+      );
 
       // DEBUG: Total inactive count
       const totalInactive = await client.query(`
@@ -260,7 +262,7 @@ class SessionManager {
         expiredCount,
         deletedCount,
         totalCleaned: expiredCount + deletedCount,
-        debug
+        debug,
       };
     } finally {
       client.release();

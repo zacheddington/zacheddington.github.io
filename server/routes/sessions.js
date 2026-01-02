@@ -184,10 +184,11 @@ router.post(
       const expiredCount = result.expiredCount || 0;
       const deletedCount = result.deletedCount || 0;
       const totalCleaned = result.totalCleaned || result || 0;
+      const debug = result.debug || null;
 
       return successResponse(
         res,
-        { expiredCount, deletedCount, totalCleaned },
+        { expiredCount, deletedCount, totalCleaned, debug },
         `Marked ${expiredCount} sessions as expired, deleted ${deletedCount} old sessions`
       );
     } catch (err) {

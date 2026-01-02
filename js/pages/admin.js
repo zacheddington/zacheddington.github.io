@@ -1715,8 +1715,11 @@ async function performSessionCleanup() {
     });
     if (response.ok) {
       const result = await response.json();
-      console.log('[DEBUG] Cleanup API response:', JSON.stringify(result, null, 2));
-      
+      console.log(
+        "[DEBUG] Cleanup API response:",
+        JSON.stringify(result, null, 2)
+      );
+
       const expiredCount = result.data?.expiredCount || 0;
       const deletedCount = result.data?.deletedCount || 0;
       const totalCleaned =
@@ -1725,11 +1728,20 @@ async function performSessionCleanup() {
 
       // Log debug info to console for troubleshooting
       if (debug) {
-        console.log('[DEBUG] Table columns:', debug.columns);
-        console.log('[DEBUG] Time info:', debug.timeInfo);
-        console.log('[DEBUG] Total inactive sessions:', debug.totalInactiveSessions);
-        console.log('[DEBUG] Sessions matching delete criteria:', debug.sessionsMatchingDeleteCriteria);
-        console.log('[DEBUG] Sample inactive sessions:', debug.sampleInactiveSessions);
+        console.log("[DEBUG] Table columns:", debug.columns);
+        console.log("[DEBUG] Time info:", debug.timeInfo);
+        console.log(
+          "[DEBUG] Total inactive sessions:",
+          debug.totalInactiveSessions
+        );
+        console.log(
+          "[DEBUG] Sessions matching delete criteria:",
+          debug.sessionsMatchingDeleteCriteria
+        );
+        console.log(
+          "[DEBUG] Sample inactive sessions:",
+          debug.sampleInactiveSessions
+        );
       }
 
       if (totalCleaned > 0) {
